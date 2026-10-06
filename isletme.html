@@ -747,7 +747,7 @@ var params = new URLSearchParams(location.search);
 var B = params.get('b') || '';
 var DEMO = params.get('demo') === '1';
 var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
-var API = params.get('api') || 'https://script.google.com/macros/s/AKfycbxDsLxZiojzSAlxAdWg9KplLVEGvaLv4SUCVIrw_X32ja9xQTOrpAugUGvUatLJ7vme/exec';
+var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
 var ACILACAK_NO = Number(params.get('no')) || 0;
 var ANA = params.get('ana') === '1';          // işletme sahibi ekranı YourPOS 360 ana botundan açtı
 var SEKME = String(params.get('sekme') || '');
