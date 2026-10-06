@@ -507,12 +507,12 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
           </div>
 
           <div class="sec" id="secNote">
-            <h2 class="sec-h">Not <span class="sec-opt">(isteğe bağlı)</span></h2>
+            <h2 class="sec-h">Not <span class="sec-opt">(Örn: ketçap olmasın, soğan olmasın, tuz olmasın)</span></h2>
             <button type="button" class="note-btn" id="noteToggle" data-act="note-open" aria-expanded="false" aria-controls="noteWrap">📝 Not ekle</button>
             <div class="card pad" id="noteWrap" hidden>
               <div class="field">
                 <label class="flabel" for="noteText">Restorana notunuz</label>
-                <textarea class="input textarea" id="noteText" rows="3" maxlength="300" placeholder="Örnek: Soğansız olsun, acı olmasın"></textarea>
+                <textarea class="input textarea" id="noteText" rows="3" maxlength="300" placeholder="Örn: ketçap olmasın, soğan olmasın, tuz olmasın"></textarea>
               </div>
             </div>
           </div>
@@ -741,7 +741,7 @@ function call(act, data){
 var INFO = null, CATS = [], ITEM = {}, ORDER = [], ADDRS = [], PAYS = [];
 var S = {
   screen:'loading', ret:false, closed:false, cart:{},
-  addr:'new', loc:null, locBusy:false, locMsg:'', locDenied:false, chatBusy:false,
+  addr:'new', loc:null, locBusy:false, locMsg:'', locDenied:false,
   addrText:'', name:'', phone:null, phoneBusy:false, phoneManual:false, phoneMsg:'', courier:'tg', otherPhone:'', contactEdit:false,
   noteOpen:false, note:'', pay:null, istekId:null, sending:false,
   order:null, active:null, cancelConfirm:false, cancelBusy:false, cancelMsg:'',
@@ -1018,7 +1018,6 @@ function locAskHTML(where){
   }
   if (S.locMsg) h += '<p class="note-warn" role="status">' + esc(S.locMsg) + '</p>';
   if (S.locDenied) h += '<button type="button" class="btn-outline" data-act="loc-settings">Telegram ayarlarından izin ver</button>';
-  h += '<button type="button" class="link-btn" data-act="loc-chat"' + (S.chatBusy ? ' disabled' : '') + '>' + (S.chatBusy ? 'Gönderiliyor…' : 'Konumu sohbetten göndereceğim') + '</button>';
   if (where === 'menu') {
     var r = firstRule(), bits = [];
     if (r && r.minSiparis) bits.push('<span class="nw">En az sipariş ' + tl(r.minSiparis) + '</span>');
@@ -1257,11 +1256,11 @@ function getCoords(){
   });
 }
 var LOC_MSG = {
-  'tg-denied':'Konum izni verilmedi. İzni Telegram ayarlarından açabilir ya da konumu sohbetten gönderebilirsiniz.',
-  'denied':'Konum izni verilmedi. Konumu sohbetten de gönderebilirsiniz.',
-  'timeout':'Konumunuz alınamadı. Tekrar deneyin ya da konumu sohbetten gönderin.',
-  'fail':'Konumunuz alınamadı. Tekrar deneyin ya da konumu sohbetten gönderin.',
-  'none':'Bu cihazda konum alınamıyor. Konumu sohbetten gönderebilirsiniz.'
+  'tg-denied':'Konum izni verilmedi. Aşağıdaki butonla Telegram ayarlarından izin verip tekrar deneyin.',
+  'denied':"Konum izni verilmedi. Telefonunuzun ayarlarından Telegram'a konum izni verip tekrar deneyin.",
+  'timeout':'Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.',
+  'fail':'Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.',
+  'none':'Bu cihazda konum alınamıyor. Telefonunuzun konum ayarını açıp tekrar deneyin.'
 };
 function renderLocAll(){ renderDeliv(); if (S.screen === 'cart') { renderAddr(); renderSummary(); } updateMain(); }
 function shareLoc(){
@@ -1282,15 +1281,6 @@ function shareLoc(){
       if (S.screen === 'cart') $('#addrText').focus({ preventScroll:true }); else $('#deliv').focus({ preventScroll:true });
       announce('Konum alındı. ' + km(r.km) + ', ' + (Number(r.ucret) ? 'teslimat ' + tl(r.ucret) : 'ücretsiz teslimat'));
     });
-  });
-}
-function locViaChat(){
-  if (S.chatBusy) return;
-  S.chatBusy = true; renderLocAll();
-  call('konumSohbet', {}).then(function(r){
-    S.chatBusy = false;
-    if (r.ok) { saveDraft(); renderLocAll(); closeApp(); }
-    else { S.locMsg = r.hata || 'İstek gönderilemedi. Tekrar deneyin.'; renderLocAll(); }
   });
 }
 
@@ -1727,7 +1717,6 @@ d.addEventListener('click', function(e){
     case 'remove': setQty(id, 0); break;
     case 'chip': goCat(id); break;
     case 'loc': shareLoc(); break;
-    case 'loc-chat': locViaChat(); break;
     case 'loc-settings': try { tg.LocationManager.openSettings(); } catch(err){} break;
     case 'share-phone': sharePhone(); break;
     case 'manual-phone': manualPhone(''); break;
