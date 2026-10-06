@@ -147,6 +147,8 @@ a{color:var(--link)}
 .rest{display:flex;align-items:center;gap:14px;padding:2px 2px 0}
 .rest-logo{flex:none;width:60px;height:60px;border-radius:50%;background:var(--accent);color:var(--on-accent);
   display:grid;place-items:center;font-size:22px;font-weight:800;letter-spacing:.02em}
+.rest-logo.has-img{background:#fff;overflow:hidden;box-shadow:inset 0 0 0 1px var(--sep)}
+.rest-logo img{width:100%;height:100%;object-fit:contain;padding:5px}
 .rest-name{font-size:24px;font-weight:700;line-height:1.15;overflow-wrap:anywhere}
 .rest-name:focus{outline:none}
 .rest-meta{font-size:16px;color:var(--sub);margin-top:4px}
@@ -1139,6 +1141,15 @@ function kpRozet(kat, grup){
     return '<p class="kp-tag"><span aria-hidden="true">🏷️</span><span>' + esc(kpYazi(k)) + '</span></p>';
   }).join('');
 }
+// İşletmenin logosu varsa yuvarlak alanda gösterilir, yoksa adının baş harfleri
+function logoKoy(el, ad, logo){
+  if (!el) return;
+  if (logo && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+\/=]+$/.test(logo)) {
+    if (el.getAttribute('data-logo') === logo) return;
+    el.textContent = ''; el.classList.add('has-img'); el.setAttribute('data-logo', logo);
+    var im = document.createElement('img'); im.src = logo; im.alt = ''; el.appendChild(im);
+  } else { el.classList.remove('has-img'); el.removeAttribute('data-logo'); el.textContent = initials(ad); }
+}
 function initials(ad){
   var w = String(ad || '').trim().split(/\s+/).filter(Boolean);
   return ((w[0] ? w[0].charAt(0) : '') + (w[1] ? w[1].charAt(0) : '')).toLocaleUpperCase('tr-TR') || '🍽️';
@@ -1319,7 +1330,7 @@ function initFromBaslat(r){
   $('#nameHint').hidden = !!m;
   var ad = INFO.isletme.ad || 'Restoran';
   d.title = ad + ' · ' + t('page.title');
-  $('#restLogo').textContent = initials(ad);
+  logoKoy($('#restLogo'), ad, INFO.isletme.logo);
   $('#restName').textContent = ad;
   $$('[data-demo]').forEach(function(el){ el.hidden = !DEMO; });
   $('#fakeBack').hidden = !FAKE;
@@ -2361,7 +2372,7 @@ function setLang(code){
 function needGate(){ return !S.loc && !S.closed && !S.gateDone && !(INFO.musteri && ADDRS.length); }
 function renderGate(){
   var is = (INFO && INFO.isletme) || {}, st = G.st;
-  $('#gateLogo').textContent = initials(is.ad || '');
+  logoKoy($('#gateLogo'), is.ad || '', is.logo);
   $('#gateName').textContent = is.ad || '';
   var ico = $('#gateIco');
   ico.className = 'gate-ico' + (st === 'ok' ? ' ok' : (st === 'out' ? ' out' : (st === 'err' ? '' : ' pulse')));
@@ -2507,6 +2518,14 @@ d.addEventListener('keydown', function(e){
 });
 
 /* ---------- deneme sunucusu (?demo=1) ---------- */
+function demoLogo(){
+  try {
+    var c = document.createElement('canvas'); c.width = 160; c.height = 160; var x = c.getContext('2d');
+    x.fillStyle = '#E4572E'; x.beginPath(); x.arc(80, 80, 76, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#fff'; x.font = '800 62px system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('TD', 80, 84);
+    return c.toDataURL('image/png');
+  } catch(e){ return ''; }
+}
 function makeMock(){
   var musteriOn = params.get('musteri') === '1';
   var kapali = params.get('kapali') === '1';
@@ -2515,7 +2534,7 @@ function makeMock(){
   var simHata = params.get('hata');
   var MARKET_D = params.get('tur') === 'market', KAMP_D = params.get('kampanya') !== '0';
   var isletme = { ad:MARKET_D ? 'Yıldız Market' : 'Test Dönerci', acik:!kapali, kapaliMesaj:'Şu an sipariş almıyoruz. Her gün 11:00–23:00 arası açığız.',
-    hazirlikDk:MARKET_D ? 15 : 20, iptalDk:3, telefon:'04120000000', maksKm:5, tur:MARKET_D ? 'market' : 'restoran' };
+    hazirlikDk:MARKET_D ? 15 : 20, iptalDk:3, telefon:'04120000000', maksKm:5, tur:MARKET_D ? 'market' : 'restoran', logo:params.get('logo') === '1' ? demoLogo() : '' };
   var menu = MARKET_D ? [
     { id:'ekmek', kat:'Fırın', ad:'Ekmek (Normal)', grup:'Ekmek', sec:'Normal', fiyat:10, aciklama:'Her sabah taze', gorsel:'🍞|2' },
     { id:'ekmek-tam', kat:'Fırın', ad:'Ekmek (Tam buğday)', grup:'Ekmek', sec:'Tam buğday', fiyat:15, aciklama:'Her sabah taze', gorsel:'🍞|2' },
