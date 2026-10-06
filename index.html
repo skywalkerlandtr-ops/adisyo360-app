@@ -1,0 +1,1908 @@
+deneme 123
+ikinci satır<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>Sipariş</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* Tema ilk boyamadan önce: Telegram içindeyse Telegram'ın teması, değilse cihazın teması. */
+(function(){
+  try {
+    var w = window.Telegram && window.Telegram.WebApp;
+    var dark = (w && w.initData) ? w.colorScheme === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    var q = new URLSearchParams(location.search);
+    if (q.get('demo') === '1' && (q.get('tema') === 'dark' || q.get('tema') === 'light') && !(w && w.initData)) dark = q.get('tema') === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  } catch (e) {}
+})();
+</script>
+<style>
+/* Adisyo360 · Telegram Mini App sipariş ekranı.
+   Yerleşim: Telegram'ın kendi başlığı altında tek sütun; sayfa = Telegram ikincil zemini,
+   bölümler = beyaz/koyu kartlar; altta sabit turuncu ana buton. Renkler önizlemeyle birebir aynı
+   sabit değerlerdir; Telegram yalnızca açık/koyu seçimini belirler. */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+
+  /* Telegram tema parametreleri (yoksa açık tema değerleri) */
+  --bg2:#f1f2f6;
+  --bg:#ffffff;
+  --text:#0f0f0f;
+  --hint:#8a8a8f;
+  --sub:#5d5d63;
+  --link:#2481cc;
+  --sep:#e2e3e8;
+  --danger:#cf3a30;
+  --field-bg:#f6f7f9;
+  --field-line:#d5d8de;
+  --focus:#2481cc;
+  --focus-ring:rgb(36 129 204 / .28);
+
+  /* restoran vurgusu ve anlamsal renkler */
+  --accent:#e8590c; --on-accent:#ffffff; --accent-soft:#fdebdf; --accent-ink:#b0420a;
+  --ok:#2e9e4f; --on-ok:#ffffff; --ok-ink:#1d7536; --ok-soft:#e1f3e6;
+  --danger-fill:#cf3a30; --on-danger:#ffffff; --danger-soft:#fdeceb;
+  --warn-soft:#fff2dc; --warn-ink:#7f4600;
+  --disabled-bg:#e5e7ec; --disabled-text:#8a8a8f;
+  --sk:#e2e4e9;
+  --tile0:#fde4cc; --tile1:#fadbd2; --tile2:#f8edc2; --tile3:#dff0d4; --tile4:#d8e7f7;
+  --toast-bg:#2a2b30; --toast-text:#ffffff; --toast-link:#ffab7d;
+  --scrim:rgb(10 14 20 / .45);
+  --safe-b:max(env(safe-area-inset-bottom,0px),var(--tg-safe-area-inset-bottom,0px));
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg2:#0e1621;
+  --bg:#17212b;
+  --text:#f5f5f5;
+  --hint:#708499;
+  --sub:#97a8ba;
+  --link:#6ab3f3;
+  --sep:#25313d;
+  --danger:#ff6b61;
+  --field-bg:#0e1621;
+  --field-line:#2c3a48;
+  --focus:#6ab3f3;
+  --focus-ring:rgb(106 179 243 / .3);
+  --accent:#ff7a33; --on-accent:#1b0c03; --accent-soft:#3a2518; --accent-ink:#ffa477;
+  --ok:#4cc46e; --on-ok:#0b1d10; --ok-ink:#72d891; --ok-soft:#163125;
+  --danger-fill:#ff6b61; --on-danger:#1f0605; --danger-soft:#3a1c1e;
+  --warn-soft:#382a14; --warn-ink:#ffc77f;
+  --disabled-bg:#22303d; --disabled-text:#6f8396;
+  --sk:#223040;
+  --tile0:#3b2a1b; --tile1:#3a2320; --tile2:#35301b; --tile3:#1f3122; --tile4:#1b2b3c;
+  --toast-bg:#2b3846; --toast-text:#f5f5f5; --toast-link:#ffa477;
+  --scrim:rgb(0 0 0 / .6);
+  color-scheme:dark;
+}
+
+/* ---------- temel ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg2);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.4;
+  overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+h1,h2,h3,p,ol,ul,fieldset,legend{margin:0}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.nw{white-space:nowrap}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.okt{color:var(--ok-ink);font-weight:600}
+.muted{color:var(--sub)}
+
+/* ---------- kabuk ---------- */
+.app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg2)}
+.app-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.mb-wrap{flex:none;padding:10px 16px calc(12px + var(--safe-b));background:var(--bg);border-top:1px solid var(--sep)}
+.main-btn{width:100%;height:56px;border:0;border-radius:12px;background:var(--accent);color:var(--on-accent);
+  font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-variant-numeric:tabular-nums;padding:0 12px;white-space:nowrap;overflow:hidden;transition:filter .15s}
+.main-btn:not(:disabled):active{filter:brightness(.93)}
+.main-btn:disabled{background:var(--disabled-bg);color:var(--disabled-text)}
+.main-btn.loading,.main-btn.loading:disabled{background:var(--accent);color:var(--on-accent)}
+.spin{flex:none;display:inline-block;width:22px;height:22px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite}
+.spin.sm{width:18px;height:18px;border-width:2.5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.scr{padding:16px 16px 28px;display:flex;flex-direction:column;gap:22px;min-height:100%}
+.scr.enter{animation:scrIn .22s ease-out}
+@keyframes scrIn{from{opacity:.35;transform:translateX(14px)}}
+.card{background:var(--bg);border-radius:14px}
+.pad{padding:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack-s{display:flex;flex-direction:column;gap:10px}
+.demo-badge{margin:-16px -16px 0;padding:7px 16px;background:var(--warn-soft);color:var(--warn-ink);font-size:14px;font-weight:600;text-align:center}
+
+/* ---------- yükleniyor / engel / hata ---------- */
+.sk{background:var(--sk);border-radius:10px;animation:skp 1.1s ease-in-out infinite alternate}
+@keyframes skp{from{opacity:.55}to{opacity:1}}
+.sk-row{display:flex;align-items:center;gap:14px}
+.sk-circle{width:60px;height:60px;border-radius:50%;flex:none}
+.sk-lines{flex:1;display:flex;flex-direction:column;gap:10px}
+.sk-chips{display:flex;gap:8px;overflow:hidden}
+.sk-chip{flex:none;width:110px;height:48px;border-radius:24px}
+.sk-list{display:flex;flex-direction:column;gap:18px;padding:14px}
+.sk-tile{width:84px;height:84px;border-radius:16px;flex:none}
+.full{justify-content:center;align-items:center;text-align:center;padding:32px 24px calc(32px + var(--safe-b))}
+.full-ico{font-size:56px;line-height:1}
+.full h1{font-size:23px;font-weight:800;line-height:1.25;text-wrap:balance;max-width:24ch}
+.full p{font-size:17px;color:var(--sub);max-width:30ch;text-wrap:pretty}
+.full .btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;margin-top:6px}
+
+/* ---------- menü ---------- */
+.menu-top{display:flex;flex-direction:column;gap:14px}
+.active-card{width:100%;min-height:54px;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 16px;border:0;border-radius:14px;
+  background:var(--accent-soft);color:var(--accent-ink);font-size:16px;font-weight:700;text-align:left}
+.active-card .ac-txt{flex:1;min-width:0}
+.active-card .ac-go{flex:none;white-space:nowrap}
+.rest{display:flex;align-items:center;gap:14px;padding:2px 2px 0}
+.rest-logo{flex:none;width:60px;height:60px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-size:22px;font-weight:800;letter-spacing:.02em}
+.rest-name{font-size:24px;font-weight:700;line-height:1.15;overflow-wrap:anywhere}
+.rest-name:focus{outline:none}
+.rest-meta{font-size:16px;color:var(--sub);margin-top:4px}
+.rest-open{color:var(--ok-ink);font-weight:600}
+.rest-closed{color:var(--danger);font-weight:700}
+.closed-banner{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--warn-soft);color:var(--warn-ink);font-size:16px;font-weight:600}
+.deliv{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.deliv:focus{outline:none}
+.deliv-row{display:flex;gap:12px;align-items:flex-start}
+.deliv-ico{font-size:20px;line-height:1.3;flex:none}
+.deliv-main{min-width:0;flex:1}
+.deliv-addr{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deliv-meta{font-size:16px;color:var(--sub);margin-top:2px}
+.deliv-btn{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--bg2);color:var(--link);
+  display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;text-align:left;font-size:17px;font-weight:600;line-height:1.3}
+.deliv-btn .chev{margin-left:auto;font-size:24px;line-height:1;color:var(--hint)}
+.deliv-btn:disabled{color:var(--sub)}
+.deliv-note{font-size:15px;color:var(--sub)}
+.note-warn{background:var(--warn-soft);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:15px;font-weight:600}
+.last{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.last-h{font-weight:700;font-size:17px}
+.last-items{font-size:16px;color:var(--sub);overflow-wrap:anywhere}
+.last-items b{color:var(--text);font-variant-numeric:tabular-nums}
+.btn-tonal{min-height:50px;border:0;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);
+  font-weight:700;font-size:17px;padding:0 16px}
+.btn-tonal:disabled{background:var(--disabled-bg);color:var(--disabled-text)}
+
+.chips{position:sticky;top:0;z-index:3;margin:-8px -16px -10px;padding:8px 16px 10px;background:var(--bg2);
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;transition:box-shadow .2s}
+.chips::-webkit-scrollbar{display:none}
+.chips.stuck{box-shadow:0 1px 0 var(--sep)}
+.chip{flex:none;min-height:48px;padding:0 18px;border-radius:24px;border:1.5px solid var(--sep);background:var(--bg);
+  color:var(--text);font-size:16px;font-weight:600;white-space:nowrap}
+.chip[aria-current="true"]{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent)}
+.cats{display:flex;flex-direction:column;gap:26px}
+.cat-h{font-size:20px;font-weight:700;margin:0 4px 10px}
+.list{background:var(--bg);border-radius:14px;overflow:hidden}
+.prod{position:relative;display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;padding:14px}
+.prod + .prod::before,.cline + .cline::before{content:"";position:absolute;top:0;right:0;height:1px;background:var(--sep)}
+.prod + .prod::before{left:112px}
+.tile{width:84px;height:84px;border-radius:16px;display:grid;place-items:center;font-size:46px;line-height:1;user-select:none}
+.t0{background:var(--tile0)} .t1{background:var(--tile1)} .t2{background:var(--tile2)} .t3{background:var(--tile3)} .t4{background:var(--tile4)}
+.prod-body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.prod-name{font-size:18px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.prod-desc{font-size:16px;color:var(--sub);line-height:1.35;overflow-wrap:anywhere}
+.prod-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 10px;margin-top:8px}
+.price{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.add-btn{width:128px;min-height:48px;border:0;border-radius:24px;background:var(--accent-soft);color:var(--accent-ink);font-size:17px;font-weight:700}
+.add-btn:disabled{background:var(--disabled-bg);color:var(--disabled-text)}
+.stepper{display:inline-flex;align-items:center;height:48px;border-radius:24px;background:var(--accent-soft)}
+.stepper button{width:48px;height:48px;border:0;border-radius:24px;background:none;color:var(--accent-ink);
+  font-size:26px;font-weight:500;line-height:1;display:grid;place-items:center}
+.stepper button:disabled{opacity:.4}
+.stepper .qty{min-width:32px;text-align:center;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.empty-menu{padding:22px 16px;text-align:center;color:var(--sub)}
+
+/* ---------- sepet & sipariş ---------- */
+.co{display:flex;flex-direction:column;gap:26px}
+.co-rest{display:flex;flex-direction:column;gap:26px}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec-h{font-size:20px;font-weight:700;margin:0 4px}
+.sec-h:focus{outline:none}
+.sec-opt{font-weight:500;color:var(--sub);font-size:17px}
+.back-link{align-self:flex-start;min-height:44px;border:0;background:none;color:var(--link);font-size:17px;font-weight:600;padding:0 4px;margin:-8px 0 -10px}
+.cline{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;padding:14px 16px}
+.cline + .cline::before{left:80px}
+.cline .tile{width:52px;height:52px;border-radius:12px;font-size:30px}
+.cline-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.cline-name{font-size:18px;font-weight:600;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.cline-total{font-size:18px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cline-unit{font-size:15px;color:var(--sub);font-variant-numeric:tabular-nums}
+.cline-act{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.rm-btn{min-height:48px;padding:0 6px;border:0;background:none;color:var(--danger);font-size:16px;font-weight:600;border-radius:10px}
+.row-link{width:100%;min-height:54px;border:0;background:none;border-top:1px solid var(--sep);color:var(--link);
+  font-size:17px;font-weight:600;text-align:left;padding:0 16px;border-radius:0 0 14px 14px}
+.empty{padding:22px 16px;text-align:center}
+.empty-t{font-size:18px;font-weight:700}
+.empty-s{color:var(--sub);margin-top:4px}
+
+.rgroup{border:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+.rtile{position:relative;display:flex;align-items:center;gap:12px;min-height:60px;padding:12px 14px 12px 16px;
+  background:var(--bg);border:2px solid transparent;border-radius:14px;cursor:pointer}
+.rtile:has(input:checked){border-color:var(--accent)}
+.rtile:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:2px}
+.rtile.is-dis{cursor:default}
+.rtile.is-dis .rt-title,.rtile.is-dis .rdot{opacity:.55}
+.rt-ico{flex:none;width:30px;text-align:center;font-size:24px;line-height:1}
+.rt-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rt-title{font-size:17px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.rt-sub{font-size:15px;color:var(--sub);line-height:1.35;overflow-wrap:anywhere}
+.rt-out{color:var(--danger);font-weight:600}
+.rdot{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--hint);display:grid;place-items:center}
+input:checked ~ .rdot{border-color:var(--accent);background:var(--accent)}
+input:checked ~ .rdot::after{content:"";width:9px;height:9px;border-radius:50%;background:var(--on-accent)}
+input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
+.rt-main .tag{align-self:flex-start;margin-top:4px}
+.tag{flex:none;font-size:13px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.flabel{font-size:16px;font-weight:600;padding:0}
+.fhint{font-size:15px;color:var(--sub)}
+.input{width:100%;min-height:52px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--field-line);
+  background:var(--field-bg);color:var(--text);font-size:17px;line-height:1.4}
+.textarea{min-height:104px;resize:vertical;display:block}
+.input::placeholder{color:var(--hint);opacity:1}
+.input:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+.input.invalid{border-color:var(--danger)}
+.box-err{box-shadow:0 0 0 2px var(--danger);border-radius:12px}
+.err{color:var(--danger);font-size:15px;font-weight:600}
+.btn-outline{width:100%;min-height:52px;border:1.5px solid var(--link);border-radius:12px;background:transparent;
+  color:var(--link);font-size:17px;font-weight:700;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-outline:disabled{border-color:var(--sep);color:var(--sub)}
+.link-btn{align-self:flex-start;min-height:44px;border:0;background:none;color:var(--link);font-size:16px;font-weight:600;padding:0 2px;border-radius:8px;text-align:left}
+.link-btn:disabled{color:var(--sub)}
+.loc-area{display:flex;flex-direction:column;gap:10px}
+.loc-ask-t{font-size:16px;color:var(--sub)}
+.loc-ok{font-size:16px;padding:12px 14px;border-radius:12px;background:var(--ok-soft);color:var(--text)}
+.loc-ok b{color:var(--ok-ink)}
+.kvs{display:flex;flex-direction:column;gap:8px}
+.kv{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:2px 12px;font-size:16px}
+.kv span{color:var(--sub)}
+.kv b{font-weight:600;font-variant-numeric:tabular-nums}
+.inset-group{border:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+.inset-group legend{margin-bottom:8px}
+.rrow{position:relative;display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 14px;border-radius:12px;
+  background:var(--field-bg);border:1.5px solid var(--field-line);cursor:pointer}
+.rrow:has(input:checked){border-color:var(--accent)}
+.rrow:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:2px}
+.rrow .rt-main{gap:0}
+.rrow .rt-title{font-size:16px}
+.note-btn{width:100%;min-height:56px;border:0;border-radius:14px;background:var(--bg);color:var(--link);
+  font-size:17px;font-weight:600;text-align:left;padding:0 16px}
+.sum{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.sum-row{display:flex;justify-content:space-between;gap:12px;font-size:17px}
+.sum-row > span:first-child{color:var(--sub)}
+.sum-row > span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+.sum-total{border-top:1px solid var(--sep);padding-top:12px;margin-top:4px;font-size:23px;font-weight:800}
+.sum-total > span:first-child{color:var(--text)}
+.warn{display:flex;flex-direction:column;gap:2px;background:var(--warn-soft);color:var(--warn-ink);border-radius:12px;padding:12px 14px 4px;font-size:16px}
+.warn b{font-variant-numeric:tabular-nums}
+.warn .link-btn{color:var(--warn-ink);text-decoration:underline;text-underline-offset:3px}
+.fine{font-size:15px;color:var(--sub);margin:0 4px}
+.oerr{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:14px;background:var(--danger-soft);color:var(--text);font-size:16px}
+.oerr-t{color:var(--danger);font-weight:700}
+.oerr:focus{outline:none}
+
+/* ---------- onay & takip ---------- */
+.hero{padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.hero-ico{width:72px;height:72px;border-radius:50%;background:var(--ok-soft);color:var(--ok-ink);display:grid;place-items:center;
+  font-size:38px;font-weight:800;margin-bottom:6px}
+.hero-ico.x{background:var(--danger-soft);color:var(--danger)}
+.hero h1{font-size:26px;font-weight:800;line-height:1.2;text-wrap:balance}
+.hero h1:focus{outline:none}
+.ono-label{font-size:15px;color:var(--sub);margin-top:10px}
+.ono{font-size:64px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ono .hash{color:var(--hint);font-weight:700}
+.ono.void{color:var(--hint);text-decoration:line-through;text-decoration-thickness:4px}
+.hero-text{font-size:16px;color:var(--sub);max-width:32ch;text-wrap:pretty;margin-top:6px}
+.eta{margin-top:12px;font-size:18px;background:var(--bg2);border-radius:12px;padding:10px 16px}
+.eta b{font-variant-numeric:tabular-nums}
+.track{list-style:none;padding:18px 16px}
+.step{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);gap:14px;padding-bottom:20px}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:13px;top:30px;bottom:2px;width:2px;border-radius:1px;background:var(--sep)}
+.step:last-child::before{display:none}
+.step.done::before{background:var(--ok)}
+.step.reach-last::before{background:var(--sep)}
+.sdot{width:28px;height:28px;border-radius:50%;border:2px solid var(--sep);background:var(--bg);display:grid;place-items:center;
+  font-size:15px;font-weight:800;color:var(--on-ok)}
+.step.done .sdot{background:var(--ok);border-color:var(--ok)}
+.step.now .sdot{box-shadow:0 0 0 5px var(--ok-soft)}
+.step-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:28px}
+.step-name{font-size:17px;font-weight:600}
+.step.todo .step-name{color:var(--sub);font-weight:500}
+.step.now .step-name{font-weight:800}
+.now-tag{font-size:13px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink)}
+.step-time{font-size:15px;color:var(--sub);font-variant-numeric:tabular-nums}
+.track-note{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0 12px;margin:0 4px;font-size:15px;color:var(--sub)}
+.track-note .err{flex-basis:100%}
+.cancel-btn{width:100%;min-height:54px;border:2px solid var(--danger);border-radius:12px;background:transparent;color:var(--danger);
+  font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.cancel-btn:disabled{border-color:var(--sep);color:var(--disabled-text);background:transparent}
+.confirm{display:flex;flex-direction:column;gap:10px}
+.confirm-t{font-size:18px;font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.btn-plain{min-height:52px;border:0;border-radius:12px;background:var(--bg2);color:var(--text);font-size:17px;font-weight:600}
+.btn-danger{min-height:52px;border:0;border-radius:12px;background:var(--danger-fill);color:var(--on-danger);font-size:17px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-plain:disabled,.btn-danger:disabled{opacity:.6}
+.info{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--sub)}
+.info b,.info a{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.info a{color:var(--link)}
+.info.bad{background:var(--danger-soft);color:var(--text)}
+.btn-sec{width:100%;min-height:54px;border:0;border-radius:12px;background:var(--bg);color:var(--link);font-size:17px;font-weight:700}
+.btn-primary{width:100%;min-height:54px;border:0;border-radius:12px;background:var(--accent);color:var(--on-accent);font-size:18px;font-weight:700}
+.dsum-line{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.dsum-line span:first-child{min-width:0;overflow-wrap:anywhere}
+.dsum-line span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.dsum-meta{font-size:15px;color:var(--sub);border-top:1px solid var(--sep);padding-top:10px;margin-top:2px;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.dsum-meta b{color:var(--text);font-weight:600}
+
+/* ---------- toast & demo kapanış ---------- */
+.toast{position:absolute;left:12px;right:12px;bottom:calc(92px + var(--safe-b));z-index:8;display:flex;align-items:center;gap:8px;min-height:52px;
+  padding:6px 6px 6px 16px;border-radius:14px;background:var(--toast-bg);color:var(--toast-text);font-size:16px;
+  box-shadow:0 8px 24px -8px rgb(0 0 0 / .35);animation:toastIn .2s ease-out}
+.toast-msg{flex:1;min-width:0}
+.toast button{flex:none;min-height:44px;border:0;background:none;color:var(--toast-link);font-weight:700;font-size:16px;padding:0 12px;border-radius:10px}
+@keyframes toastIn{from{transform:translateY(8px);opacity:.4}}
+.demo-closed{position:fixed;inset:0;z-index:30;background:var(--scrim);display:grid;place-items:center;padding:24px}
+.demo-closed > div{width:min(100%,340px);background:var(--bg);border-radius:16px;padding:22px 20px 18px;text-align:center;display:flex;flex-direction:column;gap:10px}
+.demo-closed h2{font-size:19px}
+.demo-closed p{color:var(--sub)}
+
+@media (max-width:359px){
+  .prod{grid-template-columns:68px minmax(0,1fr);gap:12px}
+  .prod .tile{width:68px;height:68px;font-size:38px;border-radius:14px}
+  .prod + .prod::before{left:94px}
+  .ono{font-size:56px}
+}
+@media (prefers-reduced-motion: reduce){
+  .chips,.main-btn{transition:none}
+  .scr.enter,.toast{animation:none}
+  .sk{animation:none}
+  .spin{animation:none;border-right-color:currentColor;opacity:.6}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="app-scroll" id="scroller">
+
+    <!-- yükleniyor -->
+    <section class="scr" id="scrLoading" aria-busy="true" aria-label="Menü yükleniyor">
+      <div class="sk-row"><div class="sk sk-circle"></div><div class="sk-lines"><div class="sk" style="height:24px;width:60%"></div><div class="sk" style="height:16px;width:40%"></div></div></div>
+      <div class="sk" style="height:76px;border-radius:14px"></div>
+      <div class="sk-chips"><div class="sk sk-chip"></div><div class="sk sk-chip"></div><div class="sk sk-chip"></div></div>
+      <div class="card sk-list">
+        <div class="sk-row"><div class="sk sk-tile"></div><div class="sk-lines"><div class="sk" style="height:18px;width:70%"></div><div class="sk" style="height:14px;width:90%"></div><div class="sk" style="height:18px;width:35%"></div></div></div>
+        <div class="sk-row"><div class="sk sk-tile"></div><div class="sk-lines"><div class="sk" style="height:18px;width:60%"></div><div class="sk" style="height:14px;width:80%"></div><div class="sk" style="height:18px;width:30%"></div></div></div>
+        <div class="sk-row"><div class="sk sk-tile"></div><div class="sk-lines"><div class="sk" style="height:18px;width:65%"></div><div class="sk" style="height:14px;width:85%"></div><div class="sk" style="height:18px;width:32%"></div></div></div>
+      </div>
+      <p class="sr" role="status">Menü yükleniyor…</p>
+    </section>
+
+    <!-- Telegram dışı -->
+    <section class="scr full" id="scrBlocked" hidden>
+      <div class="full-ico" aria-hidden="true">🍽️</div>
+      <h1>Bu sayfa Telegram içinde açılır.</h1>
+      <p>Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.</p>
+    </section>
+
+    <!-- açılış hatası -->
+    <section class="scr full" id="scrError" hidden>
+      <div class="full-ico" aria-hidden="true">⚠️</div>
+      <h1 id="errTitle" tabindex="-1">Menü yüklenemedi</h1>
+      <p id="errText"></p>
+      <div class="btns">
+        <button type="button" class="btn-primary" id="errRetry" data-act="boot">Tekrar dene</button>
+        <button type="button" class="btn-sec" id="errClose" data-act="tg-close">Kapat</button>
+      </div>
+    </section>
+
+    <!-- 1 · Menü -->
+    <section class="scr" id="scrMenu" aria-labelledby="restName" hidden>
+      <p class="demo-badge" data-demo hidden>Deneme modu · örnek veriler, sipariş gerçek değil</p>
+      <div class="menu-top">
+        <button type="button" class="active-card" id="activeCard" data-act="track-active" hidden></button>
+        <div class="rest">
+          <span class="rest-logo" id="restLogo" aria-hidden="true"></span>
+          <div style="min-width:0">
+            <h1 class="rest-name" id="restName" tabindex="-1"></h1>
+            <p class="rest-meta" id="restMeta"></p>
+          </div>
+        </div>
+        <p class="closed-banner" id="closedBanner" hidden></p>
+        <div class="card deliv" id="deliv" tabindex="-1"></div>
+        <div class="card last" id="lastOrder" hidden>
+          <p class="last-h">🔁 Son siparişiniz</p>
+          <p class="last-items" id="lastItems"></p>
+          <button type="button" class="btn-tonal" id="reorderBtn" data-act="reorder">Aynısını sepete ekle</button>
+        </div>
+      </div>
+      <nav class="chips" id="chips" aria-label="Kategoriler"></nav>
+      <div class="cats" id="cats"></div>
+    </section>
+
+    <!-- 2 · Sepet ve sipariş -->
+    <section class="scr" id="scrCart" aria-labelledby="cartTitle" hidden>
+      <p class="demo-badge" data-demo hidden>Deneme modu · örnek veriler, sipariş gerçek değil</p>
+      <button type="button" class="back-link" id="fakeBack" data-act="to-menu" hidden>‹ Menüye dön</button>
+      <form class="co" id="orderForm" novalidate>
+        <div class="sec" id="secCart">
+          <h1 class="sec-h" id="cartTitle" tabindex="-1">Sepetiniz</h1>
+          <div class="card">
+            <div id="cartList"></div>
+            <button type="button" class="row-link" id="addMoreBtn" data-act="to-menu">+ Ürün ekle</button>
+          </div>
+        </div>
+
+        <div class="co-rest" id="coRest">
+          <div class="sec" id="secAddr">
+            <h2 class="sec-h">Teslimat adresi</h2>
+            <fieldset class="rgroup" id="addrSaved" hidden>
+              <legend class="sr">Kayıtlı adresleriniz</legend>
+              <div class="rgroup" id="addrTiles"></div>
+            </fieldset>
+            <p class="err" id="addrSelErr" hidden></p>
+            <div class="card pad stack" id="addrNew">
+              <div class="loc-area" id="locArea"></div>
+              <p class="err" id="locErr" hidden></p>
+              <div class="field">
+                <label class="flabel" for="addrText">Açık adres ve kısa tarif</label>
+                <textarea class="input textarea" id="addrText" rows="3" autocomplete="street-address" placeholder="Örnek: Bağlar Mah. 12. Sk. No:5 Kat:2 D:4, Yıldız Market'in yanı, mavi kapı"></textarea>
+                <p class="err" id="addrErr" hidden></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec" id="secContact">
+            <h2 class="sec-h">İletişim</h2>
+            <div class="card pad stack">
+              <div class="field">
+                <label class="flabel" for="custName">Adınız</label>
+                <input class="input" id="custName" type="text" autocomplete="name">
+                <p class="fhint" id="nameHint">Telegram'dan alındı, değiştirebilirsiniz.</p>
+                <p class="err" id="nameErr" hidden></p>
+              </div>
+              <div class="stack-s" id="phoneAsk">
+                <button type="button" class="btn-outline" id="sharePhoneBtn" data-act="share-phone">📱 Telegram numaramı paylaş</button>
+                <p class="fhint">Kurye kapıya geldiğinde size ulaşabilsin.</p>
+                <p class="note-warn" id="phoneMsg" hidden></p>
+                <button type="button" class="link-btn" id="manualPhoneBtn" data-act="manual-phone">Numaramı elle yazacağım</button>
+                <p class="err" id="phoneErr" hidden></p>
+              </div>
+              <div class="kvs" id="phoneCompact">
+                <div class="kv"><span>Telefon numaranız</span><b><span id="phoneCompactVal"></span> <span class="okt">✓</span></b></div>
+                <div class="kv"><span>Kurye ulaşamazsa</span><b id="courierVal">Telegram numaram</b></div>
+                <button type="button" class="link-btn" id="contactEditBtn" data-act="contact-edit">Değiştir</button>
+              </div>
+              <div class="kv" id="phoneShared"><span id="phoneSharedLabel">Telegram numaranız</span><b><span id="phoneSharedVal"></span> <span class="okt">✓</span></b></div>
+              <fieldset class="inset-group" id="courierSet">
+                <legend class="flabel">Kurye ulaşamazsa aranacak numara</legend>
+                <label class="rrow" for="courierTg">
+                  <input class="sr" type="radio" name="courier" id="courierTg" value="tg">
+                  <span class="rdot" aria-hidden="true"></span>
+                  <span class="rt-main"><span class="rt-title">Telegram numaram</span><span class="rt-sub num" id="courierTgSub"></span></span>
+                </label>
+                <label class="rrow" for="courierOther">
+                  <input class="sr" type="radio" name="courier" id="courierOther" value="other">
+                  <span class="rdot" aria-hidden="true"></span>
+                  <span class="rt-main"><span class="rt-title">Başka numara</span></span>
+                </label>
+              </fieldset>
+              <div class="field" id="otherPhoneWrap">
+                <label class="flabel" for="otherPhone" id="otherPhoneLabel">Aranacak numara</label>
+                <input class="input num" id="otherPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx">
+                <p class="err" id="otherErr" hidden></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec" id="secNote">
+            <h2 class="sec-h">Not <span class="sec-opt">(isteğe bağlı)</span></h2>
+            <button type="button" class="note-btn" id="noteToggle" data-act="note-open" aria-expanded="false" aria-controls="noteWrap">📝 Not ekle</button>
+            <div class="card pad" id="noteWrap" hidden>
+              <div class="field">
+                <label class="flabel" for="noteText">Restorana notunuz</label>
+                <textarea class="input textarea" id="noteText" rows="3" maxlength="300" placeholder="Örnek: Soğansız olsun, acı olmasın"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec" id="secPay">
+            <h2 class="sec-h">Ödeme (kapıda)</h2>
+            <fieldset class="rgroup" id="payGroup">
+              <legend class="sr">Ödeme şekli, teslimatta kuryeye ödenir</legend>
+              <div class="rgroup" id="payTiles"></div>
+            </fieldset>
+            <p class="err" id="payErr" hidden></p>
+          </div>
+
+          <div class="sec" id="secSum">
+            <h2 class="sec-h">Özet</h2>
+            <div class="card sum">
+              <div class="sum-row"><span>Ara toplam</span><span id="sumSub"></span></div>
+              <div class="sum-row"><span>Teslimat</span><span id="sumFee"></span></div>
+              <div class="sum-row sum-total"><span>Toplam</span><span id="sumTotal"></span></div>
+            </div>
+            <div class="warn" id="minWarn" hidden>
+              <p id="minWarnText"></p>
+              <button type="button" class="link-btn" data-act="to-menu">+ Ürün ekle</button>
+            </div>
+            <p class="fine">Ödemeyi teslimatta kuryeye yaparsınız.</p>
+            <div class="oerr" id="orderErr" role="alert" tabindex="-1" hidden>
+              <p class="oerr-t">Sipariş gönderilemedi</p>
+              <p id="orderErrText"></p>
+              <div class="stack-s" id="orderErrActs"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- 3 · Onay ve takip -->
+    <section class="scr" id="scrDone" aria-labelledby="doneTitle" hidden>
+      <p class="demo-badge" data-demo hidden>Deneme modu · durum 20 saniyede bir kendiliğinden ilerler</p>
+      <div id="doneLoading" class="stack" hidden aria-busy="true">
+        <div class="sk" style="height:300px;border-radius:14px"></div>
+        <div class="sk" style="height:220px;border-radius:14px"></div>
+        <p class="sr" role="status">Sipariş bilgisi yükleniyor…</p>
+      </div>
+      <div id="doneError" class="card pad stack" hidden>
+        <p class="confirm-t" id="doneErrTitle" tabindex="-1">Sipariş bilgisi alınamadı</p>
+        <p class="muted" id="doneErrText"></p>
+        <button type="button" class="btn-primary" data-act="track-retry">Tekrar dene</button>
+        <button type="button" class="btn-sec" data-act="to-menu">Menüye git</button>
+      </div>
+      <div id="doneBody" class="stack" style="gap:22px">
+        <div class="card hero">
+          <div class="hero-ico" id="heroIco" aria-hidden="true">✓</div>
+          <h1 id="doneTitle" tabindex="-1">Siparişiniz alındı</h1>
+          <p class="ono-label">Sipariş numaranız</p>
+          <p class="ono" id="orderNo"></p>
+          <p class="hero-text" id="heroText"></p>
+          <p class="eta" id="eta">Tahmini teslim: <b id="etaTime"></b></p>
+        </div>
+        <div class="sec" id="secTrack">
+          <h2 class="sec-h">Sipariş durumu</h2>
+          <div class="card"><ol class="track" id="track"></ol></div>
+          <div class="track-note"><span id="trackNoteText">Durum kendiliğinden yenilenir.</span><button type="button" class="link-btn" id="refreshBtn" data-act="refresh">Şimdi yenile</button><p class="err" id="trackErr" hidden></p></div>
+          <p class="sr" id="trackLive" aria-live="polite"></p>
+        </div>
+        <div class="stack-s" id="cancelBox">
+          <button type="button" class="cancel-btn" id="cancelBtn" data-act="cancel">Siparişi iptal et</button>
+          <div class="card pad confirm" id="cancelConfirm" hidden>
+            <p class="confirm-t">Siparişi iptal etmek istiyor musunuz?</p>
+            <p class="fhint num" id="cancelLeft"></p>
+            <div class="two">
+              <button type="button" class="btn-plain" id="cancelNo" data-act="cancel-no">Vazgeç</button>
+              <button type="button" class="btn-danger" id="cancelYes" data-act="cancel-yes">Evet, iptal et</button>
+            </div>
+          </div>
+          <p class="info" id="cancelInfo" tabindex="-1" hidden></p>
+        </div>
+        <div class="sec">
+          <h2 class="sec-h">Sipariş özeti</h2>
+          <div class="card sum" id="doneSum"></div>
+        </div>
+        <button type="button" class="btn-sec" id="newOrderBtn" data-act="new-order">Yeni sipariş</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="mb-wrap" id="mbWrap" hidden>
+    <button type="button" class="main-btn" id="mainBtn" disabled>Ürün seçin</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden>
+    <span class="toast-msg" id="toastMsg"></span>
+    <button type="button" id="toastAct" hidden>Geri al</button>
+  </div>
+</div>
+
+<div class="demo-closed" id="demoClosed" hidden>
+  <div role="dialog" aria-modal="true" aria-labelledby="demoClosedT">
+    <h2 id="demoClosedT">Telegram'da sayfa burada kapanır</h2>
+    <p id="demoClosedText">Deneme modundasınız. Gerçek uygulamada müşteri bu noktada sohbete döner.</p>
+    <button type="button" class="btn-primary" id="demoClosedBtn">Sayfaya dön</button>
+  </div>
+</div>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function(){
+'use strict';
+var d = document, root = d.documentElement;
+function $(s, r){ return (r || d).querySelector(s); }
+function $$(s, r){ return Array.prototype.slice.call((r || d).querySelectorAll(s)); }
+var LS = {
+  get: function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set: function(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+  del: function(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+var rmq = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches:false };
+function reduced(){ return rmq.matches; }
+function smooth(){ return reduced() ? 'auto' : 'smooth'; }
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+function tl(n){ return Number(n || 0).toLocaleString('tr-TR', { maximumFractionDigits:2 }) + ' TL'; }
+function kmNum(k){ return Number(k || 0).toLocaleString('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 }); }
+function km(k){ return '~' + kmNum(k) + ' km'; }
+function hm(dt){ return dt.toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' }); }
+function lower(s){ return String(s || '').toLocaleLowerCase('tr-TR'); }
+function digits(s){ return String(s || '').replace(/\D/g, ''); }
+function normPhone(v){
+  var x = digits(v);
+  if (x.length === 12 && x.indexOf('90') === 0) x = '0' + x.slice(2);
+  if (x.length === 10 && x.charAt(0) === '5') x = '0' + x;
+  return x;
+}
+function phoneOk(v){ var x = normPhone(v); return x.length === 11 && x.indexOf('05') === 0; }
+function fmtPhone(v){ var x = normPhone(v); return x.length === 11 ? x.slice(0,4) + ' ' + x.slice(4,7) + ' ' + x.slice(7,9) + ' ' + x.slice(9) : String(v || ''); }
+function rid(){
+  try { var a = new Uint8Array(12); crypto.getRandomValues(a); return Array.prototype.map.call(a, function(b){ return ('0' + b.toString(16)).slice(-2); }).join(''); }
+  catch(e){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 12); }
+}
+function cmpVer(a, b){
+  var x = String(a).split('.'), y = String(b).split('.');
+  for (var i = 0; i < Math.max(x.length, y.length); i++) { var p = parseInt(x[i] || '0', 10), q = parseInt(y[i] || '0', 10); if (p !== q) return p > q ? 1 : -1; }
+  return 0;
+}
+
+/* ---------- adres çubuğu ---------- */
+var params = new URLSearchParams(location.search);
+var B = params.get('b') || '';
+var DEMO = params.get('demo') === '1';
+var TAKIP = params.get('takip');
+var API = params.get('api') || 'https://script.google.com/macros/s/AKfycbxDsLxZiojzSAlxAdWg9KplLVEGvaLv4SUCVIrw_X32ja9xQTOrpAugUGvUatLJ7vme/exec';
+
+/* ---------- Telegram ---------- */
+var realTg = window.Telegram && window.Telegram.WebApp;
+var inTelegram = !!(realTg && realTg.initData);
+var tg = inTelegram ? realTg : (DEMO ? fakeTg() : null);
+var FAKE = !!(tg && tg.isFake);
+
+function fakeTg(){
+  var noop = function(){};
+  var handlers = {};
+  var mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : { matches:false };
+  var forced = params.get('tema');
+  var t = {
+    isFake:true, initData:'demo', version:'7.10', platform:'demo',
+    get colorScheme(){ return (forced === 'dark' || forced === 'light') ? forced : (mq.matches ? 'dark' : 'light'); },
+    isVersionAtLeast:function(v){ return cmpVer('7.10', v) >= 0; },
+    ready:noop, expand:noop, disableVerticalSwipes:noop, setHeaderColor:noop, setBackgroundColor:noop,
+    onEvent:function(n, f){ (handlers[n] = handlers[n] || []).push(f); }, offEvent:noop,
+    BackButton:{ show:noop, hide:noop, onClick:noop, offClick:noop },
+    HapticFeedback:{ impactOccurred:noop, notificationOccurred:noop, selectionChanged:noop },
+    requestContact:function(cb){ setTimeout(function(){ cb(true, { status:'sent', response:'demo-kisi' }); }, 500); },
+    close:function(){ $('#demoClosed').hidden = false; $('#demoClosedBtn').focus(); }
+  };
+  if (mq.addEventListener) mq.addEventListener('change', function(){ (handlers.themeChanged || []).forEach(function(f){ f(); }); });
+  return t;
+}
+function ver(v){ try { return !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v)); } catch(e){ return false; } }
+function haptic(kind, v){
+  try {
+    if (!ver('6.1') || !tg.HapticFeedback) return;
+    if (kind === 'impact') tg.HapticFeedback.impactOccurred(v); else tg.HapticFeedback.notificationOccurred(v);
+  } catch(e){}
+}
+function applyTheme(){
+  var dark = tg ? tg.colorScheme === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', dark ? 'dark' : 'light');
+}
+function backBtn(show){
+  try { if (ver('6.1') && tg.BackButton) { if (show) tg.BackButton.show(); else tg.BackButton.hide(); } } catch(e){}
+}
+function closeApp(){ try { tg.close(); } catch(e){} }
+
+/* ---------- sunucu ---------- */
+var MOCK = DEMO ? makeMock() : null;
+var SKEW = 0;
+function call(act, data){
+  var payload = Object.assign({ act:act, b:B, initData:tg ? tg.initData : '' }, data || {});
+  if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload))).catch(function(){ return { ok:false, kod:'HATA', hata:'Beklenmeyen bir hata oluştu.' }; });
+  var body = JSON.stringify(payload);
+  var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
+  function attempt(n){
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timedOut = false;
+    var timer = setTimeout(function(){ timedOut = true; if (ctrl) ctrl.abort(); }, 20000);
+    return fetch(url, { method:'POST', body:body, redirect:'follow', signal:ctrl ? ctrl.signal : undefined })
+      .then(function(res){ return res.text(); })
+      .then(function(txt){
+        clearTimeout(timer);
+        var j = null;
+        try { j = JSON.parse(txt); } catch(e){}
+        if (!j || typeof j !== 'object') return { ok:false, kod:'SUNUCU', hata:'Sunucudan beklenmeyen bir yanıt geldi. Biraz sonra tekrar deneyin.' };
+        if (typeof j.simdiMs === 'number') SKEW = j.simdiMs - Date.now();   // sunucu saati ile telefon saati farkı
+        return j;
+      })
+      .catch(function(e){
+        clearTimeout(timer);
+        if (timedOut || (e && e.name === 'AbortError')) return { ok:false, kod:'ZAMAN', hata:'Bağlantı yavaş, tekrar deneyin.' };
+        if (n === 0) return sleep(1000).then(function(){ return attempt(1); });
+        return { ok:false, kod:'AG', hata:'İnternete bağlanılamadı. Bağlantınızı kontrol edip tekrar deneyin.' };
+      });
+  }
+  return attempt(0);
+}
+
+/* ---------- durum ---------- */
+var INFO = null, CATS = [], ITEM = {}, ORDER = [], ADDRS = [], PAYS = [];
+var S = {
+  screen:'loading', ret:false, closed:false, cart:{},
+  addr:'new', loc:null, locBusy:false, locMsg:'', locDenied:false, chatBusy:false,
+  addrText:'', name:'', phone:null, phoneBusy:false, phoneManual:false, phoneMsg:'', courier:'tg', otherPhone:'', contactEdit:false,
+  noteOpen:false, note:'', pay:null, istekId:null, sending:false,
+  order:null, active:null, cancelConfirm:false, cancelBusy:false, cancelMsg:'',
+  trackLoading:false, trackErr:'', trackNo:null, menuScroll:0
+};
+var scroller = $('#scroller'), mainBtn = $('#mainBtn');
+var DRAFT_KEY = 'adisyo360-sepet-' + B;
+
+function lines(){ return ORDER.filter(function(id){ return S.cart[id] > 0; }); }
+function count(){ return lines().reduce(function(a, id){ return a + S.cart[id]; }, 0); }
+function subtotal(){ return lines().reduce(function(a, id){ return a + S.cart[id] * ITEM[id].fiyat; }, 0); }
+function addrById(id){ for (var i = 0; i < ADDRS.length; i++) if (String(ADDRS[i].id) === String(id)) return ADDRS[i]; return null; }
+function curDeliv(){
+  if (S.addr !== 'new') { var a = addrById(S.addr); return a && a.kapsamda ? a : null; }
+  return S.loc && S.loc.kapsamda ? S.loc : null;
+}
+function firstRule(){ return (INFO && INFO.kurallar && INFO.kurallar[0]) || null; }
+function curMin(){ var dl = curDeliv(); if (dl) return Number(dl.minSiparis || 0); var r = firstRule(); return r ? Number(r.minSiparis || 0) : 0; }
+function fee(){ var dl = curDeliv(); return dl ? Number(dl.ucret || 0) : null; }
+function total(){ return subtotal() + (fee() || 0); }
+function announce(t){ var l = $('#live'); l.textContent = ''; setTimeout(function(){ l.textContent = t; }, 30); }
+function scrollToEl(el, offset){
+  var top = scroller.scrollTop + el.getBoundingClientRect().top - scroller.getBoundingClientRect().top - (offset || 0);
+  scroller.scrollTo({ top:Math.max(0, top), behavior:smooth() });
+}
+function fmtLeft(ms){ var r = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(r / 60) + ':' + String(r % 60).padStart(2, '0'); }
+function saveDraft(){
+  var c = {}; lines().forEach(function(id){ c[id] = S.cart[id]; });
+  if (!Object.keys(c).length && !S.addrText && !S.note) { LS.del(DRAFT_KEY); return; }
+  LS.set(DRAFT_KEY, JSON.stringify({ cart:c, addrText:S.addrText, note:S.note, t:Date.now() }));
+}
+function loadDraft(){
+  try {
+    var x = JSON.parse(LS.get(DRAFT_KEY) || 'null');
+    if (!x || Date.now() - (x.t || 0) > 24 * 3600000) return;
+    Object.keys(x.cart || {}).forEach(function(id){ var q = parseInt(x.cart[id], 10); if (ITEM[id] && q > 0) S.cart[id] = Math.min(20, q); });
+    if (typeof x.addrText === 'string') S.addrText = x.addrText;
+    if (typeof x.note === 'string' && x.note) { S.note = x.note; S.noteOpen = true; }
+  } catch(e){}
+}
+
+/* ürün kutucuğu emojisi */
+var EMOJI = [
+  [/dürüm|durum|wrap/, '🌯'], [/porsiyon|iskender|pilav/, '🍛'], [/tost/, '🥪'], [/patates/, '🍟'], [/salata|ezme/, '🥗'],
+  [/ayran/, '🥛'], [/kola|gazoz|içecek|soda|meşrubat/, '🥤'], [/(^|[^a-zçğıöşü])su($|[^a-zçğıöşü])/, '💧'], [/çay/, '🍵'],
+  [/tatlı|baklava|künefe|sütlaç|kadayıf/, '🍮'], [/pide|lahmacun/, '🫓'], [/köfte/, '🍖'], [/ekmek|döner/, '🥙']
+];
+function emojiFor(ad, kat){
+  var a = lower(ad), k = lower(kat), i;
+  for (i = 0; i < EMOJI.length; i++) if (EMOJI[i][0].test(a)) return EMOJI[i][1];
+  for (i = 0; i < EMOJI.length; i++) if (EMOJI[i][0].test(k)) return EMOJI[i][1];
+  return '🍽️';
+}
+function initials(ad){
+  var w = String(ad || '').trim().split(/\s+/).filter(Boolean);
+  return ((w[0] ? w[0].charAt(0) : '') + (w[1] ? w[1].charAt(0) : '')).toLocaleUpperCase('tr-TR') || '🍽️';
+}
+
+/* ---------- ekran geçişi ---------- */
+var SCREENS = { loading:'#scrLoading', blocked:'#scrBlocked', error:'#scrError', menu:'#scrMenu', cart:'#scrCart', done:'#scrDone' };
+function go(scr, noAnim){
+  if (S.screen === 'menu' && scr !== 'menu') S.menuScroll = scroller.scrollTop;
+  S.screen = scr;
+  hideToast();
+  Object.keys(SCREENS).forEach(function(k){
+    var el = $(SCREENS[k]); el.hidden = (k !== scr);
+    el.classList.remove('enter');
+    if (k === scr && !noAnim && !reduced()) { void el.offsetWidth; el.classList.add('enter'); }
+  });
+  $('#mbWrap').hidden = !(scr === 'menu' || scr === 'cart' || scr === 'done');
+  backBtn(scr === 'cart');
+  if (scr === 'menu') { renderMenuTop(); renderAllQty(); }
+  if (scr === 'cart') renderCheckout();
+  if (scr === 'done') renderDone();
+  scroller.scrollTop = scr === 'menu' ? S.menuScroll : 0;
+  updateMain();
+  if (scr === 'menu') spy(true);
+  if (scr === 'done') schedulePoll(15000); else stopPoll();
+}
+function focusHeading(scr){
+  var h = { menu:'#restName', cart:'#cartTitle', done:'#doneTitle', error:'#errTitle' }[scr];
+  if (h) { var el = $(h); if (el && !el.closest('[hidden]')) el.focus({ preventScroll:true }); }
+}
+
+/* ---------- ana buton ---------- */
+function setMainLabel(full, short){
+  mainBtn.textContent = full;
+  if (short && mainBtn.scrollWidth > mainBtn.clientWidth + 1) mainBtn.textContent = short;
+}
+function updateMain(){
+  if (S.sending) {
+    mainBtn.disabled = true; mainBtn.classList.add('loading');
+    mainBtn.innerHTML = '<span class="spin" aria-hidden="true"></span><span>Gönderiliyor…</span>';
+    return;
+  }
+  mainBtn.classList.remove('loading');
+  var n = count(), dis = false;
+  if (S.screen === 'menu') {
+    if (S.closed) { dis = true; setMainLabel('Restoran şu an kapalı'); }
+    else if (!n) { dis = true; setMainLabel('Ürün seçin'); }
+    else setMainLabel('Sepete git · ' + n + ' ürün · ' + tl(subtotal()), 'Sepete git · ' + tl(subtotal()));
+  } else if (S.screen === 'cart') {
+    if (S.closed) { dis = true; setMainLabel('Restoran şu an kapalı'); }
+    else if (!n) { dis = true; setMainLabel('Sepetiniz boş'); }
+    else setMainLabel('Siparişi onayla · ' + tl(total()), 'Onayla · ' + tl(total()));
+  } else if (S.screen === 'done') setMainLabel("Telegram'a dön");
+  mainBtn.disabled = dis;
+}
+mainBtn.addEventListener('click', function(){
+  if (S.sending) return;
+  if (S.screen === 'menu') { go('cart'); focusHeading('cart'); }
+  else if (S.screen === 'cart') submit();
+  else if (S.screen === 'done') closeApp();
+});
+window.addEventListener('resize', function(){ if (!S.sending) updateMain(); });
+
+/* ---------- açılış ---------- */
+function showError(title, text, canRetry){
+  $('#errTitle').textContent = title;
+  $('#errText').textContent = text;
+  $('#errRetry').hidden = !canRetry;
+  go('error', true);
+  focusHeading('error');
+}
+var bootedTakip = false;
+function boot(){
+  go('loading', true);
+  return call('baslat').then(function(r){
+    if (!r || !r.ok) {
+      if (r && r.kod === 'GIRIS') showError('Oturum doğrulanamadı', 'Lütfen sipariş sayfasını kapatıp yeniden açın.', false);
+      else showError('Menü yüklenemedi', (r && r.hata) || 'Bir sorun oluştu. Lütfen tekrar deneyin.', true);
+      return;
+    }
+    initFromBaslat(r);
+    if (TAKIP && !bootedTakip) { bootedTakip = true; openTracking(TAKIP); }
+    else { go('menu', true); }
+  });
+}
+function applyMenu(r){
+  INFO = INFO || {};
+  INFO.isletme = r.isletme || INFO.isletme || {};
+  INFO.kurallar = r.kurallar || INFO.kurallar || [];
+  INFO.odemeler = r.odemeler || INFO.odemeler || [];
+  ITEM = {}; ORDER = []; CATS = [];
+  var catIdx = {};
+  (r.menu || []).forEach(function(m){
+    if (m == null || m.id == null) return;
+    var id = String(m.id), kat = m.kat || 'Menü';
+    if (!(kat in catIdx)) { catIdx[kat] = CATS.length; CATS.push({ id:'k' + CATS.length, name:kat, tile:'t' + (CATS.length % 5), items:[] }); }
+    var c = CATS[catIdx[kat]];
+    var it = { id:id, ad:m.ad || '', fiyat:Number(m.fiyat) || 0, aciklama:m.aciklama || '', kat:kat, tile:c.tile, e:emojiFor(m.ad, kat) };
+    c.items.push(it); ITEM[id] = it;
+  });
+  CATS.forEach(function(c){ c.items.forEach(function(it){ ORDER.push(it.id); }); });
+  Object.keys(S.cart).forEach(function(id){ if (!ITEM[id]) delete S.cart[id]; });
+  S.closed = !INFO.isletme.acik;
+  buildMenu();
+  buildPays();
+}
+function initFromBaslat(r){
+  INFO = { musteri:r.musteri || null, kullanici:r.kullanici || null };
+  applyMenu(r);
+  var m = INFO.musteri;
+  S.ret = !!m;
+  ADDRS = m && m.adresler ? m.adresler.filter(function(a){ return a && a.id != null; }) : [];
+  buildAddrTiles();
+  S.name = (m && m.ad) || (r.kullanici && r.kullanici.ad) || '';
+  S.phone = m && m.tel ? String(m.tel) : (r.telefon ? String(r.telefon) : null);
+  if (m && m.aranacak && m.tel && normPhone(m.aranacak) !== normPhone(m.tel)) { S.courier = 'other'; S.otherPhone = fmtPhone(m.aranacak); }
+  else { S.courier = 'tg'; S.otherPhone = ''; }
+  var son = m && m.sonSiparis;
+  S.addr = 'new';
+  if (ADDRS.length) {
+    var pre = son && son.adresId != null ? addrById(son.adresId) : null;
+    if (!pre || !pre.kapsamda) pre = ADDRS.filter(function(a){ return a.kapsamda; })[0] || null;
+    if (pre) S.addr = String(pre.id);
+  }
+  if (r.sohbetKonumu) {
+    var k = r.sohbetKonumu;
+    if (k.kapsamda) { S.loc = { lat:k.lat, lng:k.lng, km:k.km, kapsamda:true, ucret:k.ucret, minSiparis:k.minSiparis, sohbet:true }; if (ADDRS.length) S.addr = 'new'; }
+    else S.locMsg = outOfRange(k.km, INFO.isletme.maksKm);
+  }
+  S.pay = (son && son.odeme && INFO.odemeler.indexOf(son.odeme) >= 0) ? son.odeme : null;
+  S.active = r.aktifSiparis && r.aktifSiparis.no != null ? { no:r.aktifSiparis.no, durum:r.aktifSiparis.durum } : null;
+  loadDraft();
+  $('#custName').value = S.name;
+  $('#addrText').value = S.addrText;
+  $('#noteText').value = S.note;
+  $('#otherPhone').value = S.otherPhone;
+  $('#nameHint').hidden = !!m;
+  var ad = INFO.isletme.ad || 'Restoran';
+  d.title = ad + ' · Sipariş';
+  $('#restLogo').textContent = initials(ad);
+  $('#restName').textContent = ad;
+  $$('[data-demo]').forEach(function(el){ el.hidden = !DEMO; });
+  $('#fakeBack').hidden = !FAKE;
+}
+function outOfRange(k, maks){
+  return 'Üzgünüz, adresiniz yaklaşık ' + kmNum(k) + ' km uzakta. En fazla ' + (maks != null ? maks : '') + " km'ye teslimat yapabiliyoruz.";
+}
+
+/* ---------- menü ---------- */
+function buildMenu(){
+  $('#chips').innerHTML = CATS.map(function(c, i){
+    return '<button type="button" class="chip" data-act="chip" data-id="' + c.id + '"' + (i === 0 ? ' aria-current="true"' : '') + '>' + esc(c.name) + '</button>';
+  }).join('');
+  activeCat = CATS[0] ? CATS[0].id : null;
+  $('#cats').innerHTML = CATS.length ? CATS.map(function(c){
+    return '<section class="cat" id="cat-' + c.id + '" aria-labelledby="cath-' + c.id + '"><h2 class="cat-h" id="cath-' + c.id + '">' + esc(c.name) + '</h2><div class="list">' +
+      c.items.map(function(it){
+        return '<div class="prod"><div class="tile ' + it.tile + '" aria-hidden="true">' + it.e + '</div><div class="prod-body">' +
+          '<h3 class="prod-name">' + esc(it.ad) + '</h3>' + (it.aciklama ? '<p class="prod-desc">' + esc(it.aciklama) + '</p>' : '') +
+          '<div class="prod-foot"><span class="price">' + tl(it.fiyat) + '</span><span class="qslot" data-q="' + esc(it.id) + '"></span></div></div></div>';
+      }).join('') + '</div></section>';
+  }).join('') : '<p class="card empty-menu">Menüde şu an ürün yok.</p>';
+  $('#chips').hidden = CATS.length < 2;
+}
+function slotFor(id){ var all = $$('#cats .qslot'); for (var i = 0; i < all.length; i++) if (all[i].getAttribute('data-q') === id) return all[i]; return null; }
+function stepperHTML(it, q){
+  var n = esc(it.ad), id = esc(it.id);
+  return '<span class="stepper" role="group" aria-label="' + n + ' adedi">' +
+    '<button type="button" data-act="dec" data-id="' + id + '" aria-label="' + n + ': bir azalt">−</button>' +
+    '<span class="qty">' + q + '</span>' +
+    '<button type="button" data-act="inc" data-id="' + id + '" aria-label="' + n + ': bir artır"' + (q >= 20 || S.closed ? ' disabled' : '') + '>+</button></span>';
+}
+function renderQtySlot(id){
+  var slot = slotFor(id); if (!slot) return;
+  var it = ITEM[id], q = S.cart[id] || 0;
+  var had = slot.contains(d.activeElement) ? d.activeElement.getAttribute('data-act') : null;
+  slot.innerHTML = q ? stepperHTML(it, q) : '<button type="button" class="add-btn" data-act="add" data-id="' + esc(id) + '" aria-label="' + esc(it.ad) + ' ekle"' + (S.closed ? ' disabled' : '') + '>Ekle</button>';
+  if (had) {
+    var want = had === 'add' ? 'inc' : had;
+    var t = slot.querySelector('[data-act="' + want + '"]:not(:disabled)') || slot.querySelector('button:not(:disabled)');
+    if (t) t.focus({ preventScroll:true });
+  }
+}
+function renderAllQty(){ ORDER.forEach(renderQtySlot); }
+var DURUM_LABEL = { 'Yeni':'Alındı', 'Hazırlanıyor':'Hazırlanıyor', 'Hazır':'Hazır', 'Yolda':'Yolda', 'Teslim Edildi':'Teslim edildi', 'İptal':'İptal edildi' };
+function renderMenuTop(){
+  if (!INFO) return;
+  var is = INFO.isletme, h = is.hazirlikDk != null ? Number(is.hazirlikDk) : null;
+  $('#restMeta').innerHTML = S.closed ? '<span class="rest-closed">● Şu an kapalı</span>'
+    : '<span class="rest-open">● Açık</span>' + (h != null ? ' · ' + h + '–' + (h + 10) + ' dk' : '');
+  var cb = $('#closedBanner');
+  cb.hidden = !S.closed;
+  if (S.closed) cb.innerHTML = '<span aria-hidden="true">🔒</span><span>' + esc(is.kapaliMesaj || 'Şu an sipariş almıyoruz.') + '</span>';
+  var ac = $('#activeCard'), a = S.active;
+  var showA = a && sIdx(a.durum) >= 0 && sIdx(a.durum) < 4;
+  ac.hidden = !showA;
+  if (showA) ac.innerHTML = '<span class="ac-txt">📦 #' + esc(a.no) + ' siparişiniz: ' + esc(DURUM_LABEL[a.durum] || a.durum || '') + '</span><span class="ac-go">Takip et ›</span>';
+  renderDeliv();
+  var son = INFO.musteri && INFO.musteri.sonSiparis;
+  $('#lastOrder').hidden = !son;
+  if (son) {
+    $('#lastItems').innerHTML = esc(son.metin || '') + (son.toplam != null ? ' · <b>' + tl(son.toplam) + '</b>' : '');
+    $('#reorderBtn').disabled = S.closed;
+  }
+}
+function delivMeta(o){
+  var f = Number(o.ucret || 0);
+  return '<span class="nw">' + km(o.km) + '</span> · ' + (f ? '<span class="nw">Teslimat ' + tl(f) + '</span>' : '<span class="okt nw">Ücretsiz teslimat</span>') +
+    (o.minSiparis ? ' · <span class="nw">En az ' + tl(o.minSiparis) + '</span>' : '');
+}
+function locAskHTML(where){
+  var h = '';
+  if (where === 'menu') {
+    h += '<button type="button" class="deliv-btn" id="locBtnMenu" data-act="loc"' + (S.locBusy ? ' disabled' : '') + '>' +
+      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Konum alınıyor…</span>'
+                 : '<span aria-hidden="true">📍</span><span>Konumumu paylaş, teslimat ücretini gör</span><span class="chev" aria-hidden="true">›</span>') + '</button>';
+  } else {
+    h += '<p class="loc-ask-t">Teslimat ücretini hesaplamak için önce konumunuzu paylaşın.</p>' +
+      '<button type="button" class="btn-outline" id="locBtnCart" data-act="loc"' + (S.locBusy ? ' disabled' : '') + '>' +
+      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Konum alınıyor…</span>' : '📍 Konumumu paylaş') + '</button>';
+  }
+  if (S.locMsg) h += '<p class="note-warn" role="status">' + esc(S.locMsg) + '</p>';
+  if (S.locDenied) h += '<button type="button" class="btn-outline" data-act="loc-settings">Telegram ayarlarından izin ver</button>';
+  h += '<button type="button" class="link-btn" data-act="loc-chat"' + (S.chatBusy ? ' disabled' : '') + '>' + (S.chatBusy ? 'Gönderiliyor…' : 'Konumu sohbetten göndereceğim') + '</button>';
+  if (where === 'menu') {
+    var r = firstRule(), bits = [];
+    if (r && r.minSiparis) bits.push('<span class="nw">En az sipariş ' + tl(r.minSiparis) + '</span>');
+    if (r && !Number(r.ucret) && r.max) bits.push(kmNum(r.max).replace(',0', '') + " km'ye kadar teslimat ücretsiz");
+    if (bits.length) h += '<p class="deliv-note">' + bits.join(' · ') + '</p>';
+  }
+  return h;
+}
+function keepFocus(container, fn){
+  var a = d.activeElement, act = (a && container.contains(a)) ? a.getAttribute('data-act') : null;
+  fn();
+  if (act) { var t = container.querySelector('[data-act="' + act + '"]:not(:disabled)'); if (t) t.focus({ preventScroll:true }); }
+}
+function renderDeliv(){
+  var box = $('#deliv');
+  keepFocus(box, function(){
+    if (S.addr !== 'new') {
+      var a = addrById(S.addr);
+      box.innerHTML = '<div class="deliv-row"><span class="deliv-ico" aria-hidden="true">📍</span><div class="deliv-main">' +
+        '<p class="deliv-addr">' + esc(a ? a.adres : '') + '</p><p class="deliv-meta num">' + (a ? delivMeta(a) : '') + '</p></div></div>';
+    } else if (S.loc) {
+      box.innerHTML = '<div class="deliv-row"><span class="deliv-ico" aria-hidden="true">📍</span><div class="deliv-main">' +
+        '<p class="deliv-addr">' + (S.ret ? 'Yeni adres' : 'Konumunuz alındı') + '</p><p class="deliv-meta num">' + delivMeta(S.loc) + '</p></div></div>';
+    } else {
+      box.innerHTML = locAskHTML('menu');
+    }
+  });
+}
+
+/* kategori çipleri + kaydırma takibi */
+var spyLock = 0, activeCat = null, spyRaf = 0;
+function setActiveChip(id, scrollChip){
+  if (id === activeCat && !scrollChip) return;
+  activeCat = id;
+  $$('#chips .chip').forEach(function(c){ if (c.getAttribute('data-id') === id) c.setAttribute('aria-current', 'true'); else c.removeAttribute('aria-current'); });
+  var chip = $('#chips .chip[data-id="' + id + '"]'), bar = $('#chips');
+  if (chip) bar.scrollTo({ left:Math.max(0, chip.offsetLeft - 16), behavior:smooth() });
+}
+function spy(force){
+  if (S.screen !== 'menu' || !CATS.length) return;
+  var bar = $('#chips'), sTop = scroller.getBoundingClientRect().top;
+  var barRect = bar.getBoundingClientRect();
+  bar.classList.toggle('stuck', scroller.scrollTop > 0 && barRect.top <= sTop + 0.5);
+  if (Date.now() < spyLock && !force) return;
+  var line = sTop + barRect.height + 30, act = CATS[0].id;
+  CATS.forEach(function(c){ var el = d.getElementById('cat-' + c.id); if (el && el.getBoundingClientRect().top <= line) act = c.id; });
+  if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4 && scroller.scrollTop > 0) act = CATS[CATS.length - 1].id;
+  setActiveChip(act, force);
+}
+scroller.addEventListener('scroll', function(){
+  if (spyRaf) return;
+  spyRaf = requestAnimationFrame(function(){ spyRaf = 0; spy(false); });
+}, { passive:true });
+function goCat(id){
+  var sec = d.getElementById('cat-' + id), bar = $('#chips');
+  if (!sec) return;
+  spyLock = Date.now() + (reduced() ? 120 : 700);
+  setActiveChip(id, true);
+  scrollToEl(sec, bar.offsetHeight - 2);
+}
+
+/* ---------- sepet ---------- */
+function setQty(id, n, quiet){
+  if (!ITEM[id]) return;
+  var prev = S.cart[id] || 0;
+  n = Math.max(0, Math.min(20, n));
+  if (S.closed && n > prev) return;
+  if (n) S.cart[id] = n; else delete S.cart[id];
+  saveDraft();
+  renderQtySlot(id);
+  if (S.screen === 'cart') { renderCart(); renderSummary(); }
+  updateMain();
+  if (quiet) return;
+  haptic('impact', 'light');
+  var it = ITEM[id];
+  announce(n ? it.ad + ': ' + n + ' adet. Sepet ' + tl(subtotal()) : it.ad + ' sepetten çıkarıldı');
+  if (!n && prev && S.screen === 'cart') toast(it.ad + ' sepetten çıkarıldı', 'Geri al', function(){ setQty(id, prev); });
+}
+function renderCart(){
+  var box = $('#cartList'), ids = lines();
+  var a = d.activeElement, key = (a && box.contains(a)) ? [a.getAttribute('data-act'), a.getAttribute('data-id')] : null;
+  if (!ids.length) {
+    box.innerHTML = '<div class="empty"><p class="empty-t">Sepetiniz boş</p><p class="empty-s">Menüden ürün ekleyin.</p></div>';
+  } else {
+    box.innerHTML = ids.map(function(id){
+      var it = ITEM[id], q = S.cart[id];
+      return '<div class="cline"><div class="tile ' + it.tile + '" aria-hidden="true">' + it.e + '</div><div style="min-width:0">' +
+        '<div class="cline-top"><span class="cline-name">' + esc(it.ad) + '</span><span class="cline-total">' + tl(it.fiyat * q) + '</span></div>' +
+        '<p class="cline-unit">' + tl(it.fiyat) + ' × ' + q + '</p>' +
+        '<div class="cline-act">' + stepperHTML(it, q) + '<button type="button" class="rm-btn" data-act="remove" data-id="' + esc(id) + '" aria-label="' + esc(it.ad) + ' sepetten kaldır">Kaldır</button></div>' +
+        '</div></div>';
+    }).join('');
+  }
+  $('#coRest').hidden = !ids.length;
+  if (key) {
+    var cands = $$('[data-act="' + key[0] + '"]', box).filter(function(b){ return b.getAttribute('data-id') === key[1] && !b.disabled; });
+    (cands[0] || $('#addMoreBtn')).focus({ preventScroll:true });
+  }
+}
+
+/* ---------- sipariş sayfası ---------- */
+function buildAddrTiles(){
+  $('#addrTiles').innerHTML = ADDRS.map(function(a, i){
+    var dis = !a.kapsamda, sub = [];
+    if (a.tarif) sub.push(esc(a.tarif));
+    if (a.km != null) sub.push('<span class="nw">' + km(a.km) + '</span>');
+    if (dis) sub.push('<span class="rt-out">Teslimat alanı dışında</span>');
+    else if (Number(a.ucret)) sub.push('<span class="nw">Teslimat ' + tl(a.ucret) + '</span>');
+    return '<label class="rtile' + (dis ? ' is-dis' : '') + '" for="addr' + i + '">' +
+      '<input class="sr" type="radio" name="addr" id="addr' + i + '" value="' + i + '"' + (dis ? ' disabled' : '') + '>' +
+      '<span class="rt-main"><span class="rt-title">' + esc(a.adres) + '</span>' + (sub.length ? '<span class="rt-sub">' + sub.join(' · ') + '</span>' : '') + '</span>' +
+      '<span class="rdot" aria-hidden="true"></span></label>';
+  }).join('') + (ADDRS.length ? '<label class="rtile" for="addrNewOpt"><input class="sr" type="radio" name="addr" id="addrNewOpt" value="new">' +
+    '<span class="rt-ico" aria-hidden="true">➕</span><span class="rt-main"><span class="rt-title">Yeni adres</span></span><span class="rdot" aria-hidden="true"></span></label>' : '');
+}
+function buildPays(){
+  PAYS = (INFO.odemeler || []).slice();
+  var son = INFO.musteri && INFO.musteri.sonSiparis;
+  $('#payTiles').innerHTML = PAYS.map(function(p, i){
+    var l = lower(p), ico = /nakit/.test(l) ? '💵' : (/kart/.test(l) ? '💳' : '🎫');
+    return '<label class="rtile" for="pay' + i + '"><input class="sr" type="radio" name="pay" id="pay' + i + '" value="' + i + '">' +
+      '<span class="rt-ico" aria-hidden="true">' + ico + '</span><span class="rt-main"><span class="rt-title">' + esc(p) + '</span>' +
+      (son && son.odeme === p ? '<span class="tag">Son kullandığınız</span>' : '') + '</span><span class="rdot" aria-hidden="true"></span></label>';
+  }).join('');
+}
+function renderCheckout(){ renderCart(); renderAddr(); renderContact(); renderNote(); renderPay(); renderSummary(); }
+function renderAddr(){
+  $('#addrSaved').hidden = !ADDRS.length;
+  if (ADDRS.length) {
+    $$('input[name="addr"]').forEach(function(r){
+      r.checked = r.value === 'new' ? S.addr === 'new' : (ADDRS[+r.value] && String(ADDRS[+r.value].id) === S.addr);
+    });
+  }
+  var showNew = S.addr === 'new';
+  $('#addrNew').hidden = !showNew;
+  if (showNew) {
+    var area = $('#locArea');
+    keepFocus(area, function(){
+      if (S.loc) {
+        area.innerHTML = '<p class="loc-ok"><b class="nw">✓ Konum alındı</b> · ' + delivMeta(S.loc) + '</p>' +
+          (S.loc.sohbet ? '<p class="fhint">Konum Telegram sohbetinden alındı.</p>' : '');
+      } else area.innerHTML = locAskHTML('cart');
+    });
+  }
+  var ta = $('#addrText'); if (ta.value !== S.addrText) ta.value = S.addrText;
+}
+function renderContact(){
+  var neu = !S.ret, ph = S.phone;
+  $('#phoneAsk').hidden = !(!ph);
+  var sb = $('#sharePhoneBtn');
+  sb.disabled = S.phoneBusy;
+  sb.innerHTML = S.phoneBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Numara alınıyor…</span>' : '📱 Telegram numaramı paylaş';
+  $('#phoneMsg').hidden = !S.phoneMsg; $('#phoneMsg').textContent = S.phoneMsg;
+  $('#manualPhoneBtn').hidden = S.phoneManual;
+  var compact = !!ph && S.ret && !S.contactEdit;
+  $('#phoneCompact').hidden = !compact;
+  $('#phoneCompactVal').textContent = ph ? fmtPhone(ph) : '';
+  var full = !!ph && (neu || S.contactEdit);
+  $('#phoneShared').hidden = !full;
+  $('#phoneSharedLabel').textContent = S.ret ? 'Kayıtlı numaranız' : 'Telegram numaranız';
+  $('#phoneSharedVal').textContent = ph ? fmtPhone(ph) : '';
+  $('#courierSet').hidden = !full;
+  $('#courierTgSub').textContent = ph ? fmtPhone(ph) : '';
+  $('#courierTg').checked = S.courier === 'tg';
+  $('#courierOther').checked = S.courier === 'other';
+  var showOther = (full && S.courier === 'other') || (!ph && S.phoneManual);
+  $('#otherPhoneWrap').hidden = !showOther;
+  $('#otherPhoneLabel').textContent = ph ? 'Aranacak numara' : 'Telefon numaranız';
+  var op = $('#otherPhone'); if (op.value !== S.otherPhone) op.value = S.otherPhone;
+  $('#courierVal').textContent = S.courier === 'other' && S.otherPhone ? fmtPhone(S.otherPhone) : 'Telegram numaram';
+}
+function renderNote(){
+  $('#noteToggle').hidden = S.noteOpen;
+  $('#noteToggle').setAttribute('aria-expanded', S.noteOpen ? 'true' : 'false');
+  $('#noteWrap').hidden = !S.noteOpen;
+  var nt = $('#noteText'); if (nt.value !== S.note) nt.value = S.note;
+}
+function renderPay(){ $$('input[name="pay"]').forEach(function(r){ r.checked = PAYS[+r.value] === S.pay; }); }
+function renderSummary(){
+  var s = subtotal(), f = fee();
+  $('#sumSub').textContent = tl(s);
+  $('#sumFee').innerHTML = f == null ? '<span class="muted">Konum bekleniyor</span>' : (f === 0 ? '<span class="okt">Ücretsiz</span>' : tl(f));
+  $('#sumTotal').textContent = tl(s + (f || 0));
+  var min = curMin(), miss = min - s, w = $('#minWarn');
+  w.hidden = !(count() && miss > 0);
+  if (!w.hidden) $('#minWarnText').innerHTML = 'En az sipariş tutarı <b>' + tl(min) + '</b>. Sepetinize <b>' + tl(miss) + "</b>'lik daha ürün ekleyin.";
+  else clearErr('min');
+  updateMain();
+}
+
+/* form alanları */
+$('#orderForm').addEventListener('submit', function(e){ e.preventDefault(); });
+$('#addrText').addEventListener('input', function(e){ S.addrText = e.target.value; clearErr('addr'); saveDraft(); });
+$('#custName').addEventListener('input', function(e){ S.name = e.target.value; clearErr('name'); });
+$('#otherPhone').addEventListener('input', function(e){ S.otherPhone = e.target.value; clearErr('other'); clearErr('phone'); });
+$('#noteText').addEventListener('input', function(e){ S.note = e.target.value; saveDraft(); });
+d.addEventListener('change', function(e){
+  var t = e.target;
+  if (t.name === 'addr') {
+    S.addr = t.value === 'new' ? 'new' : String(ADDRS[+t.value].id);
+    clearErr('loc'); clearErr('addr'); clearErr('addrSel');
+    renderAddr(); renderSummary(); renderDeliv();
+  } else if (t.name === 'courier') {
+    S.courier = t.value; clearErr('other'); renderContact();
+    if (S.courier === 'other') $('#otherPhone').focus();
+  } else if (t.name === 'pay') { S.pay = PAYS[+t.value]; clearErr('pay'); }
+});
+
+/* ---------- konum ---------- */
+function browserGeo(resolve){
+  if (!navigator.geolocation) { resolve({ err:'none' }); return; }
+  var done = false;
+  var guard = setTimeout(function(){ if (!done) { done = true; resolve({ err:'timeout' }); } }, 25000);
+  navigator.geolocation.getCurrentPosition(function(p){
+    if (done) return; done = true; clearTimeout(guard);
+    resolve({ lat:p.coords.latitude, lng:p.coords.longitude });
+  }, function(e){
+    if (done) return; done = true; clearTimeout(guard);
+    resolve({ err:e && e.code === 1 ? 'denied' : (e && e.code === 3 ? 'timeout' : 'fail') });
+  }, { enableHighAccuracy:true, timeout:10000, maximumAge:60000 });
+}
+function getCoords(){
+  return new Promise(function(resolve){
+    var LM = tg && tg.LocationManager;
+    if (LM && ver('8.0')) {
+      try {
+        LM.init(function(){
+          if (!LM.isLocationAvailable) { browserGeo(resolve); return; }
+          LM.getLocation(function(loc){
+            if (loc) resolve({ lat:loc.latitude, lng:loc.longitude });
+            else resolve({ err:(LM.isAccessRequested && !LM.isAccessGranted) ? 'tg-denied' : 'fail' });
+          });
+        });
+      } catch(e){ browserGeo(resolve); }
+    } else browserGeo(resolve);
+  });
+}
+var LOC_MSG = {
+  'tg-denied':'Konum izni verilmedi. İzni Telegram ayarlarından açabilir ya da konumu sohbetten gönderebilirsiniz.',
+  'denied':'Konum izni verilmedi. Konumu sohbetten de gönderebilirsiniz.',
+  'timeout':'Konumunuz alınamadı. Tekrar deneyin ya da konumu sohbetten gönderin.',
+  'fail':'Konumunuz alınamadı. Tekrar deneyin ya da konumu sohbetten gönderin.',
+  'none':'Bu cihazda konum alınamıyor. Konumu sohbetten gönderebilirsiniz.'
+};
+function renderLocAll(){ renderDeliv(); if (S.screen === 'cart') { renderAddr(); renderSummary(); } updateMain(); }
+function shareLoc(){
+  if (S.locBusy) return;
+  S.locBusy = true; S.locMsg = ''; S.locDenied = false; renderLocAll();
+  getCoords().then(function(c){
+    if (c.err) {
+      S.locBusy = false; S.locMsg = LOC_MSG[c.err] || LOC_MSG.fail; S.locDenied = c.err === 'tg-denied';
+      renderLocAll(); haptic('notify', 'error'); return;
+    }
+    return call('konum', { lat:c.lat, lng:c.lng }).then(function(r){
+      S.locBusy = false;
+      if (!r.ok) { S.locMsg = r.hata || 'Konum kontrol edilemedi. Tekrar deneyin.'; renderLocAll(); haptic('notify', 'error'); return; }
+      if (!r.kapsamda) { S.loc = null; S.locMsg = outOfRange(r.km, r.maksKm != null ? r.maksKm : INFO.isletme.maksKm); renderLocAll(); haptic('notify', 'error'); return; }
+      S.loc = { lat:c.lat, lng:c.lng, km:r.km, kapsamda:true, ucret:r.ucret, minSiparis:r.minSiparis };
+      clearErr('loc');
+      renderLocAll();
+      if (S.screen === 'cart') $('#addrText').focus({ preventScroll:true }); else $('#deliv').focus({ preventScroll:true });
+      announce('Konum alındı. ' + km(r.km) + ', ' + (Number(r.ucret) ? 'teslimat ' + tl(r.ucret) : 'ücretsiz teslimat'));
+    });
+  });
+}
+function locViaChat(){
+  if (S.chatBusy) return;
+  S.chatBusy = true; renderLocAll();
+  call('konumSohbet', {}).then(function(r){
+    S.chatBusy = false;
+    if (r.ok) { saveDraft(); renderLocAll(); closeApp(); }
+    else { S.locMsg = r.hata || 'İstek gönderilemedi. Tekrar deneyin.'; renderLocAll(); }
+  });
+}
+
+/* ---------- telefon ---------- */
+function sharePhone(){
+  if (S.phoneBusy) return;
+  if (!tg.requestContact || !ver('6.9')) { manualPhone('Bu Telegram sürümü numara paylaşmayı desteklemiyor. Numaranızı yazın.'); return; }
+  S.phoneBusy = true; S.phoneMsg = ''; clearErr('phone'); renderContact();
+  try {
+    tg.requestContact(function(shared, ev){
+      if (!shared) { S.phoneBusy = false; manualPhone('Numara paylaşılmadı. İsterseniz elle yazabilirsiniz.'); return; }
+      var tries = 0;
+      (function ask(){
+        call('telefon', { response:ev && ev.response }).then(function(r){
+          if (r.ok && r.tel) {
+            S.phoneBusy = false; S.phone = String(r.tel); S.phoneMsg = '';
+            S.courier = (S.phoneManual && phoneOk(S.otherPhone)) ? 'other' : 'tg';
+            clearErr('phone'); clearErr('other'); renderContact();
+            (S.courier === 'other' ? $('#courierOther') : $('#courierTg')).focus({ preventScroll:true });
+            announce('Telegram numaranız alındı.');
+            return;
+          }
+          if (r.kod === 'BEKLE' && tries < 6) { tries++; setTimeout(ask, 1500); return; }
+          S.phoneBusy = false; manualPhone('Numaranızı alamadık, lütfen elle yazın.');
+        });
+      })();
+    });
+  } catch(e){ S.phoneBusy = false; manualPhone('Numaranızı yazın.'); }
+}
+function manualPhone(msg){
+  S.phoneManual = true; S.phoneMsg = msg || '';
+  if (!S.phone) S.courier = 'other';
+  clearErr('phone'); renderContact();
+  $('#otherPhone').focus();
+}
+
+/* ---------- doğrulama ---------- */
+var ERRS = {
+  min:     { box:'#minWarn' },
+  addrSel: { box:'#addrTiles', msg:'#addrSelErr' },
+  loc:     { box:'#locArea', msg:'#locErr', focus:'#locBtnCart' },
+  addr:    { field:'#addrText', msg:'#addrErr' },
+  name:    { field:'#custName', msg:'#nameErr' },
+  phone:   { box:'#sharePhoneBtn', msg:'#phoneErr', focus:'#sharePhoneBtn' },
+  other:   { field:'#otherPhone', msg:'#otherErr' },
+  pay:     { box:'#payTiles', msg:'#payErr', focus:'#pay0' }
+};
+function setErr(k, m){
+  var e = ERRS[k];
+  if (e.msg && m) { var p = $(e.msg); p.textContent = m; p.hidden = false; }
+  if (e.field) { var f = $(e.field); f.classList.add('invalid'); f.setAttribute('aria-invalid', 'true'); if (e.msg) f.setAttribute('aria-describedby', e.msg.slice(1)); }
+  if (e.box) { var b = $(e.box); if (b) b.classList.add('box-err'); }
+}
+function clearErr(k){
+  var e = ERRS[k];
+  if (e.msg) $(e.msg).hidden = true;
+  if (e.field) { var f = $(e.field); f.classList.remove('invalid'); f.removeAttribute('aria-invalid'); f.removeAttribute('aria-describedby'); }
+  if (e.box) { var b = $(e.box); if (b) b.classList.remove('box-err'); }
+}
+function validate(){
+  var errs = [];
+  if (subtotal() < curMin()) errs.push(['min', '']);
+  if (S.addr === 'new') {
+    if (!S.loc) errs.push(['loc', 'Konumunuzu paylaşın; teslimat ücretini buna göre hesaplıyoruz.']);
+    if (S.addrText.trim().length < 10) errs.push(['addr', 'Açık adresinizi yazın: mahalle, sokak, bina ve daire no, kısa tarif.']);
+  } else if (!curDeliv()) errs.push(['addrSel', 'Bu adres teslimat alanı dışında. Başka bir adres seçin.']);
+  if (!S.name.trim()) errs.push(['name', 'Adınızı yazın; kurye kapıda bu isimle sorar.']);
+  if (!S.phone) {
+    if (!S.phoneManual) errs.push(['phone', 'Telefon numaranızı paylaşın ya da elle yazın; kurye size ulaşabilsin.']);
+    else if (!phoneOk(S.otherPhone)) errs.push(['other', 'Numarayı 05xx xxx xx xx biçiminde yazın.']);
+  } else if (S.courier === 'other' && !phoneOk(S.otherPhone)) errs.push(['other', 'Numarayı 05xx xxx xx xx biçiminde yazın.']);
+  if (!S.pay) errs.push(['pay', 'Kapıda nasıl ödeyeceğinizi seçin.']);
+  return errs;
+}
+function focusErr(k){
+  var e = ERRS[k];
+  var target = $(e.field || e.box);
+  if (!target) return;
+  scrollToEl(target.closest('.sec') || target, 8);
+  var f = e.focus ? $(e.focus) : (e.field ? $(e.field) : null);
+  if (f) setTimeout(function(){ f.focus({ preventScroll:true }); }, reduced() ? 0 : 380);
+}
+function hideOrderErr(){ $('#orderErr').hidden = true; }
+function showOrderErr(msg, actions){
+  var box = $('#orderErr');
+  $('#orderErrText').textContent = msg;
+  $('#orderErrActs').innerHTML = (actions || []).map(function(a){
+    return '<button type="button" class="' + (a.primary ? 'btn-primary' : 'btn-sec') + '" data-act="' + a.act + '">' + esc(a.label) + '</button>';
+  }).join('');
+  box.hidden = false;
+  scrollToEl(box, 16);
+  setTimeout(function(){ box.focus({ preventScroll:true }); }, reduced() ? 0 : 380);
+}
+function submit(){
+  if (S.sending || S.screen !== 'cart') return;
+  Object.keys(ERRS).forEach(clearErr);
+  hideOrderErr();
+  if (S.ret && S.courier === 'other' && !phoneOk(S.otherPhone) && !S.contactEdit) { S.contactEdit = true; renderContact(); }
+  var errs = validate();
+  if (errs.length) {
+    errs.forEach(function(x){ setErr(x[0], x[1]); });
+    focusErr(errs[0][0]);
+    haptic('notify', 'error');
+    announce(errs[0][0] === 'min' ? 'En az sipariş tutarına ulaşılmadı.' : errs[0][1]);
+    return;
+  }
+  if (!S.istekId) S.istekId = rid();
+  var newAddr = S.addr === 'new';
+  var payload = {
+    istekId:S.istekId,
+    sepet:lines().map(function(id){ return { id:id, adet:S.cart[id] }; }),
+    adres:newAddr ? { lat:S.loc.lat, lng:S.loc.lng, metin:S.addrText.trim() } : { id:addrById(S.addr).id },
+    ad:S.name.trim(),
+    tel:S.phone ? '' : normPhone(S.otherPhone),
+    aranacak:S.phone ? (S.courier === 'tg' ? 'tg' : normPhone(S.otherPhone)) : normPhone(S.otherPhone),
+    not:S.note.trim(),
+    odeme:S.pay
+  };
+  S.sending = true; updateMain();
+  call('siparis', payload).then(function(r){
+    S.sending = false;
+    if (r && r.ok) { placed(r); return; }
+    updateMain();
+    haptic('notify', 'error');
+    orderFailed(r || {});
+  });
+}
+function orderFailed(r){
+  var msg = r.hata || '';
+  var retry = [{ act:'retry-order', label:'Tekrar dene', primary:true }];
+  switch (r.kod) {
+    case 'KAPALI':
+      S.closed = true; INFO.isletme.acik = false; renderAllQty(); renderMenuTop(); updateMain();
+      showOrderErr(msg || 'Restoran şu an sipariş almıyor.'); break;
+    case 'MIN':
+      setErr('min', ''); renderSummary();
+      showOrderErr(msg || 'Sepet tutarı en az sipariş tutarının altında.'); break;
+    case 'KAPSAM':
+      if (S.addr === 'new') { setErr('loc', msg || 'Adresiniz teslimat alanı dışında.'); focusErr('loc'); }
+      else { setErr('addrSel', msg || 'Bu adres teslimat alanı dışında.'); focusErr('addrSel'); }
+      break;
+    case 'ADRES':
+      if (S.addr === 'new') { setErr('addr', msg || 'Açık adresinizi kontrol edin.'); focusErr('addr'); }
+      else { setErr('addrSel', msg || 'Adres bulunamadı, başka bir adres seçin.'); focusErr('addrSel'); }
+      break;
+    case 'TEL':
+      if (!S.phone) { S.phoneManual = true; renderContact(); }
+      else if (S.courier !== 'other') { S.contactEdit = true; S.courier = 'other'; renderContact(); }
+      setErr('other', msg || 'Telefon numaranızı kontrol edin.'); focusErr('other'); break;
+    case 'URUN':
+      showOrderErr('Menü güncelleniyor…');
+      call('baslat').then(function(b){
+        if (b && b.ok) {
+          var before = JSON.stringify(S.cart);
+          applyMenu(b); saveDraft();
+          S.istekId = null;
+          renderCheckout(); renderAllQty();
+          showOrderErr((msg ? msg + ' ' : '') + (before !== JSON.stringify(S.cart) ? 'Menüde artık olmayan ürünleri sepetten çıkardık. ' : '') + 'Sepetinizi kontrol edip yeniden onaylayın.');
+        } else showOrderErr((msg || 'Menü değişti.') + ' Menü yenilenemedi; sayfayı kapatıp yeniden açın.');
+      });
+      break;
+    case 'GIRIS':
+      showOrderErr('Oturum doğrulanamadı. Lütfen sipariş sayfasını kapatıp yeniden açın.', [{ act:'tg-close', label:'Kapat', primary:true }]); break;
+    default:
+      showOrderErr(msg || 'Sipariş gönderilemedi. Lütfen tekrar deneyin.', retry);
+  }
+}
+function placed(r){
+  var lim = Number(INFO.isletme.iptalDk || 3) * 60000;
+  var dl = curDeliv(), sub = subtotal(), f = fee() || 0;
+  var a = S.addr !== 'new' ? addrById(S.addr) : null;
+  S.order = {
+    no:r.no, durum:r.durum || 'Yeni', adimlar:[{ ad:'Yeni', saat:hm(new Date()) }],
+    iptalEdilebilir:true, deadline:localDeadline(r.iptalSonMs, lim, true), etaAt:etaLocal(r.etaMs),
+    kalemler:lines().map(function(id){ return { ad:ITEM[id].ad, adet:S.cart[id], tutar:S.cart[id] * ITEM[id].fiyat }; }),
+    araToplam:sub, teslimatUcreti:f, toplam:sub + f,
+    adres:a ? a.adres + (a.tarif ? ', ' + a.tarif : '') : S.addrText.trim(),
+    odeme:S.pay, isletmeTel:INFO.isletme.telefon
+  };
+  S.active = { no:r.no, durum:S.order.durum };
+  S.cart = {}; S.note = ''; S.noteOpen = false; S.istekId = null; S.addrText = '';
+  S.cancelConfirm = false; S.cancelMsg = ''; S.trackErr = '';
+  $('#noteText').value = ''; $('#addrText').value = '';
+  LS.del(DRAFT_KEY);
+  renderAllQty();
+  haptic('notify', 'success');
+  go('done');
+  focusHeading('done');
+  startTick();
+}
+function localDeadline(ms, lim, fresh){
+  var now = Date.now(), rem = typeof ms === 'number' ? ms - (now + SKEW) : NaN;
+  if (isNaN(rem)) rem = fresh ? lim : 0;
+  if (fresh && (rem <= 0 || rem > lim + 5000)) rem = lim;
+  rem = Math.max(0, Math.min(rem, lim + 5000));
+  return now + rem;
+}
+function etaLocal(ms){ if (typeof ms !== 'number' || !ms) return null; return ms < 1e11 ? Date.now() + ms : ms - SKEW; }
+
+/* ---------- takip ---------- */
+var STEPS = ['Sipariş alındı', 'Hazırlanıyor', 'Hazır', 'Yolda', 'Teslim edildi'];
+function sIdx(durum){
+  var x = lower(durum);
+  if (!x) return 0;
+  if (/iptal/.test(x)) return -1;
+  if (/teslim/.test(x)) return 4;
+  if (/yolda|kurye/.test(x)) return 3;
+  if (/hazırlan|hazirlan/.test(x)) return 1;
+  if (/hazır|hazir/.test(x)) return 2;
+  return 0;
+}
+function isFinal(o){ var i = sIdx(o.durum); return i === -1 || i === 4; }
+function openTracking(no){
+  S.trackNo = String(no).replace(/^#/, '');
+  S.trackLoading = true; S.trackErr = ''; S.cancelConfirm = false; S.cancelMsg = '';
+  if (!S.order || String(S.order.no) !== S.trackNo) S.order = null;
+  go('done');
+  call('durum', { no:S.trackNo }).then(function(r){
+    S.trackLoading = false;
+    if (r.ok) { applyDurum(r); focusHeading('done'); }
+    else { S.trackErr = r.hata || 'Sipariş bulunamadı.'; renderDone(); var t = $('#doneErrTitle'); if (t) t.focus({ preventScroll:true }); }
+    schedulePoll(15000);
+  });
+}
+function parseSaat(s){
+  var m = /^(\d{1,2})[:.](\d{2})/.exec(String(s || ''));
+  if (!m) return null;
+  var dt = new Date(); dt.setHours(+m[1], +m[2], 0, 0);
+  if (dt.getTime() - Date.now() > 6 * 3600000) dt.setDate(dt.getDate() - 1);
+  return dt;
+}
+function applyDurum(r){
+  var lim = Number(INFO.isletme.iptalDk || 3) * 60000;
+  var o = (S.order && String(S.order.no) === String(r.no)) ? S.order : {};
+  var prevIdx = o.durum != null ? sIdx(o.durum) : null;
+  o.no = r.no; o.durum = r.durum; o.adimlar = r.adimlar || o.adimlar || [];
+  o.iptalEdilebilir = !!r.iptalEdilebilir;
+  if (r.iptalSonMs != null) o.deadline = localDeadline(r.iptalSonMs, lim, false);
+  ['kalemler', 'araToplam', 'teslimatUcreti', 'toplam', 'adres', 'odeme'].forEach(function(k){ if (r[k] != null) o[k] = r[k]; });
+  o.isletmeTel = r.isletmeTel || o.isletmeTel || INFO.isletme.telefon;
+  if (!o.etaAt && o.adimlar[0]) {
+    var t0 = parseSaat(o.adimlar[0].saat), h = Number(INFO.isletme.hazirlikDk || 20);
+    if (t0) o.etaAt = t0.getTime() + (h + 10) * 60000;
+  }
+  S.order = o;
+  S.active = { no:o.no, durum:o.durum };
+  if (S.screen === 'done') renderDone();
+  if (prevIdx !== null && prevIdx !== sIdx(o.durum)) {
+    $('#trackLive').textContent = 'Sipariş durumu: ' + (sIdx(o.durum) === -1 ? 'İptal edildi' : STEPS[sIdx(o.durum)]);
+    if (sIdx(o.durum) === 4) haptic('notify', 'success');
+  }
+  if (canCancel()) startTick();
+}
+function stepTimes(o){
+  var t = {};
+  (o.adimlar || []).forEach(function(a, i){ var k = sIdx(a.ad); if (k < 0) return; if (!(k in t)) t[k] = a.saat; });
+  return t;
+}
+function renderDone(){
+  var o = S.order;
+  $('#doneLoading').hidden = !S.trackLoading;
+  $('#doneError').hidden = S.trackLoading || !!o || !S.trackErr;
+  $('#doneErrText').textContent = S.trackErr || '';
+  $('#doneBody').hidden = S.trackLoading || !o;
+  if (!o || S.trackLoading) return;
+  var idx = sIdx(o.durum), x = idx === -1, delivered = idx === 4;
+  var ico = $('#heroIco');
+  ico.textContent = x ? '✕' : '✓';
+  ico.classList.toggle('x', x);
+  $('#doneTitle').textContent = x ? 'Siparişiniz iptal edildi' : (delivered ? 'Siparişiniz teslim edildi' : 'Siparişiniz alındı');
+  $('#orderNo').innerHTML = '<span class="hash">#</span>' + esc(o.no);
+  $('#orderNo').classList.toggle('void', x);
+  $('#heroText').textContent = x ? 'Ödeme yapmanız gerekmiyor. İsterseniz hemen yeni sipariş verebilirsiniz.'
+    : (delivered ? 'Afiyet olsun! Bir sonraki siparişte görüşmek üzere.' : 'Bu numarayla siparişinizi takip edebilirsiniz. Telegram sohbetinde ' + o.no + ' yazmanız da yeterli.');
+  $('#eta').hidden = x || delivered || !o.etaAt;
+  if (o.etaAt) $('#etaTime').textContent = hm(new Date(o.etaAt));
+  $('#secTrack').hidden = x;
+  renderTrack();
+  renderTrackNote();
+  renderCancel();
+  var lines2 = (o.kalemler || []).map(function(l){
+    return '<div class="dsum-line"><span>' + esc(l.adet) + ' × ' + esc(l.ad) + '</span><span>' + tl(l.tutar) + '</span></div>';
+  }).join('');
+  $('#doneSum').innerHTML = lines2 +
+    (o.teslimatUcreti != null ? '<div class="dsum-line"><span class="muted">Teslimat</span><span>' + (Number(o.teslimatUcreti) ? tl(o.teslimatUcreti) : '<span class="okt">Ücretsiz</span>') + '</span></div>' : '') +
+    (o.toplam != null ? '<div class="sum-row sum-total"><span>Toplam</span><span>' + tl(o.toplam) + '</span></div>' : '') +
+    '<div class="dsum-meta">' + (o.adres ? '<span>Adres: <b>' + esc(o.adres) + '</b></span>' : '') +
+    (o.odeme ? '<span>Ödeme: <b>' + esc(o.odeme) + ', kapıda</b></span>' : '') + '</div>';
+}
+function renderTrack(){
+  var o = S.order, idx = Math.max(0, sIdx(o.durum)), times = stepTimes(o);
+  $('#track').innerHTML = STEPS.map(function(name, i){
+    var reached = i <= idx, now = i === idx && idx < 4;
+    var cls = (reached ? 'done' : 'todo') + (now ? ' now' : '') + (i === idx ? ' reach-last' : '');
+    var t = times[i];
+    return '<li class="step ' + cls + '"><span class="sdot" aria-hidden="true">' + (reached ? '✓' : '') + '</span><div>' +
+      '<div class="step-line"><span class="step-name">' + name + '</span>' + (now ? '<span class="now-tag">Şu an</span>' : '') + '</div>' +
+      (reached && t ? '<p class="step-time">' + esc(t) + '</p>' : (reached ? '' : '<span class="sr">bekleniyor</span>')) + '</div></li>';
+  }).join('');
+}
+function renderTrackNote(){
+  var o = S.order, fin = o && isFinal(o);
+  $('#trackNoteText').textContent = fin ? 'Sipariş tamamlandı.' : 'Durum kendiliğinden yenilenir.';
+  $('#refreshBtn').hidden = !!fin;
+  $('#refreshBtn').disabled = pollBusy;
+  $('#refreshBtn').textContent = pollBusy ? 'Yenileniyor…' : 'Şimdi yenile';
+  $('#trackErr').hidden = !S.trackErr;
+  $('#trackErr').textContent = S.trackErr ? S.trackErr : '';
+}
+function canCancel(){ var o = S.order; return !!(o && o.iptalEdilebilir && sIdx(o.durum) === 0 && o.deadline - Date.now() > 0); }
+function telLink(t){
+  var n = normPhone(t);
+  if (!n) return '<b>işletmeyi</b>';
+  return '<a href="tel:' + esc(n) + '">' + esc(fmtPhone(n)) + '</a>';
+}
+function renderCancel(){
+  var o = S.order; if (!o) return;
+  var box = $('#cancelBox'), btn = $('#cancelBtn'), conf = $('#cancelConfirm'), info = $('#cancelInfo');
+  var idx = sIdx(o.durum);
+  box.hidden = idx === -1 || idx === 4;
+  if (box.hidden) return;
+  var left = o.deadline - Date.now(), ok = canCancel();
+  if (!ok && S.cancelConfirm && !S.cancelBusy) {
+    S.cancelConfirm = false;
+    if (conf.contains(d.activeElement)) setTimeout(function(){ info.focus({ preventScroll:true }); }, 0);
+  }
+  conf.hidden = !S.cancelConfirm;
+  btn.hidden = S.cancelConfirm;
+  btn.disabled = !ok;
+  btn.innerHTML = ok ? 'Siparişi iptal et · <span class="num">' + fmtLeft(left) + '</span>' : 'Siparişi iptal et';
+  if (S.cancelConfirm) $('#cancelLeft').textContent = 'İptal için kalan süre: ' + fmtLeft(left);
+  var yes = $('#cancelYes'), no = $('#cancelNo');
+  yes.disabled = no.disabled = S.cancelBusy;
+  yes.innerHTML = S.cancelBusy ? '<span class="spin sm" aria-hidden="true"></span><span>İptal ediliyor…</span>' : 'Evet, iptal et';
+  info.hidden = ok && !S.cancelMsg;
+  info.classList.toggle('bad', !!S.cancelMsg);
+  if (!info.hidden) {
+    info.innerHTML = (S.cancelMsg ? esc(S.cancelMsg) + ' ' : '') + (ok ? '' :
+      (idx > 0 ? 'Restoran siparişinizi hazırlamaya başladı. ' : '') +
+      'İptal süresi doldu. İptal için işletmeyi arayın: ' + telLink(o.isletmeTel) + '. Hazırlanan siparişin ücreti ödenir.');
+  }
+}
+var tickT = null;
+function startTick(){
+  stopTick();
+  tickT = setInterval(function(){
+    if (S.screen === 'done') renderCancel();
+    if (!canCancel()) { if (S.screen === 'done') renderCancel(); stopTick(); }
+  }, 1000);
+  if (S.screen === 'done') renderCancel();
+}
+function stopTick(){ if (tickT) { clearInterval(tickT); tickT = null; } }
+function doCancel(){
+  var o = S.order;
+  if (!o || S.cancelBusy) return;
+  S.cancelBusy = true; S.cancelMsg = ''; renderCancel();
+  call('iptal', { no:o.no }).then(function(r){
+    S.cancelBusy = false; S.cancelConfirm = false;
+    if (r.ok) {
+      o.durum = r.durum || 'İptal'; o.iptalEdilebilir = false;
+      stopTick(); haptic('notify', 'success');
+      S.active = { no:o.no, durum:o.durum };
+      renderDone();
+      scroller.scrollTo({ top:0, behavior:smooth() });
+      $('#doneTitle').focus({ preventScroll:true });
+    } else {
+      S.cancelMsg = r.hata || 'Sipariş iptal edilemedi.';
+      haptic('notify', 'error');
+      renderCancel();
+      $('#cancelInfo').focus({ preventScroll:true });
+      poll(true);
+    }
+  });
+}
+
+/* durum yoklama: takip ekranı görünürken 15 sn'de bir */
+var pollT = null, pollBusy = false, appActive = true;
+function canPoll(){ return S.screen === 'done' && !!S.order && !isFinal(S.order) && !d.hidden && appActive; }
+function stopPoll(){ clearTimeout(pollT); pollT = null; }
+function schedulePoll(ms){ stopPoll(); if (!canPoll()) return; pollT = setTimeout(function(){ poll(false); }, ms); }
+function poll(manual){
+  stopPoll();
+  if (pollBusy || !S.order) return;
+  if (!manual && !canPoll()) return;
+  var no = S.order.no;
+  pollBusy = true; if (S.screen === 'done') renderTrackNote();
+  call('durum', { no:no }).then(function(r){
+    pollBusy = false;
+    if (!S.order || String(S.order.no) !== String(no)) return;
+    if (r.ok) { S.trackErr = ''; applyDurum(r); }
+    else S.trackErr = (r.hata || 'Durum güncellenemedi.') + ' Birazdan yeniden denenecek.';
+    if (S.screen === 'done') renderTrackNote();
+    schedulePoll(15000);
+  });
+}
+d.addEventListener('visibilitychange', function(){ if (d.hidden) stopPoll(); else schedulePoll(400); });
+
+/* ---------- toast ---------- */
+var toastT = null, toastFn = null;
+function toast(msg, actLabel, fn){
+  $('#toastMsg').textContent = msg;
+  var b = $('#toastAct'); b.hidden = !fn; b.textContent = actLabel || '';
+  toastFn = fn || null;
+  $('#toast').hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(hideToast, fn ? 5000 : 2600);
+}
+function hideToast(){ clearTimeout(toastT); $('#toast').hidden = true; toastFn = null; }
+$('#toastAct').addEventListener('click', function(){ var f = toastFn; hideToast(); if (f) f(); });
+
+/* ---------- tıklama dağıtıcısı ---------- */
+function reorder(btn){
+  var son = INFO.musteri && INFO.musteri.sonSiparis;
+  if (!son || S.closed) return;
+  var added = 0, missing = 0;
+  (son.kalemler || []).forEach(function(k){
+    var id = String(k.id), q = parseInt(k.adet, 10) || 1;
+    if (ITEM[id]) { setQty(id, (S.cart[id] || 0) + q, true); added++; } else missing++;
+  });
+  haptic('impact', 'light');
+  if (!added) { toast('Bu ürünler artık menüde yok.'); return; }
+  btn.textContent = '✓ Sepete eklendi';
+  setTimeout(function(){ btn.textContent = 'Aynısını sepete ekle'; }, 2200);
+  toast(missing ? 'Bazı ürünler artık menüde yok; kalanlar sepete eklendi.' : 'Son siparişiniz sepete eklendi');
+  announce('Son siparişiniz sepete eklendi. Sepet ' + tl(subtotal()));
+}
+d.addEventListener('click', function(e){
+  var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
+  switch (act) {
+    case 'add': setQty(id, 1); break;
+    case 'inc': setQty(id, (S.cart[id] || 0) + 1); break;
+    case 'dec': setQty(id, (S.cart[id] || 0) - 1); break;
+    case 'remove': setQty(id, 0); break;
+    case 'chip': goCat(id); break;
+    case 'loc': shareLoc(); break;
+    case 'loc-chat': locViaChat(); break;
+    case 'loc-settings': try { tg.LocationManager.openSettings(); } catch(err){} break;
+    case 'share-phone': sharePhone(); break;
+    case 'manual-phone': manualPhone(''); break;
+    case 'contact-edit': S.contactEdit = true; renderContact(); (S.courier === 'other' ? $('#courierOther') : $('#courierTg')).focus(); break;
+    case 'note-open': S.noteOpen = true; renderNote(); $('#noteText').focus(); break;
+    case 'to-menu': go('menu'); focusHeading('menu'); break;
+    case 'reorder': reorder(el); break;
+    case 'track-active': if (S.active) openTracking(S.active.no); break;
+    case 'track-retry': openTracking(S.trackNo || (S.order && S.order.no)); break;
+    case 'refresh': poll(true); break;
+    case 'cancel': if (canCancel()) { S.cancelConfirm = true; S.cancelMsg = ''; renderCancel(); $('#cancelNo').focus(); } break;
+    case 'cancel-no': S.cancelConfirm = false; renderCancel(); $('#cancelBtn').focus(); break;
+    case 'cancel-yes': doCancel(); break;
+    case 'new-order': S.menuScroll = 0; go('menu'); focusHeading('menu'); break;
+    case 'retry-order': hideOrderErr(); submit(); break;
+    case 'tg-close': closeApp(); break;
+    case 'boot': boot(); break;
+  }
+});
+$('#demoClosedBtn').addEventListener('click', function(){ $('#demoClosed').hidden = true; });
+d.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('#demoClosed').hidden) $('#demoClosed').hidden = true; });
+
+/* ---------- deneme sunucusu (?demo=1) ---------- */
+function makeMock(){
+  var musteriOn = params.get('musteri') === '1';
+  var kapali = params.get('kapali') === '1';
+  var stepMs = params.has('adim') ? Math.max(0, parseInt(params.get('adim'), 10) || 0) : 20000;
+  var konumKm = params.has('km') ? parseFloat(params.get('km')) : 1.2;
+  var simHata = params.get('hata');
+  var isletme = { ad:'Test Dönerci', acik:!kapali, kapaliMesaj:'Şu an sipariş almıyoruz. Her gün 11:00–23:00 arası açığız.',
+    hazirlikDk:20, iptalDk:3, telefon:'04120000000', maksKm:5 };
+  var menu = [
+    { id:'tavuk-durum', kat:'Dürümler', ad:'Tavuk Döner Dürüm', fiyat:120, aciklama:'Lavaş, tavuk döner, domates, turşu' },
+    { id:'et-durum', kat:'Dürümler', ad:'Et Döner Dürüm', fiyat:180, aciklama:'Lavaş, et döner, domates, soğan' },
+    { id:'yarim-ekmek', kat:'Dürümler', ad:'Yarım Ekmek Et Döner', fiyat:170, aciklama:'Yarım ekmek, et döner, domates' },
+    { id:'tavuk-porsiyon', kat:'Porsiyonlar', ad:'Tavuk Döner Porsiyon', fiyat:170, aciklama:'Pilav ve patates ile' },
+    { id:'iskender', kat:'Porsiyonlar', ad:'İskender', fiyat:280, aciklama:'Tereyağlı, yoğurtlu' },
+    { id:'kasarli-tost', kat:'Tostlar', ad:'Kaşarlı Tost', fiyat:90, aciklama:'Tost ekmeği, bol kaşar' },
+    { id:'karisik-tost', kat:'Tostlar', ad:'Karışık Tost', fiyat:110, aciklama:'Kaşar, sucuk, domates' },
+    { id:'patates', kat:'Yan ürünler', ad:'Patates Kızartması', fiyat:60, aciklama:'Çıtır, sıcak' },
+    { id:'ezme', kat:'Yan ürünler', ad:'Ezme Salata', fiyat:40, aciklama:'Acılı domates ezmesi' },
+    { id:'ayran', kat:'İçecekler', ad:'Ayran', fiyat:25, aciklama:'Soğuk ayran' },
+    { id:'kola', kat:'İçecekler', ad:'Kola (33 cl)', fiyat:45, aciklama:'Soğuk, kutu' },
+    { id:'su', kat:'İçecekler', ad:'Su', fiyat:10, aciklama:'Pet şişe' }
+  ];
+  var kurallar = [{ min:0, max:3, ucret:0, minSiparis:150 }, { min:3, max:5, ucret:30, minSiparis:250 }];
+  var odemeler = ['Nakit', 'Kredi Kartı (kapıda)', 'Multinet', 'Pluxee (Sodexo)'];
+  function rule(k){ for (var i = 0; i < kurallar.length; i++) if (k >= kurallar[i].min && k <= kurallar[i].max) return kurallar[i]; return null; }
+  function withRule(a){ var r = rule(a.km); a.kapsamda = !!r; a.ucret = r ? r.ucret : 0; a.minSiparis = r ? r.minSiparis : 0; return a; }
+  var adresler = musteriOn ? [
+    { id:'a1', adres:'Bağlar Mah. 12. Sk. No:5 Kat:2 D:4', tarif:"Yıldız Market'in yanı, mavi kapı", km:0.9 },
+    { id:'a2', adres:'Ofis Plaza Kat 3 No 12', tarif:'', km:1.6 },
+    { id:'a3', adres:'Kayapınar, Yeni Yazlık Sitesi B Blok', tarif:'', km:7.4 }
+  ].map(withRule) : [];
+  var sharedTel = musteriOn ? '05321112233' : null, contactTries = 0;
+  var orders = {}, byReq = {}, seq = 1005;
+  var NAMES = ['Yeni', 'Hazırlanıyor', 'Hazır', 'Yolda', 'Teslim Edildi'];
+  function hhmm(t){ return hm(new Date(t)); }
+  function st(o){ if (o.iptalAt) return -1; if (!stepMs) return 0; return Math.min(4, Math.floor((Date.now() - o.at) / stepMs)); }
+  function view(o){
+    var s = st(o), ad = [];
+    if (s === -1) ad = [{ ad:'Yeni', saat:hhmm(o.at) }, { ad:'İptal', saat:hhmm(o.iptalAt) }];
+    else for (var i = 0; i <= s; i++) ad.push({ ad:NAMES[i], saat:hhmm(o.at + i * stepMs) });
+    return { ok:true, no:o.no, durum:s === -1 ? 'İptal' : NAMES[s], adimlar:ad, iptalEdilebilir:s === 0 && Date.now() < o.iptalSon,
+      iptalSonMs:o.iptalSon, kalemler:o.kalemler, araToplam:o.ara, teslimatUcreti:o.ucret, toplam:o.ara + o.ucret,
+      adres:o.adres, odeme:o.odeme, isletmeTel:isletme.telefon };
+  }
+  function find(id){ for (var i = 0; i < menu.length; i++) if (menu[i].id === id) return menu[i]; return null; }
+  function makeOrder(p, extra){
+    var now = Date.now();
+    var o = Object.assign({ no:seq++, at:now, iptalSon:now + isletme.iptalDk * 60000, kalemler:[], ara:0, ucret:0, adres:'', odeme:'Nakit' }, extra || {});
+    orders[o.no] = o; return o;
+  }
+  return function(act, p){
+    return sleep(600 + Math.random() * 300).then(function(){
+      switch (act) {
+        case 'baslat': {
+          var aktif = null;
+          Object.keys(orders).forEach(function(k){ var s = st(orders[k]); if (s >= 0 && s < 4) aktif = { no:orders[k].no, durum:NAMES[s] }; });
+          return { ok:true, isletme:Object.assign({}, isletme), menu:menu.slice(), odemeler:odemeler.slice(), kurallar:kurallar.slice(),
+            kullanici:{ id:1, ad:'Ferhat Aydın' },
+            musteri:musteriOn ? { ad:'Ferhat Aydın', tel:'05321112233', aranacak:'05321112233', adresler:adresler,
+              sonSiparis:{ kalemler:[{ id:'et-durum', adet:2 }, { id:'ayran', adet:2 }], metin:'2 × Et Döner Dürüm, 2 × Ayran', toplam:410, odeme:'Nakit', adresId:'a1' } } : null,
+            telefon:null, sohbetKonumu:null, aktifSiparis:aktif };
+        }
+        case 'konum': { var r = rule(konumKm); return { ok:true, km:konumKm, kapsamda:!!r, ucret:r ? r.ucret : 0, minSiparis:r ? r.minSiparis : 0, maksKm:isletme.maksKm }; }
+        case 'konumSohbet': return { ok:true };
+        case 'telefon':
+          contactTries++;
+          if (contactTries === 1) return { ok:false, kod:'BEKLE' };
+          sharedTel = '05321112233'; return { ok:true, tel:sharedTel };
+        case 'siparis': {
+          if (byReq[p.istekId]) return byReq[p.istekId];
+          if (simHata) {
+            var h = simHata; simHata = null;
+            if (h === 'URUN') { var gone = p.sepet[0] && find(p.sepet[0].id); if (gone) menu = menu.filter(function(m){ return m !== gone; }); return { ok:false, kod:'URUN', hata:(gone ? gone.ad : 'Bir ürün') + ' artık menüde yok.' }; }
+            var msgs = { KAPALI:'Restoran şu an sipariş almıyor.', MIN:'En az sipariş tutarı karşılanmadı.', KAPSAM:'Adresiniz teslimat alanı dışında.',
+              TEL:'Telefon numarası geçersiz.', ADRES:'Açık adres eksik.', GIRIS:'Oturum doğrulanamadı.', ZAMAN:'Bağlantı yavaş, tekrar deneyin.' };
+            return { ok:false, kod:h, hata:msgs[h] || 'Bilinmeyen hata.' };
+          }
+          if (!isletme.acik) return { ok:false, kod:'KAPALI', hata:'Restoran şu an sipariş almıyor.' };
+          var kal = [], ara = 0;
+          for (var i = 0; i < (p.sepet || []).length; i++) {
+            var m = find(p.sepet[i].id); if (!m) return { ok:false, kod:'URUN', hata:'Sepetinizdeki bir ürün artık menüde yok.' };
+            kal.push({ ad:m.ad, adet:p.sepet[i].adet, tutar:m.fiyat * p.sepet[i].adet }); ara += m.fiyat * p.sepet[i].adet;
+          }
+          var ad, rr;
+          if (p.adres && p.adres.id != null) {
+            ad = null; adresler.forEach(function(a){ if (a.id === p.adres.id) ad = a; });
+            if (!ad) return { ok:false, kod:'ADRES', hata:'Adres bulunamadı.' };
+            if (!ad.kapsamda) return { ok:false, kod:'KAPSAM', hata:'Bu adres teslimat alanı dışında.' };
+            rr = rule(ad.km);
+          } else {
+            if (!p.adres || !p.adres.metin || p.adres.metin.length < 10) return { ok:false, kod:'ADRES', hata:'Açık adres eksik.' };
+            rr = rule(konumKm); if (!rr) return { ok:false, kod:'KAPSAM', hata:'Adresiniz teslimat alanı dışında.' };
+          }
+          if (ara < rr.minSiparis) return { ok:false, kod:'MIN', hata:'En az sipariş tutarı ' + rr.minSiparis + ' TL.' };
+          if (!p.tel && !sharedTel) return { ok:false, kod:'TEL', hata:'Telefon numarası gerekli.' };
+          var o = makeOrder(p, { kalemler:kal, ara:ara, ucret:rr.ucret, adres:ad ? ad.adres + (ad.tarif ? ', ' + ad.tarif : '') : p.adres.metin, odeme:p.odeme });
+          var res = { ok:true, no:o.no, durum:'Yeni', etaMs:o.at + (isletme.hazirlikDk + 10) * 60000, iptalSonMs:o.iptalSon };
+          byReq[p.istekId] = res;
+          return res;
+        }
+        case 'durum': {
+          var oo = orders[p.no];
+          if (!oo) {
+            if (!/^\d+$/.test(String(p.no))) return { ok:false, kod:'YOK', hata:'Sipariş bulunamadı.' };
+            oo = makeOrder(p, { no:+p.no, kalemler:[{ ad:'Et Döner Dürüm', adet:1, tutar:180 }, { ad:'Ayran', adet:1, tutar:25 }], ara:205, ucret:0, adres:'Bağlar Mah. 12. Sk. No:5', odeme:'Nakit' });
+            oo.at = Date.now() - (stepMs || 60000) - 5000; oo.iptalSon = oo.at + isletme.iptalDk * 60000;
+            if (seq <= oo.no) seq = oo.no + 1;
+          }
+          return view(oo);
+        }
+        case 'iptal': {
+          var x = orders[p.no];
+          if (!x) return { ok:false, kod:'YOK', hata:'Sipariş bulunamadı.' };
+          if (st(x) !== 0 || Date.now() >= x.iptalSon) return { ok:false, kod:'SURE', hata:'İptal süresi doldu; sipariş hazırlanmaya başladı.' };
+          x.iptalAt = Date.now();
+          return { ok:true, durum:'İptal' };
+        }
+        default: return { ok:false, kod:'BILINMEYEN', hata:'Bilinmeyen istek.' };
+      }
+    });
+  };
+}
+
+/* ---------- başlat ---------- */
+if (!tg) {
+  applyTheme();
+  if (window.matchMedia) { var mqd = matchMedia('(prefers-color-scheme: dark)'); if (mqd.addEventListener) mqd.addEventListener('change', applyTheme); }
+  go('blocked', true);
+  return;
+}
+try { tg.ready(); } catch(e){}
+try { tg.expand(); } catch(e){}
+try { if (ver('7.7') && tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch(e){}
+// Telegram başlığı ve zemini önizlemedeki renklerle aynı olsun
+function tgRenkler(){
+  var koyu = root.getAttribute('data-theme') === 'dark';
+  try {
+    if (ver('6.9')) { tg.setHeaderColor(koyu ? '#0e1621' : '#f1f2f6'); tg.setBackgroundColor(koyu ? '#0e1621' : '#f1f2f6'); }
+    else if (ver('6.1')) { tg.setHeaderColor('secondary_bg_color'); tg.setBackgroundColor('secondary_bg_color'); }
+    if (ver('7.10') && tg.setBottomBarColor) tg.setBottomBarColor(koyu ? '#17212b' : '#ffffff');
+  } catch(e){}
+}
+tgRenkler();
+if (tg && tg.onEvent) tg.onEvent('themeChanged', function(){ setTimeout(tgRenkler, 0); });
+applyTheme();
+try { tg.onEvent('themeChanged', applyTheme); } catch(e){}
+try { tg.onEvent('activated', function(){ appActive = true; schedulePoll(400); }); tg.onEvent('deactivated', function(){ appActive = false; stopPoll(); }); } catch(e){}
+try { if (ver('6.1') && tg.BackButton) tg.BackButton.onClick(function(){ if (S.screen === 'cart') { go('menu'); focusHeading('menu'); } }); } catch(e){}
+if (!B) { showError('Bağlantı eksik', 'İşletme bilgisi bulunamadı. Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.', false); return; }
+boot();
+})();
+</script>
+</body>
+</html>
