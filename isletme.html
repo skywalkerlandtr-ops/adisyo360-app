@@ -125,7 +125,8 @@ a{color:var(--link)}
 .main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;outline:none}
 .main.fill{overflow:hidden;display:flex;flex-direction:column}
 .scr{padding:14px 16px 24px;display:flex;flex-direction:column;gap:16px;max-width:1280px;margin:0 auto;width:100%}
-.main.fill .scr{flex:1;min-height:0;padding-bottom:12px}
+.main.fill .scr{flex:1;min-height:0;padding-bottom:12px;max-width:none}
+.mgrid{display:flex;flex-direction:column;gap:16px}
 
 .tabs{flex:none;display:flex;background:var(--bg);border-top:1px solid var(--sep);padding:0 4px var(--safe-b)}
 .tab{flex:1;min-width:0;border:0;background:none;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -419,6 +420,73 @@ button.m-fiyat{color:var(--link);font-weight:600;min-height:32px}
   .fis hr{border:0;border-top:1px dashed #000;margin:6px 0}
   .fis .r{display:flex;justify-content:space-between;gap:8px}
   .fis .b{font-weight:700;font-size:14px}
+}
+/* ---------- geniş ekran (masaüstü, büyük tablet): ekranı doldur, yazıları büyüt ---------- */
+@media (min-width:1200px){
+  .scr{max-width:none;padding:20px 28px 28px;gap:18px}
+  .tip-txt{font-size:15px}
+  .sw{font-size:15px}
+  .search .inp{min-height:52px;font-size:17px}
+  .main.fill .scr{padding:16px 24px 14px}
+  .top{min-height:76px;padding-left:24px;padding-right:24px;gap:16px}
+  .logo{width:50px;height:50px;font-size:19px}
+  .top-name{font-size:22px}
+  .top-sub{font-size:16px}
+  .open-sw{font-size:17px;min-height:48px;padding:6px 16px 6px 10px}
+  .icon-btn{width:48px;height:48px}
+  .banner,.demo-bar{font-size:16px;padding-left:24px;padding-right:24px}
+  .tab{font-size:16px;min-height:70px}
+  .tab .ico{width:28px;height:28px}
+  .seg button{font-size:17px;min-height:46px;padding:0 18px}
+  .chip{font-size:16px;min-height:44px}
+  .upd{font-size:15px}
+  .board{gap:18px}
+  .col-h{font-size:18px;padding:14px 16px 10px}
+  .col-h .badge{font-size:16px;padding:3px 12px}
+  .col-h .n{font-size:16px;min-width:32px;height:30px}
+  .col-list{padding:4px 12px 14px;gap:12px}
+  .ord-main{padding:16px 16px 12px 18px;gap:8px}
+  .ord.k-Y .ord-main{padding-left:22px}
+  .ord-no{font-size:25px}
+  .ord-ago{font-size:16px}
+  .ord-who{font-size:17px}
+  .ord-items{font-size:19px}
+  .flag{font-size:16px;padding:4px 10px}
+  .ord-foot{font-size:17px}
+  .ord-total{font-size:22px}
+  .ord-act{padding:0 16px 16px 18px}
+  .ord.k-Y .ord-act{padding-left:22px}
+  .ord-act .btn{min-height:60px;font-size:20px}
+  .olist{grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+  .badge{font-size:14px}
+  .btn{font-size:17px}
+  .sheet{max-width:720px}
+  .sh-head h2{font-size:23px}
+  .sh-body{font-size:17px}
+  .items li{font-size:18px}
+  .mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:20px}
+  .m-ad{font-size:18px}
+  .m-fiyat{font-size:16px}
+  .sec-h{font-size:14px}
+  .kpi .k-l{font-size:16px}
+  .kpi .k-v{font-size:30px}
+  .kpi.hero .k-v{font-size:30px}
+  .kpi .k-s{font-size:14px}
+  .ch-title{font-size:18px}
+  .ch-sub{font-size:15px}
+  .ch-plot{height:220px;margin-left:60px}
+  .ch-x{margin-left:60px;font-size:14px}
+  .gl span{font-size:14px;top:-10px}
+  .hb .hb-ad{font-size:16px}
+  .tbl{font-size:16px}
+  .kasa .ks-v b{font-size:17px}
+  .p-ad{font-size:17px}
+  .kcard{padding:20px;gap:14px}
+  .k-adr{font-size:22px}
+}
+@media (min-width:1700px){
+  .mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .rgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
 </style>
@@ -1242,7 +1310,7 @@ function menuEkrani(){
     '" autocomplete="off" aria-label="Ürün ara"></div>' +
     '<p class="tip-txt">' + (kapali ? '<b>' + kapali + ' ürün tükendi</b> olarak işaretli; müşteriler bunları sipariş edemez.' :
       'Biten ürünü «Tükendi» yapın; müşteriler o ürünü sipariş edemez.') + (sahip() ? ' Fiyatı değiştirmek için fiyata dokunun.' : '') + '</p>' +
-    '<div id="mliste" class="stack" style="display:flex;flex-direction:column;gap:16px">' + menuListe() + '</div></div>';
+    '<div id="mliste" class="mgrid">' + menuListe() + '</div></div>';
 }
 function trKucuk(s){ return String(s || '').toLocaleLowerCase('tr'); }
 function menuListe(){
