@@ -1120,7 +1120,10 @@ function renderBanners(){
       (U.sonOk ? ' · son güncelleme ' + saatYaz(U.sonOk + SKEW) : '') + '. Tekrar deneniyor…</span><button data-act="yenile">Şimdi dene</button></div>';
   }
   var od = sahip() && D.odeme ? D.odeme : null, odBtn = D.uyeUrl ? '<button data-act="uyeGit" data-k="#odeme">Bakiye yükle</button>' : '';
-  if (!D.isletme.hizmet && od && od.durdu) {
+  if (!D.isletme.hizmet && od && od.ilk) {
+    h += '<div class="banner warn" role="alert">' + ic('kilit') + '<span class="b-txt">Hizmetinizin başlaması için ilk aylık ücreti yükleyin (eksik <b class="num">' + tl(od.eksik) +
+      '</b>). Bu sırada menünüzü ve ayarlarınızı hazırlayabilirsiniz; müşteriler henüz sipariş veremez.</span>' + odBtn + '</div>';
+  } else if (!D.isletme.hizmet && od && od.durdu) {
     h += '<div class="banner err" role="alert">' + ic('kilit') + '<span class="b-txt">Bakiye yüklenmediği için sipariş alımı durdu; müşteriler sipariş veremiyor. Eksik <b class="num">' + tl(od.eksik) +
       '</b>. Yükleme yapınca kendiliğinden açılır.</span>' + odBtn + '</div>';
   } else if (!D.isletme.hizmet) {
