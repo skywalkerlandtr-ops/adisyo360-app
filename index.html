@@ -218,7 +218,8 @@ a{color:var(--link)}
 .cline-name{font-size:18px;font-weight:600;line-height:1.25;min-width:0;overflow-wrap:anywhere}
 .cline-total{font-size:18px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .cline-unit{font-size:15px;color:var(--sub);font-variant-numeric:tabular-nums}
-.cline-act{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.cline-act{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.cline-act .rm-btn{margin-inline-start:auto}
 .rm-btn{min-height:48px;padding:0 6px;border:0;background:none;color:var(--danger);font-size:16px;font-weight:600;border-radius:10px}
 .row-link{width:100%;min-height:54px;border:0;background:none;border-top:1px solid var(--sep);color:var(--link);
   font-size:17px;font-weight:600;text-align:left;padding:0 16px;border-radius:0 0 14px 14px}
@@ -374,6 +375,58 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
 .star-btn:not(:disabled):active{transform:scale(.86)}
 .star-btn:disabled{cursor:default}
 
+/* ---------- dil seçimi ---------- */
+.lang-btn{flex:none;align-self:flex-start;min-height:40px;padding:0 12px;border:1.5px solid var(--sep);border-radius:20px;background:var(--bg);
+  color:var(--text);font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:6px;margin-inline-start:auto}
+.lang-sheet{position:fixed;inset:0;z-index:25;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.lang-sheet > div{width:min(100%,520px);background:var(--bg);border-radius:18px 18px 0 0;padding:18px 16px calc(16px + var(--safe-b));
+  display:flex;flex-direction:column;gap:10px;animation:sheetIn .2s ease-out}
+@keyframes sheetIn{from{transform:translateY(24px);opacity:.5}}
+.lang-sheet h2{font-size:19px;font-weight:800;margin:0 4px 4px}
+.lang-opt{width:100%;min-height:54px;border:2px solid transparent;border-radius:12px;background:var(--bg2);color:var(--text);font-size:17px;
+  font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;text-align:start}
+.lang-opt[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.lang-opt .lc{font-size:14px;font-weight:700;color:var(--sub)}
+.prod-orig{font-size:14px;color:var(--hint);line-height:1.3;overflow-wrap:anywhere}
+
+/* ---------- karşılama: önce mesafe kontrolü ---------- */
+.gate-top{display:flex;align-items:center;gap:12px}
+.gate-top .rest-logo{width:48px;height:48px;font-size:18px}
+.gate-name{flex:1;min-width:0;font-size:19px;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.gate-hero{padding:28px 20px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.gate-ico{width:92px;height:92px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:46px;line-height:1;margin-bottom:4px}
+.gate-ico.ok{background:var(--ok-soft)}
+.gate-ico.out{background:var(--danger-soft)}
+.gate-ico.pulse{animation:pinbob 1.5s ease-in-out infinite}
+@keyframes pinbob{50%{transform:translateY(-6px)}}
+.gate-hero h1{font-size:26px;font-weight:800;line-height:1.2;text-wrap:balance}
+.gate-hero h1:focus{outline:none}
+.gate-text{font-size:17px;max-width:34ch;text-wrap:pretty}
+.gate-sub{font-size:16px;color:var(--sub);max-width:34ch;text-wrap:pretty}
+.gate-meta{font-size:16px;font-weight:600;background:var(--ok-soft);color:var(--ok-ink);border-radius:12px;padding:10px 14px}
+.gate-meta .okt{color:var(--ok-ink)}
+.gate-acts{display:flex;flex-direction:column;gap:10px}
+.gate-acts .link-btn{align-self:center}
+.gate-priv{font-size:14px;color:var(--sub);text-align:center;margin:0 8px;text-wrap:pretty}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.confetti i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;animation:confall 1.6s cubic-bezier(.25,.6,.4,1) forwards}
+@keyframes confall{to{transform:translate3d(var(--dx),110vh,0) rotate(var(--rot))}}
+
+/* ---------- sağdan sola (Arapça) ---------- */
+.ltr{direction:ltr;unicode-bidi:isolate}
+[dir="rtl"] .prod + .prod::before{left:0;right:112px}
+[dir="rtl"] .cline + .cline::before{left:0;right:80px}
+[dir="rtl"] .ritem + .ritem::before{left:0;right:16px}
+[dir="rtl"] .step::before{left:auto;right:13px}
+[dir="rtl"] .active-card,[dir="rtl"] .deliv-btn,[dir="rtl"] .note-btn,[dir="rtl"] .row-link,[dir="rtl"] .link-btn{text-align:right}
+[dir="rtl"] .active-card{padding:10px 16px 10px 14px}
+[dir="rtl"] .deliv-btn{padding:10px 14px 10px 12px}
+[dir="rtl"] .deliv-btn .chev{margin-left:0;margin-right:auto;transform:scaleX(-1)}
+[dir="rtl"] .rtile{padding:12px 16px 12px 14px}
+[dir="rtl"] .sum-row > span:last-child{text-align:left}
+[dir="rtl"] .stars{margin-left:0;margin-right:-4px}
+[dir="rtl"] .toast{padding:6px 16px 6px 6px}
+
 /* ---------- toast & demo kapanış ---------- */
 .toast{position:absolute;left:12px;right:12px;bottom:calc(92px + var(--safe-b));z-index:8;display:flex;align-items:center;gap:8px;min-height:52px;
   padding:6px 6px 6px 16px;border-radius:14px;background:var(--toast-bg);color:var(--toast-text);font-size:16px;
@@ -390,12 +443,14 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
   .prod{grid-template-columns:68px minmax(0,1fr);gap:12px}
   .prod .tile{width:68px;height:68px;font-size:38px;border-radius:14px}
   .prod + .prod::before{left:94px}
+  [dir="rtl"] .prod + .prod::before{left:0;right:94px}
   .ono{font-size:56px}
 }
 @media (prefers-reduced-motion: reduce){
   .chips,.main-btn{transition:none}
   .scr.enter,.toast{animation:none}
   .star-btn{transition:none}
+  .gate-ico.pulse,.lang-sheet > div{animation:none}
   .sk{animation:none}
   .spin{animation:none;border-right-color:currentColor;opacity:.6}
 }
@@ -406,7 +461,7 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
   <div class="app-scroll" id="scroller">
 
     <!-- yükleniyor -->
-    <section class="scr" id="scrLoading" aria-busy="true" aria-label="Menü yükleniyor">
+    <section class="scr" id="scrLoading" aria-busy="true" aria-label="Menü yükleniyor" data-ta="load.aria">
       <div class="sk-row"><div class="sk sk-circle"></div><div class="sk-lines"><div class="sk" style="height:24px;width:60%"></div><div class="sk" style="height:16px;width:40%"></div></div></div>
       <div class="sk" style="height:76px;border-radius:14px"></div>
       <div class="sk-chips"><div class="sk sk-chip"></div><div class="sk sk-chip"></div><div class="sk sk-chip"></div></div>
@@ -415,14 +470,14 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
         <div class="sk-row"><div class="sk sk-tile"></div><div class="sk-lines"><div class="sk" style="height:18px;width:60%"></div><div class="sk" style="height:14px;width:80%"></div><div class="sk" style="height:18px;width:30%"></div></div></div>
         <div class="sk-row"><div class="sk sk-tile"></div><div class="sk-lines"><div class="sk" style="height:18px;width:65%"></div><div class="sk" style="height:14px;width:85%"></div><div class="sk" style="height:18px;width:32%"></div></div></div>
       </div>
-      <p class="sr" role="status">Menü yükleniyor…</p>
+      <p class="sr" role="status" data-t="load.sr">Menü yükleniyor…</p>
     </section>
 
     <!-- Telegram dışı -->
     <section class="scr full" id="scrBlocked" hidden>
       <div class="full-ico" aria-hidden="true">🍽️</div>
-      <h1>Bu sayfa Telegram içinde açılır.</h1>
-      <p>Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.</p>
+      <h1 data-t="blk.t">Bu sayfa Telegram içinde açılır.</h1>
+      <p data-t="blk.s">Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.</p>
     </section>
 
     <!-- açılış hatası -->
@@ -431,14 +486,34 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
       <h1 id="errTitle" tabindex="-1">Menü yüklenemedi</h1>
       <p id="errText"></p>
       <div class="btns">
-        <button type="button" class="btn-primary" id="errRetry" data-act="boot">Tekrar dene</button>
-        <button type="button" class="btn-sec" id="errClose" data-act="tg-close">Kapat</button>
+        <button type="button" class="btn-primary" id="errRetry" data-act="boot" data-t="btn.retry">Tekrar dene</button>
+        <button type="button" class="btn-sec" id="errClose" data-act="tg-close" data-t="btn.close">Kapat</button>
       </div>
+    </section>
+
+    <!-- 0 · Karşılama: yeni müşteriye önce mesafe kontrolü -->
+    <section class="scr" id="scrGate" aria-labelledby="gateTitle" hidden>
+      <p class="demo-badge" data-demo hidden data-t="demo.menu">Deneme modu · örnek veriler, sipariş gerçek değil</p>
+      <div class="gate-top">
+        <span class="rest-logo" id="gateLogo" aria-hidden="true"></span>
+        <p class="gate-name" id="gateName"></p>
+        <button type="button" class="lang-btn" data-act="lang"></button>
+      </div>
+      <div class="card gate-hero">
+        <div class="gate-ico pulse" id="gateIco" aria-hidden="true">📍</div>
+        <h1 id="gateTitle" tabindex="-1"></h1>
+        <p class="gate-text" id="gateText"></p>
+        <p class="gate-sub" id="gateSub"></p>
+        <p class="gate-meta num" id="gateMeta" hidden></p>
+      </div>
+      <div class="gate-acts" id="gateActs"></div>
+      <p class="gate-priv" id="gatePriv" data-t="gate.privacy"></p>
+      <p class="sr" id="gateLive" aria-live="polite"></p>
     </section>
 
     <!-- 1 · Menü -->
     <section class="scr" id="scrMenu" aria-labelledby="restName" hidden>
-      <p class="demo-badge" data-demo hidden>Deneme modu · örnek veriler, sipariş gerçek değil</p>
+      <p class="demo-badge" data-demo hidden data-t="demo.menu">Deneme modu · örnek veriler, sipariş gerçek değil</p>
       <div class="menu-top">
         <button type="button" class="active-card" id="activeCard" data-act="track-active" hidden></button>
         <div class="rest">
@@ -447,45 +522,46 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
             <h1 class="rest-name" id="restName" tabindex="-1"></h1>
             <p class="rest-meta" id="restMeta"></p>
           </div>
+          <button type="button" class="lang-btn" data-act="lang"></button>
         </div>
         <p class="closed-banner" id="closedBanner" hidden></p>
         <div class="card deliv" id="deliv" tabindex="-1"></div>
         <div class="card last" id="rateAsk" hidden>
-          <p class="last-h">⭐ Son siparişinizi puanlar mısınız?</p>
+          <p class="last-h" data-t="rate.ask">⭐ Son siparişinizi puanlar mısınız?</p>
           <p class="last-items" id="rateAskText"></p>
           <div class="two" style="margin-top:0">
-            <button type="button" class="btn-plain" data-act="rate-later">Şimdi değil</button>
-            <button type="button" class="btn-tonal" data-act="rate-open">Puanla</button>
+            <button type="button" class="btn-plain" data-act="rate-later" data-t="rate.later">Şimdi değil</button>
+            <button type="button" class="btn-tonal" data-act="rate-open" data-t="rate.go">Puanla</button>
           </div>
         </div>
         <div class="card last" id="lastOrder" hidden>
-          <p class="last-h">🔁 Son siparişiniz</p>
+          <p class="last-h" data-t="last.h">🔁 Son siparişiniz</p>
           <p class="last-items" id="lastItems"></p>
-          <button type="button" class="btn-tonal" id="reorderBtn" data-act="reorder">Aynısını sepete ekle</button>
+          <button type="button" class="btn-tonal" id="reorderBtn" data-act="reorder" data-t="last.btn">Aynısını sepete ekle</button>
         </div>
       </div>
-      <nav class="chips" id="chips" aria-label="Kategoriler"></nav>
+      <nav class="chips" id="chips" aria-label="Kategoriler" data-ta="cats.aria"></nav>
       <div class="cats" id="cats"></div>
     </section>
 
     <!-- 2 · Sepet ve sipariş -->
     <section class="scr" id="scrCart" aria-labelledby="cartTitle" hidden>
-      <p class="demo-badge" data-demo hidden>Deneme modu · örnek veriler, sipariş gerçek değil</p>
-      <button type="button" class="back-link" id="fakeBack" data-act="to-menu" hidden>‹ Menüye dön</button>
+      <p class="demo-badge" data-demo hidden data-t="demo.menu">Deneme modu · örnek veriler, sipariş gerçek değil</p>
+      <button type="button" class="back-link" id="fakeBack" data-act="to-menu" hidden data-t="cart.back">‹ Menüye dön</button>
       <form class="co" id="orderForm" novalidate>
         <div class="sec" id="secCart">
-          <h1 class="sec-h" id="cartTitle" tabindex="-1">Sepetiniz</h1>
+          <h1 class="sec-h" id="cartTitle" tabindex="-1" data-t="cart.title">Sepetiniz</h1>
           <div class="card">
             <div id="cartList"></div>
-            <button type="button" class="row-link" id="addMoreBtn" data-act="to-menu">+ Ürün ekle</button>
+            <button type="button" class="row-link" id="addMoreBtn" data-act="to-menu" data-t="cart.add">+ Ürün ekle</button>
           </div>
         </div>
 
         <div class="co-rest" id="coRest">
           <div class="sec" id="secAddr">
-            <h2 class="sec-h">Teslimat adresi</h2>
+            <h2 class="sec-h" data-t="addr.h">Teslimat adresi</h2>
             <fieldset class="rgroup" id="addrSaved" hidden>
-              <legend class="sr">Kayıtlı adresleriniz</legend>
+              <legend class="sr" data-t="addr.saved">Kayıtlı adresleriniz</legend>
               <div class="rgroup" id="addrTiles"></div>
             </fieldset>
             <p class="err" id="addrSelErr" hidden></p>
@@ -493,90 +569,90 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
               <div class="loc-area" id="locArea"></div>
               <p class="err" id="locErr" hidden></p>
               <div class="field">
-                <label class="flabel" for="addrText">Açık adres ve kısa tarif</label>
-                <textarea class="input textarea" id="addrText" rows="3" autocomplete="street-address" placeholder="Örnek: Bağlar Mah. 12. Sk. No:5 Kat:2 D:4, Yıldız Market'in yanı, mavi kapı"></textarea>
+                <label class="flabel" for="addrText" data-t="addr.label">Açık adres ve kısa tarif</label>
+                <textarea class="input textarea" id="addrText" dir="auto" rows="3" autocomplete="street-address" data-tp="addr.ph" placeholder="Örnek: Bağlar Mah. 12. Sk. No:5 Kat:2 D:4, Yıldız Market'in yanı, mavi kapı"></textarea>
                 <p class="err" id="addrErr" hidden></p>
               </div>
             </div>
           </div>
 
           <div class="sec" id="secContact">
-            <h2 class="sec-h">İletişim</h2>
+            <h2 class="sec-h" data-t="contact.h">İletişim</h2>
             <div class="card pad stack">
               <div class="field">
-                <label class="flabel" for="custName">Adınız</label>
-                <input class="input" id="custName" type="text" autocomplete="name">
-                <p class="fhint" id="nameHint">Telegram'dan alındı, değiştirebilirsiniz.</p>
+                <label class="flabel" for="custName" data-t="name.label">Adınız</label>
+                <input class="input" id="custName" type="text" dir="auto" autocomplete="name">
+                <p class="fhint" id="nameHint" data-t="name.hint">Telegram'dan alındı, değiştirebilirsiniz.</p>
                 <p class="err" id="nameErr" hidden></p>
               </div>
               <div class="stack-s" id="phoneAsk">
                 <button type="button" class="btn-outline" id="sharePhoneBtn" data-act="share-phone">📱 Telegram numaramı paylaş</button>
-                <p class="fhint">Kurye kapıya geldiğinde size ulaşabilsin.</p>
+                <p class="fhint" data-t="phone.hint">Kurye kapıya geldiğinde size ulaşabilsin.</p>
                 <p class="note-warn" id="phoneMsg" hidden></p>
-                <button type="button" class="link-btn" id="manualPhoneBtn" data-act="manual-phone">Numaramı elle yazacağım</button>
+                <button type="button" class="link-btn" id="manualPhoneBtn" data-act="manual-phone" data-t="phone.manual">Numaramı elle yazacağım</button>
                 <p class="err" id="phoneErr" hidden></p>
               </div>
               <div class="kvs" id="phoneCompact">
-                <div class="kv"><span>Telefon numaranız</span><b><span id="phoneCompactVal"></span> <span class="okt">✓</span></b></div>
-                <div class="kv"><span>Kurye ulaşamazsa</span><b id="courierVal">Telegram numaram</b></div>
-                <button type="button" class="link-btn" id="contactEditBtn" data-act="contact-edit">Değiştir</button>
+                <div class="kv"><span data-t="phone.your">Telefon numaranız</span><b><span id="phoneCompactVal" class="ltr"></span> <span class="okt">✓</span></b></div>
+                <div class="kv"><span data-t="phone.courierShort">Kurye ulaşamazsa</span><b id="courierVal" class="ltr">Telegram numaram</b></div>
+                <button type="button" class="link-btn" id="contactEditBtn" data-act="contact-edit" data-t="btn.change">Değiştir</button>
               </div>
-              <div class="kv" id="phoneShared"><span id="phoneSharedLabel">Telegram numaranız</span><b><span id="phoneSharedVal"></span> <span class="okt">✓</span></b></div>
+              <div class="kv" id="phoneShared"><span id="phoneSharedLabel">Telegram numaranız</span><b><span id="phoneSharedVal" class="ltr"></span> <span class="okt">✓</span></b></div>
               <fieldset class="inset-group" id="courierSet">
-                <legend class="flabel">Kurye ulaşamazsa aranacak numara</legend>
+                <legend class="flabel" data-t="phone.courierLegend">Kurye ulaşamazsa aranacak numara</legend>
                 <label class="rrow" for="courierTg">
                   <input class="sr" type="radio" name="courier" id="courierTg" value="tg">
                   <span class="rdot" aria-hidden="true"></span>
-                  <span class="rt-main"><span class="rt-title">Telegram numaram</span><span class="rt-sub num" id="courierTgSub"></span></span>
+                  <span class="rt-main"><span class="rt-title" data-t="phone.tgMine">Telegram numaram</span><span class="rt-sub num ltr" id="courierTgSub"></span></span>
                 </label>
                 <label class="rrow" for="courierOther">
                   <input class="sr" type="radio" name="courier" id="courierOther" value="other">
                   <span class="rdot" aria-hidden="true"></span>
-                  <span class="rt-main"><span class="rt-title">Başka numara</span></span>
+                  <span class="rt-main"><span class="rt-title" data-t="phone.other">Başka numara</span></span>
                 </label>
               </fieldset>
               <div class="field" id="otherPhoneWrap">
                 <label class="flabel" for="otherPhone" id="otherPhoneLabel">Aranacak numara</label>
-                <input class="input num" id="otherPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx">
+                <input class="input num" id="otherPhone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" data-tp="phone.ph" placeholder="05xx xxx xx xx">
                 <p class="err" id="otherErr" hidden></p>
               </div>
             </div>
           </div>
 
           <div class="sec" id="secNote">
-            <h2 class="sec-h">Not <span class="sec-opt">(Örn: ketçap olmasın, soğan olmasın, tuz olmasın)</span></h2>
-            <button type="button" class="note-btn" id="noteToggle" data-act="note-open" aria-expanded="false" aria-controls="noteWrap">📝 Not ekle</button>
+            <h2 class="sec-h"><span data-t="note.h">Not</span> <span class="sec-opt" data-t="note.opt">(Örn: ketçap olmasın, soğan olmasın, tuz olmasın)</span></h2>
+            <button type="button" class="note-btn" id="noteToggle" data-act="note-open" aria-expanded="false" aria-controls="noteWrap" data-t="note.add">📝 Not ekle</button>
             <div class="card pad" id="noteWrap" hidden>
               <div class="field">
-                <label class="flabel" for="noteText">Restorana notunuz</label>
-                <textarea class="input textarea" id="noteText" rows="3" maxlength="300" placeholder="Örn: ketçap olmasın, soğan olmasın, tuz olmasın"></textarea>
+                <label class="flabel" for="noteText" data-t="note.label">Restorana notunuz</label>
+                <textarea class="input textarea" id="noteText" dir="auto" rows="3" maxlength="300" data-tp="note.ph" placeholder="Örn: ketçap olmasın, soğan olmasın, tuz olmasın"></textarea>
               </div>
             </div>
           </div>
 
           <div class="sec" id="secPay">
-            <h2 class="sec-h">Ödeme (kapıda)</h2>
+            <h2 class="sec-h" data-t="pay.h">Ödeme (kapıda)</h2>
             <fieldset class="rgroup" id="payGroup">
-              <legend class="sr">Ödeme şekli, teslimatta kuryeye ödenir</legend>
+              <legend class="sr" data-t="pay.legend">Ödeme şekli, teslimatta kuryeye ödenir</legend>
               <div class="rgroup" id="payTiles"></div>
             </fieldset>
             <p class="err" id="payErr" hidden></p>
           </div>
 
           <div class="sec" id="secSum">
-            <h2 class="sec-h">Özet</h2>
+            <h2 class="sec-h" data-t="sum.h">Özet</h2>
             <div class="card sum">
-              <div class="sum-row"><span>Ara toplam</span><span id="sumSub"></span></div>
-              <div class="sum-row"><span>Teslimat</span><span id="sumFee"></span></div>
-              <div class="sum-row sum-total"><span>Toplam</span><span id="sumTotal"></span></div>
+              <div class="sum-row"><span data-t="sum.sub">Ara toplam</span><span id="sumSub"></span></div>
+              <div class="sum-row"><span data-t="sum.fee">Teslimat</span><span id="sumFee"></span></div>
+              <div class="sum-row sum-total"><span data-t="sum.total">Toplam</span><span id="sumTotal"></span></div>
             </div>
             <div class="warn" id="minWarn" hidden>
               <p id="minWarnText"></p>
-              <button type="button" class="link-btn" data-act="to-menu">+ Ürün ekle</button>
+              <button type="button" class="link-btn" data-act="to-menu" data-t="cart.add">+ Ürün ekle</button>
             </div>
-            <p class="fine">Ödemeyi teslimatta kuryeye yaparsınız.</p>
+            <p class="fine" data-t="sum.fine">Ödemeyi teslimatta kuryeye yaparsınız.</p>
             <div class="oerr" id="orderErr" role="alert" tabindex="-1" hidden>
-              <p class="oerr-t">Sipariş gönderilemedi</p>
+              <p class="oerr-t" data-t="order.errT">Sipariş gönderilemedi</p>
               <p id="orderErrText"></p>
               <div class="stack-s" id="orderErrActs"></div>
             </div>
@@ -587,31 +663,31 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
 
     <!-- 3 · Onay ve takip -->
     <section class="scr" id="scrDone" aria-labelledby="doneTitle" hidden>
-      <p class="demo-badge" data-demo hidden>Deneme modu · durum 20 saniyede bir kendiliğinden ilerler</p>
+      <p class="demo-badge" data-demo hidden data-t="demo.done">Deneme modu · durum 20 saniyede bir kendiliğinden ilerler</p>
       <div id="doneLoading" class="stack" hidden aria-busy="true">
         <div class="sk" style="height:300px;border-radius:14px"></div>
         <div class="sk" style="height:220px;border-radius:14px"></div>
-        <p class="sr" role="status">Sipariş bilgisi yükleniyor…</p>
+        <p class="sr" role="status" data-t="done.loading">Sipariş bilgisi yükleniyor…</p>
       </div>
       <div id="doneError" class="card pad stack" hidden>
-        <p class="confirm-t" id="doneErrTitle" tabindex="-1">Sipariş bilgisi alınamadı</p>
+        <p class="confirm-t" id="doneErrTitle" tabindex="-1" data-t="done.errT">Sipariş bilgisi alınamadı</p>
         <p class="muted" id="doneErrText"></p>
-        <button type="button" class="btn-primary" data-act="track-retry">Tekrar dene</button>
-        <button type="button" class="btn-sec" data-act="to-menu">Menüye git</button>
+        <button type="button" class="btn-primary" data-act="track-retry" data-t="btn.retry">Tekrar dene</button>
+        <button type="button" class="btn-sec" data-act="to-menu" data-t="btn.toMenu">Menüye git</button>
       </div>
       <div id="doneBody" class="stack" style="gap:22px">
         <div class="card hero">
           <div class="hero-ico" id="heroIco" aria-hidden="true">✓</div>
           <h1 id="doneTitle" tabindex="-1">Siparişiniz alındı</h1>
-          <p class="ono-label">Sipariş numaranız</p>
-          <p class="ono" id="orderNo"></p>
+          <p class="ono-label" data-t="done.noLabel">Sipariş numaranız</p>
+          <p class="ono ltr" id="orderNo"></p>
           <p class="hero-text" id="heroText"></p>
-          <p class="eta" id="eta">Tahmini teslim: <b id="etaTime"></b></p>
+          <p class="eta" id="eta"><span data-t="done.eta">Tahmini teslim:</span> <b id="etaTime"></b></p>
         </div>
-        <button type="button" class="btn-primary" id="rateDoneBtn" data-act="rate-order" hidden>⭐ Siparişi puanla</button>
-        <p class="info" id="rateDoneInfo" hidden>⭐ Bu siparişi puanladınız. Teşekkürler!</p>
+        <button type="button" class="btn-primary" id="rateDoneBtn" data-act="rate-order" hidden data-t="rate.btn">⭐ Siparişi puanla</button>
+        <p class="info" id="rateDoneInfo" hidden data-t="rate.doneInfo">⭐ Bu siparişi puanladınız. Teşekkürler!</p>
         <div class="sec" id="secTrack">
-          <h2 class="sec-h">Sipariş durumu</h2>
+          <h2 class="sec-h" data-t="track.h">Sipariş durumu</h2>
           <div class="card"><ol class="track" id="track"></ol></div>
           <div class="track-note"><span id="trackNoteText">Durum kendiliğinden yenilenir.</span><button type="button" class="link-btn" id="refreshBtn" data-act="refresh">Şimdi yenile</button><p class="err" id="trackErr" hidden></p></div>
           <p class="sr" id="trackLive" aria-live="polite"></p>
@@ -619,58 +695,58 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
         <div class="stack-s" id="cancelBox">
           <button type="button" class="cancel-btn" id="cancelBtn" data-act="cancel">Siparişi iptal et</button>
           <div class="card pad confirm" id="cancelConfirm" hidden>
-            <p class="confirm-t">Siparişi iptal etmek istiyor musunuz?</p>
+            <p class="confirm-t" data-t="cancel.q">Siparişi iptal etmek istiyor musunuz?</p>
             <p class="fhint num" id="cancelLeft"></p>
             <div class="two">
-              <button type="button" class="btn-plain" id="cancelNo" data-act="cancel-no">Vazgeç</button>
+              <button type="button" class="btn-plain" id="cancelNo" data-act="cancel-no" data-t="cancel.no">Vazgeç</button>
               <button type="button" class="btn-danger" id="cancelYes" data-act="cancel-yes">Evet, iptal et</button>
             </div>
           </div>
           <p class="info" id="cancelInfo" tabindex="-1" hidden></p>
         </div>
         <div class="sec">
-          <h2 class="sec-h">Sipariş özeti</h2>
+          <h2 class="sec-h" data-t="done.sumH">Sipariş özeti</h2>
           <div class="card sum" id="doneSum"></div>
         </div>
-        <button type="button" class="btn-sec" id="newOrderBtn" data-act="new-order">Yeni sipariş</button>
+        <button type="button" class="btn-sec" id="newOrderBtn" data-act="new-order" data-t="done.new">Yeni sipariş</button>
       </div>
     </section>
 
     <!-- 4 · Puanlama (yalnız yıldız) -->
     <section class="scr" id="scrRate" aria-labelledby="rateTitle" hidden>
-      <p class="demo-badge" data-demo hidden>Deneme modu · puanlar kaydedilmez</p>
+      <p class="demo-badge" data-demo hidden data-t="demo.rate">Deneme modu · puanlar kaydedilmez</p>
       <div id="rateLoading" class="stack" hidden aria-busy="true">
         <div class="sk" style="height:240px;border-radius:14px"></div>
         <div class="sk" style="height:130px;border-radius:14px"></div>
         <div class="sk" style="height:230px;border-radius:14px"></div>
-        <p class="sr" role="status">Sipariş bilgisi yükleniyor…</p>
+        <p class="sr" role="status" data-t="done.loading">Sipariş bilgisi yükleniyor…</p>
       </div>
       <div id="rateError" class="card pad stack" hidden>
-        <p class="confirm-t" id="rateErrTitle" tabindex="-1">Puanlama açılamadı</p>
+        <p class="confirm-t" id="rateErrTitle" tabindex="-1" data-t="rate.errT">Puanlama açılamadı</p>
         <p class="muted" id="rateErrText"></p>
-        <button type="button" class="btn-primary" data-act="rate-retry">Tekrar dene</button>
-        <button type="button" class="btn-sec" data-act="to-menu">Menüye git</button>
+        <button type="button" class="btn-primary" data-act="rate-retry" data-t="btn.retry">Tekrar dene</button>
+        <button type="button" class="btn-sec" data-act="to-menu" data-t="btn.toMenu">Menüye git</button>
       </div>
       <div id="rateBody" class="stack" style="gap:22px" hidden>
         <div class="card hero">
           <div class="hero-ico star" id="rateIco" aria-hidden="true">★</div>
           <h1 id="rateTitle" tabindex="-1">Siparişinizi puanlayın</h1>
           <p class="hero-text" id="rateText"></p>
-          <p class="rate-no">Sipariş <b id="rateNo"></b></p>
+          <p class="rate-no"><span data-t="rate.noLabel">Sipariş</span> <b id="rateNo" class="ltr"></b></p>
         </div>
         <div class="sec" id="rateBizSec">
-          <h2 class="sec-h">İşletme</h2>
+          <h2 class="sec-h" data-t="rate.biz">İşletme</h2>
           <div class="card" id="rateBiz"></div>
         </div>
         <div class="sec" id="rateItemsSec">
-          <h2 class="sec-h">Yemekler <span class="sec-opt" id="rateItemsOpt">(isteğe bağlı)</span></h2>
+          <h2 class="sec-h"><span data-t="rate.items">Yemekler</span> <span class="sec-opt" id="rateItemsOpt" data-t="opt">(isteğe bağlı)</span></h2>
           <div class="card" id="rateItems"></div>
         </div>
         <div class="oerr" id="rateErrBox" role="alert" tabindex="-1" hidden>
-          <p class="oerr-t">Puan gönderilemedi</p>
+          <p class="oerr-t" data-t="rate.sendErrT">Puan gönderilemedi</p>
           <p id="rateErrMsg"></p>
         </div>
-        <button type="button" class="btn-sec" id="rateMenuBtn" data-act="to-menu" hidden>Menüye git</button>
+        <button type="button" class="btn-sec" id="rateMenuBtn" data-act="to-menu" hidden data-t="btn.toMenu">Menüye git</button>
       </div>
     </section>
   </div>
@@ -681,15 +757,22 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
 
   <div class="toast" id="toast" role="status" hidden>
     <span class="toast-msg" id="toastMsg"></span>
-    <button type="button" id="toastAct" hidden>Geri al</button>
+    <button type="button" id="toastAct" hidden data-t="btn.undo">Geri al</button>
+  </div>
+</div>
+
+<div class="lang-sheet" id="langSheet" hidden>
+  <div role="dialog" aria-modal="true" aria-labelledby="langTitle">
+    <h2 id="langTitle" data-t="lang.title">Dil seçin</h2>
+    <div class="stack-s" id="langList"></div>
   </div>
 </div>
 
 <div class="demo-closed" id="demoClosed" hidden>
   <div role="dialog" aria-modal="true" aria-labelledby="demoClosedT">
-    <h2 id="demoClosedT">Telegram'da sayfa burada kapanır</h2>
-    <p id="demoClosedText">Deneme modundasınız. Gerçek uygulamada müşteri bu noktada sohbete döner.</p>
-    <button type="button" class="btn-primary" id="demoClosedBtn">Sayfaya dön</button>
+    <h2 id="demoClosedT" data-t="demo.closedT">Telegram'da sayfa burada kapanır</h2>
+    <p id="demoClosedText" data-t="demo.closedS">Deneme modundasınız. Gerçek uygulamada müşteri bu noktada sohbete döner.</p>
+    <button type="button" class="btn-primary" id="demoClosedBtn" data-t="demo.back">Sayfaya dön</button>
   </div>
 </div>
 <p class="sr" id="live" aria-live="polite"></p>
@@ -705,25 +788,49 @@ var LS = {
   set: function(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
   del: function(k){ try { localStorage.removeItem(k); } catch(e){} }
 };
+/* ---------- diller (Türkçe, English, Русский, Deutsch, العربية, Español) ---------- */
+var I18N = {"tr":{"page.title":"Sipariş","load.aria":"Menü yükleniyor","load.sr":"Menü yükleniyor…","blk.t":"Bu sayfa Telegram içinde açılır.","blk.s":"Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.","btn.retry":"Tekrar dene","btn.close":"Kapat","btn.toMenu":"Menüye git","btn.change":"Değiştir","btn.undo":"Geri al","btn.add":"Ekle","btn.addAria":"{n} ekle","btn.remove":"Kaldır","demo.menu":"Deneme modu · örnek veriler, sipariş gerçek değil","demo.done":"Deneme modu · durum 20 saniyede bir kendiliğinden ilerler","demo.rate":"Deneme modu · puanlar kaydedilmez","demo.closedT":"Telegram'da sayfa burada kapanır","demo.closedS":"Deneme modundasınız. Gerçek uygulamada müşteri bu noktada sohbete döner.","demo.back":"Sayfaya dön","rate.ask":"⭐ Son siparişinizi puanlar mısınız?","rate.later":"Şimdi değil","rate.go":"Puanla","last.h":"🔁 Son siparişiniz","last.btn":"Aynısını sepete ekle","cats.aria":"Kategoriler","cat.default":"Menü","cart.back":"‹ Menüye dön","cart.title":"Sepetiniz","cart.add":"+ Ürün ekle","cart.emptyT":"Sepetiniz boş","cart.emptyS":"Menüden ürün ekleyin.","cart.removeAria":"{n} sepetten kaldır","addr.h":"Teslimat adresi","addr.saved":"Kayıtlı adresleriniz","addr.label":"Açık adres ve kısa tarif","addr.ph":"Örnek: Bağlar Mah. 12. Sk. No:5 Kat:2 D:4, Yıldız Market'in yanı, mavi kapı","addr.out":"Teslimat alanı dışında","contact.h":"İletişim","name.label":"Adınız","name.hint":"Telegram'dan alındı, değiştirebilirsiniz.","phone.share":"📱 Telegram numaramı paylaş","phone.hint":"Kurye kapıya geldiğinde size ulaşabilsin.","phone.manual":"Numaramı elle yazacağım","phone.your":"Telefon numaranız","phone.courierShort":"Kurye ulaşamazsa","phone.tgMine":"Telegram numaram","phone.tgYour":"Telegram numaranız","phone.saved":"Kayıtlı numaranız","phone.courierLegend":"Kurye ulaşamazsa aranacak numara","phone.other":"Başka numara","phone.callNo":"Aranacak numara","phone.ph":"05xx xxx xx xx","phone.busy":"Numara alınıyor…","phone.unsupported":"Bu Telegram sürümü numara paylaşmayı desteklemiyor. Numaranızı yazın.","phone.notShared":"Numara paylaşılmadı. İsterseniz elle yazabilirsiniz.","phone.fail":"Numaranızı alamadık, lütfen elle yazın.","phone.type":"Numaranızı yazın.","note.h":"Not","note.opt":"(Örn: ketçap olmasın, soğan olmasın, tuz olmasın)","note.add":"📝 Not ekle","note.label":"Restorana notunuz","note.ph":"Örn: ketçap olmasın, soğan olmasın, tuz olmasın","pay.h":"Ödeme (kapıda)","pay.legend":"Ödeme şekli, teslimatta kuryeye ödenir","pay.last":"Son kullandığınız","pay:Nakit":"Nakit","pay:Kredi Kartı (kapıda)":"Kredi Kartı (kapıda)","sum.h":"Özet","sum.sub":"Ara toplam","sum.fee":"Teslimat","sum.total":"Toplam","sum.fine":"Ödemeyi teslimatta kuryeye yaparsınız.","sum.waitLoc":"Konum bekleniyor","free":"Ücretsiz","sum.minWarn":"En az sipariş tutarı <b>{min}</b>. Sepetinize <b>{miss}</b>'lik daha ürün ekleyin.","order.errT":"Sipariş gönderilemedi","done.loading":"Sipariş bilgisi yükleniyor…","done.errT":"Sipariş bilgisi alınamadı","done.title":"Siparişiniz alındı","done.xTitle":"Siparişiniz iptal edildi","done.dTitle":"Siparişiniz teslim edildi","done.noLabel":"Sipariş numaranız","done.text":"Bu numarayla siparişinizi takip edebilirsiniz. Telegram sohbetinde {no} yazmanız da yeterli.","done.xText":"Ödeme yapmanız gerekmiyor. İsterseniz hemen yeni sipariş verebilirsiniz.","done.dText":"Afiyet olsun! Bir sonraki siparişte görüşmek üzere.","done.eta":"Tahmini teslim:","done.sumH":"Sipariş özeti","done.new":"Yeni sipariş","done.addr":"Adres:","done.pay":"Ödeme:","done.payDoor":"{p}, kapıda","track.h":"Sipariş durumu","track.auto":"Durum kendiliğinden yenilenir.","track.refresh":"Şimdi yenile","track.refreshing":"Yenileniyor…","track.done":"Sipariş tamamlandı.","track.now":"Şu an","track.waiting":"bekleniyor","track.notFound":"Sipariş bulunamadı.","steps.0":"Sipariş alındı","steps.1":"Hazırlanıyor","steps.2":"Hazır","steps.3":"Yolda","steps.4":"Teslim edildi","st:Yeni":"Alındı","st:Hazırlanıyor":"Hazırlanıyor","st:Hazır":"Hazır","st:Yolda":"Yolda","st:Teslim Edildi":"Teslim edildi","st:İptal":"İptal edildi","ann.status":"Sipariş durumu: {s}","cancel.btn":"Siparişi iptal et","cancel.q":"Siparişi iptal etmek istiyor musunuz?","cancel.no":"Vazgeç","cancel.yes":"Evet, iptal et","cancel.busy":"İptal ediliyor…","cancel.left":"İptal için kalan süre: {t}","cancel.started":"Restoran siparişinizi hazırlamaya başladı. ","cancel.expired":"İptal süresi doldu. İptal için işletmeyi arayın: {tel}. Hazırlanan siparişin ücreti ödenir.","call.biz":"işletmeyi","cancel.fail":"Sipariş iptal edilemedi.","poll.fail":"Durum güncellenemedi.","poll.retry":" Birazdan yeniden denenecek.","err.unexpected":"Beklenmeyen bir hata oluştu.","err.server":"Sunucudan beklenmeyen bir yanıt geldi. Biraz sonra tekrar deneyin.","err.slow":"Bağlantı yavaş, tekrar deneyin.","err.net":"İnternete bağlanılamadı. Bağlantınızı kontrol edip tekrar deneyin.","err.sessT":"Oturum doğrulanamadı","err.sessS":"Lütfen sipariş sayfasını kapatıp yeniden açın.","err.menuT":"Menü yüklenemedi","err.generic":"Bir sorun oluştu. Lütfen tekrar deneyin.","err.linkT":"Bağlantı eksik","err.linkS":"İşletme bilgisi bulunamadı. Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.","main.sending":"Gönderiliyor…","main.closed":"Restoran şu an kapalı","main.pick":"Ürün seçin","main.toCart":"Sepete git · {n} ürün · {tl}","main.toCartS":"Sepete git · {tl}","main.confirm":"Siparişi onayla · {tl}","main.confirmS":"Onayla · {tl}","main.back":"Telegram'a dön","main.loading":"Yükleniyor…","qty.aria":"{n} adedi","qty.dec":"{n}: bir azalt","qty.inc":"{n}: bir artır","rest.closed":"● Şu an kapalı","rest.open":"● Açık","rest.mins":"{a}–{b} dk","rest.noOrders":"Şu an sipariş almıyoruz.","active.txt":"📦 #{no} siparişiniz: {d}","active.go":"Takip et ›","deliv.fee":"Teslimat {tl}","deliv.free":"Ücretsiz teslimat","deliv.min":"En az {tl}","deliv.newAddr":"Yeni adres","deliv.locOk":"Konumunuz alındı","loc.busy":"Konum alınıyor…","loc.menuBtn":"Konumumu paylaş, teslimat ücretini gör","loc.cartAsk":"Teslimat ücretini hesaplamak için önce konumunuzu paylaşın.","loc.share":"📍 Konumumu paylaş","loc.settings":"Telegram ayarlarından izin ver","loc.minNote":"En az sipariş {tl}","loc.freeNote":"{km} km'ye kadar teslimat ücretsiz","loc.ok":"✓ Konum alındı","loc.fromChat":"Konum Telegram sohbetinden alındı.","loc.out":"Üzgünüz, adresiniz yaklaşık {km} km uzakta. En fazla {maks} km'ye teslimat yapabiliyoruz.","loc.checkFail":"Konum kontrol edilemedi. Tekrar deneyin.","loc.e.tg-denied":"Konum izni verilmedi. Aşağıdaki butonla Telegram ayarlarından izin verip tekrar deneyin.","loc.e.denied":"Konum izni verilmedi. Telefonunuzun ayarlarından Telegram'a konum izni verip tekrar deneyin.","loc.e.timeout":"Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.","loc.e.fail":"Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.","loc.e.none":"Bu cihazda konum alınamıyor. Telefonunuzun konum ayarını açıp tekrar deneyin.","ann.qty":"{ad}: {n} adet. Sepet {tl}","ann.removed":"{ad} sepetten çıkarıldı","ann.loc":"Konum alındı. {km}, {fee}","ann.fee":"teslimat {tl}","ann.free":"ücretsiz teslimat","ann.phone":"Telegram numaranız alındı.","ann.min":"En az sipariş tutarına ulaşılmadı.","v.loc":"Konumunuzu paylaşın; teslimat ücretini buna göre hesaplıyoruz.","v.addr":"Açık adresinizi yazın: mahalle, sokak, bina ve daire no, kısa tarif.","v.addrSel":"Bu adres teslimat alanı dışında. Başka bir adres seçin.","v.name":"Adınızı yazın; kurye kapıda bu isimle sorar.","v.phone":"Telefon numaranızı paylaşın ya da elle yazın; kurye size ulaşabilsin.","v.other":"Numarayı 05xx xxx xx xx biçiminde yazın.","v.pay":"Kapıda nasıl ödeyeceğinizi seçin.","of.closed":"Restoran şu an sipariş almıyor.","of.min":"Sepet tutarı en az sipariş tutarının altında.","of.kapsam":"Adresiniz teslimat alanı dışında.","of.kapsamSel":"Bu adres teslimat alanı dışında.","of.addr":"Açık adresinizi kontrol edin.","of.addrSel":"Adres bulunamadı, başka bir adres seçin.","of.tel":"Telefon numaranızı kontrol edin.","of.menuUpd":"Menü güncelleniyor…","of.removed":"Menüde artık olmayan ürünleri sepetten çıkardık. ","of.check":"Sepetinizi kontrol edip yeniden onaylayın.","of.changed":"Menü değişti.","of.reloadFail":" Menü yenilenemedi; sayfayı kapatıp yeniden açın.","of.sess":"Oturum doğrulanamadı. Lütfen sipariş sayfasını kapatıp yeniden açın.","of.generic":"Sipariş gönderilemedi. Lütfen tekrar deneyin.","re.none":"Bu ürünler artık menüde yok.","re.added":"✓ Sepete eklendi","re.partial":"Bazı ürünler artık menüde yok; kalanlar sepete eklendi.","re.ok":"Son siparişiniz sepete eklendi","ann.re":"Son siparişiniz sepete eklendi. Sepet {tl}","rate.e1":"Çok kötü","rate.e2":"Kötü","rate.e3":"Orta","rate.e4":"İyi","rate.e5":"Mükemmel","rate.laterToast":"Tamam. Telegram'daki «Siparişi puanla» butonuyla sonra da puanlayabilirsiniz.","rate.metaAria":"Ortalama puan {r}, {n} değerlendirme","rate.prodAria":"Puan {r}, {n} değerlendirme","rate.aria":"{n} için puan","rate.ariaVal":": {v} yıldız","rate.starAria":"{i} yıldız, {lbl}","rate.title":"Siparişinizi puanlayın","rate.text":"Yıldızlara dokunmanız yeterli, yorum yazmanız gerekmez.","rate.sentT":"Teşekkürler!","rate.sentS":"Puanınız kaydedildi. Afiyet olsun!","rate.doneT":"Bu siparişi puanladınız","rate.doneS":"Teşekkürler! Verdiğiniz puanlar aşağıda.","rate.earlyT":"Henüz puanlanamaz","rate.earlyS":"Siparişiniz teslim edildikten sonra puanlayabilirsiniz.","rate.lateT":"Puanlama süresi doldu","rate.lateS":"Siparişler teslimden sonraki 7 gün içinde puanlanabilir.","rate.xT":"Bu sipariş iptal edildi","rate.xS":"İptal edilen siparişler puanlanamaz.","rate.naT":"Bu sipariş puanlanamaz","rate.bizSub":"Genel memnuniyet","rate.biz":"İşletme","rate.items":"Yemekler","opt":"(isteğe bağlı)","rate.qty":"{n} adet","rate.none":"Puanlanmadı","rate.send":"Puanı gönder","rate.needBiz":"Önce işletmeye yıldız verin","rate.needBizS":"İşletmeye yıldız verin","rate.thanksAnn":"Teşekkürler! Puanınız kaydedildi.","rate.sendFail":"Puan gönderilemedi. Lütfen tekrar deneyin.","rate.sendErrT":"Puan gönderilemedi","rate.errT":"Puanlama açılamadı","rate.noLabel":"Sipariş","rate.btn":"⭐ Siparişi puanla","rate.doneInfo":"⭐ Bu siparişi puanladınız. Teşekkürler!","lang.title":"Dil seçin","lang.aria":"Dil: {l}. Değiştir","gate.hi":"Hoş geldiniz! 👋","gate.text":"Menüye ve bilgilere boşuna vakit ayırmanız gerekmesin diye önce küçük bir kontrol yapalım: Adresiniz teslimat alanımızın içinde mi?","gate.sub":"Konumunuzu paylaşmanız yeterli, yalnızca birkaç saniye sürer.","gate.privacy":"🔒 Konumunuz yalnızca teslimat mesafesini hesaplamak için kullanılır.","gate.okT":"Harika, şanslısınız!","gate.okS":"Bulunduğunuz yer teslimat alanımızın içinde; size yaklaşık {km} uzaklıktayız. Siparişinizi kapınıza kadar getirebiliriz! 🛵","gate.go":"Menüye geç 🍽️","gate.outT":"Çok üzgünüz","gate.outS":"Adresiniz bize yaklaşık {km} uzaklıkta. Şu an en fazla {maks} mesafeye teslimat yapabiliyoruz.","gate.browse":"Yine de menüye göz at","gate.checking":"Konumunuz kontrol ediliyor…","km":"{k} km"},"en":{"page.title":"Order","load.aria":"Loading menu","load.sr":"Loading menu…","blk.t":"This page opens inside Telegram.","blk.s":"Please use the «🍽️ Order» button in the restaurant's Telegram bot.","btn.retry":"Try again","btn.close":"Close","btn.toMenu":"Go to menu","btn.change":"Change","btn.undo":"Undo","btn.add":"Add","btn.addAria":"Add {n}","btn.remove":"Remove","demo.menu":"Demo mode · sample data, orders are not real","demo.done":"Demo mode · the status advances by itself every 20 seconds","demo.rate":"Demo mode · ratings are not saved","demo.closedT":"In Telegram, the page closes here","demo.closedS":"You're in demo mode. In the real app, the customer returns to the chat at this point.","demo.back":"Back to the page","rate.ask":"⭐ Would you rate your last order?","rate.later":"Not now","rate.go":"Rate","last.h":"🔁 Your last order","last.btn":"Add the same to cart","cats.aria":"Categories","cat.default":"Menu","cart.back":"‹ Back to menu","cart.title":"Your cart","cart.add":"+ Add items","cart.emptyT":"Your cart is empty","cart.emptyS":"Add items from the menu.","cart.removeAria":"Remove {n} from cart","addr.h":"Delivery address","addr.saved":"Your saved addresses","addr.label":"Full address and short directions","addr.ph":"Example: 12th Street No. 5, 2nd floor, flat 4, next to Yıldız Market, blue door","addr.out":"Outside the delivery area","contact.h":"Contact","name.label":"Your name","name.hint":"Taken from Telegram; you can change it.","phone.share":"📱 Share my Telegram number","phone.hint":"So the courier can reach you at the door.","phone.manual":"I'll type my number","phone.your":"Your phone number","phone.courierShort":"If the courier can't reach you","phone.tgMine":"My Telegram number","phone.tgYour":"Your Telegram number","phone.saved":"Your saved number","phone.courierLegend":"Number to call if the courier can't reach you","phone.other":"Another number","phone.callNo":"Number to call","phone.ph":"+44 7911 123456","phone.busy":"Getting your number…","phone.unsupported":"This Telegram version can't share your number. Please type it.","phone.notShared":"The number wasn't shared. You can type it instead.","phone.fail":"We couldn't get your number. Please type it.","phone.type":"Please type your number.","note.h":"Note","note.opt":"(e.g. no ketchup, no onions, no salt)","note.add":"📝 Add a note","note.label":"Your note to the restaurant","note.ph":"e.g. no ketchup, no onions, no salt","pay.h":"Payment (at the door)","pay.legend":"Payment method; you pay the courier on delivery","pay.last":"Last used","pay:Nakit":"Cash","pay:Kredi Kartı (kapıda)":"Credit card (at the door)","sum.h":"Summary","sum.sub":"Subtotal","sum.fee":"Delivery","sum.total":"Total","sum.fine":"You pay the courier on delivery.","sum.waitLoc":"Waiting for location","free":"Free","sum.minWarn":"The minimum order is <b>{min}</b>. Add <b>{miss}</b> more to your cart.","order.errT":"The order couldn't be sent","done.loading":"Loading order details…","done.errT":"Couldn't load the order","done.title":"Your order has been received","done.xTitle":"Your order has been cancelled","done.dTitle":"Your order has been delivered","done.noLabel":"Your order number","done.text":"You can track your order with this number. You can also just type {no} in the Telegram chat.","done.xText":"You don't need to pay anything. You can place a new order right away if you like.","done.dText":"Enjoy your meal! See you next time.","done.eta":"Estimated delivery:","done.sumH":"Order summary","done.new":"New order","done.addr":"Address:","done.pay":"Payment:","done.payDoor":"{p}, at the door","track.h":"Order status","track.auto":"The status updates automatically.","track.refresh":"Refresh now","track.refreshing":"Refreshing…","track.done":"Order completed.","track.now":"Now","track.waiting":"pending","track.notFound":"Order not found.","steps.0":"Order received","steps.1":"Being prepared","steps.2":"Ready","steps.3":"On the way","steps.4":"Delivered","st:Yeni":"Received","st:Hazırlanıyor":"Being prepared","st:Hazır":"Ready","st:Yolda":"On the way","st:Teslim Edildi":"Delivered","st:İptal":"Cancelled","ann.status":"Order status: {s}","cancel.btn":"Cancel order","cancel.q":"Do you want to cancel the order?","cancel.no":"Never mind","cancel.yes":"Yes, cancel","cancel.busy":"Cancelling…","cancel.left":"Time left to cancel: {t}","cancel.started":"The restaurant has started preparing your order. ","cancel.expired":"The cancellation window has passed. To cancel, call the restaurant: {tel}. Prepared orders must be paid for.","call.biz":"the restaurant","cancel.fail":"The order couldn't be cancelled.","poll.fail":"Couldn't update the status.","poll.retry":" We'll try again shortly.","err.unexpected":"An unexpected error occurred.","err.server":"The server sent an unexpected response. Please try again shortly.","err.slow":"The connection is slow. Please try again.","err.net":"Couldn't connect to the internet. Check your connection and try again.","err.sessT":"Session couldn't be verified","err.sessS":"Please close the order page and open it again.","err.menuT":"The menu couldn't be loaded","err.generic":"Something went wrong. Please try again.","err.linkT":"Incomplete link","err.linkS":"Restaurant details weren't found. Please use the «🍽️ Order» button in the restaurant's Telegram bot.","main.sending":"Sending…","main.closed":"The restaurant is closed now","main.pick":"Choose items","main.toCart":"Go to cart ({n}) · {tl}","main.toCartS":"Go to cart · {tl}","main.confirm":"Confirm order · {tl}","main.confirmS":"Confirm · {tl}","main.back":"Back to Telegram","main.loading":"Loading…","qty.aria":"{n} quantity","qty.dec":"{n}: one less","qty.inc":"{n}: one more","rest.closed":"● Closed now","rest.open":"● Open","rest.mins":"{a}–{b} min","rest.noOrders":"We're not taking orders right now.","active.txt":"📦 Your order #{no}: {d}","active.go":"Track ›","deliv.fee":"Delivery {tl}","deliv.free":"Free delivery","deliv.min":"Min. {tl}","deliv.newAddr":"New address","deliv.locOk":"Location received","loc.busy":"Getting location…","loc.menuBtn":"Share my location to see the delivery fee","loc.cartAsk":"Share your location first so we can calculate the delivery fee.","loc.share":"📍 Share my location","loc.settings":"Allow in Telegram settings","loc.minNote":"Minimum order {tl}","loc.freeNote":"Free delivery up to {km} km","loc.ok":"✓ Location received","loc.fromChat":"Location received from the Telegram chat.","loc.out":"Sorry, your address is about {km} km away. We deliver up to {maks} km.","loc.checkFail":"Couldn't check the location. Please try again.","loc.e.tg-denied":"Location permission was not granted. Allow it in Telegram settings with the button below and try again.","loc.e.denied":"Location permission was not granted. Allow Telegram to use your location in your phone's settings and try again.","loc.e.timeout":"We couldn't get your location. Make sure location is turned on and try again.","loc.e.fail":"We couldn't get your location. Make sure location is turned on and try again.","loc.e.none":"Location isn't available on this device. Turn on location in your phone's settings and try again.","ann.qty":"{ad}: {n}. Cart {tl}","ann.removed":"{ad} removed from cart","ann.loc":"Location received. {km}, {fee}","ann.fee":"delivery {tl}","ann.free":"free delivery","ann.phone":"Your Telegram number was received.","ann.min":"The minimum order amount has not been reached.","v.loc":"Share your location; we calculate the delivery fee from it.","v.addr":"Enter your full address: street, building and flat number, and short directions.","v.addrSel":"This address is outside the delivery area. Please choose another one.","v.name":"Enter your name; the courier will ask for it at the door.","v.phone":"Share or type your phone number so the courier can reach you.","v.other":"Type the number with the country code, e.g. +44 7911 123456.","v.pay":"Choose how you will pay at the door.","of.closed":"The restaurant isn't taking orders right now.","of.min":"Your cart is below the minimum order amount.","of.kapsam":"Your address is outside the delivery area.","of.kapsamSel":"This address is outside the delivery area.","of.addr":"Please check your address.","of.addrSel":"Address not found; please choose another one.","of.tel":"Please check your phone number.","of.menuUpd":"Updating the menu…","of.removed":"We removed items that are no longer on the menu. ","of.check":"Please check your cart and confirm again.","of.changed":"The menu has changed.","of.reloadFail":" The menu couldn't be refreshed; please close and reopen the page.","of.sess":"Your session could not be verified. Please close the order page and open it again.","of.generic":"The order couldn't be sent. Please try again.","re.none":"These items are no longer on the menu.","re.added":"✓ Added to cart","re.partial":"Some items are no longer on the menu; the rest were added to your cart.","re.ok":"Your last order was added to the cart","ann.re":"Your last order was added to the cart. Cart {tl}","rate.e1":"Very bad","rate.e2":"Bad","rate.e3":"Okay","rate.e4":"Good","rate.e5":"Excellent","rate.laterToast":"OK. You can also rate later with the «Rate order» button in Telegram.","rate.metaAria":"Average rating {r}, ratings: {n}","rate.prodAria":"Rating {r}, ratings: {n}","rate.aria":"Rating for {n}","rate.ariaVal":": {v} of 5 stars","rate.starAria":"{i} of 5 stars, {lbl}","rate.title":"Rate your order","rate.text":"Just tap the stars; no need to write a comment.","rate.sentT":"Thank you!","rate.sentS":"Your rating has been saved. Enjoy your meal!","rate.doneT":"You've rated this order","rate.doneS":"Thank you! Your ratings are shown below.","rate.earlyT":"Can't be rated yet","rate.earlyS":"You can rate your order after it has been delivered.","rate.lateT":"The rating period has ended","rate.lateS":"Orders can be rated within 7 days of delivery.","rate.xT":"This order was cancelled","rate.xS":"Cancelled orders cannot be rated.","rate.naT":"This order can't be rated","rate.bizSub":"Overall satisfaction","rate.biz":"Restaurant","rate.items":"Food","opt":"(optional)","rate.qty":"× {n}","rate.none":"Not rated","rate.send":"Send rating","rate.needBiz":"First, rate the restaurant","rate.needBizS":"Rate the restaurant","rate.thanksAnn":"Thank you! Your rating has been saved.","rate.sendFail":"The rating couldn't be sent. Please try again.","rate.sendErrT":"Rating couldn't be sent","rate.errT":"Rating couldn't be opened","rate.noLabel":"Order","rate.btn":"⭐ Rate order","rate.doneInfo":"⭐ You've rated this order. Thank you!","lang.title":"Choose language","lang.aria":"Language: {l}. Change","gate.hi":"Welcome! 👋","gate.text":"So you don't spend time on the menu and details for nothing, let's do a quick check first: is your address inside our delivery area?","gate.sub":"Just share your location; it only takes a few seconds.","gate.privacy":"🔒 Your location is only used to calculate the delivery distance.","gate.okT":"Great news, you're in luck!","gate.okS":"You're inside our delivery area, about {km} from us. We can bring your order right to your door! 🛵","gate.go":"Go to the menu 🍽️","gate.outT":"We're very sorry","gate.outS":"Your address is about {km} from us. Right now we deliver up to {maks}.","gate.browse":"Browse the menu anyway","gate.checking":"Checking your location…","km":"{k} km"},"ru":{"page.title":"Заказ","load.aria":"Загрузка меню","load.sr":"Загружаем меню…","blk.t":"Эта страница открывается в Telegram.","blk.s":"Пожалуйста, используйте кнопку «🍽️ Заказать» в Telegram-боте заведения.","btn.retry":"Повторить","btn.close":"Закрыть","btn.toMenu":"К меню","btn.change":"Изменить","btn.undo":"Отменить","btn.add":"Добавить","btn.addAria":"Добавить: {n}","btn.remove":"Убрать","demo.menu":"Демо-режим · примерные данные, заказ не настоящий","demo.done":"Демо-режим · статус меняется сам каждые 20 секунд","demo.rate":"Демо-режим · оценки не сохраняются","demo.closedT":"В Telegram страница здесь закроется","demo.closedS":"Вы в демо-режиме. В настоящем приложении клиент здесь вернётся в чат.","demo.back":"Вернуться на страницу","rate.ask":"⭐ Оцените ваш последний заказ?","rate.later":"Не сейчас","rate.go":"Оценить","last.h":"🔁 Ваш последний заказ","last.btn":"Добавить то же в корзину","cats.aria":"Категории","cat.default":"Меню","cart.back":"‹ Назад к меню","cart.title":"Ваша корзина","cart.add":"+ Добавить блюда","cart.emptyT":"Корзина пуста","cart.emptyS":"Добавьте блюда из меню.","cart.removeAria":"Убрать из корзины: {n}","addr.h":"Адрес доставки","addr.saved":"Ваши сохранённые адреса","addr.label":"Полный адрес и как вас найти","addr.ph":"Например: ул. 12-я, д. 5, 2 этаж, кв. 4, рядом с магазином «Йылдыз», синяя дверь","addr.out":"Вне зоны доставки","contact.h":"Контакты","name.label":"Ваше имя","name.hint":"Взято из Telegram, можно изменить.","phone.share":"📱 Поделиться номером из Telegram","phone.hint":"Чтобы курьер мог связаться с вами у двери.","phone.manual":"Введу номер вручную","phone.your":"Ваш номер телефона","phone.courierShort":"Если курьер не дозвонится","phone.tgMine":"Мой номер в Telegram","phone.tgYour":"Ваш номер в Telegram","phone.saved":"Ваш сохранённый номер","phone.courierLegend":"Номер для звонка, если курьер не дозвонится","phone.other":"Другой номер","phone.callNo":"Номер для звонка","phone.ph":"+7 912 345-67-89","phone.busy":"Получаем номер…","phone.unsupported":"Эта версия Telegram не умеет делиться номером. Введите его вручную.","phone.notShared":"Номер не был отправлен. Можно ввести его вручную.","phone.fail":"Не удалось получить номер, введите его вручную.","phone.type":"Введите номер.","note.h":"Комментарий","note.opt":"(напр.: без кетчупа, без лука, без соли)","note.add":"📝 Добавить комментарий","note.label":"Комментарий для заведения","note.ph":"напр.: без кетчупа, без лука, без соли","pay.h":"Оплата (при получении)","pay.legend":"Способ оплаты: оплата курьеру при получении","pay.last":"В прошлый раз","pay:Nakit":"Наличные","pay:Kredi Kartı (kapıda)":"Банковская карта (при получении)","sum.h":"Итог","sum.sub":"Сумма","sum.fee":"Доставка","sum.total":"Итого","sum.fine":"Оплата курьеру при получении.","sum.waitLoc":"Ожидаем местоположение","free":"Бесплатно","sum.minWarn":"Минимальная сумма заказа — <b>{min}</b>. Добавьте в корзину ещё на <b>{miss}</b>.","order.errT":"Не удалось отправить заказ","done.loading":"Загружаем данные заказа…","done.errT":"Не удалось загрузить заказ","done.title":"Ваш заказ принят","done.xTitle":"Ваш заказ отменён","done.dTitle":"Ваш заказ доставлен","done.noLabel":"Номер заказа","done.text":"По этому номеру можно отслеживать заказ. Можно также написать {no} в чате Telegram.","done.xText":"Платить ничего не нужно. Если хотите, можно сразу сделать новый заказ.","done.dText":"Приятного аппетита! До следующего заказа.","done.eta":"Примерное время доставки:","done.sumH":"Состав заказа","done.new":"Новый заказ","done.addr":"Адрес:","done.pay":"Оплата:","done.payDoor":"{p}, при получении","track.h":"Статус заказа","track.auto":"Статус обновляется автоматически.","track.refresh":"Обновить","track.refreshing":"Обновляем…","track.done":"Заказ завершён.","track.now":"Сейчас","track.waiting":"ожидается","track.notFound":"Заказ не найден.","steps.0":"Заказ принят","steps.1":"Готовится","steps.2":"Готов","steps.3":"В пути","steps.4":"Доставлен","st:Yeni":"Принят","st:Hazırlanıyor":"Готовится","st:Hazır":"Готов","st:Yolda":"В пути","st:Teslim Edildi":"Доставлен","st:İptal":"Отменён","ann.status":"Статус заказа: {s}","cancel.btn":"Отменить заказ","cancel.q":"Отменить заказ?","cancel.no":"Не отменять","cancel.yes":"Да, отменить","cancel.busy":"Отменяем…","cancel.left":"Осталось времени на отмену: {t}","cancel.started":"Заведение уже начало готовить ваш заказ. ","cancel.expired":"Время для отмены истекло. Для отмены позвоните в заведение: {tel}. Приготовленный заказ оплачивается.","call.biz":"заведение","cancel.fail":"Не удалось отменить заказ.","poll.fail":"Не удалось обновить статус.","poll.retry":" Скоро попробуем снова.","err.unexpected":"Произошла непредвиденная ошибка.","err.server":"Сервер ответил неожиданно. Попробуйте чуть позже.","err.slow":"Медленное соединение, попробуйте ещё раз.","err.net":"Нет подключения к интернету. Проверьте соединение и попробуйте снова.","err.sessT":"Не удалось подтвердить сеанс","err.sessS":"Закройте страницу заказа и откройте её снова.","err.menuT":"Не удалось загрузить меню","err.generic":"Что-то пошло не так. Попробуйте ещё раз.","err.linkT":"Неполная ссылка","err.linkS":"Данные заведения не найдены. Используйте кнопку «🍽️ Заказать» в Telegram-боте заведения.","main.sending":"Отправляем…","main.closed":"Заведение сейчас закрыто","main.pick":"Выберите блюда","main.toCart":"В корзину · {n} шт. · {tl}","main.toCartS":"В корзину · {tl}","main.confirm":"Подтвердить заказ · {tl}","main.confirmS":"Подтвердить · {tl}","main.back":"Вернуться в Telegram","main.loading":"Загрузка…","qty.aria":"Количество: {n}","qty.dec":"{n}: на одну меньше","qty.inc":"{n}: на одну больше","rest.closed":"● Сейчас закрыто","rest.open":"● Открыто","rest.mins":"{a}–{b} мин","rest.noOrders":"Сейчас мы не принимаем заказы.","active.txt":"📦 Ваш заказ #{no}: {d}","active.go":"Следить ›","deliv.fee":"Доставка {tl}","deliv.free":"Бесплатная доставка","deliv.min":"Мин. {tl}","deliv.newAddr":"Новый адрес","deliv.locOk":"Местоположение получено","loc.busy":"Определяем местоположение…","loc.menuBtn":"Поделиться местоположением и узнать стоимость доставки","loc.cartAsk":"Сначала поделитесь местоположением, чтобы рассчитать стоимость доставки.","loc.share":"📍 Поделиться местоположением","loc.settings":"Разрешить в настройках Telegram","loc.minNote":"Минимальный заказ {tl}","loc.freeNote":"Бесплатная доставка до {km} км","loc.ok":"✓ Местоположение получено","loc.fromChat":"Местоположение получено из чата Telegram.","loc.out":"К сожалению, ваш адрес примерно в {km} км. Мы доставляем на расстояние до {maks} км.","loc.checkFail":"Не удалось проверить местоположение. Попробуйте ещё раз.","loc.e.tg-denied":"Доступ к местоположению не разрешён. Разрешите его в настройках Telegram кнопкой ниже и попробуйте снова.","loc.e.denied":"Доступ к местоположению не разрешён. Разрешите Telegram доступ к геолокации в настройках телефона и попробуйте снова.","loc.e.timeout":"Не удалось определить местоположение. Включите геолокацию на телефоне и попробуйте снова.","loc.e.fail":"Не удалось определить местоположение. Включите геолокацию на телефоне и попробуйте снова.","loc.e.none":"На этом устройстве не удаётся определить местоположение. Включите геолокацию в настройках телефона и попробуйте снова.","ann.qty":"{ad}: {n} шт. Корзина {tl}","ann.removed":"{ad}: убрано из корзины","ann.loc":"Местоположение получено. {km}, {fee}","ann.fee":"доставка {tl}","ann.free":"бесплатная доставка","ann.phone":"Номер из Telegram получен.","ann.min":"Минимальная сумма заказа не набрана.","v.loc":"Поделитесь местоположением — по нему рассчитывается стоимость доставки.","v.addr":"Укажите полный адрес: улица, дом, квартира и как вас найти.","v.addrSel":"Этот адрес вне зоны доставки. Выберите другой.","v.name":"Укажите имя — курьер спросит его у двери.","v.phone":"Поделитесь номером или введите его, чтобы курьер мог связаться с вами.","v.other":"Введите номер с кодом страны, например +7 912 345-67-89.","v.pay":"Выберите способ оплаты при получении.","of.closed":"Заведение сейчас не принимает заказы.","of.min":"Сумма корзины ниже минимальной.","of.kapsam":"Ваш адрес вне зоны доставки.","of.kapsamSel":"Этот адрес вне зоны доставки.","of.addr":"Проверьте адрес.","of.addrSel":"Адрес не найден, выберите другой.","of.tel":"Проверьте номер телефона.","of.menuUpd":"Обновляем меню…","of.removed":"Мы убрали из корзины блюда, которых больше нет в меню. ","of.check":"Проверьте корзину и подтвердите заказ ещё раз.","of.changed":"Меню изменилось.","of.reloadFail":" Не удалось обновить меню; закройте страницу и откройте снова.","of.sess":"Не удалось подтвердить сеанс. Закройте страницу заказа и откройте её снова.","of.generic":"Не удалось отправить заказ. Попробуйте ещё раз.","re.none":"Этих блюд больше нет в меню.","re.added":"✓ Добавлено в корзину","re.partial":"Некоторых блюд больше нет в меню; остальные добавлены в корзину.","re.ok":"Ваш последний заказ добавлен в корзину","ann.re":"Ваш последний заказ добавлен в корзину. Корзина {tl}","rate.e1":"Очень плохо","rate.e2":"Плохо","rate.e3":"Нормально","rate.e4":"Хорошо","rate.e5":"Отлично","rate.laterToast":"Хорошо. Оценить можно и позже — кнопкой «Оценить заказ» в Telegram.","rate.metaAria":"Средняя оценка {r}, оценок: {n}","rate.prodAria":"Оценка {r}, оценок: {n}","rate.aria":"Оценка: {n}","rate.ariaVal":": {v} из 5","rate.starAria":"{i} из 5, {lbl}","rate.title":"Оцените ваш заказ","rate.text":"Просто нажмите на звёзды — писать отзыв не нужно.","rate.sentT":"Спасибо!","rate.sentS":"Ваша оценка сохранена. Приятного аппетита!","rate.doneT":"Вы оценили этот заказ","rate.doneS":"Спасибо! Ваши оценки — ниже.","rate.earlyT":"Пока нельзя оценить","rate.earlyS":"Оценить заказ можно после доставки.","rate.lateT":"Срок оценки истёк","rate.lateS":"Заказ можно оценить в течение 7 дней после доставки.","rate.xT":"Этот заказ отменён","rate.xS":"Отменённые заказы нельзя оценить.","rate.naT":"Этот заказ нельзя оценить","rate.bizSub":"Общее впечатление","rate.biz":"Заведение","rate.items":"Блюда","opt":"(необязательно)","rate.qty":"{n} шт.","rate.none":"Без оценки","rate.send":"Отправить оценку","rate.needBiz":"Сначала оцените заведение","rate.needBizS":"Оцените заведение","rate.thanksAnn":"Спасибо! Ваша оценка сохранена.","rate.sendFail":"Не удалось отправить оценку. Попробуйте ещё раз.","rate.sendErrT":"Не удалось отправить оценку","rate.errT":"Не удалось открыть оценку","rate.noLabel":"Заказ","rate.btn":"⭐ Оценить заказ","rate.doneInfo":"⭐ Вы оценили этот заказ. Спасибо!","lang.title":"Выберите язык","lang.aria":"Язык: {l}. Изменить","gate.hi":"Добро пожаловать! 👋","gate.text":"Чтобы вы не тратили время на меню и данные зря, сначала проверим: входит ли ваш адрес в зону доставки?","gate.sub":"Просто поделитесь местоположением — это займёт пару секунд.","gate.privacy":"🔒 Местоположение используется только для расчёта расстояния доставки.","gate.okT":"Отлично, вам повезло!","gate.okS":"Вы находитесь в нашей зоне доставки, примерно в {km} от нас. Мы привезём заказ прямо к вашей двери! 🛵","gate.go":"Перейти к меню 🍽️","gate.outT":"Нам очень жаль","gate.outS":"Ваш адрес примерно в {km} от нас. Сейчас мы доставляем не дальше {maks}.","gate.browse":"Всё равно посмотреть меню","gate.checking":"Проверяем местоположение…","km":"{k} км"},"de":{"page.title":"Bestellung","load.aria":"Speisekarte wird geladen","load.sr":"Speisekarte wird geladen…","blk.t":"Diese Seite wird in Telegram geöffnet.","blk.s":"Bitte nutzen Sie den Button «🍽️ Bestellen» im Telegram-Bot des Restaurants.","btn.retry":"Erneut versuchen","btn.close":"Schließen","btn.toMenu":"Zur Speisekarte","btn.change":"Ändern","btn.undo":"Rückgängig","btn.add":"Hinzufügen","btn.addAria":"{n} hinzufügen","btn.remove":"Entfernen","demo.menu":"Demomodus · Beispieldaten, keine echte Bestellung","demo.done":"Demomodus · der Status ändert sich alle 20 Sekunden von selbst","demo.rate":"Demomodus · Bewertungen werden nicht gespeichert","demo.closedT":"In Telegram wird die Seite hier geschlossen","demo.closedS":"Sie sind im Demomodus. In der echten App kehrt der Kunde hier zum Chat zurück.","demo.back":"Zurück zur Seite","rate.ask":"⭐ Möchten Sie Ihre letzte Bestellung bewerten?","rate.later":"Nicht jetzt","rate.go":"Bewerten","last.h":"🔁 Ihre letzte Bestellung","last.btn":"Dasselbe in den Warenkorb","cats.aria":"Kategorien","cat.default":"Speisekarte","cart.back":"‹ Zurück zur Speisekarte","cart.title":"Ihr Warenkorb","cart.add":"+ Artikel hinzufügen","cart.emptyT":"Ihr Warenkorb ist leer","cart.emptyS":"Fügen Sie Artikel aus der Speisekarte hinzu.","cart.removeAria":"{n} aus dem Warenkorb entfernen","addr.h":"Lieferadresse","addr.saved":"Ihre gespeicherten Adressen","addr.label":"Vollständige Adresse und kurze Wegbeschreibung","addr.ph":"Beispiel: 12. Straße Nr. 5, 2. Stock, Wohnung 4, neben dem Yıldız Markt, blaue Tür","addr.out":"Außerhalb des Liefergebiets","contact.h":"Kontakt","name.label":"Ihr Name","name.hint":"Aus Telegram übernommen, Sie können ihn ändern.","phone.share":"📱 Meine Telegram-Nummer teilen","phone.hint":"Damit der Kurier Sie an der Tür erreichen kann.","phone.manual":"Ich gebe meine Nummer selbst ein","phone.your":"Ihre Telefonnummer","phone.courierShort":"Falls der Kurier Sie nicht erreicht","phone.tgMine":"Meine Telegram-Nummer","phone.tgYour":"Ihre Telegram-Nummer","phone.saved":"Ihre gespeicherte Nummer","phone.courierLegend":"Nummer für Anrufe, falls der Kurier Sie nicht erreicht","phone.other":"Andere Nummer","phone.callNo":"Rückrufnummer","phone.ph":"+49 151 23456789","phone.busy":"Nummer wird abgerufen…","phone.unsupported":"Diese Telegram-Version kann keine Nummer teilen. Bitte geben Sie sie ein.","phone.notShared":"Die Nummer wurde nicht geteilt. Sie können sie auch eingeben.","phone.fail":"Wir konnten Ihre Nummer nicht abrufen, bitte geben Sie sie ein.","phone.type":"Bitte geben Sie Ihre Nummer ein.","note.h":"Hinweis","note.opt":"(z. B. ohne Ketchup, ohne Zwiebeln, ohne Salz)","note.add":"📝 Hinweis hinzufügen","note.label":"Ihr Hinweis an das Restaurant","note.ph":"z. B. ohne Ketchup, ohne Zwiebeln, ohne Salz","pay.h":"Bezahlung (an der Tür)","pay.legend":"Zahlungsart; Sie bezahlen bei der Lieferung beim Kurier","pay.last":"Zuletzt verwendet","pay:Nakit":"Bar","pay:Kredi Kartı (kapıda)":"Kreditkarte (an der Tür)","sum.h":"Übersicht","sum.sub":"Zwischensumme","sum.fee":"Lieferung","sum.total":"Gesamt","sum.fine":"Sie bezahlen bei der Lieferung beim Kurier.","sum.waitLoc":"Standort ausstehend","free":"Kostenlos","sum.minWarn":"Der Mindestbestellwert beträgt <b>{min}</b>. Fügen Sie noch <b>{miss}</b> hinzu.","order.errT":"Bestellung konnte nicht gesendet werden","done.loading":"Bestelldaten werden geladen…","done.errT":"Bestelldaten konnten nicht geladen werden","done.title":"Ihre Bestellung ist eingegangen","done.xTitle":"Ihre Bestellung wurde storniert","done.dTitle":"Ihre Bestellung wurde geliefert","done.noLabel":"Ihre Bestellnummer","done.text":"Mit dieser Nummer können Sie Ihre Bestellung verfolgen. Sie können auch einfach {no} in den Telegram-Chat schreiben.","done.xText":"Sie müssen nichts bezahlen. Wenn Sie möchten, können Sie gleich neu bestellen.","done.dText":"Guten Appetit! Bis zur nächsten Bestellung.","done.eta":"Voraussichtliche Lieferung:","done.sumH":"Bestellübersicht","done.new":"Neue Bestellung","done.addr":"Adresse:","done.pay":"Zahlung:","done.payDoor":"{p}, an der Tür","track.h":"Bestellstatus","track.auto":"Der Status aktualisiert sich automatisch.","track.refresh":"Jetzt aktualisieren","track.refreshing":"Wird aktualisiert…","track.done":"Bestellung abgeschlossen.","track.now":"Jetzt","track.waiting":"ausstehend","track.notFound":"Bestellung nicht gefunden.","steps.0":"Bestellung eingegangen","steps.1":"Wird zubereitet","steps.2":"Fertig","steps.3":"Unterwegs","steps.4":"Geliefert","st:Yeni":"Eingegangen","st:Hazırlanıyor":"Wird zubereitet","st:Hazır":"Fertig","st:Yolda":"Unterwegs","st:Teslim Edildi":"Geliefert","st:İptal":"Storniert","ann.status":"Bestellstatus: {s}","cancel.btn":"Bestellung stornieren","cancel.q":"Möchten Sie die Bestellung stornieren?","cancel.no":"Doch nicht","cancel.yes":"Ja, stornieren","cancel.busy":"Wird storniert…","cancel.left":"Verbleibende Zeit zum Stornieren: {t}","cancel.started":"Das Restaurant hat mit der Zubereitung begonnen. ","cancel.expired":"Die Stornierungsfrist ist abgelaufen. Zum Stornieren rufen Sie das Restaurant an: {tel}. Zubereitete Bestellungen müssen bezahlt werden.","call.biz":"das Restaurant","cancel.fail":"Die Bestellung konnte nicht storniert werden.","poll.fail":"Status konnte nicht aktualisiert werden.","poll.retry":" Wir versuchen es gleich erneut.","err.unexpected":"Ein unerwarteter Fehler ist aufgetreten.","err.server":"Der Server hat unerwartet geantwortet. Bitte versuchen Sie es gleich noch einmal.","err.slow":"Die Verbindung ist langsam, bitte erneut versuchen.","err.net":"Keine Internetverbindung. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.","err.sessT":"Sitzung konnte nicht bestätigt werden","err.sessS":"Bitte schließen Sie die Bestellseite und öffnen Sie sie erneut.","err.menuT":"Speisekarte konnte nicht geladen werden","err.generic":"Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.","err.linkT":"Unvollständiger Link","err.linkS":"Restaurantdaten nicht gefunden. Bitte nutzen Sie den Button «🍽️ Bestellen» im Telegram-Bot des Restaurants.","main.sending":"Wird gesendet…","main.closed":"Das Restaurant ist gerade geschlossen","main.pick":"Artikel auswählen","main.toCart":"Zum Warenkorb · {n} Artikel · {tl}","main.toCartS":"Zum Warenkorb · {tl}","main.confirm":"Bestellung bestätigen · {tl}","main.confirmS":"Bestätigen · {tl}","main.back":"Zurück zu Telegram","main.loading":"Wird geladen…","qty.aria":"Menge: {n}","qty.dec":"{n}: eins weniger","qty.inc":"{n}: eins mehr","rest.closed":"● Gerade geschlossen","rest.open":"● Geöffnet","rest.mins":"{a}–{b} Min.","rest.noOrders":"Wir nehmen gerade keine Bestellungen an.","active.txt":"📦 Ihre Bestellung #{no}: {d}","active.go":"Verfolgen ›","deliv.fee":"Lieferung {tl}","deliv.free":"Kostenlose Lieferung","deliv.min":"Mind. {tl}","deliv.newAddr":"Neue Adresse","deliv.locOk":"Standort erhalten","loc.busy":"Standort wird ermittelt…","loc.menuBtn":"Standort teilen und Liefergebühr sehen","loc.cartAsk":"Teilen Sie zuerst Ihren Standort, damit wir die Liefergebühr berechnen können.","loc.share":"📍 Meinen Standort teilen","loc.settings":"In den Telegram-Einstellungen erlauben","loc.minNote":"Mindestbestellwert {tl}","loc.freeNote":"Kostenlose Lieferung bis {km} km","loc.ok":"✓ Standort erhalten","loc.fromChat":"Standort aus dem Telegram-Chat übernommen.","loc.out":"Leider ist Ihre Adresse etwa {km} km entfernt. Wir liefern bis zu {maks} km.","loc.checkFail":"Standort konnte nicht geprüft werden. Bitte erneut versuchen.","loc.e.tg-denied":"Die Standortfreigabe wurde nicht erteilt. Erlauben Sie sie über den Button unten in den Telegram-Einstellungen und versuchen Sie es erneut.","loc.e.denied":"Die Standortfreigabe wurde nicht erteilt. Erlauben Sie Telegram in den Telefoneinstellungen den Standortzugriff und versuchen Sie es erneut.","loc.e.timeout":"Ihr Standort konnte nicht ermittelt werden. Bitte aktivieren Sie die Ortung und versuchen Sie es erneut.","loc.e.fail":"Ihr Standort konnte nicht ermittelt werden. Bitte aktivieren Sie die Ortung und versuchen Sie es erneut.","loc.e.none":"Auf diesem Gerät ist kein Standort verfügbar. Aktivieren Sie die Ortung in den Telefoneinstellungen und versuchen Sie es erneut.","ann.qty":"{ad}: {n} Stück. Warenkorb {tl}","ann.removed":"{ad} aus dem Warenkorb entfernt","ann.loc":"Standort erhalten. {km}, {fee}","ann.fee":"Lieferung {tl}","ann.free":"kostenlose Lieferung","ann.phone":"Ihre Telegram-Nummer wurde übernommen.","ann.min":"Der Mindestbestellwert ist noch nicht erreicht.","v.loc":"Teilen Sie Ihren Standort; danach berechnen wir die Liefergebühr.","v.addr":"Geben Sie Ihre vollständige Adresse ein: Straße, Haus- und Wohnungsnummer und eine kurze Wegbeschreibung.","v.addrSel":"Diese Adresse liegt außerhalb des Liefergebiets. Bitte wählen Sie eine andere.","v.name":"Geben Sie Ihren Namen ein; der Kurier fragt an der Tür danach.","v.phone":"Teilen oder geben Sie Ihre Telefonnummer ein, damit der Kurier Sie erreichen kann.","v.other":"Geben Sie die Nummer mit Ländervorwahl ein, z. B. +49 151 23456789.","v.pay":"Wählen Sie, wie Sie an der Tür bezahlen.","of.closed":"Das Restaurant nimmt gerade keine Bestellungen an.","of.min":"Ihr Warenkorb liegt unter dem Mindestbestellwert.","of.kapsam":"Ihre Adresse liegt außerhalb des Liefergebiets.","of.kapsamSel":"Diese Adresse liegt außerhalb des Liefergebiets.","of.addr":"Bitte prüfen Sie Ihre Adresse.","of.addrSel":"Adresse nicht gefunden, bitte wählen Sie eine andere.","of.tel":"Bitte prüfen Sie Ihre Telefonnummer.","of.menuUpd":"Speisekarte wird aktualisiert…","of.removed":"Wir haben Artikel entfernt, die nicht mehr auf der Speisekarte stehen. ","of.check":"Bitte prüfen Sie Ihren Warenkorb und bestätigen Sie erneut.","of.changed":"Die Speisekarte hat sich geändert.","of.reloadFail":" Die Speisekarte konnte nicht aktualisiert werden; bitte Seite schließen und neu öffnen.","of.sess":"Ihre Sitzung konnte nicht bestätigt werden. Bitte schließen Sie die Bestellseite und öffnen Sie sie erneut.","of.generic":"Die Bestellung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.","re.none":"Diese Artikel sind nicht mehr auf der Speisekarte.","re.added":"✓ In den Warenkorb gelegt","re.partial":"Einige Artikel sind nicht mehr verfügbar; die übrigen wurden hinzugefügt.","re.ok":"Ihre letzte Bestellung liegt im Warenkorb","ann.re":"Ihre letzte Bestellung liegt im Warenkorb. Warenkorb {tl}","rate.e1":"Sehr schlecht","rate.e2":"Schlecht","rate.e3":"Okay","rate.e4":"Gut","rate.e5":"Ausgezeichnet","rate.laterToast":"Alles klar. Sie können auch später über den Button «Bestellung bewerten» in Telegram bewerten.","rate.metaAria":"Durchschnittliche Bewertung {r}, Bewertungen: {n}","rate.prodAria":"Bewertung {r}, Bewertungen: {n}","rate.aria":"Bewertung für {n}","rate.ariaVal":": {v} von 5 Sternen","rate.starAria":"{i} von 5 Sternen, {lbl}","rate.title":"Bewerten Sie Ihre Bestellung","rate.text":"Tippen Sie einfach auf die Sterne – ein Kommentar ist nicht nötig.","rate.sentT":"Vielen Dank!","rate.sentS":"Ihre Bewertung wurde gespeichert. Guten Appetit!","rate.doneT":"Sie haben diese Bestellung bewertet","rate.doneS":"Vielen Dank! Ihre Bewertungen sehen Sie unten.","rate.earlyT":"Noch nicht bewertbar","rate.earlyS":"Sie können Ihre Bestellung nach der Lieferung bewerten.","rate.lateT":"Bewertungszeitraum abgelaufen","rate.lateS":"Bestellungen können innerhalb von 7 Tagen nach der Lieferung bewertet werden.","rate.xT":"Diese Bestellung wurde storniert","rate.xS":"Stornierte Bestellungen können nicht bewertet werden.","rate.naT":"Diese Bestellung kann nicht bewertet werden","rate.bizSub":"Gesamteindruck","rate.biz":"Restaurant","rate.items":"Speisen","opt":"(optional)","rate.qty":"{n} Stück","rate.none":"Nicht bewertet","rate.send":"Bewertung senden","rate.needBiz":"Zuerst das Restaurant bewerten","rate.needBizS":"Restaurant bewerten","rate.thanksAnn":"Vielen Dank! Ihre Bewertung wurde gespeichert.","rate.sendFail":"Die Bewertung konnte nicht gesendet werden. Bitte erneut versuchen.","rate.sendErrT":"Bewertung nicht gesendet","rate.errT":"Bewertung konnte nicht geöffnet werden","rate.noLabel":"Bestellung","rate.btn":"⭐ Bestellung bewerten","rate.doneInfo":"⭐ Sie haben diese Bestellung bewertet. Vielen Dank!","lang.title":"Sprache wählen","lang.aria":"Sprache: {l}. Ändern","gate.hi":"Willkommen! 👋","gate.text":"Damit Sie nicht umsonst Zeit mit Speisekarte und Angaben verbringen, prüfen wir kurz vorab: Liegt Ihre Adresse in unserem Liefergebiet?","gate.sub":"Teilen Sie einfach Ihren Standort – das dauert nur ein paar Sekunden.","gate.privacy":"🔒 Ihr Standort wird nur zur Berechnung der Lieferentfernung verwendet.","gate.okT":"Super, Sie haben Glück!","gate.okS":"Sie befinden sich in unserem Liefergebiet, etwa {km} von uns entfernt. Wir bringen Ihre Bestellung bis an Ihre Tür! 🛵","gate.go":"Zur Speisekarte 🍽️","gate.outT":"Das tut uns sehr leid","gate.outS":"Ihre Adresse ist etwa {km} von uns entfernt. Derzeit liefern wir bis zu {maks}.","gate.browse":"Trotzdem die Speisekarte ansehen","gate.checking":"Standort wird geprüft…","km":"{k} km"},"ar":{"page.title":"الطلب","load.aria":"جارٍ تحميل القائمة","load.sr":"جارٍ تحميل القائمة…","blk.t":"تُفتح هذه الصفحة داخل تيليجرام.","blk.s":"يرجى استخدام زر «🍽️ اطلب الآن» في بوت المطعم على تيليجرام.","btn.retry":"أعد المحاولة","btn.close":"إغلاق","btn.toMenu":"الذهاب إلى القائمة","btn.change":"تغيير","btn.undo":"تراجع","btn.add":"أضف","btn.addAria":"أضف {n}","btn.remove":"إزالة","demo.menu":"وضع تجريبي · بيانات نموذجية والطلب غير حقيقي","demo.done":"وضع تجريبي · تتقدم الحالة تلقائيًا كل 20 ثانية","demo.rate":"وضع تجريبي · لا يتم حفظ التقييمات","demo.closedT":"في تيليجرام تُغلق الصفحة هنا","demo.closedS":"أنت في الوضع التجريبي. في التطبيق الحقيقي يعود العميل إلى المحادثة عند هذه النقطة.","demo.back":"العودة إلى الصفحة","rate.ask":"⭐ هل تقيّم طلبك الأخير؟","rate.later":"ليس الآن","rate.go":"قيّم","last.h":"🔁 طلبك الأخير","last.btn":"أضف الطلب نفسه إلى السلة","cats.aria":"الفئات","cat.default":"القائمة","cart.back":"› العودة إلى القائمة","cart.title":"سلتك","cart.add":"+ أضف منتجات","cart.emptyT":"سلتك فارغة","cart.emptyS":"أضف منتجات من القائمة.","cart.removeAria":"إزالة {n} من السلة","addr.h":"عنوان التوصيل","addr.saved":"عناوينك المحفوظة","addr.label":"العنوان الكامل ووصف قصير","addr.ph":"مثال: الشارع 12، رقم 5، الطابق 2، شقة 4، بجانب سوق يلدز، باب أزرق","addr.out":"خارج منطقة التوصيل","contact.h":"التواصل","name.label":"اسمك","name.hint":"مأخوذ من تيليجرام، ويمكنك تغييره.","phone.share":"📱 مشاركة رقمي في تيليجرام","phone.hint":"ليتمكن المندوب من التواصل معك عند الباب.","phone.manual":"سأكتب رقمي بنفسي","phone.your":"رقم هاتفك","phone.courierShort":"إذا لم يتمكن المندوب من الوصول إليك","phone.tgMine":"رقمي في تيليجرام","phone.tgYour":"رقمك في تيليجرام","phone.saved":"رقمك المحفوظ","phone.courierLegend":"الرقم الذي يُتصل به إذا لم يصل إليك المندوب","phone.other":"رقم آخر","phone.callNo":"رقم الاتصال","phone.ph":"+966 50 123 4567","phone.busy":"جارٍ الحصول على الرقم…","phone.unsupported":"هذا الإصدار من تيليجرام لا يدعم مشاركة الرقم. يرجى كتابة رقمك.","phone.notShared":"لم تتم مشاركة الرقم. يمكنك كتابته بنفسك.","phone.fail":"تعذّر الحصول على رقمك، يرجى كتابته.","phone.type":"يرجى كتابة رقمك.","note.h":"ملاحظة","note.opt":"(مثال: بدون كاتشب، بدون بصل، بدون ملح)","note.add":"📝 أضف ملاحظة","note.label":"ملاحظتك للمطعم","note.ph":"مثال: بدون كاتشب، بدون بصل، بدون ملح","pay.h":"الدفع (عند الاستلام)","pay.legend":"طريقة الدفع؛ تدفع للمندوب عند التوصيل","pay.last":"آخر ما استخدمته","pay:Nakit":"نقدًا","pay:Kredi Kartı (kapıda)":"بطاقة ائتمان (عند الاستلام)","sum.h":"الملخص","sum.sub":"المجموع الفرعي","sum.fee":"التوصيل","sum.total":"الإجمالي","sum.fine":"تدفع للمندوب عند التوصيل.","sum.waitLoc":"بانتظار الموقع","free":"مجاني","sum.minWarn":"الحد الأدنى للطلب <b>{min}</b>. أضف <b>{miss}</b> أخرى إلى سلتك.","order.errT":"تعذّر إرسال الطلب","done.loading":"جارٍ تحميل بيانات الطلب…","done.errT":"تعذّر تحميل بيانات الطلب","done.title":"تم استلام طلبك","done.xTitle":"تم إلغاء طلبك","done.dTitle":"تم توصيل طلبك","done.noLabel":"رقم طلبك","done.text":"يمكنك تتبّع طلبك بهذا الرقم، أو كتابة {no} في محادثة تيليجرام.","done.xText":"لا حاجة للدفع. يمكنك تقديم طلب جديد الآن إن شئت.","done.dText":"بالهناء والشفاء! نراك في طلبك القادم.","done.eta":"وقت التوصيل المتوقع:","done.sumH":"ملخص الطلب","done.new":"طلب جديد","done.addr":"العنوان:","done.pay":"الدفع:","done.payDoor":"{p}، عند الاستلام","track.h":"حالة الطلب","track.auto":"تتحدّث الحالة تلقائيًا.","track.refresh":"حدّث الآن","track.refreshing":"جارٍ التحديث…","track.done":"اكتمل الطلب.","track.now":"الآن","track.waiting":"قيد الانتظار","track.notFound":"لم يتم العثور على الطلب.","steps.0":"تم استلام الطلب","steps.1":"قيد التحضير","steps.2":"جاهز","steps.3":"في الطريق","steps.4":"تم التوصيل","st:Yeni":"تم الاستلام","st:Hazırlanıyor":"قيد التحضير","st:Hazır":"جاهز","st:Yolda":"في الطريق","st:Teslim Edildi":"تم التوصيل","st:İptal":"ملغى","ann.status":"حالة الطلب: {s}","cancel.btn":"إلغاء الطلب","cancel.q":"هل تريد إلغاء الطلب؟","cancel.no":"تراجع","cancel.yes":"نعم، ألغِ الطلب","cancel.busy":"جارٍ الإلغاء…","cancel.left":"الوقت المتبقي للإلغاء: {t}","cancel.started":"بدأ المطعم في تحضير طلبك. ","cancel.expired":"انتهت مهلة الإلغاء. للإلغاء اتصل بالمطعم: {tel}. يجب دفع ثمن الطلب الذي تم تحضيره.","call.biz":"المطعم","cancel.fail":"تعذّر إلغاء الطلب.","poll.fail":"تعذّر تحديث الحالة.","poll.retry":" سنحاول مجددًا بعد قليل.","err.unexpected":"حدث خطأ غير متوقع.","err.server":"وصل رد غير متوقع من الخادم. حاول مرة أخرى بعد قليل.","err.slow":"الاتصال بطيء، يرجى المحاولة مرة أخرى.","err.net":"تعذّر الاتصال بالإنترنت. تحقّق من اتصالك وحاول مرة أخرى.","err.sessT":"تعذّر التحقق من الجلسة","err.sessS":"يرجى إغلاق صفحة الطلب وفتحها من جديد.","err.menuT":"تعذّر تحميل القائمة","err.generic":"حدثت مشكلة. يرجى المحاولة مرة أخرى.","err.linkT":"رابط غير مكتمل","err.linkS":"لم يتم العثور على بيانات المطعم. يرجى استخدام زر «🍽️ اطلب الآن» في بوت المطعم على تيليجرام.","main.sending":"جارٍ الإرسال…","main.closed":"المطعم مغلق الآن","main.pick":"اختر منتجات","main.toCart":"إلى السلة ({n}) · {tl}","main.toCartS":"إلى السلة · {tl}","main.confirm":"تأكيد الطلب · {tl}","main.confirmS":"تأكيد · {tl}","main.back":"العودة إلى تيليجرام","main.loading":"جارٍ التحميل…","qty.aria":"كمية {n}","qty.dec":"{n}: أنقص واحدة","qty.inc":"{n}: زِد واحدة","rest.closed":"● مغلق الآن","rest.open":"● مفتوح","rest.mins":"{a}–{b} دقيقة","rest.noOrders":"لا نستقبل الطلبات حاليًا.","active.txt":"📦 طلبك #{no}: {d}","active.go":"تتبّع ‹","deliv.fee":"التوصيل {tl}","deliv.free":"توصيل مجاني","deliv.min":"الحد الأدنى {tl}","deliv.newAddr":"عنوان جديد","deliv.locOk":"تم استلام موقعك","loc.busy":"جارٍ تحديد الموقع…","loc.menuBtn":"شارك موقعي لمعرفة رسوم التوصيل","loc.cartAsk":"شارك موقعك أولًا لنحسب رسوم التوصيل.","loc.share":"📍 شارك موقعي","loc.settings":"اسمح من إعدادات تيليجرام","loc.minNote":"الحد الأدنى للطلب {tl}","loc.freeNote":"توصيل مجاني حتى {km} كم","loc.ok":"✓ تم استلام الموقع","loc.fromChat":"تم استلام الموقع من محادثة تيليجرام.","loc.out":"عذرًا، عنوانك يبعد حوالي {km} كم. نوصل حتى {maks} كم.","loc.checkFail":"تعذّر التحقق من الموقع. حاول مرة أخرى.","loc.e.tg-denied":"لم يتم منح إذن الموقع. اسمح به من إعدادات تيليجرام عبر الزر بالأسفل ثم حاول مرة أخرى.","loc.e.denied":"لم يتم منح إذن الموقع. اسمح لتيليجرام باستخدام موقعك من إعدادات الهاتف ثم حاول مرة أخرى.","loc.e.timeout":"تعذّر تحديد موقعك. تأكد من تشغيل خدمة الموقع وحاول مرة أخرى.","loc.e.fail":"تعذّر تحديد موقعك. تأكد من تشغيل خدمة الموقع وحاول مرة أخرى.","loc.e.none":"لا يمكن تحديد الموقع على هذا الجهاز. فعّل خدمة الموقع من إعدادات الهاتف وحاول مرة أخرى.","ann.qty":"{ad}: {n}. السلة {tl}","ann.removed":"تمت إزالة {ad} من السلة","ann.loc":"تم استلام الموقع. {km}، {fee}","ann.fee":"التوصيل {tl}","ann.free":"توصيل مجاني","ann.phone":"تم استلام رقمك في تيليجرام.","ann.min":"لم يتم بلوغ الحد الأدنى للطلب.","v.loc":"شارك موقعك؛ نحسب رسوم التوصيل بناءً عليه.","v.addr":"اكتب عنوانك الكامل: الشارع ورقم المبنى والشقة ووصفًا قصيرًا.","v.addrSel":"هذا العنوان خارج منطقة التوصيل. اختر عنوانًا آخر.","v.name":"اكتب اسمك؛ سيسأل عنه المندوب عند الباب.","v.phone":"شارك رقم هاتفك أو اكتبه ليتمكن المندوب من الوصول إليك.","v.other":"اكتب الرقم مع رمز الدولة، مثل ‎+966 50 123 4567.","v.pay":"اختر طريقة الدفع عند الاستلام.","of.closed":"المطعم لا يستقبل الطلبات حاليًا.","of.min":"قيمة السلة أقل من الحد الأدنى للطلب.","of.kapsam":"عنوانك خارج منطقة التوصيل.","of.kapsamSel":"هذا العنوان خارج منطقة التوصيل.","of.addr":"يرجى التحقق من عنوانك.","of.addrSel":"لم يتم العثور على العنوان، اختر عنوانًا آخر.","of.tel":"يرجى التحقق من رقم هاتفك.","of.menuUpd":"جارٍ تحديث القائمة…","of.removed":"أزلنا من السلة المنتجات التي لم تعد في القائمة. ","of.check":"راجع سلتك وأكّد الطلب مرة أخرى.","of.changed":"تغيّرت القائمة.","of.reloadFail":" تعذّر تحديث القائمة؛ أغلق الصفحة وافتحها من جديد.","of.sess":"تعذّر التحقق من الجلسة. يرجى إغلاق صفحة الطلب وفتحها من جديد.","of.generic":"تعذّر إرسال الطلب. يرجى المحاولة مرة أخرى.","re.none":"هذه المنتجات لم تعد في القائمة.","re.added":"✓ أُضيف إلى السلة","re.partial":"بعض المنتجات لم تعد في القائمة؛ وأُضيفت البقية إلى السلة.","re.ok":"أُضيف طلبك الأخير إلى السلة","ann.re":"أُضيف طلبك الأخير إلى السلة. السلة {tl}","rate.e1":"سيئ جدًا","rate.e2":"سيئ","rate.e3":"مقبول","rate.e4":"جيد","rate.e5":"ممتاز","rate.laterToast":"حسنًا. يمكنك التقييم لاحقًا عبر زر «قيّم الطلب» في تيليجرام.","rate.metaAria":"متوسط التقييم {r}، عدد التقييمات {n}","rate.prodAria":"التقييم {r}، عدد التقييمات {n}","rate.aria":"تقييم {n}","rate.ariaVal":": {v} من 5","rate.starAria":"{i} من 5، {lbl}","rate.title":"قيّم طلبك","rate.text":"اضغط على النجوم فقط، ولا حاجة لكتابة تعليق.","rate.sentT":"شكرًا لك!","rate.sentS":"تم حفظ تقييمك. بالهناء والشفاء!","rate.doneT":"لقد قيّمت هذا الطلب","rate.doneS":"شكرًا لك! تقييماتك معروضة بالأسفل.","rate.earlyT":"لا يمكن تقييمه بعد","rate.earlyS":"يمكنك تقييم طلبك بعد توصيله.","rate.lateT":"انتهت مدة التقييم","rate.lateS":"يمكن تقييم الطلبات خلال 7 أيام من التوصيل.","rate.xT":"تم إلغاء هذا الطلب","rate.xS":"لا يمكن تقييم الطلبات الملغاة.","rate.naT":"لا يمكن تقييم هذا الطلب","rate.bizSub":"الرضا العام","rate.biz":"المطعم","rate.items":"الأطباق","opt":"(اختياري)","rate.qty":"× {n}","rate.none":"بدون تقييم","rate.send":"إرسال التقييم","rate.needBiz":"قيّم المطعم أولًا","rate.needBizS":"قيّم المطعم","rate.thanksAnn":"شكرًا لك! تم حفظ تقييمك.","rate.sendFail":"تعذّر إرسال التقييم. يرجى المحاولة مرة أخرى.","rate.sendErrT":"تعذّر إرسال التقييم","rate.errT":"تعذّر فتح التقييم","rate.noLabel":"الطلب","rate.btn":"⭐ قيّم الطلب","rate.doneInfo":"⭐ لقد قيّمت هذا الطلب. شكرًا لك!","lang.title":"اختر اللغة","lang.aria":"اللغة: {l}. تغيير","gate.hi":"أهلًا وسهلًا! 👋","gate.text":"حتى لا تضيع وقتك في القائمة والبيانات دون فائدة، لنتحقق أولًا: هل عنوانك ضمن منطقة التوصيل لدينا؟","gate.sub":"يكفي أن تشارك موقعك، ولن يستغرق ذلك سوى ثوانٍ.","gate.privacy":"🔒 يُستخدم موقعك فقط لحساب مسافة التوصيل.","gate.okT":"رائع، أنت محظوظ!","gate.okS":"أنت داخل منطقة التوصيل لدينا، على بُعد حوالي {km} منا. سنوصل طلبك حتى باب منزلك! 🛵","gate.go":"الانتقال إلى القائمة 🍽️","gate.outT":"نأسف كثيرًا","gate.outS":"يبعد عنوانك عنا حوالي {km}. حاليًا نوصل حتى مسافة {maks}.","gate.browse":"تصفّح القائمة على أي حال","gate.checking":"جارٍ التحقق من موقعك…","km":"{k} كم"},"es":{"page.title":"Pedido","load.aria":"Cargando el menú","load.sr":"Cargando el menú…","blk.t":"Esta página se abre dentro de Telegram.","blk.s":"Usa el botón «🍽️ Pedir» del bot de Telegram del restaurante.","btn.retry":"Reintentar","btn.close":"Cerrar","btn.toMenu":"Ir al menú","btn.change":"Cambiar","btn.undo":"Deshacer","btn.add":"Añadir","btn.addAria":"Añadir {n}","btn.remove":"Quitar","demo.menu":"Modo de prueba · datos de ejemplo, el pedido no es real","demo.done":"Modo de prueba · el estado avanza solo cada 20 segundos","demo.rate":"Modo de prueba · las valoraciones no se guardan","demo.closedT":"En Telegram, la página se cierra aquí","demo.closedS":"Estás en modo de prueba. En la app real, el cliente vuelve al chat en este punto.","demo.back":"Volver a la página","rate.ask":"⭐ ¿Valoras tu último pedido?","rate.later":"Ahora no","rate.go":"Valorar","last.h":"🔁 Tu último pedido","last.btn":"Añadir lo mismo al carrito","cats.aria":"Categorías","cat.default":"Menú","cart.back":"‹ Volver al menú","cart.title":"Tu carrito","cart.add":"+ Añadir productos","cart.emptyT":"Tu carrito está vacío","cart.emptyS":"Añade productos del menú.","cart.removeAria":"Quitar {n} del carrito","addr.h":"Dirección de entrega","addr.saved":"Tus direcciones guardadas","addr.label":"Dirección completa y una breve indicación","addr.ph":"Ejemplo: Calle 12, n.º 5, 2.º piso, puerta 4, junto al supermercado Yıldız, puerta azul","addr.out":"Fuera de la zona de reparto","contact.h":"Contacto","name.label":"Tu nombre","name.hint":"Tomado de Telegram; puedes cambiarlo.","phone.share":"📱 Compartir mi número de Telegram","phone.hint":"Para que el repartidor pueda contactarte al llegar.","phone.manual":"Escribiré mi número","phone.your":"Tu número de teléfono","phone.courierShort":"Si el repartidor no te localiza","phone.tgMine":"Mi número de Telegram","phone.tgYour":"Tu número de Telegram","phone.saved":"Tu número guardado","phone.courierLegend":"Número al que llamar si el repartidor no te localiza","phone.other":"Otro número","phone.callNo":"Número de contacto","phone.ph":"+34 612 345 678","phone.busy":"Obteniendo el número…","phone.unsupported":"Esta versión de Telegram no permite compartir el número. Escríbelo.","phone.notShared":"No se compartió el número. Puedes escribirlo.","phone.fail":"No pudimos obtener tu número; escríbelo, por favor.","phone.type":"Escribe tu número.","note.h":"Nota","note.opt":"(p. ej.: sin kétchup, sin cebolla, sin sal)","note.add":"📝 Añadir una nota","note.label":"Tu nota para el restaurante","note.ph":"p. ej.: sin kétchup, sin cebolla, sin sal","pay.h":"Pago (al recibir)","pay.legend":"Método de pago; pagas al repartidor en la entrega","pay.last":"Usado la última vez","pay:Nakit":"Efectivo","pay:Kredi Kartı (kapıda)":"Tarjeta de crédito (al recibir)","sum.h":"Resumen","sum.sub":"Subtotal","sum.fee":"Entrega","sum.total":"Total","sum.fine":"Pagas al repartidor en la entrega.","sum.waitLoc":"Esperando la ubicación","free":"Gratis","sum.minWarn":"El pedido mínimo es de <b>{min}</b>. Añade <b>{miss}</b> más a tu carrito.","order.errT":"No se pudo enviar el pedido","done.loading":"Cargando los datos del pedido…","done.errT":"No se pudo cargar el pedido","done.title":"Hemos recibido tu pedido","done.xTitle":"Tu pedido fue cancelado","done.dTitle":"Tu pedido fue entregado","done.noLabel":"Tu número de pedido","done.text":"Puedes seguir tu pedido con este número. También basta con escribir {no} en el chat de Telegram.","done.xText":"No tienes que pagar nada. Si quieres, puedes hacer un nuevo pedido ahora.","done.dText":"¡Buen provecho! Hasta el próximo pedido.","done.eta":"Entrega estimada:","done.sumH":"Resumen del pedido","done.new":"Nuevo pedido","done.addr":"Dirección:","done.pay":"Pago:","done.payDoor":"{p}, al recibir","track.h":"Estado del pedido","track.auto":"El estado se actualiza solo.","track.refresh":"Actualizar ahora","track.refreshing":"Actualizando…","track.done":"Pedido completado.","track.now":"Ahora","track.waiting":"pendiente","track.notFound":"No se encontró el pedido.","steps.0":"Pedido recibido","steps.1":"En preparación","steps.2":"Listo","steps.3":"En camino","steps.4":"Entregado","st:Yeni":"Recibido","st:Hazırlanıyor":"En preparación","st:Hazır":"Listo","st:Yolda":"En camino","st:Teslim Edildi":"Entregado","st:İptal":"Cancelado","ann.status":"Estado del pedido: {s}","cancel.btn":"Cancelar pedido","cancel.q":"¿Quieres cancelar el pedido?","cancel.no":"Volver","cancel.yes":"Sí, cancelar","cancel.busy":"Cancelando…","cancel.left":"Tiempo restante para cancelar: {t}","cancel.started":"El restaurante ya empezó a preparar tu pedido. ","cancel.expired":"Ya pasó el plazo para cancelar. Para cancelar, llama al restaurante: {tel}. Los pedidos preparados deben pagarse.","call.biz":"al restaurante","cancel.fail":"No se pudo cancelar el pedido.","poll.fail":"No se pudo actualizar el estado.","poll.retry":" Lo intentaremos de nuevo en breve.","err.unexpected":"Se produjo un error inesperado.","err.server":"El servidor envió una respuesta inesperada. Inténtalo de nuevo en un momento.","err.slow":"La conexión es lenta, inténtalo de nuevo.","err.net":"No se pudo conectar a internet. Revisa tu conexión e inténtalo de nuevo.","err.sessT":"No se pudo verificar la sesión","err.sessS":"Cierra la página de pedidos y vuelve a abrirla.","err.menuT":"No se pudo cargar el menú","err.generic":"Algo salió mal. Inténtalo de nuevo.","err.linkT":"Enlace incompleto","err.linkS":"No se encontraron los datos del restaurante. Usa el botón «🍽️ Pedir» del bot de Telegram del restaurante.","main.sending":"Enviando…","main.closed":"El restaurante está cerrado ahora","main.pick":"Elige productos","main.toCart":"Ir al carrito ({n}) · {tl}","main.toCartS":"Ir al carrito · {tl}","main.confirm":"Confirmar pedido · {tl}","main.confirmS":"Confirmar · {tl}","main.back":"Volver a Telegram","main.loading":"Cargando…","qty.aria":"Cantidad de {n}","qty.dec":"{n}: uno menos","qty.inc":"{n}: uno más","rest.closed":"● Cerrado ahora","rest.open":"● Abierto","rest.mins":"{a}–{b} min","rest.noOrders":"Ahora mismo no aceptamos pedidos.","active.txt":"📦 Tu pedido #{no}: {d}","active.go":"Seguir ›","deliv.fee":"Entrega {tl}","deliv.free":"Entrega gratis","deliv.min":"Mín. {tl}","deliv.newAddr":"Nueva dirección","deliv.locOk":"Ubicación recibida","loc.busy":"Obteniendo la ubicación…","loc.menuBtn":"Compartir mi ubicación y ver el coste de entrega","loc.cartAsk":"Comparte primero tu ubicación para calcular el coste de entrega.","loc.share":"📍 Compartir mi ubicación","loc.settings":"Permitir en los ajustes de Telegram","loc.minNote":"Pedido mínimo {tl}","loc.freeNote":"Entrega gratis hasta {km} km","loc.ok":"✓ Ubicación recibida","loc.fromChat":"Ubicación recibida del chat de Telegram.","loc.out":"Lo sentimos, tu dirección está a unos {km} km. Repartimos hasta {maks} km.","loc.checkFail":"No se pudo comprobar la ubicación. Inténtalo de nuevo.","loc.e.tg-denied":"No se concedió el permiso de ubicación. Permítelo en los ajustes de Telegram con el botón de abajo e inténtalo de nuevo.","loc.e.denied":"No se concedió el permiso de ubicación. Permite a Telegram usar tu ubicación en los ajustes del teléfono e inténtalo de nuevo.","loc.e.timeout":"No pudimos obtener tu ubicación. Activa la ubicación del teléfono e inténtalo de nuevo.","loc.e.fail":"No pudimos obtener tu ubicación. Activa la ubicación del teléfono e inténtalo de nuevo.","loc.e.none":"No se puede obtener la ubicación en este dispositivo. Activa la ubicación en los ajustes del teléfono e inténtalo de nuevo.","ann.qty":"{ad}: {n}. Carrito {tl}","ann.removed":"{ad} se quitó del carrito","ann.loc":"Ubicación recibida. {km}, {fee}","ann.fee":"entrega {tl}","ann.free":"entrega gratis","ann.phone":"Recibimos tu número de Telegram.","ann.min":"No se alcanzó el pedido mínimo.","v.loc":"Comparte tu ubicación; con ella calculamos el coste de entrega.","v.addr":"Escribe tu dirección completa: calle, número, piso y una breve indicación.","v.addrSel":"Esta dirección está fuera de la zona de reparto. Elige otra.","v.name":"Escribe tu nombre; el repartidor preguntará por él en la puerta.","v.phone":"Comparte o escribe tu número para que el repartidor pueda contactarte.","v.other":"Escribe el número con el prefijo del país, por ejemplo +34 612 345 678.","v.pay":"Elige cómo pagarás al recibir.","of.closed":"El restaurante no acepta pedidos ahora.","of.min":"Tu carrito no llega al pedido mínimo.","of.kapsam":"Tu dirección está fuera de la zona de reparto.","of.kapsamSel":"Esta dirección está fuera de la zona de reparto.","of.addr":"Revisa tu dirección.","of.addrSel":"No se encontró la dirección; elige otra.","of.tel":"Revisa tu número de teléfono.","of.menuUpd":"Actualizando el menú…","of.removed":"Quitamos del carrito los productos que ya no están en el menú. ","of.check":"Revisa tu carrito y vuelve a confirmar.","of.changed":"El menú cambió.","of.reloadFail":" No se pudo actualizar el menú; cierra y vuelve a abrir la página.","of.sess":"No se pudo verificar la sesión. Cierra la página de pedidos y vuelve a abrirla.","of.generic":"No se pudo enviar el pedido. Inténtalo de nuevo.","re.none":"Estos productos ya no están en el menú.","re.added":"✓ Añadido al carrito","re.partial":"Algunos productos ya no están en el menú; el resto se añadió al carrito.","re.ok":"Tu último pedido se añadió al carrito","ann.re":"Tu último pedido se añadió al carrito. Carrito {tl}","rate.e1":"Muy malo","rate.e2":"Malo","rate.e3":"Regular","rate.e4":"Bueno","rate.e5":"Excelente","rate.laterToast":"De acuerdo. También puedes valorarlo más tarde con el botón «Valorar pedido» en Telegram.","rate.metaAria":"Valoración media {r}, valoraciones: {n}","rate.prodAria":"Valoración {r}, valoraciones: {n}","rate.aria":"Valoración de {n}","rate.ariaVal":": {v} de 5 estrellas","rate.starAria":"{i} de 5 estrellas, {lbl}","rate.title":"Valora tu pedido","rate.text":"Solo toca las estrellas; no hace falta escribir comentarios.","rate.sentT":"¡Gracias!","rate.sentS":"Guardamos tu valoración. ¡Buen provecho!","rate.doneT":"Ya valoraste este pedido","rate.doneS":"¡Gracias! Abajo están tus valoraciones.","rate.earlyT":"Aún no se puede valorar","rate.earlyS":"Podrás valorar tu pedido cuando se haya entregado.","rate.lateT":"Terminó el plazo para valorar","rate.lateS":"Los pedidos se pueden valorar hasta 7 días después de la entrega.","rate.xT":"Este pedido fue cancelado","rate.xS":"Los pedidos cancelados no se pueden valorar.","rate.naT":"Este pedido no se puede valorar","rate.bizSub":"Satisfacción general","rate.biz":"Restaurante","rate.items":"Platos","opt":"(opcional)","rate.qty":"× {n}","rate.none":"Sin valorar","rate.send":"Enviar valoración","rate.needBiz":"Primero valora el restaurante","rate.needBizS":"Valora el restaurante","rate.thanksAnn":"¡Gracias! Guardamos tu valoración.","rate.sendFail":"No se pudo enviar la valoración. Inténtalo de nuevo.","rate.sendErrT":"No se pudo enviar la valoración","rate.errT":"No se pudo abrir la valoración","rate.noLabel":"Pedido","rate.btn":"⭐ Valorar pedido","rate.doneInfo":"⭐ Ya valoraste este pedido. ¡Gracias!","lang.title":"Elige el idioma","lang.aria":"Idioma: {l}. Cambiar","gate.hi":"¡Bienvenido! 👋","gate.text":"Para que no pierdas tiempo con el menú y los datos, hagamos primero una comprobación rápida: ¿tu dirección está dentro de nuestra zona de reparto?","gate.sub":"Solo comparte tu ubicación; tarda unos segundos.","gate.privacy":"🔒 Tu ubicación solo se usa para calcular la distancia de entrega.","gate.okT":"¡Genial, estás de suerte!","gate.okS":"Estás dentro de nuestra zona de reparto, a unos {km} de nosotros. ¡Te llevamos el pedido hasta la puerta! 🛵","gate.go":"Ir al menú 🍽️","gate.outT":"Lo sentimos mucho","gate.outS":"Tu dirección está a unos {km} de nosotros. Por ahora repartimos hasta {maks}.","gate.browse":"Ver el menú de todos modos","gate.checking":"Comprobando tu ubicación…","km":"{k} km"}};
+var LANGS = ['tr', 'en', 'ru', 'de', 'ar', 'es'];
+var LANG_NAMES = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español' };
+var LANG_MAP = { az:'tr', ku:'tr', be:'ru', kk:'ru', ky:'ru', uz:'ru', tg:'ru' };
+var LANG_KEY = 'adisyo360-dil';
+var LANG = 'tr';
+function langCode(c){
+  c = String(c || '').toLowerCase().split(/[-_]/)[0];
+  if (!c) return 'tr';
+  return LANGS.indexOf(c) >= 0 ? c : (LANG_MAP[c] || 'en');
+}
+function t(k, p){
+  var x = I18N[LANG] && I18N[LANG][k];
+  if (x == null) x = I18N.tr[k];
+  if (x == null) return k;
+  return p ? x.replace(/\{(\w+)\}/g, function(m, n){ return p[n] != null ? String(p[n]) : ''; }) : x;
+}
 var rmq = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches:false };
 function reduced(){ return rmq.matches; }
 function smooth(){ return reduced() ? 'auto' : 'smooth'; }
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
-function tl(n){ return Number(n || 0).toLocaleString('tr-TR', { maximumFractionDigits:2 }) + ' TL'; }
+function tl(n){ var s = Number(n || 0).toLocaleString('tr-TR', { maximumFractionDigits:2 }) + ' TL'; return LANG === 'ar' ? '\u2066' + s + '\u2069' : s; }
 function kmNum(k){ return Number(k || 0).toLocaleString('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 }); }
-function km(k){ return '~' + kmNum(k) + ' km'; }
+function km(k){ return '~' + t('km', { k:kmNum(k) }); }
+function kmTxt(k){ var n = Number(k || 0); return t('km', { k:n % 1 ? kmNum(n) : String(n) }); }
 function hm(dt){ return dt.toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' }); }
 function lower(s){ return String(s || '').toLocaleLowerCase('tr-TR'); }
 function digits(s){ return String(s || '').replace(/\D/g, ''); }
 function normPhone(v){
-  var x = digits(v);
+  var raw = String(v || '').trim(), x = digits(raw);
+  if (/^(\+|00)/.test(raw)) {   // ülke kodlu numara
+    if (raw.indexOf('00') === 0) x = x.slice(2);
+    if (x.length === 12 && x.indexOf('90') === 0) return '0' + x.slice(2);
+    return x.length >= 8 && x.length <= 15 ? '+' + x : x;
+  }
   if (x.length === 12 && x.indexOf('90') === 0) x = '0' + x.slice(2);
   if (x.length === 10 && x.charAt(0) === '5') x = '0' + x;
   return x;
 }
-function phoneOk(v){ var x = normPhone(v); return x.length === 11 && x.indexOf('05') === 0; }
-function fmtPhone(v){ var x = normPhone(v); return x.length === 11 ? x.slice(0,4) + ' ' + x.slice(4,7) + ' ' + x.slice(7,9) + ' ' + x.slice(9) : String(v || ''); }
+function phoneOk(v){ var x = normPhone(v); return (x.length === 11 && x.indexOf('05') === 0) || /^\+\d{8,15}$/.test(x); }
+function fmtPhone(v){ var x = normPhone(v); return (x.length === 11 && x.charAt(0) === '0') ? x.slice(0,4) + ' ' + x.slice(4,7) + ' ' + x.slice(7,9) + ' ' + x.slice(9) : (x.charAt(0) === '+' ? x : String(v || '')); }
 function rid(){
   try { var a = new Uint8Array(12); crypto.getRandomValues(a); return Array.prototype.map.call(a, function(b){ return ('0' + b.toString(16)).slice(-2); }).join(''); }
   catch(e){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 12); }
@@ -747,6 +854,15 @@ var realTg = window.Telegram && window.Telegram.WebApp;
 var inTelegram = !!(realTg && realTg.initData);
 var tg = inTelegram ? realTg : (DEMO ? fakeTg() : null);
 var FAKE = !!(tg && tg.isFake);
+// LANG_OK: dil kesin (bağlantıda ?dil var ya da kişi seçti). Değilse ilk açılışta sunucu,
+// müşterinin kayıtlı dil tercihini (başka cihazda seçtiği dahil) bildirir ve sayfa ona geçer.
+var LANG_OK = false;
+LANG = (function(){
+  var q = params.get('dil'); if (LANGS.indexOf(q) >= 0) { LANG_OK = true; return q; }
+  var sv = LS.get(LANG_KEY); if (LANGS.indexOf(sv) >= 0) { LANG_OK = true; return sv; }
+  if (inTelegram) { var u = realTg.initDataUnsafe && realTg.initDataUnsafe.user; return langCode(u && u.language_code); }
+  return 'tr';
+})();
 
 function fakeTg(){
   var noop = function(){};
@@ -787,8 +903,8 @@ function closeApp(){ try { tg.close(); } catch(e){} }
 var MOCK = DEMO ? makeMock() : null;
 var SKEW = 0;
 function call(act, data){
-  var payload = Object.assign({ act:act, b:B, initData:tg ? tg.initData : '' }, data || {});
-  if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload))).catch(function(){ return { ok:false, kod:'HATA', hata:'Beklenmeyen bir hata oluştu.' }; });
+  var payload = Object.assign({ act:act, b:B, dil:LANG_OK ? LANG : '', initData:tg ? tg.initData : '' }, data || {});
+  if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload))).catch(function(){ return { ok:false, kod:'HATA', hata:t('err.unexpected') }; });
   var body = JSON.stringify(payload);
   var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
   function attempt(n){
@@ -801,15 +917,15 @@ function call(act, data){
         clearTimeout(timer);
         var j = null;
         try { j = JSON.parse(txt); } catch(e){}
-        if (!j || typeof j !== 'object') return { ok:false, kod:'SUNUCU', hata:'Sunucudan beklenmeyen bir yanıt geldi. Biraz sonra tekrar deneyin.' };
+        if (!j || typeof j !== 'object') return { ok:false, kod:'SUNUCU', hata:t('err.server') };
         if (typeof j.simdiMs === 'number') SKEW = j.simdiMs - Date.now();   // sunucu saati ile telefon saati farkı
         return j;
       })
       .catch(function(e){
         clearTimeout(timer);
-        if (timedOut || (e && e.name === 'AbortError')) return { ok:false, kod:'ZAMAN', hata:'Bağlantı yavaş, tekrar deneyin.' };
+        if (timedOut || (e && e.name === 'AbortError')) return { ok:false, kod:'ZAMAN', hata:t('err.slow') };
         if (n === 0) return sleep(1000).then(function(){ return attempt(1); });
-        return { ok:false, kod:'AG', hata:'İnternete bağlanılamadı. Bağlantınızı kontrol edip tekrar deneyin.' };
+        return { ok:false, kod:'AG', hata:t('err.net') };
       });
   }
   return attempt(0);
@@ -824,8 +940,9 @@ var S = {
   noteOpen:false, note:'', pay:null, istekId:null, sending:false,
   order:null, active:null, cancelConfirm:false, cancelBusy:false, cancelMsg:'',
   trackLoading:false, trackErr:'', trackNo:null, menuScroll:0,
-  rate:null
+  rate:null, gateDone:false
 };
+var G = { st:'ask', msg:'', denied:false, info:null };   // karşılama: ask | busy | ok | out | err
 var scroller = $('#scroller'), mainBtn = $('#mainBtn');
 var DRAFT_KEY = 'adisyo360-sepet-' + B;
 
@@ -849,8 +966,9 @@ function scrollToEl(el, offset){
 function fmtLeft(ms){ var r = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(r / 60) + ':' + String(r % 60).padStart(2, '0'); }
 function saveDraft(){
   var c = {}; lines().forEach(function(id){ c[id] = S.cart[id]; });
-  if (!Object.keys(c).length && !S.addrText && !S.note) { LS.del(DRAFT_KEY); return; }
-  LS.set(DRAFT_KEY, JSON.stringify({ cart:c, addrText:S.addrText, note:S.note, t:Date.now() }));
+  var loc = S.loc && !S.loc.sohbet ? { lat:S.loc.lat, lng:S.loc.lng, km:S.loc.km, kapsamda:true, ucret:S.loc.ucret, minSiparis:S.loc.minSiparis } : null;
+  if (!Object.keys(c).length && !S.addrText && !S.note && !loc) { LS.del(DRAFT_KEY); return; }
+  LS.set(DRAFT_KEY, JSON.stringify({ cart:c, addrText:S.addrText, note:S.note, loc:loc, lt:loc ? (S.locAt || Date.now()) : 0, t:Date.now() }));
 }
 function loadDraft(){
   try {
@@ -859,6 +977,7 @@ function loadDraft(){
     Object.keys(x.cart || {}).forEach(function(id){ var q = parseInt(x.cart[id], 10); if (ITEM[id] && q > 0) S.cart[id] = Math.min(20, q); });
     if (typeof x.addrText === 'string') S.addrText = x.addrText;
     if (typeof x.note === 'string' && x.note) { S.note = x.note; S.noteOpen = true; }
+    if (x.loc && !S.loc && Date.now() - (x.lt || 0) < 2 * 3600000) { S.loc = x.loc; S.locAt = x.lt; }
   } catch(e){}
 }
 
@@ -880,7 +999,7 @@ function initials(ad){
 }
 
 /* ---------- ekran geçişi ---------- */
-var SCREENS = { loading:'#scrLoading', blocked:'#scrBlocked', error:'#scrError', menu:'#scrMenu', cart:'#scrCart', done:'#scrDone', rate:'#scrRate' };
+var SCREENS = { loading:'#scrLoading', blocked:'#scrBlocked', error:'#scrError', gate:'#scrGate', menu:'#scrMenu', cart:'#scrCart', done:'#scrDone', rate:'#scrRate' };
 function go(scr, noAnim){
   if (S.screen === 'menu' && scr !== 'menu') S.menuScroll = scroller.scrollTop;
   S.screen = scr;
@@ -890,19 +1009,20 @@ function go(scr, noAnim){
     el.classList.remove('enter');
     if (k === scr && !noAnim && !reduced()) { void el.offsetWidth; el.classList.add('enter'); }
   });
-  $('#mbWrap').hidden = !(scr === 'menu' || scr === 'cart' || scr === 'done' || scr === 'rate');
+  $('#mbWrap').hidden = !(scr === 'gate' || scr === 'menu' || scr === 'cart' || scr === 'done' || scr === 'rate');
   backBtn(scr === 'cart' || scr === 'rate');
   if (scr === 'menu') { renderMenuTop(); renderAllQty(); }
   if (scr === 'cart') renderCheckout();
   if (scr === 'done') renderDone();
   if (scr === 'rate') renderRate();
+  if (scr === 'gate') renderGate();
   scroller.scrollTop = scr === 'menu' ? S.menuScroll : 0;
   updateMain();
   if (scr === 'menu') spy(true);
   if (scr === 'done') schedulePoll(15000); else stopPoll();
 }
 function focusHeading(scr){
-  var h = { menu:'#restName', cart:'#cartTitle', done:'#doneTitle', error:'#errTitle',
+  var h = { menu:'#restName', cart:'#cartTitle', done:'#doneTitle', error:'#errTitle', gate:'#gateTitle',
     rate:(S.rate && S.rate.err) ? '#rateErrTitle' : '#rateTitle' }[scr];
   if (h) { var el = $(h); if (el && !el.closest('[hidden]')) el.focus({ preventScroll:true }); }
 }
@@ -913,29 +1033,31 @@ function setMainLabel(full, short){
   if (short && mainBtn.scrollWidth > mainBtn.clientWidth + 1) mainBtn.textContent = short;
 }
 function updateMain(){
-  if (S.sending || (S.screen === 'rate' && S.rate && S.rate.busy)) {
+  var gateBusy = S.screen === 'gate' && G.st === 'busy';
+  if (S.sending || gateBusy || (S.screen === 'rate' && S.rate && S.rate.busy)) {
     mainBtn.disabled = true; mainBtn.classList.add('loading');
-    mainBtn.innerHTML = '<span class="spin" aria-hidden="true"></span><span>Gönderiliyor…</span>';
+    mainBtn.innerHTML = '<span class="spin" aria-hidden="true"></span><span>' + esc(gateBusy ? t('gate.checking') : t('main.sending')) + '</span>';
     return;
   }
   mainBtn.classList.remove('loading');
   var n = count(), dis = false;
   if (S.screen === 'menu') {
-    if (S.closed) { dis = true; setMainLabel('Restoran şu an kapalı'); }
-    else if (!n) { dis = true; setMainLabel('Ürün seçin'); }
-    else setMainLabel('Sepete git · ' + n + ' ürün · ' + tl(subtotal()), 'Sepete git · ' + tl(subtotal()));
+    if (S.closed) { dis = true; setMainLabel(t('main.closed')); }
+    else if (!n) { dis = true; setMainLabel(t('main.pick')); }
+    else setMainLabel(t('main.toCart', { n:n, tl:tl(subtotal()) }), t('main.toCartS', { tl:tl(subtotal()) }));
   } else if (S.screen === 'cart') {
-    if (S.closed) { dis = true; setMainLabel('Restoran şu an kapalı'); }
-    else if (!n) { dis = true; setMainLabel('Sepetiniz boş'); }
-    else setMainLabel('Siparişi onayla · ' + tl(total()), 'Onayla · ' + tl(total()));
-  } else if (S.screen === 'done') setMainLabel("Telegram'a dön");
+    if (S.closed) { dis = true; setMainLabel(t('main.closed')); }
+    else if (!n) { dis = true; setMainLabel(t('cart.emptyT')); }
+    else setMainLabel(t('main.confirm', { tl:tl(total()) }), t('main.confirmS', { tl:tl(total()) }));
+  } else if (S.screen === 'done') setMainLabel(t('main.back'));
+  else if (S.screen === 'gate') setMainLabel(G.st === 'ok' ? t('gate.go') : (G.st === 'out' ? t('btn.retry') : t('loc.share')));
   else if (S.screen === 'rate') {
     var R = S.rate;
-    if (!R || R.loading) { dis = true; setMainLabel('Yükleniyor…'); }
+    if (!R || R.loading) { dis = true; setMainLabel(t('main.loading')); }
     else if (canRate()) {
-      if (R.biz) setMainLabel('Puanı gönder');
-      else { dis = true; setMainLabel('Önce işletmeye yıldız verin', 'İşletmeye yıldız verin'); }
-    } else setMainLabel("Telegram'a dön");
+      if (R.biz) setMainLabel(t('rate.send'));
+      else { dis = true; setMainLabel(t('rate.needBiz'), t('rate.needBizS')); }
+    } else setMainLabel(t('main.back'));
   }
   mainBtn.disabled = dis;
 }
@@ -944,6 +1066,7 @@ mainBtn.addEventListener('click', function(){
   if (S.screen === 'menu') { go('cart'); focusHeading('cart'); }
   else if (S.screen === 'cart') submit();
   else if (S.screen === 'done') closeApp();
+  else if (S.screen === 'gate') { if (G.st === 'ok') gateDone(); else gateShare(); }
   else if (S.screen === 'rate') { if (canRate()) rateSubmit(); else if (!(S.rate && (S.rate.loading || S.rate.busy))) closeApp(); }
 });
 window.addEventListener('resize', function(){ if (!S.sending) updateMain(); });
@@ -961,13 +1084,14 @@ function boot(){
   go('loading', true);
   return call('baslat').then(function(r){
     if (!r || !r.ok) {
-      if (r && r.kod === 'GIRIS') showError('Oturum doğrulanamadı', 'Lütfen sipariş sayfasını kapatıp yeniden açın.', false);
-      else showError('Menü yüklenemedi', (r && r.hata) || 'Bir sorun oluştu. Lütfen tekrar deneyin.', true);
+      if (r && r.kod === 'GIRIS') showError(t('err.sessT'), t('err.sessS'), false);
+      else showError(t('err.menuT'), (r && r.hata) || t('err.generic'), true);
       return;
     }
     initFromBaslat(r);
     if (TAKIP && !bootedTakip) { bootedTakip = true; openTracking(TAKIP); }
     else if (PUAN && !bootedPuan) { bootedPuan = true; openRating(PUAN); }
+    else if (needGate()) { go('gate', true); focusHeading('gate'); }
     else { go('menu', true); }
   });
 }
@@ -981,10 +1105,11 @@ function applyMenu(r){
   var catIdx = {};
   (r.menu || []).forEach(function(m){
     if (m == null || m.id == null) return;
-    var id = String(m.id), kat = m.kat || 'Menü';
-    if (!(kat in catIdx)) { catIdx[kat] = CATS.length; CATS.push({ id:'k' + CATS.length, name:kat, tile:'t' + (CATS.length % 5), items:[] }); }
+    var id = String(m.id), kat = m.kat || t('cat.default');
+    if (!(kat in catIdx)) { catIdx[kat] = CATS.length; CATS.push({ id:'k' + CATS.length, name:m.katCeviri || kat, tile:'t' + (CATS.length % 5), items:[] }); }
     var c = CATS[catIdx[kat]];
-    var it = { id:id, ad:m.ad || '', fiyat:Number(m.fiyat) || 0, aciklama:m.aciklama || '', kat:kat, tile:c.tile, e:emojiFor(m.ad, kat) };
+    var ad = m.adCeviri || m.ad || '';
+    var it = { id:id, ad:ad, orig:(m.adCeviri && m.adCeviri !== m.ad) ? m.ad : '', fiyat:Number(m.fiyat) || 0, aciklama:m.aciklama || '', kat:kat, tile:c.tile, e:emojiFor(m.ad, kat) };
     c.items.push(it); ITEM[id] = it;
   });
   CATS.forEach(function(c){ c.items.forEach(function(it){ ORDER.push(it.id); }); });
@@ -994,6 +1119,7 @@ function applyMenu(r){
   buildPays();
 }
 function initFromBaslat(r){
+  if (!LANG_OK && LANGS.indexOf(r.dil) >= 0) { LANG_OK = true; if (r.dil !== LANG) { LANG = r.dil; applyStatic(); } }
   INFO = { musteri:r.musteri || null, kullanici:r.kullanici || null, puanlar:r.puanlar || null, bekleyen:r.bekleyenPuan || null };
   applyMenu(r);
   var m = INFO.musteri;
@@ -1025,14 +1151,14 @@ function initFromBaslat(r){
   $('#otherPhone').value = S.otherPhone;
   $('#nameHint').hidden = !!m;
   var ad = INFO.isletme.ad || 'Restoran';
-  d.title = ad + ' · Sipariş';
+  d.title = ad + ' · ' + t('page.title');
   $('#restLogo').textContent = initials(ad);
   $('#restName').textContent = ad;
   $$('[data-demo]').forEach(function(el){ el.hidden = !DEMO; });
   $('#fakeBack').hidden = !FAKE;
 }
 function outOfRange(k, maks){
-  return 'Üzgünüz, adresiniz yaklaşık ' + kmNum(k) + ' km uzakta. En fazla ' + (maks != null ? maks : '') + " km'ye teslimat yapabiliyoruz.";
+  return t('loc.out', { km:kmNum(k), maks:maks != null ? maks : '' });
 }
 
 /* ---------- menü ---------- */
@@ -1045,7 +1171,7 @@ function buildMenu(){
     return '<section class="cat" id="cat-' + c.id + '" aria-labelledby="cath-' + c.id + '"><h2 class="cat-h" id="cath-' + c.id + '">' + esc(c.name) + '</h2><div class="list">' +
       c.items.map(function(it){
         return '<div class="prod"><div class="tile ' + it.tile + '" aria-hidden="true">' + it.e + '</div><div class="prod-body">' +
-          '<h3 class="prod-name">' + esc(it.ad) + '</h3>' + prodRateHTML(it.id) + (it.aciklama ? '<p class="prod-desc">' + esc(it.aciklama) + '</p>' : '') +
+          '<h3 class="prod-name">' + esc(it.ad) + '</h3>' + (it.orig ? '<p class="prod-orig" lang="tr" dir="auto">' + esc(it.orig) + '</p>' : '') + prodRateHTML(it.id) + (it.aciklama ? '<p class="prod-desc">' + esc(it.aciklama) + '</p>' : '') +
           '<div class="prod-foot"><span class="price">' + tl(it.fiyat) + '</span><span class="qslot" data-q="' + esc(it.id) + '"></span></div></div></div>';
       }).join('') + '</div></section>';
   }).join('') : '<p class="card empty-menu">Menüde şu an ürün yok.</p>';
@@ -1054,70 +1180,78 @@ function buildMenu(){
 function slotFor(id){ var all = $$('#cats .qslot'); for (var i = 0; i < all.length; i++) if (all[i].getAttribute('data-q') === id) return all[i]; return null; }
 function stepperHTML(it, q){
   var n = esc(it.ad), id = esc(it.id);
-  return '<span class="stepper" role="group" aria-label="' + n + ' adedi">' +
-    '<button type="button" data-act="dec" data-id="' + id + '" aria-label="' + n + ': bir azalt">−</button>' +
+  return '<span class="stepper" role="group" aria-label="' + t('qty.aria', { n:n }) + '">' +
+    '<button type="button" data-act="dec" data-id="' + id + '" aria-label="' + t('qty.dec', { n:n }) + '">−</button>' +
     '<span class="qty">' + q + '</span>' +
-    '<button type="button" data-act="inc" data-id="' + id + '" aria-label="' + n + ': bir artır"' + (q >= 20 || S.closed ? ' disabled' : '') + '>+</button></span>';
+    '<button type="button" data-act="inc" data-id="' + id + '" aria-label="' + t('qty.inc', { n:n }) + '"' + (q >= 20 || S.closed ? ' disabled' : '') + '>+</button></span>';
 }
 function renderQtySlot(id){
   var slot = slotFor(id); if (!slot) return;
   var it = ITEM[id], q = S.cart[id] || 0;
   var had = slot.contains(d.activeElement) ? d.activeElement.getAttribute('data-act') : null;
-  slot.innerHTML = q ? stepperHTML(it, q) : '<button type="button" class="add-btn" data-act="add" data-id="' + esc(id) + '" aria-label="' + esc(it.ad) + ' ekle"' + (S.closed ? ' disabled' : '') + '>Ekle</button>';
+  slot.innerHTML = q ? stepperHTML(it, q) : '<button type="button" class="add-btn" data-act="add" data-id="' + esc(id) + '" aria-label="' + esc(t('btn.addAria', { n:it.ad })) + '"' + (S.closed ? ' disabled' : '') + '>' + t('btn.add') + '</button>';
   if (had) {
     var want = had === 'add' ? 'inc' : had;
-    var t = slot.querySelector('[data-act="' + want + '"]:not(:disabled)') || slot.querySelector('button:not(:disabled)');
-    if (t) t.focus({ preventScroll:true });
+    var fx = slot.querySelector('[data-act="' + want + '"]:not(:disabled)') || slot.querySelector('button:not(:disabled)');
+    if (fx) fx.focus({ preventScroll:true });
   }
 }
 function renderAllQty(){ ORDER.forEach(renderQtySlot); }
-var DURUM_LABEL = { 'Yeni':'Alındı', 'Hazırlanıyor':'Hazırlanıyor', 'Hazır':'Hazır', 'Yolda':'Yolda', 'Teslim Edildi':'Teslim edildi', 'İptal':'İptal edildi' };
+function durumLabel(d){ var k = 'st:' + d; return (I18N[LANG][k] || I18N.tr[k] || d || ''); }
+function payLabel(p){ var k = 'pay:' + p; return (I18N[LANG][k] || p || ''); }
+function itemName(l){ var it = l && l.id != null ? ITEM[String(l.id)] : null; return it ? it.ad : (l ? l.ad : ''); }
+function kalemMetni(kal, yedek){
+  if (LANG === 'tr' || !kal || !kal.length) return yedek || '';
+  var tam = true;
+  var x = kal.map(function(k){ var it = ITEM[String(k.id)]; if (!it) tam = false; return (k.adet || 1) + ' × ' + (it ? it.ad : ''); }).join(', ');
+  return tam ? x : (yedek || '');
+}
 function renderMenuTop(){
   if (!INFO) return;
   var is = INFO.isletme, h = is.hazirlikDk != null ? Number(is.hazirlikDk) : null;
   var rm = rateMetaHTML(INFO.puanlar && INFO.puanlar.isletme);
-  $('#restMeta').innerHTML = (S.closed ? '<span class="rest-closed">● Şu an kapalı</span>'
-    : '<span class="rest-open">● Açık</span>' + (h != null ? ' · ' + h + '–' + (h + 10) + ' dk' : '')) + (rm ? ' · ' + rm : '');
+  $('#restMeta').innerHTML = (S.closed ? '<span class="rest-closed">' + t('rest.closed') + '</span>'
+    : '<span class="rest-open">' + t('rest.open') + '</span>' + (h != null ? ' · ' + t('rest.mins', { a:h, b:h + 10 }) : '')) + (rm ? ' · ' + rm : '');
   var bp = INFO.bekleyen, showR = !!(bp && bp.no != null && !isLater(bp.no));
   $('#rateAsk').hidden = !showR;
-  if (showR) $('#rateAskText').innerHTML = '<b>#' + esc(bp.no) + '</b>' + (bp.metin ? ' · ' + esc(bp.metin) : '');
+  if (showR) { var bm = kalemMetni(bp.kalemler, bp.metin); $('#rateAskText').innerHTML = '<b>#' + esc(bp.no) + '</b>' + (bm ? ' · ' + esc(bm) : ''); }
   var cb = $('#closedBanner');
   cb.hidden = !S.closed;
-  if (S.closed) cb.innerHTML = '<span aria-hidden="true">🔒</span><span>' + esc(is.kapaliMesaj || 'Şu an sipariş almıyoruz.') + '</span>';
+  if (S.closed) cb.innerHTML = '<span aria-hidden="true">🔒</span><span>' + esc(is.kapaliMesaj || t('rest.noOrders')) + '</span>';
   var ac = $('#activeCard'), a = S.active;
   var showA = a && sIdx(a.durum) >= 0 && sIdx(a.durum) < 4;
   ac.hidden = !showA;
-  if (showA) ac.innerHTML = '<span class="ac-txt">📦 #' + esc(a.no) + ' siparişiniz: ' + esc(DURUM_LABEL[a.durum] || a.durum || '') + '</span><span class="ac-go">Takip et ›</span>';
+  if (showA) ac.innerHTML = '<span class="ac-txt">' + esc(t('active.txt', { no:a.no, d:durumLabel(a.durum) })) + '</span><span class="ac-go">' + t('active.go') + '</span>';
   renderDeliv();
   var son = INFO.musteri && INFO.musteri.sonSiparis;
   $('#lastOrder').hidden = !son;
   if (son) {
-    $('#lastItems').innerHTML = esc(son.metin || '') + (son.toplam != null ? ' · <b>' + tl(son.toplam) + '</b>' : '');
+    $('#lastItems').innerHTML = esc(kalemMetni(son.kalemler, son.metin)) + (son.toplam != null ? ' · <b>' + tl(son.toplam) + '</b>' : '');
     $('#reorderBtn').disabled = S.closed;
   }
 }
 function delivMeta(o){
   var f = Number(o.ucret || 0);
-  return '<span class="nw">' + km(o.km) + '</span> · ' + (f ? '<span class="nw">Teslimat ' + tl(f) + '</span>' : '<span class="okt nw">Ücretsiz teslimat</span>') +
-    (o.minSiparis ? ' · <span class="nw">En az ' + tl(o.minSiparis) + '</span>' : '');
+  return '<span class="nw">' + km(o.km) + '</span> · ' + (f ? '<span class="nw">' + t('deliv.fee', { tl:tl(f) }) + '</span>' : '<span class="okt nw">' + t('deliv.free') + '</span>') +
+    (o.minSiparis ? ' · <span class="nw">' + t('deliv.min', { tl:tl(o.minSiparis) }) + '</span>' : '');
 }
 function locAskHTML(where){
   var h = '';
   if (where === 'menu') {
     h += '<button type="button" class="deliv-btn" id="locBtnMenu" data-act="loc"' + (S.locBusy ? ' disabled' : '') + '>' +
-      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Konum alınıyor…</span>'
-                 : '<span aria-hidden="true">📍</span><span>Konumumu paylaş, teslimat ücretini gör</span><span class="chev" aria-hidden="true">›</span>') + '</button>';
+      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>' + t('loc.busy') + '</span>'
+                 : '<span aria-hidden="true">📍</span><span>' + t('loc.menuBtn') + '</span><span class="chev" aria-hidden="true">›</span>') + '</button>';
   } else {
-    h += '<p class="loc-ask-t">Teslimat ücretini hesaplamak için önce konumunuzu paylaşın.</p>' +
+    h += '<p class="loc-ask-t">' + t('loc.cartAsk') + '</p>' +
       '<button type="button" class="btn-outline" id="locBtnCart" data-act="loc"' + (S.locBusy ? ' disabled' : '') + '>' +
-      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Konum alınıyor…</span>' : '📍 Konumumu paylaş') + '</button>';
+      (S.locBusy ? '<span class="spin sm" aria-hidden="true"></span><span>' + t('loc.busy') + '</span>' : t('loc.share')) + '</button>';
   }
   if (S.locMsg) h += '<p class="note-warn" role="status">' + esc(S.locMsg) + '</p>';
-  if (S.locDenied) h += '<button type="button" class="btn-outline" data-act="loc-settings">Telegram ayarlarından izin ver</button>';
+  if (S.locDenied) h += '<button type="button" class="btn-outline" data-act="loc-settings">' + t('loc.settings') + '</button>';
   if (where === 'menu') {
     var r = firstRule(), bits = [];
-    if (r && r.minSiparis) bits.push('<span class="nw">En az sipariş ' + tl(r.minSiparis) + '</span>');
-    if (r && !Number(r.ucret) && r.max) bits.push(kmNum(r.max).replace(',0', '') + " km'ye kadar teslimat ücretsiz");
+    if (r && r.minSiparis) bits.push('<span class="nw">' + t('loc.minNote', { tl:tl(r.minSiparis) }) + '</span>');
+    if (r && !Number(r.ucret) && r.max) bits.push(t('loc.freeNote', { km:kmNum(r.max).replace(',0', '') }));
     if (bits.length) h += '<p class="deliv-note">' + bits.join(' · ') + '</p>';
   }
   return h;
@@ -1125,7 +1259,7 @@ function locAskHTML(where){
 function keepFocus(container, fn){
   var a = d.activeElement, act = (a && container.contains(a)) ? a.getAttribute('data-act') : null;
   fn();
-  if (act) { var t = container.querySelector('[data-act="' + act + '"]:not(:disabled)'); if (t) t.focus({ preventScroll:true }); }
+  if (act) { var fx = container.querySelector('[data-act="' + act + '"]:not(:disabled)'); if (fx) fx.focus({ preventScroll:true }); }
 }
 function renderDeliv(){
   var box = $('#deliv');
@@ -1136,7 +1270,7 @@ function renderDeliv(){
         '<p class="deliv-addr">' + esc(a ? a.adres : '') + '</p><p class="deliv-meta num">' + (a ? delivMeta(a) : '') + '</p></div></div>';
     } else if (S.loc) {
       box.innerHTML = '<div class="deliv-row"><span class="deliv-ico" aria-hidden="true">📍</span><div class="deliv-main">' +
-        '<p class="deliv-addr">' + (S.ret ? 'Yeni adres' : 'Konumunuz alındı') + '</p><p class="deliv-meta num">' + delivMeta(S.loc) + '</p></div></div>';
+        '<p class="deliv-addr">' + (S.ret ? t('deliv.newAddr') : t('deliv.locOk')) + '</p><p class="deliv-meta num">' + delivMeta(S.loc) + '</p></div></div>';
     } else {
       box.innerHTML = locAskHTML('menu');
     }
@@ -1150,7 +1284,7 @@ function setActiveChip(id, scrollChip){
   activeCat = id;
   $$('#chips .chip').forEach(function(c){ if (c.getAttribute('data-id') === id) c.setAttribute('aria-current', 'true'); else c.removeAttribute('aria-current'); });
   var chip = $('#chips .chip[data-id="' + id + '"]'), bar = $('#chips');
-  if (chip) bar.scrollTo({ left:Math.max(0, chip.offsetLeft - 16), behavior:smooth() });
+  if (chip) { if (LANG === 'ar') chip.scrollIntoView({ block:'nearest', inline:'center', behavior:smooth() }); else bar.scrollTo({ left:Math.max(0, chip.offsetLeft - 16), behavior:smooth() }); }
 }
 function spy(force){
   if (S.screen !== 'menu' || !CATS.length) return;
@@ -1189,21 +1323,21 @@ function setQty(id, n, quiet){
   if (quiet) return;
   haptic('impact', 'light');
   var it = ITEM[id];
-  announce(n ? it.ad + ': ' + n + ' adet. Sepet ' + tl(subtotal()) : it.ad + ' sepetten çıkarıldı');
-  if (!n && prev && S.screen === 'cart') toast(it.ad + ' sepetten çıkarıldı', 'Geri al', function(){ setQty(id, prev); });
+  announce(n ? t('ann.qty', { ad:it.ad, n:n, tl:tl(subtotal()) }) : t('ann.removed', { ad:it.ad }));
+  if (!n && prev && S.screen === 'cart') toast(t('ann.removed', { ad:it.ad }), t('btn.undo'), function(){ setQty(id, prev); });
 }
 function renderCart(){
   var box = $('#cartList'), ids = lines();
   var a = d.activeElement, key = (a && box.contains(a)) ? [a.getAttribute('data-act'), a.getAttribute('data-id')] : null;
   if (!ids.length) {
-    box.innerHTML = '<div class="empty"><p class="empty-t">Sepetiniz boş</p><p class="empty-s">Menüden ürün ekleyin.</p></div>';
+    box.innerHTML = '<div class="empty"><p class="empty-t">' + t('cart.emptyT') + '</p><p class="empty-s">' + t('cart.emptyS') + '</p></div>';
   } else {
     box.innerHTML = ids.map(function(id){
       var it = ITEM[id], q = S.cart[id];
       return '<div class="cline"><div class="tile ' + it.tile + '" aria-hidden="true">' + it.e + '</div><div style="min-width:0">' +
         '<div class="cline-top"><span class="cline-name">' + esc(it.ad) + '</span><span class="cline-total">' + tl(it.fiyat * q) + '</span></div>' +
         '<p class="cline-unit">' + tl(it.fiyat) + ' × ' + q + '</p>' +
-        '<div class="cline-act">' + stepperHTML(it, q) + '<button type="button" class="rm-btn" data-act="remove" data-id="' + esc(id) + '" aria-label="' + esc(it.ad) + ' sepetten kaldır">Kaldır</button></div>' +
+        '<div class="cline-act">' + stepperHTML(it, q) + '<button type="button" class="rm-btn" data-act="remove" data-id="' + esc(id) + '" aria-label="' + esc(t('cart.removeAria', { n:it.ad })) + '">' + t('btn.remove') + '</button></div>' +
         '</div></div>';
     }).join('');
   }
@@ -1218,16 +1352,16 @@ function renderCart(){
 function buildAddrTiles(){
   $('#addrTiles').innerHTML = ADDRS.map(function(a, i){
     var dis = !a.kapsamda, sub = [];
-    if (a.tarif) sub.push(esc(a.tarif));
+    if (a.tarif) sub.push('<bdi>' + esc(a.tarif) + '</bdi>');
     if (a.km != null) sub.push('<span class="nw">' + km(a.km) + '</span>');
-    if (dis) sub.push('<span class="rt-out">Teslimat alanı dışında</span>');
-    else if (Number(a.ucret)) sub.push('<span class="nw">Teslimat ' + tl(a.ucret) + '</span>');
+    if (dis) sub.push('<span class="rt-out">' + t('addr.out') + '</span>');
+    else if (Number(a.ucret)) sub.push('<span class="nw">' + t('deliv.fee', { tl:tl(a.ucret) }) + '</span>');
     return '<label class="rtile' + (dis ? ' is-dis' : '') + '" for="addr' + i + '">' +
       '<input class="sr" type="radio" name="addr" id="addr' + i + '" value="' + i + '"' + (dis ? ' disabled' : '') + '>' +
-      '<span class="rt-main"><span class="rt-title">' + esc(a.adres) + '</span>' + (sub.length ? '<span class="rt-sub">' + sub.join(' · ') + '</span>' : '') + '</span>' +
+      '<span class="rt-main"><span class="rt-title" dir="auto">' + esc(a.adres) + '</span>' + (sub.length ? '<span class="rt-sub">' + sub.join(' · ') + '</span>' : '') + '</span>' +
       '<span class="rdot" aria-hidden="true"></span></label>';
   }).join('') + (ADDRS.length ? '<label class="rtile" for="addrNewOpt"><input class="sr" type="radio" name="addr" id="addrNewOpt" value="new">' +
-    '<span class="rt-ico" aria-hidden="true">➕</span><span class="rt-main"><span class="rt-title">Yeni adres</span></span><span class="rdot" aria-hidden="true"></span></label>' : '');
+    '<span class="rt-ico" aria-hidden="true">➕</span><span class="rt-main"><span class="rt-title">' + t('deliv.newAddr') + '</span></span><span class="rdot" aria-hidden="true"></span></label>' : '');
 }
 function buildPays(){
   PAYS = (INFO.odemeler || []).slice();
@@ -1235,8 +1369,8 @@ function buildPays(){
   $('#payTiles').innerHTML = PAYS.map(function(p, i){
     var l = lower(p), ico = /nakit/.test(l) ? '💵' : (/kart/.test(l) ? '💳' : '🎫');
     return '<label class="rtile" for="pay' + i + '"><input class="sr" type="radio" name="pay" id="pay' + i + '" value="' + i + '">' +
-      '<span class="rt-ico" aria-hidden="true">' + ico + '</span><span class="rt-main"><span class="rt-title">' + esc(p) + '</span>' +
-      (son && son.odeme === p ? '<span class="tag">Son kullandığınız</span>' : '') + '</span><span class="rdot" aria-hidden="true"></span></label>';
+      '<span class="rt-ico" aria-hidden="true">' + ico + '</span><span class="rt-main"><span class="rt-title">' + esc(payLabel(p)) + '</span>' +
+      (son && son.odeme === p ? '<span class="tag">' + t('pay.last') + '</span>' : '') + '</span><span class="rdot" aria-hidden="true"></span></label>';
   }).join('');
 }
 function renderCheckout(){ renderCart(); renderAddr(); renderContact(); renderNote(); renderPay(); renderSummary(); }
@@ -1253,8 +1387,8 @@ function renderAddr(){
     var area = $('#locArea');
     keepFocus(area, function(){
       if (S.loc) {
-        area.innerHTML = '<p class="loc-ok"><b class="nw">✓ Konum alındı</b> · ' + delivMeta(S.loc) + '</p>' +
-          (S.loc.sohbet ? '<p class="fhint">Konum Telegram sohbetinden alındı.</p>' : '');
+        area.innerHTML = '<p class="loc-ok"><b class="nw">' + t('loc.ok') + '</b> · ' + delivMeta(S.loc) + '</p>' +
+          (S.loc.sohbet ? '<p class="fhint">' + t('loc.fromChat') + '</p>' : '');
       } else area.innerHTML = locAskHTML('cart');
     });
   }
@@ -1265,7 +1399,7 @@ function renderContact(){
   $('#phoneAsk').hidden = !(!ph);
   var sb = $('#sharePhoneBtn');
   sb.disabled = S.phoneBusy;
-  sb.innerHTML = S.phoneBusy ? '<span class="spin sm" aria-hidden="true"></span><span>Numara alınıyor…</span>' : '📱 Telegram numaramı paylaş';
+  sb.innerHTML = S.phoneBusy ? '<span class="spin sm" aria-hidden="true"></span><span>' + t('phone.busy') + '</span>' : t('phone.share');
   $('#phoneMsg').hidden = !S.phoneMsg; $('#phoneMsg').textContent = S.phoneMsg;
   $('#manualPhoneBtn').hidden = S.phoneManual;
   var compact = !!ph && S.ret && !S.contactEdit;
@@ -1273,7 +1407,7 @@ function renderContact(){
   $('#phoneCompactVal').textContent = ph ? fmtPhone(ph) : '';
   var full = !!ph && (neu || S.contactEdit);
   $('#phoneShared').hidden = !full;
-  $('#phoneSharedLabel').textContent = S.ret ? 'Kayıtlı numaranız' : 'Telegram numaranız';
+  $('#phoneSharedLabel').textContent = S.ret ? t('phone.saved') : t('phone.tgYour');
   $('#phoneSharedVal').textContent = ph ? fmtPhone(ph) : '';
   $('#courierSet').hidden = !full;
   $('#courierTgSub').textContent = ph ? fmtPhone(ph) : '';
@@ -1281,9 +1415,9 @@ function renderContact(){
   $('#courierOther').checked = S.courier === 'other';
   var showOther = (full && S.courier === 'other') || (!ph && S.phoneManual);
   $('#otherPhoneWrap').hidden = !showOther;
-  $('#otherPhoneLabel').textContent = ph ? 'Aranacak numara' : 'Telefon numaranız';
+  $('#otherPhoneLabel').textContent = ph ? t('phone.callNo') : t('phone.your');
   var op = $('#otherPhone'); if (op.value !== S.otherPhone) op.value = S.otherPhone;
-  $('#courierVal').textContent = S.courier === 'other' && S.otherPhone ? fmtPhone(S.otherPhone) : 'Telegram numaram';
+  $('#courierVal').textContent = S.courier === 'other' && S.otherPhone ? fmtPhone(S.otherPhone) : t('phone.tgMine');
 }
 function renderNote(){
   $('#noteToggle').hidden = S.noteOpen;
@@ -1295,11 +1429,11 @@ function renderPay(){ $$('input[name="pay"]').forEach(function(r){ r.checked = P
 function renderSummary(){
   var s = subtotal(), f = fee();
   $('#sumSub').textContent = tl(s);
-  $('#sumFee').innerHTML = f == null ? '<span class="muted">Konum bekleniyor</span>' : (f === 0 ? '<span class="okt">Ücretsiz</span>' : tl(f));
+  $('#sumFee').innerHTML = f == null ? '<span class="muted">' + t('sum.waitLoc') + '</span>' : (f === 0 ? '<span class="okt">' + t('free') + '</span>' : tl(f));
   $('#sumTotal').textContent = tl(s + (f || 0));
   var min = curMin(), miss = min - s, w = $('#minWarn');
   w.hidden = !(count() && miss > 0);
-  if (!w.hidden) $('#minWarnText').innerHTML = 'En az sipariş tutarı <b>' + tl(min) + '</b>. Sepetinize <b>' + tl(miss) + "</b>'lik daha ürün ekleyin.";
+  if (!w.hidden) $('#minWarnText').innerHTML = t('sum.minWarn', { min:tl(min), miss:tl(miss) });
   else clearErr('min');
   updateMain();
 }
@@ -1351,31 +1485,25 @@ function getCoords(){
     } else browserGeo(resolve);
   });
 }
-var LOC_MSG = {
-  'tg-denied':'Konum izni verilmedi. Aşağıdaki butonla Telegram ayarlarından izin verip tekrar deneyin.',
-  'denied':"Konum izni verilmedi. Telefonunuzun ayarlarından Telegram'a konum izni verip tekrar deneyin.",
-  'timeout':'Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.',
-  'fail':'Konumunuz alınamadı. Telefonunuzun konumu açık olsun ve tekrar deneyin.',
-  'none':'Bu cihazda konum alınamıyor. Telefonunuzun konum ayarını açıp tekrar deneyin.'
-};
+function locMsg(e){ return t('loc.e.' + e) !== 'loc.e.' + e ? t('loc.e.' + e) : t('loc.e.fail'); }
 function renderLocAll(){ renderDeliv(); if (S.screen === 'cart') { renderAddr(); renderSummary(); } updateMain(); }
 function shareLoc(){
   if (S.locBusy) return;
   S.locBusy = true; S.locMsg = ''; S.locDenied = false; renderLocAll();
   getCoords().then(function(c){
     if (c.err) {
-      S.locBusy = false; S.locMsg = LOC_MSG[c.err] || LOC_MSG.fail; S.locDenied = c.err === 'tg-denied';
+      S.locBusy = false; S.locMsg = locMsg(c.err); S.locDenied = c.err === 'tg-denied';
       renderLocAll(); haptic('notify', 'error'); return;
     }
     return call('konum', { lat:c.lat, lng:c.lng }).then(function(r){
       S.locBusy = false;
-      if (!r.ok) { S.locMsg = r.hata || 'Konum kontrol edilemedi. Tekrar deneyin.'; renderLocAll(); haptic('notify', 'error'); return; }
+      if (!r.ok) { S.locMsg = r.hata || t('loc.checkFail'); renderLocAll(); haptic('notify', 'error'); return; }
       if (!r.kapsamda) { S.loc = null; S.locMsg = outOfRange(r.km, r.maksKm != null ? r.maksKm : INFO.isletme.maksKm); renderLocAll(); haptic('notify', 'error'); return; }
-      S.loc = { lat:c.lat, lng:c.lng, km:r.km, kapsamda:true, ucret:r.ucret, minSiparis:r.minSiparis };
+      S.loc = { lat:c.lat, lng:c.lng, km:r.km, kapsamda:true, ucret:r.ucret, minSiparis:r.minSiparis }; S.locAt = Date.now(); saveDraft();
       clearErr('loc');
       renderLocAll();
       if (S.screen === 'cart') $('#addrText').focus({ preventScroll:true }); else $('#deliv').focus({ preventScroll:true });
-      announce('Konum alındı. ' + km(r.km) + ', ' + (Number(r.ucret) ? 'teslimat ' + tl(r.ucret) : 'ücretsiz teslimat'));
+      announce(t('ann.loc', { km:km(r.km), fee:Number(r.ucret) ? t('ann.fee', { tl:tl(r.ucret) }) : t('ann.free') }));
     });
   });
 }
@@ -1383,11 +1511,11 @@ function shareLoc(){
 /* ---------- telefon ---------- */
 function sharePhone(){
   if (S.phoneBusy) return;
-  if (!tg.requestContact || !ver('6.9')) { manualPhone('Bu Telegram sürümü numara paylaşmayı desteklemiyor. Numaranızı yazın.'); return; }
+  if (!tg.requestContact || !ver('6.9')) { manualPhone(t('phone.unsupported')); return; }
   S.phoneBusy = true; S.phoneMsg = ''; clearErr('phone'); renderContact();
   try {
     tg.requestContact(function(shared, ev){
-      if (!shared) { S.phoneBusy = false; manualPhone('Numara paylaşılmadı. İsterseniz elle yazabilirsiniz.'); return; }
+      if (!shared) { S.phoneBusy = false; manualPhone(t('phone.notShared')); return; }
       var tries = 0;
       (function ask(){
         call('telefon', { response:ev && ev.response }).then(function(r){
@@ -1396,15 +1524,15 @@ function sharePhone(){
             S.courier = (S.phoneManual && phoneOk(S.otherPhone)) ? 'other' : 'tg';
             clearErr('phone'); clearErr('other'); renderContact();
             (S.courier === 'other' ? $('#courierOther') : $('#courierTg')).focus({ preventScroll:true });
-            announce('Telegram numaranız alındı.');
+            announce(t('ann.phone'));
             return;
           }
           if (r.kod === 'BEKLE' && tries < 6) { tries++; setTimeout(ask, 1500); return; }
-          S.phoneBusy = false; manualPhone('Numaranızı alamadık, lütfen elle yazın.');
+          S.phoneBusy = false; manualPhone(t('phone.fail'));
         });
       })();
     });
-  } catch(e){ S.phoneBusy = false; manualPhone('Numaranızı yazın.'); }
+  } catch(e){ S.phoneBusy = false; manualPhone(t('phone.type')); }
 }
 function manualPhone(msg){
   S.phoneManual = true; S.phoneMsg = msg || '';
@@ -1440,15 +1568,15 @@ function validate(){
   var errs = [];
   if (subtotal() < curMin()) errs.push(['min', '']);
   if (S.addr === 'new') {
-    if (!S.loc) errs.push(['loc', 'Konumunuzu paylaşın; teslimat ücretini buna göre hesaplıyoruz.']);
-    if (S.addrText.trim().length < 10) errs.push(['addr', 'Açık adresinizi yazın: mahalle, sokak, bina ve daire no, kısa tarif.']);
-  } else if (!curDeliv()) errs.push(['addrSel', 'Bu adres teslimat alanı dışında. Başka bir adres seçin.']);
-  if (!S.name.trim()) errs.push(['name', 'Adınızı yazın; kurye kapıda bu isimle sorar.']);
+    if (!S.loc) errs.push(['loc', t('v.loc')]);
+    if (S.addrText.trim().length < 10) errs.push(['addr', t('v.addr')]);
+  } else if (!curDeliv()) errs.push(['addrSel', t('v.addrSel')]);
+  if (!S.name.trim()) errs.push(['name', t('v.name')]);
   if (!S.phone) {
-    if (!S.phoneManual) errs.push(['phone', 'Telefon numaranızı paylaşın ya da elle yazın; kurye size ulaşabilsin.']);
-    else if (!phoneOk(S.otherPhone)) errs.push(['other', 'Numarayı 05xx xxx xx xx biçiminde yazın.']);
-  } else if (S.courier === 'other' && !phoneOk(S.otherPhone)) errs.push(['other', 'Numarayı 05xx xxx xx xx biçiminde yazın.']);
-  if (!S.pay) errs.push(['pay', 'Kapıda nasıl ödeyeceğinizi seçin.']);
+    if (!S.phoneManual) errs.push(['phone', t('v.phone')]);
+    else if (!phoneOk(S.otherPhone)) errs.push(['other', t('v.other')]);
+  } else if (S.courier === 'other' && !phoneOk(S.otherPhone)) errs.push(['other', t('v.other')]);
+  if (!S.pay) errs.push(['pay', t('v.pay')]);
   return errs;
 }
 function focusErr(k){
@@ -1480,7 +1608,7 @@ function submit(){
     errs.forEach(function(x){ setErr(x[0], x[1]); });
     focusErr(errs[0][0]);
     haptic('notify', 'error');
-    announce(errs[0][0] === 'min' ? 'En az sipariş tutarına ulaşılmadı.' : errs[0][1]);
+    announce(errs[0][0] === 'min' ? t('ann.min') : errs[0][1]);
     return;
   }
   if (!S.istekId) S.istekId = rid();
@@ -1506,42 +1634,42 @@ function submit(){
 }
 function orderFailed(r){
   var msg = r.hata || '';
-  var retry = [{ act:'retry-order', label:'Tekrar dene', primary:true }];
+  var retry = [{ act:'retry-order', label:t('btn.retry'), primary:true }];
   switch (r.kod) {
     case 'KAPALI':
       S.closed = true; INFO.isletme.acik = false; renderAllQty(); renderMenuTop(); updateMain();
-      showOrderErr(msg || 'Restoran şu an sipariş almıyor.'); break;
+      showOrderErr(msg || t('of.closed')); break;
     case 'MIN':
       setErr('min', ''); renderSummary();
-      showOrderErr(msg || 'Sepet tutarı en az sipariş tutarının altında.'); break;
+      showOrderErr(msg || t('of.min')); break;
     case 'KAPSAM':
-      if (S.addr === 'new') { setErr('loc', msg || 'Adresiniz teslimat alanı dışında.'); focusErr('loc'); }
-      else { setErr('addrSel', msg || 'Bu adres teslimat alanı dışında.'); focusErr('addrSel'); }
+      if (S.addr === 'new') { setErr('loc', msg || t('of.kapsam')); focusErr('loc'); }
+      else { setErr('addrSel', msg || t('of.kapsamSel')); focusErr('addrSel'); }
       break;
     case 'ADRES':
-      if (S.addr === 'new') { setErr('addr', msg || 'Açık adresinizi kontrol edin.'); focusErr('addr'); }
-      else { setErr('addrSel', msg || 'Adres bulunamadı, başka bir adres seçin.'); focusErr('addrSel'); }
+      if (S.addr === 'new') { setErr('addr', msg || t('of.addr')); focusErr('addr'); }
+      else { setErr('addrSel', msg || t('of.addrSel')); focusErr('addrSel'); }
       break;
     case 'TEL':
       if (!S.phone) { S.phoneManual = true; renderContact(); }
       else if (S.courier !== 'other') { S.contactEdit = true; S.courier = 'other'; renderContact(); }
-      setErr('other', msg || 'Telefon numaranızı kontrol edin.'); focusErr('other'); break;
+      setErr('other', msg || t('of.tel')); focusErr('other'); break;
     case 'URUN':
-      showOrderErr('Menü güncelleniyor…');
+      showOrderErr(t('of.menuUpd'));
       call('baslat').then(function(b){
         if (b && b.ok) {
           var before = JSON.stringify(S.cart);
           applyMenu(b); saveDraft();
           S.istekId = null;
           renderCheckout(); renderAllQty();
-          showOrderErr((msg ? msg + ' ' : '') + (before !== JSON.stringify(S.cart) ? 'Menüde artık olmayan ürünleri sepetten çıkardık. ' : '') + 'Sepetinizi kontrol edip yeniden onaylayın.');
-        } else showOrderErr((msg || 'Menü değişti.') + ' Menü yenilenemedi; sayfayı kapatıp yeniden açın.');
+          showOrderErr((msg ? msg + ' ' : '') + (before !== JSON.stringify(S.cart) ? t('of.removed') : '') + t('of.check'));
+        } else showOrderErr((msg || t('of.changed')) + t('of.reloadFail'));
       });
       break;
     case 'GIRIS':
-      showOrderErr('Oturum doğrulanamadı. Lütfen sipariş sayfasını kapatıp yeniden açın.', [{ act:'tg-close', label:'Kapat', primary:true }]); break;
+      showOrderErr(t('of.sess'), [{ act:'tg-close', label:t('btn.close'), primary:true }]); break;
     default:
-      showOrderErr(msg || 'Sipariş gönderilemedi. Lütfen tekrar deneyin.', retry);
+      showOrderErr(msg || t('of.generic'), retry);
   }
 }
 function placed(r){
@@ -1551,7 +1679,7 @@ function placed(r){
   S.order = {
     no:r.no, durum:r.durum || 'Yeni', adimlar:[{ ad:'Yeni', saat:hm(new Date()) }],
     iptalEdilebilir:true, deadline:localDeadline(r.iptalSonMs, lim, true), etaAt:etaLocal(r.etaMs),
-    kalemler:lines().map(function(id){ return { ad:ITEM[id].ad, adet:S.cart[id], tutar:S.cart[id] * ITEM[id].fiyat }; }),
+    kalemler:lines().map(function(id){ return { id:id, ad:ITEM[id].ad, adet:S.cart[id], tutar:S.cart[id] * ITEM[id].fiyat }; }),
     araToplam:sub, teslimatUcreti:f, toplam:sub + f,
     adres:a ? a.adres + (a.tarif ? ', ' + a.tarif : '') : S.addrText.trim(),
     odeme:S.pay, isletmeTel:INFO.isletme.telefon
@@ -1577,7 +1705,7 @@ function localDeadline(ms, lim, fresh){
 function etaLocal(ms){ if (typeof ms !== 'number' || !ms) return null; return ms < 1e11 ? Date.now() + ms : ms - SKEW; }
 
 /* ---------- takip ---------- */
-var STEPS = ['Sipariş alındı', 'Hazırlanıyor', 'Hazır', 'Yolda', 'Teslim edildi'];
+function stepNames(){ return [0, 1, 2, 3, 4].map(function(i){ return t('steps.' + i); }); }
 function sIdx(durum){
   var x = lower(durum);
   if (!x) return 0;
@@ -1597,7 +1725,7 @@ function openTracking(no){
   call('durum', { no:S.trackNo }).then(function(r){
     S.trackLoading = false;
     if (r.ok) { applyDurum(r); focusHeading('done'); }
-    else { S.trackErr = r.hata || 'Sipariş bulunamadı.'; renderDone(); var t = $('#doneErrTitle'); if (t) t.focus({ preventScroll:true }); }
+    else { S.trackErr = r.hata || t('track.notFound'); renderDone(); var fx = $('#doneErrTitle'); if (fx) fx.focus({ preventScroll:true }); }
     schedulePoll(15000);
   });
 }
@@ -1626,7 +1754,7 @@ function applyDurum(r){
   S.active = { no:o.no, durum:o.durum };
   if (S.screen === 'done') renderDone();
   if (prevIdx !== null && prevIdx !== sIdx(o.durum)) {
-    $('#trackLive').textContent = 'Sipariş durumu: ' + (sIdx(o.durum) === -1 ? 'İptal edildi' : STEPS[sIdx(o.durum)]);
+    $('#trackLive').textContent = t('ann.status', { s:sIdx(o.durum) === -1 ? durumLabel('İptal') : t('steps.' + sIdx(o.durum)) });
     if (sIdx(o.durum) === 4) haptic('notify', 'success');
   }
   if (canCancel()) startTick();
@@ -1647,11 +1775,10 @@ function renderDone(){
   var ico = $('#heroIco');
   ico.textContent = x ? '✕' : '✓';
   ico.classList.toggle('x', x);
-  $('#doneTitle').textContent = x ? 'Siparişiniz iptal edildi' : (delivered ? 'Siparişiniz teslim edildi' : 'Siparişiniz alındı');
+  $('#doneTitle').textContent = x ? t('done.xTitle') : (delivered ? t('done.dTitle') : t('done.title'));
   $('#orderNo').innerHTML = '<span class="hash">#</span>' + esc(o.no);
   $('#orderNo').classList.toggle('void', x);
-  $('#heroText').textContent = x ? 'Ödeme yapmanız gerekmiyor. İsterseniz hemen yeni sipariş verebilirsiniz.'
-    : (delivered ? 'Afiyet olsun! Bir sonraki siparişte görüşmek üzere.' : 'Bu numarayla siparişinizi takip edebilirsiniz. Telegram sohbetinde ' + o.no + ' yazmanız da yeterli.');
+  $('#heroText').textContent = x ? t('done.xText') : (delivered ? t('done.dText') : t('done.text', { no:o.no }));
   $('#eta').hidden = x || delivered || !o.etaAt;
   if (o.etaAt) $('#etaTime').textContent = hm(new Date(o.etaAt));
   $('#secTrack').hidden = x;
@@ -1661,39 +1788,39 @@ function renderDone(){
   renderTrackNote();
   renderCancel();
   var lines2 = (o.kalemler || []).map(function(l){
-    return '<div class="dsum-line"><span>' + esc(l.adet) + ' × ' + esc(l.ad) + '</span><span>' + tl(l.tutar) + '</span></div>';
+    return '<div class="dsum-line"><span>' + esc(l.adet) + ' × ' + esc(itemName(l)) + '</span><span>' + tl(l.tutar) + '</span></div>';
   }).join('');
   $('#doneSum').innerHTML = lines2 +
-    (o.teslimatUcreti != null ? '<div class="dsum-line"><span class="muted">Teslimat</span><span>' + (Number(o.teslimatUcreti) ? tl(o.teslimatUcreti) : '<span class="okt">Ücretsiz</span>') + '</span></div>' : '') +
-    (o.toplam != null ? '<div class="sum-row sum-total"><span>Toplam</span><span>' + tl(o.toplam) + '</span></div>' : '') +
-    '<div class="dsum-meta">' + (o.adres ? '<span>Adres: <b>' + esc(o.adres) + '</b></span>' : '') +
-    (o.odeme ? '<span>Ödeme: <b>' + esc(o.odeme) + ', kapıda</b></span>' : '') + '</div>';
+    (o.teslimatUcreti != null ? '<div class="dsum-line"><span class="muted">' + t('sum.fee') + '</span><span>' + (Number(o.teslimatUcreti) ? tl(o.teslimatUcreti) : '<span class="okt">' + t('free') + '</span>') + '</span></div>' : '') +
+    (o.toplam != null ? '<div class="sum-row sum-total"><span>' + t('sum.total') + '</span><span>' + tl(o.toplam) + '</span></div>' : '') +
+    '<div class="dsum-meta">' + (o.adres ? '<span>' + t('done.addr') + ' <b>' + esc(o.adres) + '</b></span>' : '') +
+    (o.odeme ? '<span>' + t('done.pay') + ' <b>' + esc(t('done.payDoor', { p:payLabel(o.odeme) })) + '</b></span>' : '') + '</div>';
 }
 function renderTrack(){
   var o = S.order, idx = Math.max(0, sIdx(o.durum)), times = stepTimes(o);
-  $('#track').innerHTML = STEPS.map(function(name, i){
+  $('#track').innerHTML = stepNames().map(function(name, i){
     var reached = i <= idx, now = i === idx && idx < 4;
     var cls = (reached ? 'done' : 'todo') + (now ? ' now' : '') + (i === idx ? ' reach-last' : '');
-    var t = times[i];
+    var tm = times[i];
     return '<li class="step ' + cls + '"><span class="sdot" aria-hidden="true">' + (reached ? '✓' : '') + '</span><div>' +
-      '<div class="step-line"><span class="step-name">' + name + '</span>' + (now ? '<span class="now-tag">Şu an</span>' : '') + '</div>' +
-      (reached && t ? '<p class="step-time">' + esc(t) + '</p>' : (reached ? '' : '<span class="sr">bekleniyor</span>')) + '</div></li>';
+      '<div class="step-line"><span class="step-name">' + name + '</span>' + (now ? '<span class="now-tag">' + t('track.now') + '</span>' : '') + '</div>' +
+      (reached && tm ? '<p class="step-time">' + esc(tm) + '</p>' : (reached ? '' : '<span class="sr">' + t('track.waiting') + '</span>')) + '</div></li>';
   }).join('');
 }
 function renderTrackNote(){
   var o = S.order, fin = o && isFinal(o);
-  $('#trackNoteText').textContent = fin ? 'Sipariş tamamlandı.' : 'Durum kendiliğinden yenilenir.';
+  $('#trackNoteText').textContent = fin ? t('track.done') : t('track.auto');
   $('#refreshBtn').hidden = !!fin;
   $('#refreshBtn').disabled = pollBusy;
-  $('#refreshBtn').textContent = pollBusy ? 'Yenileniyor…' : 'Şimdi yenile';
+  $('#refreshBtn').textContent = pollBusy ? t('track.refreshing') : t('track.refresh');
   $('#trackErr').hidden = !S.trackErr;
   $('#trackErr').textContent = S.trackErr ? S.trackErr : '';
 }
 function canCancel(){ var o = S.order; return !!(o && o.iptalEdilebilir && sIdx(o.durum) === 0 && o.deadline - Date.now() > 0); }
-function telLink(t){
-  var n = normPhone(t);
-  if (!n) return '<b>işletmeyi</b>';
-  return '<a href="tel:' + esc(n) + '">' + esc(fmtPhone(n)) + '</a>';
+function telLink(num){
+  var n = normPhone(num);
+  if (!n) return '<b>' + t('call.biz') + '</b>';
+  return '<a class="ltr" href="tel:' + esc(n) + '">' + esc(fmtPhone(n)) + '</a>';
 }
 function renderCancel(){
   var o = S.order; if (!o) return;
@@ -1709,17 +1836,16 @@ function renderCancel(){
   conf.hidden = !S.cancelConfirm;
   btn.hidden = S.cancelConfirm;
   btn.disabled = !ok;
-  btn.innerHTML = ok ? 'Siparişi iptal et · <span class="num">' + fmtLeft(left) + '</span>' : 'Siparişi iptal et';
-  if (S.cancelConfirm) $('#cancelLeft').textContent = 'İptal için kalan süre: ' + fmtLeft(left);
+  btn.innerHTML = ok ? t('cancel.btn') + ' · <span class="num">' + fmtLeft(left) + '</span>' : t('cancel.btn');
+  if (S.cancelConfirm) $('#cancelLeft').textContent = t('cancel.left', { t:fmtLeft(left) });
   var yes = $('#cancelYes'), no = $('#cancelNo');
   yes.disabled = no.disabled = S.cancelBusy;
-  yes.innerHTML = S.cancelBusy ? '<span class="spin sm" aria-hidden="true"></span><span>İptal ediliyor…</span>' : 'Evet, iptal et';
+  yes.innerHTML = S.cancelBusy ? '<span class="spin sm" aria-hidden="true"></span><span>' + t('cancel.busy') + '</span>' : t('cancel.yes');
   info.hidden = ok && !S.cancelMsg;
   info.classList.toggle('bad', !!S.cancelMsg);
   if (!info.hidden) {
     info.innerHTML = (S.cancelMsg ? esc(S.cancelMsg) + ' ' : '') + (ok ? '' :
-      (idx > 0 ? 'Restoran siparişinizi hazırlamaya başladı. ' : '') +
-      'İptal süresi doldu. İptal için işletmeyi arayın: ' + telLink(o.isletmeTel) + '. Hazırlanan siparişin ücreti ödenir.');
+      (idx > 0 ? t('cancel.started') : '') + t('cancel.expired', { tel:telLink(o.isletmeTel) }));
   }
 }
 var tickT = null;
@@ -1746,7 +1872,7 @@ function doCancel(){
       scroller.scrollTo({ top:0, behavior:smooth() });
       $('#doneTitle').focus({ preventScroll:true });
     } else {
-      S.cancelMsg = r.hata || 'Sipariş iptal edilemedi.';
+      S.cancelMsg = r.hata || t('cancel.fail');
       haptic('notify', 'error');
       renderCancel();
       $('#cancelInfo').focus({ preventScroll:true });
@@ -1770,7 +1896,7 @@ function poll(manual){
     pollBusy = false;
     if (!S.order || String(S.order.no) !== String(no)) return;
     if (r.ok) { S.trackErr = ''; applyDurum(r); }
-    else S.trackErr = (r.hata || 'Durum güncellenemedi.') + ' Birazdan yeniden denenecek.';
+    else S.trackErr = (r.hata || t('poll.fail')) + t('poll.retry');
     if (S.screen === 'done') renderTrackNote();
     schedulePoll(15000);
   });
@@ -1778,18 +1904,18 @@ function poll(manual){
 d.addEventListener('visibilitychange', function(){ if (d.hidden) stopPoll(); else schedulePoll(400); });
 
 /* ---------- puanlama (yalnız yıldız, yorum yok) ---------- */
-var RATE_LBL = ['', 'Çok kötü', 'Kötü', 'Orta', 'İyi', 'Mükemmel'];
+function rl(i){ return t('rate.e' + i); }
 var LATER_KEY = 'adisyo360-puan-sonra-' + B;
 function fmtRate(n){ return Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 }); }
 function rateMetaHTML(p){
   if (!p || !p.adet) return '';
-  return '<span class="rate-meta" role="img" aria-label="Ortalama puan ' + fmtRate(p.ort) + ', ' + esc(p.adet) + ' değerlendirme">' +
+  return '<span class="rate-meta" role="img" aria-label="' + esc(t('rate.metaAria', { r:fmtRate(p.ort), n:p.adet })) + '">' +
     '<span class="st">★</span> ' + fmtRate(p.ort) + ' <span class="muted">(' + esc(p.adet) + ')</span></span>';
 }
 function prodRateHTML(id){
   var p = INFO && INFO.puanlar && INFO.puanlar.urunler && INFO.puanlar.urunler[id];
   if (!p || !p.adet) return '';
-  return '<p class="prod-rate" role="img" aria-label="Puan ' + fmtRate(p.ort) + ', ' + esc(p.adet) + ' değerlendirme">' +
+  return '<p class="prod-rate" role="img" aria-label="' + esc(t('rate.prodAria', { r:fmtRate(p.ort), n:p.adet })) + '">' +
     '<span class="st">★</span><b>' + fmtRate(p.ort) + '</b><span>(' + esc(p.adet) + ')</span></p>';
 }
 function laterList(){ try { var x = JSON.parse(LS.get(LATER_KEY) || '[]'); return Array.isArray(x) ? x : []; } catch(e){ return []; } }
@@ -1799,7 +1925,7 @@ function rateLater(){
   var l = laterList(); l.push(String(bp.no)); LS.set(LATER_KEY, JSON.stringify(l.slice(-20)));
   renderMenuTop();
   $('#restName').focus({ preventScroll:true });
-  toast("Tamam. Telegram'daki «Siparişi puanla» butonuyla sonra da puanlayabilirsiniz.");
+  toast(t('rate.laterToast'));
 }
 function canRate(){ var R = S.rate; return !!(R && R.data && !R.sent && R.data.uygunluk === 'uygun'); }
 function openRating(no){
@@ -1812,22 +1938,22 @@ function openRating(no){
     if (r.ok) {
       R.data = r;
       if (r.verilen) { R.biz = Number(r.verilen.isletme) || 0; R.items = r.verilen.urunler || {}; }
-    } else R.err = r.hata || 'Sipariş bulunamadı.';
+    } else R.err = r.hata || t('track.notFound');
     if (S.screen === 'rate') { renderRate(); updateMain(); focusHeading('rate'); }
   });
 }
 function starsHTML(key, name, val, ro){
-  var h = '<div class="stars" role="group" aria-label="' + esc(name) + ' için puan' + (ro && val ? ': ' + val + ' yıldız' : '') + '">';
+  var h = '<div class="stars" role="group" aria-label="' + esc(t('rate.aria', { n:name }) + (ro && val ? t('rate.ariaVal', { v:val }) : '')) + '">';
   for (var i = 1; i <= 5; i++) {
     h += '<button type="button" class="star-btn' + (i <= val ? ' on' : '') + '" data-act="star" data-k="' + esc(key) + '" data-v="' + i + '"' +
-      ' aria-pressed="' + (i === val ? 'true' : 'false') + '" aria-label="' + i + ' yıldız, ' + RATE_LBL[i] + '"' + (ro ? ' disabled' : '') + '>★</button>';
+      ' aria-pressed="' + (i === val ? 'true' : 'false') + '" aria-label="' + esc(t('rate.starAria', { i:i, lbl:rl(i) })) + '"' + (ro ? ' disabled' : '') + '>★</button>';
   }
   return h + '</div>';
 }
 function rateRowHTML(key, lead, name, sub, val, ro){
   return '<div class="ritem" data-rk="' + esc(key) + '"><div class="ritem-top">' + lead +
     '<div class="ritem-name">' + esc(name) + (sub ? '<div class="ritem-sub">' + esc(sub) + '</div>' : '') + '</div>' +
-    '<span class="rlbl' + (val ? '' : ' none') + '" aria-hidden="true">' + (val ? RATE_LBL[val] : (ro ? 'Puanlanmadı' : '')) + '</span></div>' +
+    '<span class="rlbl' + (val ? '' : ' none') + '" aria-hidden="true">' + (val ? rl(val) : (ro ? t('rate.none') : '')) + '</span></div>' +
     starsHTML(key, name, val, ro) + '</div>';
 }
 function renderRate(){
@@ -1839,12 +1965,12 @@ function renderRate(){
   if (!R || R.loading || R.err) return;
   var x = R.data, can = canRate(), st = R.sent ? 'puanlandi' : x.uygunluk, shown = can || st === 'puanlandi';
   var T = {
-    uygun:['Siparişinizi puanlayın', 'Yıldızlara dokunmanız yeterli, yorum yazmanız gerekmez.', 'star', '★'],
-    puanlandi:R.sent ? ['Teşekkürler!', 'Puanınız kaydedildi. Afiyet olsun!', '', '✓'] : ['Bu siparişi puanladınız', 'Teşekkürler! Verdiğiniz puanlar aşağıda.', '', '✓'],
-    erken:['Henüz puanlanamaz', x.mesaj || 'Siparişiniz teslim edildikten sonra puanlayabilirsiniz.', 'wait', '⏳'],
-    sure:['Puanlama süresi doldu', x.mesaj || 'Siparişler teslimden sonraki 7 gün içinde puanlanabilir.', 'wait', '⌛'],
-    iptal:['Bu sipariş iptal edildi', x.mesaj || 'İptal edilen siparişler puanlanamaz.', 'x', '✕']
-  }[st] || ['Bu sipariş puanlanamaz', x.mesaj || '', 'wait', 'ℹ️'];
+    uygun:[t('rate.title'), t('rate.text'), 'star', '★'],
+    puanlandi:R.sent ? [t('rate.sentT'), t('rate.sentS'), '', '✓'] : [t('rate.doneT'), t('rate.doneS'), '', '✓'],
+    erken:[t('rate.earlyT'), x.mesaj || t('rate.earlyS'), 'wait', '⏳'],
+    sure:[t('rate.lateT'), x.mesaj || t('rate.lateS'), 'wait', '⌛'],
+    iptal:[t('rate.xT'), x.mesaj || t('rate.xS'), 'x', '✕']
+  }[st] || [t('rate.naT'), x.mesaj || '', 'wait', 'ℹ️'];
   var ico = $('#rateIco');
   ico.className = 'hero-ico' + (T[2] ? ' ' + T[2] : '');
   ico.textContent = T[3];
@@ -1858,13 +1984,13 @@ function renderRate(){
   if (shown) {
     var a = d.activeElement, foc = (a && a.getAttribute && a.getAttribute('data-act') === 'star') ? [a.getAttribute('data-k'), a.getAttribute('data-v')] : null;
     $('#rateBiz').innerHTML = rateRowHTML('i', '<span class="ritem-logo" aria-hidden="true">' + esc(initials(x.isletmeAd)) + '</span>',
-      x.isletmeAd || 'İşletme', 'Genel memnuniyet', R.biz, ro);
+      x.isletmeAd || t('rate.biz'), t('rate.bizSub'), R.biz, ro);
     $('#rateItems').innerHTML = items.map(function(k){
       var it = ITEM[String(k.id)];
       var lead = '<div class="tile ' + (it ? it.tile : 't0') + '" aria-hidden="true">' + (it ? it.e : emojiFor(k.ad, '')) + '</div>';
-      return rateRowHTML(String(k.id), lead, k.ad, Number(k.adet) > 1 ? k.adet + ' adet' : '', Number(R.items[k.id]) || 0, ro);
+      return rateRowHTML(String(k.id), lead, itemName(k), Number(k.adet) > 1 ? t('rate.qty', { n:k.adet }) : '', Number(R.items[k.id]) || 0, ro);
     }).join('');
-    if (foc) { var t = $$('#scrRate .star-btn').filter(function(b){ return b.getAttribute('data-k') === foc[0] && b.getAttribute('data-v') === foc[1] && !b.disabled; })[0]; if (t) t.focus({ preventScroll:true }); }
+    if (foc) { var fx = $$('#scrRate .star-btn').filter(function(b){ return b.getAttribute('data-k') === foc[0] && b.getAttribute('data-v') === foc[1] && !b.disabled; })[0]; if (fx) fx.focus({ preventScroll:true }); }
   }
   $('#rateErrBox').hidden = !R.msg;
   $('#rateErrMsg').textContent = R.msg || '';
@@ -1881,11 +2007,11 @@ function rateSet(k, v){
       b.classList.toggle('on', n <= v);
       b.setAttribute('aria-pressed', n === v ? 'true' : 'false');
     });
-    var l = $('.rlbl', row); l.textContent = RATE_LBL[v]; l.classList.remove('none');
+    var l = $('.rlbl', row); l.textContent = rl(v); l.classList.remove('none');
   }
   if (R.msg) { R.msg = ''; $('#rateErrBox').hidden = true; }
   haptic('impact', 'light');
-  announce(v + ' yıldız, ' + RATE_LBL[v]);
+  announce(t('rate.starAria', { i:v, lbl:rl(v) }));
   updateMain();
 }
 function rateSubmit(){
@@ -1906,17 +2032,137 @@ function rateSubmit(){
       renderRate(); updateMain();
       scroller.scrollTo({ top:0, behavior:smooth() });
       $('#rateTitle').focus({ preventScroll:true });
-      announce('Teşekkürler! Puanınız kaydedildi.');
+      announce(t('rate.thanksAnn'));
     } else {
       var st = { SURE:'sure', IPTAL:'iptal', ERKEN:'erken' }[r.kod];
       if (st) { R.data.uygunluk = st; R.data.mesaj = r.hata || ''; }
-      else R.msg = r.hata || 'Puan gönderilemedi. Lütfen tekrar deneyin.';
+      else R.msg = r.hata || t('rate.sendFail');
       haptic('notify', 'error');
       renderRate(); updateMain();
       if (R.msg) { scrollToEl($('#rateErrBox'), 80); $('#rateErrBox').focus({ preventScroll:true }); }
       else $('#rateTitle').focus({ preventScroll:true });
     }
   });
+}
+
+/* ---------- dil seçimi ---------- */
+function applyStatic(){
+  root.setAttribute('lang', LANG);
+  root.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
+  $$('[data-t]').forEach(function(el){ el.textContent = t(el.getAttribute('data-t')); });
+  $$('[data-tp]').forEach(function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-tp'))); });
+  $$('[data-ta]').forEach(function(el){ el.setAttribute('aria-label', t(el.getAttribute('data-ta'))); });
+  $$('[data-act="lang"]').forEach(function(b){
+    b.innerHTML = '<span aria-hidden="true">🌐</span><span>' + LANG.toUpperCase() + '</span>';
+    b.setAttribute('aria-label', t('lang.aria', { l:LANG_NAMES[LANG] }));
+  });
+  if (INFO && INFO.isletme) d.title = (INFO.isletme.ad || '') + ' · ' + t('page.title');
+}
+var langReturn = null;
+function openLangSheet(){
+  langReturn = d.activeElement;
+  $('#langList').innerHTML = LANGS.map(function(c){
+    return '<button type="button" class="lang-opt" data-act="lang-set" data-id="' + c + '" lang="' + c + '" dir="' + (c === 'ar' ? 'rtl' : 'ltr') + '"' +
+      (c === LANG ? ' aria-current="true"' : '') + '><span>' + LANG_NAMES[c] + '</span><span class="lc">' + c.toUpperCase() + '</span></button>';
+  }).join('');
+  $('#langSheet').hidden = false;
+  ($('#langList [aria-current="true"]') || $('#langList button')).focus();
+}
+function closeLangSheet(){
+  $('#langSheet').hidden = true;
+  if (langReturn && langReturn.focus && d.contains(langReturn)) langReturn.focus({ preventScroll:true });
+}
+function rerender(){
+  var sc = S.screen;
+  if (INFO) { renderMenuTop(); renderAllQty(); }
+  if (sc === 'cart') renderCheckout();
+  if (sc === 'done') renderDone();
+  if (sc === 'rate') renderRate();
+  if (sc === 'gate') renderGate();
+  updateMain();
+}
+function setLang(code){
+  if (LANGS.indexOf(code) < 0) return;
+  var degisti = code !== LANG;
+  LANG = code; LANG_OK = true; LS.set(LANG_KEY, code);
+  closeLangSheet();
+  if (!degisti) return;
+  applyStatic();
+  if (!INFO) return;
+  rerender();
+  // Menü, bildirimler ve hata mesajları da yeni dilde gelsin (sepet korunur)
+  call('baslat').then(function(r){
+    if (!r || !r.ok) return;
+    applyMenu(r); buildAddrTiles();
+    rerender();
+  });
+}
+
+/* ---------- karşılama: yeni müşteriye önce mesafe kontrolü ---------- */
+function needGate(){ return !S.loc && !S.closed && !S.gateDone && !(INFO.musteri && ADDRS.length); }
+function renderGate(){
+  var is = (INFO && INFO.isletme) || {}, st = G.st;
+  $('#gateLogo').textContent = initials(is.ad || '');
+  $('#gateName').textContent = is.ad || '';
+  var ico = $('#gateIco');
+  ico.className = 'gate-ico' + (st === 'ok' ? ' ok' : (st === 'out' ? ' out' : (st === 'err' ? '' : ' pulse')));
+  ico.textContent = st === 'ok' ? '🎉' : (st === 'out' ? '😔' : '📍');
+  $('#gateTitle').textContent = st === 'ok' ? t('gate.okT') : (st === 'out' ? t('gate.outT') : t('gate.hi'));
+  $('#gateText').textContent = st === 'ok' ? t('gate.okS', { km:kmTxt(G.info.km) })
+    : (st === 'out' ? t('gate.outS', { km:kmTxt(G.info.km), maks:kmTxt(G.info.maksKm) }) : t('gate.text'));
+  var sub = $('#gateSub'); sub.hidden = st === 'ok' || st === 'out'; sub.textContent = t('gate.sub');
+  var meta = $('#gateMeta'); meta.hidden = st !== 'ok';
+  if (st === 'ok') meta.innerHTML = delivMeta(G.info);
+  var acts = '';
+  if (st === 'err') {
+    acts += '<p class="note-warn" role="status">' + esc(G.msg) + '</p>';
+    if (G.denied) acts += '<button type="button" class="btn-outline" data-act="loc-settings">' + t('loc.settings') + '</button>';
+  }
+  if (st === 'out' || st === 'err') acts += '<button type="button" class="link-btn" data-act="gate-browse">' + t('gate.browse') + '</button>';
+  $('#gateActs').innerHTML = acts;
+  $('#gateActs').hidden = !acts;
+  $('#gatePriv').hidden = st === 'ok' || st === 'out';
+}
+function gateShare(){
+  if (G.st === 'busy') return;
+  G.st = 'busy'; G.msg = ''; G.denied = false; renderGate(); updateMain();
+  getCoords().then(function(c){
+    if (c.err) {
+      G.st = 'err'; G.msg = locMsg(c.err); G.denied = c.err === 'tg-denied';
+      renderGate(); updateMain(); haptic('notify', 'error'); return;
+    }
+    return call('konum', { lat:c.lat, lng:c.lng }).then(function(r){
+      if (!r.ok) { G.st = 'err'; G.msg = r.hata || t('loc.checkFail'); renderGate(); updateMain(); haptic('notify', 'error'); return; }
+      G.info = { km:r.km, ucret:r.ucret, minSiparis:r.minSiparis, maksKm:r.maksKm != null ? r.maksKm : INFO.isletme.maksKm };
+      if (r.kapsamda) {
+        G.st = 'ok';
+        S.loc = { lat:c.lat, lng:c.lng, km:r.km, kapsamda:true, ucret:r.ucret, minSiparis:r.minSiparis }; S.locAt = Date.now(); S.locMsg = '';
+        saveDraft(); haptic('notify', 'success'); confetti();
+      } else {
+        G.st = 'out'; S.loc = null; S.locMsg = outOfRange(r.km, G.info.maksKm);
+        haptic('notify', 'error');
+      }
+      renderGate(); updateMain();
+      $('#gateTitle').focus({ preventScroll:true });
+      $('#gateLive').textContent = $('#gateTitle').textContent + ' ' + $('#gateText').textContent;
+    });
+  });
+}
+function gateDone(){ S.gateDone = true; S.menuScroll = 0; go('menu'); focusHeading('menu'); }
+function confetti(){
+  if (reduced()) return;
+  var box = d.createElement('div'), h = '';
+  box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
+  var renk = ['#e8590c', '#f5a300', '#2e9e4f', '#2481cc', '#ff7a33', '#cf3a30'];
+  for (var i = 0; i < 46; i++) {
+    h += '<i style="left:' + (Math.random() * 100).toFixed(1) + '%;background:' + renk[i % renk.length] +
+      ';--dx:' + (Math.random() * 40 - 20).toFixed(1) + 'vw;--rot:' + Math.round(Math.random() * 720 - 360) + 'deg' +
+      ';animation-delay:' + (Math.random() * 0.35).toFixed(2) + 's;animation-duration:' + (1.2 + Math.random() * 0.8).toFixed(2) + 's' +
+      (i % 3 ? '' : ';border-radius:50%;width:10px;height:10px') + '"></i>';
+  }
+  box.innerHTML = h;
+  d.body.appendChild(box);
+  setTimeout(function(){ if (box.parentNode) box.parentNode.removeChild(box); }, 2600);
 }
 
 /* ---------- toast ---------- */
@@ -1942,13 +2188,14 @@ function reorder(btn){
     if (ITEM[id]) { setQty(id, (S.cart[id] || 0) + q, true); added++; } else missing++;
   });
   haptic('impact', 'light');
-  if (!added) { toast('Bu ürünler artık menüde yok.'); return; }
-  btn.textContent = '✓ Sepete eklendi';
-  setTimeout(function(){ btn.textContent = 'Aynısını sepete ekle'; }, 2200);
-  toast(missing ? 'Bazı ürünler artık menüde yok; kalanlar sepete eklendi.' : 'Son siparişiniz sepete eklendi');
-  announce('Son siparişiniz sepete eklendi. Sepet ' + tl(subtotal()));
+  if (!added) { toast(t('re.none')); return; }
+  btn.textContent = t('re.added');
+  setTimeout(function(){ btn.textContent = t('last.btn'); }, 2200);
+  toast(missing ? t('re.partial') : t('re.ok'));
+  announce(t('ann.re', { tl:tl(subtotal()) }));
 }
 d.addEventListener('click', function(e){
+  if (e.target.id === 'langSheet') { closeLangSheet(); return; }
   var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
   switch (act) {
@@ -1975,6 +2222,9 @@ d.addEventListener('click', function(e){
     case 'retry-order': hideOrderErr(); submit(); break;
     case 'tg-close': closeApp(); break;
     case 'boot': boot(); break;
+    case 'lang': openLangSheet(); break;
+    case 'lang-set': setLang(id); break;
+    case 'gate-browse': S.gateDone = true; S.menuScroll = 0; go('menu'); focusHeading('menu'); break;
     case 'star': rateSet(el.getAttribute('data-k'), parseInt(el.getAttribute('data-v'), 10)); break;
     case 'rate-open': if (INFO && INFO.bekleyen) openRating(INFO.bekleyen.no); break;
     case 'rate-later': rateLater(); break;
@@ -1983,7 +2233,11 @@ d.addEventListener('click', function(e){
   }
 });
 $('#demoClosedBtn').addEventListener('click', function(){ $('#demoClosed').hidden = true; });
-d.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('#demoClosed').hidden) $('#demoClosed').hidden = true; });
+d.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  if (!$('#langSheet').hidden) closeLangSheet();
+  else if (!$('#demoClosed').hidden) $('#demoClosed').hidden = true;
+});
 
 /* ---------- deneme sunucusu (?demo=1) ---------- */
 function makeMock(){
@@ -2022,6 +2276,12 @@ function makeMock(){
   var puanlar = { isletme:{ ort:4.6, adet:128 }, urunler:{ 'tavuk-durum':{ ort:4.8, adet:54 }, 'et-durum':{ ort:4.7, adet:61 },
     'yarim-ekmek':{ ort:4.5, adet:22 }, 'iskender':{ ort:4.9, adet:33 }, 'kasarli-tost':{ ort:4.4, adet:18 }, 'ayran':{ ort:4.6, adet:40 } } };
   var rated = {};
+  var DEMO_CV = {"en":{"Tavuk Döner Dürüm":"Chicken Döner Wrap","Lavaş, tavuk döner, domates, turşu":"Lavash, chicken döner, tomato, pickles","Et Döner Dürüm":"Beef Döner Wrap","Lavaş, et döner, domates, soğan":"Lavash, beef döner, tomato, onion","Yarım Ekmek Et Döner":"Half-Bread Beef Döner","Yarım ekmek, et döner, domates":"Half a loaf, beef döner, tomato","Tavuk Döner Porsiyon":"Chicken Döner Plate","Pilav ve patates ile":"With rice and fries","İskender":"İskender Kebab","Tereyağlı, yoğurtlu":"With butter and yogurt","Kaşarlı Tost":"Cheese Toastie","Tost ekmeği, bol kaşar":"Toast bread, plenty of kashar cheese","Karışık Tost":"Mixed Toastie","Kaşar, sucuk, domates":"Kashar cheese, sucuk sausage, tomato","Patates Kızartması":"French Fries","Çıtır, sıcak":"Crispy and hot","Ezme Salata":"Spicy Tomato Salad","Acılı domates ezmesi":"Spicy tomato ezme","Ayran":"Ayran (yogurt drink)","Soğuk ayran":"Cold ayran","Kola (33 cl)":"Cola (33 cl)","Soğuk, kutu":"Cold, can","Su":"Water","Pet şişe":"Plastic bottle","Dürümler":"Wraps","Porsiyonlar":"Plates","Tostlar":"Toasties","Yan ürünler":"Sides","İçecekler":"Drinks"},"ru":{"Tavuk Döner Dürüm":"Дёнер с курицей в лаваше","Lavaş, tavuk döner, domates, turşu":"Лаваш, куриный дёнер, помидор, соленья","Et Döner Dürüm":"Дёнер с говядиной в лаваше","Lavaş, et döner, domates, soğan":"Лаваш, говяжий дёнер, помидор, лук","Yarım Ekmek Et Döner":"Дёнер с говядиной в половинке хлеба","Yarım ekmek, et döner, domates":"Половинка хлеба, говяжий дёнер, помидор","Tavuk Döner Porsiyon":"Куриный дёнер (порция)","Pilav ve patates ile":"С рисом и картофелем фри","İskender":"Искендер-кебаб","Tereyağlı, yoğurtlu":"Со сливочным маслом и йогуртом","Kaşarlı Tost":"Тост с сыром","Tost ekmeği, bol kaşar":"Тостовый хлеб, много сыра кашар","Karışık Tost":"Тост ассорти","Kaşar, sucuk, domates":"Сыр кашар, колбаса суджук, помидор","Patates Kızartması":"Картофель фри","Çıtır, sıcak":"Хрустящий и горячий","Ezme Salata":"Острый томатный салат","Acılı domates ezmesi":"Острая томатная эзме","Ayran":"Айран","Soğuk ayran":"Холодный айран","Kola (33 cl)":"Кола (0,33 л)","Soğuk, kutu":"Холодная, в банке","Su":"Вода","Pet şişe":"Пластиковая бутылка","Dürümler":"Роллы","Porsiyonlar":"Порции","Tostlar":"Тосты","Yan ürünler":"Гарниры","İçecekler":"Напитки"},"de":{"Tavuk Döner Dürüm":"Hähnchen-Döner-Dürüm","Lavaş, tavuk döner, domates, turşu":"Lavash, Hähnchen-Döner, Tomate, Essiggurken","Et Döner Dürüm":"Rind-Döner-Dürüm","Lavaş, et döner, domates, soğan":"Lavash, Rind-Döner, Tomate, Zwiebeln","Yarım Ekmek Et Döner":"Halbes Brot mit Rind-Döner","Yarım ekmek, et döner, domates":"Halbes Brot, Rind-Döner, Tomate","Tavuk Döner Porsiyon":"Hähnchen-Döner-Teller","Pilav ve patates ile":"Mit Reis und Pommes","İskender":"İskender Kebab","Tereyağlı, yoğurtlu":"Mit Butter und Joghurt","Kaşarlı Tost":"Käsetoast","Tost ekmeği, bol kaşar":"Toastbrot, viel Kaşar-Käse","Karışık Tost":"Gemischter Toast","Kaşar, sucuk, domates":"Kaşar-Käse, Sucuk, Tomate","Patates Kızartması":"Pommes frites","Çıtır, sıcak":"Knusprig und heiß","Ezme Salata":"Scharfer Tomatensalat","Acılı domates ezmesi":"Scharfe Tomaten-Ezme","Ayran":"Ayran","Soğuk ayran":"Kalter Ayran","Kola (33 cl)":"Cola (0,33 l)","Soğuk, kutu":"Kalt, Dose","Su":"Wasser","Pet şişe":"PET-Flasche","Dürümler":"Dürüm","Porsiyonlar":"Teller","Tostlar":"Toasts","Yan ürünler":"Beilagen","İçecekler":"Getränke"},"ar":{"Tavuk Döner Dürüm":"دونر دجاج بخبز اللافاش","Lavaş, tavuk döner, domates, turşu":"لافاش، دونر دجاج، طماطم، مخلل","Et Döner Dürüm":"دونر لحم بخبز اللافاش","Lavaş, et döner, domates, soğan":"لافاش، دونر لحم، طماطم، بصل","Yarım Ekmek Et Döner":"نصف خبزة دونر لحم","Yarım ekmek, et döner, domates":"نصف خبزة، دونر لحم، طماطم","Tavuk Döner Porsiyon":"طبق دونر دجاج","Pilav ve patates ile":"مع الأرز والبطاطا المقلية","İskender":"إسكندر كباب","Tereyağlı, yoğurtlu":"بالزبدة واللبن","Kaşarlı Tost":"توست بالجبن","Tost ekmeği, bol kaşar":"خبز توست مع كثير من جبن القشقوان","Karışık Tost":"توست مشكّل","Kaşar, sucuk, domates":"جبن قشقوان، سجق، طماطم","Patates Kızartması":"بطاطا مقلية","Çıtır, sıcak":"مقرمشة وساخنة","Ezme Salata":"سلطة طماطم حارة","Acılı domates ezmesi":"إزمة طماطم حارة","Ayran":"عيران","Soğuk ayran":"عيران بارد","Kola (33 cl)":"كولا (33 سل)","Soğuk, kutu":"باردة، علبة","Su":"ماء","Pet şişe":"زجاجة بلاستيكية","Dürümler":"لفائف","Porsiyonlar":"أطباق","Tostlar":"توست","Yan ürünler":"أطباق جانبية","İçecekler":"مشروبات"},"es":{"Tavuk Döner Dürüm":"Dürüm de pollo","Lavaş, tavuk döner, domates, turşu":"Lavash, döner de pollo, tomate, encurtidos","Et Döner Dürüm":"Dürüm de ternera","Lavaş, et döner, domates, soğan":"Lavash, döner de ternera, tomate, cebolla","Yarım Ekmek Et Döner":"Medio pan con döner de ternera","Yarım ekmek, et döner, domates":"Medio pan, döner de ternera, tomate","Tavuk Döner Porsiyon":"Plato de döner de pollo","Pilav ve patates ile":"Con arroz y patatas fritas","İskender":"Kebab İskender","Tereyağlı, yoğurtlu":"Con mantequilla y yogur","Kaşarlı Tost":"Sándwich de queso","Tost ekmeği, bol kaşar":"Pan de molde, mucho queso kaşar","Karışık Tost":"Sándwich mixto","Kaşar, sucuk, domates":"Queso kaşar, sucuk, tomate","Patates Kızartması":"Patatas fritas","Çıtır, sıcak":"Crujientes y calientes","Ezme Salata":"Ensalada picante de tomate","Acılı domates ezmesi":"Ezme picante de tomate","Ayran":"Ayran","Soğuk ayran":"Ayran frío","Kola (33 cl)":"Cola (33 cl)","Soğuk, kutu":"Fría, en lata","Su":"Agua","Pet şişe":"Botella de plástico","Dürümler":"Dürüm","Porsiyonlar":"Platos","Tostlar":"Sándwiches","Yan ürünler":"Acompañamientos","İçecekler":"Bebidas"}};
+  function menuDilde(dil){
+    var cv = DEMO_CV[dil];
+    if (!cv) return menu.slice();
+    return menu.map(function(m){ return Object.assign({}, m, { adCeviri:cv[m.ad] || '', katCeviri:cv[m.kat] || '', aciklama:cv[m.aciklama] || m.aciklama }); });
+  }
   function puanKopya(){ return JSON.parse(JSON.stringify(puanlar)); }
   function puanDurum(o){ var s = st(o); return rated[o.no] ? 'puanlandi' : (s === -1 ? 'iptal' : (s === 4 ? 'uygun' : 'erken')); }
   var NAMES = ['Yeni', 'Hazırlanıyor', 'Hazır', 'Yolda', 'Teslim Edildi'];
@@ -2047,12 +2307,12 @@ function makeMock(){
         case 'baslat': {
           var aktif = null;
           Object.keys(orders).forEach(function(k){ var s = st(orders[k]); if (s >= 0 && s < 4) aktif = { no:orders[k].no, durum:NAMES[s] }; });
-          return { ok:true, isletme:Object.assign({}, isletme), menu:menu.slice(), odemeler:odemeler.slice(), kurallar:kurallar.slice(),
+          return { ok:true, isletme:Object.assign({}, isletme), menu:menuDilde(p.dil || LANG), dil:p.dil || LANG, odemeler:odemeler.slice(), kurallar:kurallar.slice(),
             kullanici:{ id:1, ad:'Ferhat Aydın' },
             musteri:musteriOn ? { ad:'Ferhat Aydın', tel:'05321112233', aranacak:'05321112233', adresler:adresler,
               sonSiparis:{ kalemler:[{ id:'et-durum', adet:2 }, { id:'ayran', adet:2 }], metin:'2 × Et Döner Dürüm, 2 × Ayran', toplam:410, odeme:'Nakit', adresId:'a1' } } : null,
             telefon:null, sohbetKonumu:null, aktifSiparis:aktif, puanlar:puanKopya(),
-            bekleyenPuan:musteriOn && !rated[1004] ? { no:1004, metin:'2 × Et Döner Dürüm, 2 × Ayran' } : null };
+            bekleyenPuan:musteriOn && !rated[1004] ? { no:1004, metin:'2 × Et Döner Dürüm, 2 × Ayran', kalemler:[{ id:'et-durum', adet:2 }, { id:'ayran', adet:2 }] } : null };
         }
         case 'konum': { var r = rule(konumKm); return { ok:true, km:konumKm, kapsamda:!!r, ucret:r ? r.ucret : 0, minSiparis:r ? r.minSiparis : 0, maksKm:isletme.maksKm }; }
         case 'konumSohbet': return { ok:true };
@@ -2096,7 +2356,7 @@ function makeMock(){
           var oo = orders[p.no];
           if (!oo) {
             if (!/^\d+$/.test(String(p.no))) return { ok:false, kod:'YOK', hata:'Sipariş bulunamadı.' };
-            oo = makeOrder(p, { no:+p.no, kalemler:[{ ad:'Et Döner Dürüm', adet:1, tutar:180 }, { ad:'Ayran', adet:1, tutar:25 }], ara:205, ucret:0, adres:'Bağlar Mah. 12. Sk. No:5', odeme:'Nakit' });
+            oo = makeOrder(p, { no:+p.no, kalemler:[{ id:'et-durum', ad:'Et Döner Dürüm', adet:1, tutar:180 }, { id:'ayran', ad:'Ayran', adet:1, tutar:25 }], ara:205, ucret:0, adres:'Bağlar Mah. 12. Sk. No:5', odeme:'Nakit' });
             oo.at = Date.now() - (stepMs || 60000) - 5000; oo.iptalSon = oo.at + isletme.iptalDk * 60000;
             if (seq <= oo.no) seq = oo.no + 1;
           }
@@ -2137,6 +2397,7 @@ function makeMock(){
 }
 
 /* ---------- başlat ---------- */
+applyStatic();
 if (!tg) {
   applyTheme();
   if (window.matchMedia) { var mqd = matchMedia('(prefers-color-scheme: dark)'); if (mqd.addEventListener) mqd.addEventListener('change', applyTheme); }
@@ -2161,7 +2422,7 @@ applyTheme();
 try { tg.onEvent('themeChanged', applyTheme); } catch(e){}
 try { tg.onEvent('activated', function(){ appActive = true; schedulePoll(400); }); tg.onEvent('deactivated', function(){ appActive = false; stopPoll(); }); } catch(e){}
 try { if (ver('6.1') && tg.BackButton) tg.BackButton.onClick(function(){ if (S.screen === 'cart' || S.screen === 'rate') { go('menu'); focusHeading('menu'); } }); } catch(e){}
-if (!B) { showError('Bağlantı eksik', 'İşletme bilgisi bulunamadı. Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.', false); return; }
+if (!B) { showError(t('err.linkT'), t('err.linkS'), false); return; }
 boot();
 })();
 </script>
