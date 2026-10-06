@@ -20,7 +20,7 @@
 })();
 </script>
 <style>
-/* MyPOS 360 · Restoran (tablet) ve kurye ekranı.
+/* YourPOS 360 · Restoran (tablet) ve kurye ekranı.
    Sipariş sayfasıyla aynı renkler ve aynı dil: sayfa = ikincil zemin, bölümler = kartlar, turuncu vurgu.
    Telefonda tek sütun + durum çipleri; 880px ve üstünde (yatay tablet) dört sütunlu sipariş panosu. */
 :root{
@@ -623,7 +623,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 'use strict';
 (function(){
 /* =========================================================
-   MyPOS 360 · Restoran ve kurye ekranı (isletme.html)
+   YourPOS 360 · Restoran ve kurye ekranı (isletme.html)
    Giriş: Telegram'daki işletme botundan açılınca Telegram'ın imzası (initData);
    tablette, işletme sahibinin ürettiği tek cihazlık bağlantı (?cihaz=…, sonra tarayıcıda saklanır).
    ?demo=1&rol=sahip|personel|kurye → örnek verilerle tıklanabilir önizleme (sunucuya gitmez).
@@ -737,9 +737,9 @@ var DEMO = params.get('demo') === '1';
 var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
 var API = params.get('api') || 'https://script.google.com/macros/s/AKfycbxDsLxZiojzSAlxAdWg9KplLVEGvaLv4SUCVIrw_X32ja9xQTOrpAugUGvUatLJ7vme/exec';
 var ACILACAK_NO = Number(params.get('no')) || 0;
-var ANA = params.get('ana') === '1';          // işletme sahibi ekranı MyPOS 360 ana botundan açtı
+var ANA = params.get('ana') === '1';          // işletme sahibi ekranı YourPOS 360 ana botundan açtı
 var SEKME = String(params.get('sekme') || '');
-var CIHAZ_KEY = 'mypos360-cihaz-' + B;
+var CIHAZ_KEY = 'yourpos360-cihaz-' + B;
 var CIHAZ = null;
 (function(){
   var q = params.get('cihaz');
@@ -870,7 +870,7 @@ function nakitMi(s){ return /nakit/i.test(String(s || '')); }
 function kartMi(s){ return /kart/i.test(String(s || '')); }
 
 /* ---------- ses ve uyarılar ---------- */
-var SES = { acik:LS.get('mypos360-ses') !== '0', ctx:null, son:0 };
+var SES = { acik:LS.get('yourpos360-ses') !== '0', ctx:null, son:0 };
 function sesCtx(){
   if (!SES.ctx) { var A = window.AudioContext || window.webkitAudioContext; if (A) { try { SES.ctx = new A(); } catch(e){} } }
   return SES.ctx;
@@ -1112,7 +1112,7 @@ function renderBanners(){
     h += '<div class="banner err" role="alert">' + ic('kilit') + '<span class="b-txt">Bakiye yüklenmediği için sipariş alımı durdu; müşteriler sipariş veremiyor. Eksik <b class="num">' + tl(od.eksik) +
       '</b>. Yükleme yapınca kendiliğinden açılır.</span>' + odBtn + '</div>';
   } else if (!D.isletme.hizmet) {
-    h += '<div class="banner err">' + ic('kilit') + '<span class="b-txt">Hizmetiniz şu an durdurulmuş; müşteriler sipariş veremiyor. MyPOS 360 ile iletişime geçin.</span></div>';
+    h += '<div class="banner err">' + ic('kilit') + '<span class="b-txt">Hizmetiniz şu an durdurulmuş; müşteriler sipariş veremiyor. YourPOS 360 ile iletişime geçin.</span></div>';
   } else if (od && od.kalanGun) {
     h += '<div class="banner warn" role="alert">' + ic('uyari') + '<span class="b-txt">Bakiyeniz <b class="num">' + tl(od.eksik) + '</b> eksik. ' + od.kalanGun +
       ' gün içinde yüklenmezse sipariş alımı durur.</span>' + odBtn + '</div>';
@@ -1409,7 +1409,7 @@ function iosMu(){ return (tg && tg.platform === 'ios') || /iPhone|iPad|iPod/.tes
 SHEET.harita = function(s){
   var o = siparis(s.no);
   if (!o) return shBas('Sipariş #' + s.no) + '<div class="sh-body">' + bosDurum('fis', 'Sipariş bulunamadı', '') + '</div>';
-  var son = LS.get('mypos360-harita');
+  var son = LS.get('yourpos360-harita');
   var l = HARITALAR.filter(function(h){ return !h.ios || iosMu(); });
   l.sort(function(a, b){ return (b.k === son) - (a.k === son); });
   var b = U.busy['konum:' + o.no];
@@ -1746,7 +1746,7 @@ function kuryeEkrani(){
    Onaylanan (Hazırlanıyor'a geçen) sipariş, bu cihazda yazıcı açıksa otomatik yazdırılır.
    Yöntemler: Bluetooth (ESC/POS, Chrome), USB (ESC/POS, Chrome), bilgisayar yazıcısı (tarayıcının yazdırma penceresi).
    Yazıcıya ulaşılamazsa sipariş sistemde normal devam eder; kartta «yazdırılamadı» görünür ve elle tekrar denenir. */
-var YZ_KEY = 'mypos360-yazici-' + B, YZ_IZ = 'mypos360-yazdi-' + B;
+var YZ_KEY = 'yourpos360-yazici-' + B, YZ_IZ = 'yourpos360-yazdi-' + B;
 var YZ = (function(){
   var v = null;
   try { v = JSON.parse(LS.get(YZ_KEY) || 'null'); } catch(e){}
@@ -1817,7 +1817,7 @@ function fisHtml(o){
     '<div class="b">' + esc(o.ad) + '</div><div>' + esc(telGoster(o.tel)) + '</div><div>' + esc(o.adres) + '</div>' + (o.tarif ? '<div>Tarif: ' + esc(o.tarif) + '</div>' : '') +
     '<hr>' + (o.kalemler || []).map(function(k){ return r('<b>' + adet(k.adet) + '×</b> ' + esc(k.ad), tl(k.tutar), 'k'); }).join('') + '<hr>' +
     r('Ürünler', tl(o.ara)) + (o.indirim ? r('İndirim', '−' + tl(o.indirim)) : '') + r('Teslimat', o.ucret ? tl(o.ucret) : 'Ücretsiz') + r('TOPLAM', tl(o.toplam), 'b') + r('Ödeme', esc(o.odeme)) +
-    (o.not ? '<hr><div class="b">NOT: ' + esc(o.not) + '</div>' : '') + '<hr><div class="c">MyPOS 360</div>';
+    (o.not ? '<hr><div class="b">NOT: ' + esc(o.not) + '</div>' : '') + '<hr><div class="c">YourPOS 360</div>';
   var f = $('#fis');
   f.style.setProperty('--fis-g', (YZ.genislik === 58 ? 54 : 72) + 'mm');
   var kopya = [];
@@ -1887,7 +1887,7 @@ function fisBayt(o){
   boy(1); kalin(1); ikiyana('TOPLAM', para(o.toplam)); kalin(0); boy(0);
   ikiyana('Ödeme', o.odeme || '');
   if (o.not) { cizgi(); boy(1); kalin(1); satirBol('NOT: ' + o.not, n).forEach(sat); kalin(0); boy(0); }
-  cizgi(); hiza(1); sat('MyPOS 360'); hiza(0);
+  cizgi(); hiza(1); sat('YourPOS 360'); hiza(0);
   b.push(10, 10, 10, 10, GS, 86, 66, 0);                 // kağıdı ilerlet ve kes
   return new Uint8Array(b);
 }
@@ -2117,7 +2117,7 @@ function urunBulAnahtar(an){
 }
 function uyeGit(hash){
   if (D && D.uyeUrl) { location.href = D.uyeUrl + (hash || ''); return; }
-  toast('Paket ve bot ayarları için Telegram\'da @' + ((D && D.anaBot) || 'mypos_360_bot') + ' → «Panelim».');
+  toast('Paket ve bot ayarları için Telegram\'da @' + ((D && D.anaBot) || 'yourpos360_bot') + ' → «Panelim».');
 }
 function videoUrl(k){ var v = ((D && D.videolar) || []).filter(function(x){ return x.k === k; })[0]; return v ? v.url : ''; }
 function videoDugme(k, metin){
@@ -2300,7 +2300,7 @@ function galeriIc(s, gp){
 /* --- Excel ile toplu yükleme --- */
 SHEET.excel = function(){
   var b = U.busy.sablon;
-  var bot = D.ana ? '@' + (D.anaBot || 'mypos_360_bot') : (D.botAdi ? '@' + D.botAdi : 'botunuzun');
+  var bot = D.ana ? '@' + (D.anaBot || 'yourpos360_bot') : (D.botAdi ? '@' + D.botAdi : 'botunuzun');
   var sayfa = market() ? 'Ürünlerim' : 'Menüm';
   var h = shBas('Excel ile toplu yükleme') + '<div class="sh-body">';
   h += '<p>Tüm ' + (market() ? 'ürünlerinizi' : 'menünüzü') + ' tek seferde yükleyin:</p><ol class="adim">' +
@@ -2411,7 +2411,7 @@ function ayarEkrani(){
     '<button class="btn sm line" type="button" data-act="odEkle">Ekle</button></div>' +
     '<button class="btn pri" type="submit"' + (ob ? ' disabled' : '') + '>' + (ob ? bekle('ayOdeme') : ic('tik')) + 'Ödeme yöntemlerini kaydet</button></form>';
   h += videoDugme('ayarlar', 'Ayarlar nasıl yapılır? Videoyu izleyin');
-  if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda MyPOS 360\'a yazabilirsiniz.</p>' +
+  if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a yazabilirsiniz.</p>' +
     '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button><button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button></div></section>';
   return h + '</div>';
 }
@@ -2905,7 +2905,7 @@ var ACT = {
   harita:function(el){ sheetAc({ tip:'harita', no:Number(el.getAttribute('data-no')) }); },
   haritaUyg:function(el){
     var k = el.getAttribute('data-k');
-    LS.set('mypos360-harita', k);
+    LS.set('yourpos360-harita', k);
     haritaAc(Number(el.getAttribute('data-no')), k);
     sheetKapat();
   },
@@ -2923,7 +2923,7 @@ var ACT = {
   },
   ses:function(){
     SES.acik = !SES.acik;
-    LS.set('mypos360-ses', SES.acik ? '1' : '0');
+    LS.set('yourpos360-ses', SES.acik ? '1' : '0');
     if (SES.acik) { sesAc(); setTimeout(function(){ bip(kurye() ? 'kurye' : 'yeni'); renderBanners(); }, 150); }
     toast(SES.acik ? 'Sipariş sesi açık' : 'Sipariş sesi kapalı');
     renderTop(); renderBanners();
@@ -3095,7 +3095,7 @@ document.addEventListener('click', function(e){
 
 function basla(){
   if (!DEMO) {
-    if (!B) return tamEkran('kilit', 'Bağlantı eksik', 'Bu ekranı işletmenizin Telegram botundaki «Restoran» düğmesinden ya da @mypos_360_bot içindeki «Panelim»den açın.');
+    if (!B) return tamEkran('kilit', 'Bağlantı eksik', 'Bu ekranı işletmenizin Telegram botundaki «Restoran» düğmesinden ya da @yourpos360_bot içindeki «Panelim»den açın.');
     if (!inTelegram && !CIHAZ) {
       var q = new URLSearchParams(); q.set('b', B); q.set('demo', '1');
       return tamEkran('kilit', 'Bu ekran işletme ekibi içindir',
@@ -3308,7 +3308,7 @@ function demoMock(rol){
       var gun = { gun:g, adet:0, ciro:0 };
       r.gun.push(gun);
       if (g > bugun) continue;
-      var rnd = rastgele('mypos' + g);
+      var rnd = rastgele('yourpos' + g);
       var taban = [44, 27, 29, 31, 33, 47, 55][gunDate(g).getUTCDay()];
       var adetG = Math.round(taban * (0.85 + rnd() * 0.3));
       var agirlik = SAAT_AGIRLIK.slice();
@@ -3371,8 +3371,8 @@ function demoMock(rol){
         r.ekip = kopya(EKIP); r.cihazlar = kopya(CIHAZ);
         var botsuz = PRM.get('kurulum') === '1';
         r.botAdi = botsuz ? '' : 'testdonerci_siparis_bot';
-        r.paket = { ad:'Başlangıç', urun:LIMIT, ekip:3, hafta:500 }; r.urunLimiti = LIMIT; r.kod = 'MP360-D3M0';
-        r.botVar = !botsuz; r.ana = PRM.get('ana') === '1'; r.anaBot = 'mypos_360_bot';
+        r.paket = { ad:'Başlangıç', urun:LIMIT, ekip:3, hafta:500 }; r.urunLimiti = LIMIT; r.kod = 'YP360-D3M0';
+        r.botVar = !botsuz; r.ana = PRM.get('ana') === '1'; r.anaBot = 'yourpos360_bot';
         if (r.ana) r.uyeUrl = location.pathname.replace(/isletme\.html$/, '') + 'uye.html?demo=1';
         r.videolar = [{ k:'menu', ad:'Menü ve ürünleri ekleme', url:'https://www.instagram.com/' }, { k:'ayarlar', ad:'Ayarlar', url:'https://www.instagram.com/' }];
         // ?odeme=bekle | durdu : bakiye uyarılarını göstermek için
