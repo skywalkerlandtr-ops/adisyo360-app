@@ -50,6 +50,7 @@
   --tile0:#fde4cc; --tile1:#fadbd2; --tile2:#f8edc2; --tile3:#dff0d4; --tile4:#d8e7f7;
   --toast-bg:#2a2b30; --toast-text:#ffffff; --toast-link:#ffab7d;
   --scrim:rgb(10 14 20 / .45);
+  --star:#f5a300; --star-off:#d9dce2; --star-soft:#fff2d4;
   --safe-b:max(env(safe-area-inset-bottom,0px),var(--tg-safe-area-inset-bottom,0px));
   color-scheme:light;
 }
@@ -75,6 +76,7 @@
   --tile0:#3b2a1b; --tile1:#3a2320; --tile2:#35301b; --tile3:#1f3122; --tile4:#1b2b3c;
   --toast-bg:#2b3846; --toast-text:#f5f5f5; --toast-link:#ffa477;
   --scrim:rgb(0 0 0 / .6);
+  --star:#ffbf3c; --star-off:#34424f; --star-soft:#3a3018;
   color-scheme:dark;
 }
 
@@ -346,6 +348,32 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
 .dsum-meta{font-size:15px;color:var(--sub);border-top:1px solid var(--sep);padding-top:10px;margin-top:2px;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
 .dsum-meta b{color:var(--text);font-weight:600}
 
+/* ---------- puanlama ---------- */
+.rate-meta{white-space:nowrap}
+.rate-meta .st,.prod-rate .st{color:var(--star)}
+.prod-rate{display:flex;align-items:baseline;gap:4px;font-size:15px;color:var(--sub);font-variant-numeric:tabular-nums}
+.prod-rate b{color:var(--text);font-weight:600}
+.hero-ico.star{background:var(--star-soft);color:var(--star)}
+.hero-ico.wait{background:var(--star-soft);color:var(--warn-ink);font-size:32px}
+.rate-no{font-size:15px;color:var(--sub);margin-top:6px}
+.rate-no b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+.ritem{position:relative;display:flex;flex-direction:column;gap:6px;padding:14px 16px 10px}
+.ritem + .ritem::before{content:"";position:absolute;top:0;left:16px;right:0;height:1px;background:var(--sep)}
+.ritem-top{display:flex;align-items:center;gap:12px;min-width:0}
+.ritem-top .tile{width:44px;height:44px;border-radius:12px;font-size:26px;flex:none}
+.ritem-logo{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;font-size:16px;font-weight:800;letter-spacing:.02em}
+.ritem-name{flex:1;min-width:0;font-size:18px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.ritem-sub{font-size:15px;font-weight:400;color:var(--sub)}
+.rlbl{flex:none;font-size:15px;font-weight:700;color:var(--accent-ink);white-space:nowrap}
+.rlbl.none{color:var(--hint);font-weight:500}
+.stars{display:flex;gap:2px;margin-left:-4px}
+.star-btn{width:48px;height:48px;border:0;border-radius:12px;background:none;padding:0;display:grid;place-items:center;
+  font-size:36px;line-height:1;color:var(--star-off);transition:transform .12s ease-out,color .12s}
+.star-btn.on{color:var(--star)}
+.star-btn:not(:disabled):active{transform:scale(.86)}
+.star-btn:disabled{cursor:default}
+
 /* ---------- toast & demo kapanış ---------- */
 .toast{position:absolute;left:12px;right:12px;bottom:calc(92px + var(--safe-b));z-index:8;display:flex;align-items:center;gap:8px;min-height:52px;
   padding:6px 6px 6px 16px;border-radius:14px;background:var(--toast-bg);color:var(--toast-text);font-size:16px;
@@ -367,6 +395,7 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
 @media (prefers-reduced-motion: reduce){
   .chips,.main-btn{transition:none}
   .scr.enter,.toast{animation:none}
+  .star-btn{transition:none}
   .sk{animation:none}
   .spin{animation:none;border-right-color:currentColor;opacity:.6}
 }
@@ -421,6 +450,14 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
         </div>
         <p class="closed-banner" id="closedBanner" hidden></p>
         <div class="card deliv" id="deliv" tabindex="-1"></div>
+        <div class="card last" id="rateAsk" hidden>
+          <p class="last-h">⭐ Son siparişinizi puanlar mısınız?</p>
+          <p class="last-items" id="rateAskText"></p>
+          <div class="two" style="margin-top:0">
+            <button type="button" class="btn-plain" data-act="rate-later">Şimdi değil</button>
+            <button type="button" class="btn-tonal" data-act="rate-open">Puanla</button>
+          </div>
+        </div>
         <div class="card last" id="lastOrder" hidden>
           <p class="last-h">🔁 Son siparişiniz</p>
           <p class="last-items" id="lastItems"></p>
@@ -571,6 +608,8 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
           <p class="hero-text" id="heroText"></p>
           <p class="eta" id="eta">Tahmini teslim: <b id="etaTime"></b></p>
         </div>
+        <button type="button" class="btn-primary" id="rateDoneBtn" data-act="rate-order" hidden>⭐ Siparişi puanla</button>
+        <p class="info" id="rateDoneInfo" hidden>⭐ Bu siparişi puanladınız. Teşekkürler!</p>
         <div class="sec" id="secTrack">
           <h2 class="sec-h">Sipariş durumu</h2>
           <div class="card"><ol class="track" id="track"></ol></div>
@@ -594,6 +633,44 @@ input:focus-visible ~ .rdot{box-shadow:0 0 0 3px var(--focus-ring)}
           <div class="card sum" id="doneSum"></div>
         </div>
         <button type="button" class="btn-sec" id="newOrderBtn" data-act="new-order">Yeni sipariş</button>
+      </div>
+    </section>
+
+    <!-- 4 · Puanlama (yalnız yıldız) -->
+    <section class="scr" id="scrRate" aria-labelledby="rateTitle" hidden>
+      <p class="demo-badge" data-demo hidden>Deneme modu · puanlar kaydedilmez</p>
+      <div id="rateLoading" class="stack" hidden aria-busy="true">
+        <div class="sk" style="height:240px;border-radius:14px"></div>
+        <div class="sk" style="height:130px;border-radius:14px"></div>
+        <div class="sk" style="height:230px;border-radius:14px"></div>
+        <p class="sr" role="status">Sipariş bilgisi yükleniyor…</p>
+      </div>
+      <div id="rateError" class="card pad stack" hidden>
+        <p class="confirm-t" id="rateErrTitle" tabindex="-1">Puanlama açılamadı</p>
+        <p class="muted" id="rateErrText"></p>
+        <button type="button" class="btn-primary" data-act="rate-retry">Tekrar dene</button>
+        <button type="button" class="btn-sec" data-act="to-menu">Menüye git</button>
+      </div>
+      <div id="rateBody" class="stack" style="gap:22px" hidden>
+        <div class="card hero">
+          <div class="hero-ico star" id="rateIco" aria-hidden="true">★</div>
+          <h1 id="rateTitle" tabindex="-1">Siparişinizi puanlayın</h1>
+          <p class="hero-text" id="rateText"></p>
+          <p class="rate-no">Sipariş <b id="rateNo"></b></p>
+        </div>
+        <div class="sec" id="rateBizSec">
+          <h2 class="sec-h">İşletme</h2>
+          <div class="card" id="rateBiz"></div>
+        </div>
+        <div class="sec" id="rateItemsSec">
+          <h2 class="sec-h">Yemekler <span class="sec-opt" id="rateItemsOpt">(isteğe bağlı)</span></h2>
+          <div class="card" id="rateItems"></div>
+        </div>
+        <div class="oerr" id="rateErrBox" role="alert" tabindex="-1" hidden>
+          <p class="oerr-t">Puan gönderilemedi</p>
+          <p id="rateErrMsg"></p>
+        </div>
+        <button type="button" class="btn-sec" id="rateMenuBtn" data-act="to-menu" hidden>Menüye git</button>
       </div>
     </section>
   </div>
@@ -662,6 +739,7 @@ var params = new URLSearchParams(location.search);
 var B = params.get('b') || '';
 var DEMO = params.get('demo') === '1';
 var TAKIP = params.get('takip');
+var PUAN = params.get('puan');
 var API = params.get('api') || 'https://script.google.com/macros/s/AKfycbxDsLxZiojzSAlxAdWg9KplLVEGvaLv4SUCVIrw_X32ja9xQTOrpAugUGvUatLJ7vme/exec';
 
 /* ---------- Telegram ---------- */
@@ -745,7 +823,8 @@ var S = {
   addrText:'', name:'', phone:null, phoneBusy:false, phoneManual:false, phoneMsg:'', courier:'tg', otherPhone:'', contactEdit:false,
   noteOpen:false, note:'', pay:null, istekId:null, sending:false,
   order:null, active:null, cancelConfirm:false, cancelBusy:false, cancelMsg:'',
-  trackLoading:false, trackErr:'', trackNo:null, menuScroll:0
+  trackLoading:false, trackErr:'', trackNo:null, menuScroll:0,
+  rate:null
 };
 var scroller = $('#scroller'), mainBtn = $('#mainBtn');
 var DRAFT_KEY = 'adisyo360-sepet-' + B;
@@ -801,7 +880,7 @@ function initials(ad){
 }
 
 /* ---------- ekran geçişi ---------- */
-var SCREENS = { loading:'#scrLoading', blocked:'#scrBlocked', error:'#scrError', menu:'#scrMenu', cart:'#scrCart', done:'#scrDone' };
+var SCREENS = { loading:'#scrLoading', blocked:'#scrBlocked', error:'#scrError', menu:'#scrMenu', cart:'#scrCart', done:'#scrDone', rate:'#scrRate' };
 function go(scr, noAnim){
   if (S.screen === 'menu' && scr !== 'menu') S.menuScroll = scroller.scrollTop;
   S.screen = scr;
@@ -811,18 +890,20 @@ function go(scr, noAnim){
     el.classList.remove('enter');
     if (k === scr && !noAnim && !reduced()) { void el.offsetWidth; el.classList.add('enter'); }
   });
-  $('#mbWrap').hidden = !(scr === 'menu' || scr === 'cart' || scr === 'done');
-  backBtn(scr === 'cart');
+  $('#mbWrap').hidden = !(scr === 'menu' || scr === 'cart' || scr === 'done' || scr === 'rate');
+  backBtn(scr === 'cart' || scr === 'rate');
   if (scr === 'menu') { renderMenuTop(); renderAllQty(); }
   if (scr === 'cart') renderCheckout();
   if (scr === 'done') renderDone();
+  if (scr === 'rate') renderRate();
   scroller.scrollTop = scr === 'menu' ? S.menuScroll : 0;
   updateMain();
   if (scr === 'menu') spy(true);
   if (scr === 'done') schedulePoll(15000); else stopPoll();
 }
 function focusHeading(scr){
-  var h = { menu:'#restName', cart:'#cartTitle', done:'#doneTitle', error:'#errTitle' }[scr];
+  var h = { menu:'#restName', cart:'#cartTitle', done:'#doneTitle', error:'#errTitle',
+    rate:(S.rate && S.rate.err) ? '#rateErrTitle' : '#rateTitle' }[scr];
   if (h) { var el = $(h); if (el && !el.closest('[hidden]')) el.focus({ preventScroll:true }); }
 }
 
@@ -832,7 +913,7 @@ function setMainLabel(full, short){
   if (short && mainBtn.scrollWidth > mainBtn.clientWidth + 1) mainBtn.textContent = short;
 }
 function updateMain(){
-  if (S.sending) {
+  if (S.sending || (S.screen === 'rate' && S.rate && S.rate.busy)) {
     mainBtn.disabled = true; mainBtn.classList.add('loading');
     mainBtn.innerHTML = '<span class="spin" aria-hidden="true"></span><span>Gönderiliyor…</span>';
     return;
@@ -848,6 +929,14 @@ function updateMain(){
     else if (!n) { dis = true; setMainLabel('Sepetiniz boş'); }
     else setMainLabel('Siparişi onayla · ' + tl(total()), 'Onayla · ' + tl(total()));
   } else if (S.screen === 'done') setMainLabel("Telegram'a dön");
+  else if (S.screen === 'rate') {
+    var R = S.rate;
+    if (!R || R.loading) { dis = true; setMainLabel('Yükleniyor…'); }
+    else if (canRate()) {
+      if (R.biz) setMainLabel('Puanı gönder');
+      else { dis = true; setMainLabel('Önce işletmeye yıldız verin', 'İşletmeye yıldız verin'); }
+    } else setMainLabel("Telegram'a dön");
+  }
   mainBtn.disabled = dis;
 }
 mainBtn.addEventListener('click', function(){
@@ -855,6 +944,7 @@ mainBtn.addEventListener('click', function(){
   if (S.screen === 'menu') { go('cart'); focusHeading('cart'); }
   else if (S.screen === 'cart') submit();
   else if (S.screen === 'done') closeApp();
+  else if (S.screen === 'rate') { if (canRate()) rateSubmit(); else if (!(S.rate && (S.rate.loading || S.rate.busy))) closeApp(); }
 });
 window.addEventListener('resize', function(){ if (!S.sending) updateMain(); });
 
@@ -866,7 +956,7 @@ function showError(title, text, canRetry){
   go('error', true);
   focusHeading('error');
 }
-var bootedTakip = false;
+var bootedTakip = false, bootedPuan = false;
 function boot(){
   go('loading', true);
   return call('baslat').then(function(r){
@@ -877,6 +967,7 @@ function boot(){
     }
     initFromBaslat(r);
     if (TAKIP && !bootedTakip) { bootedTakip = true; openTracking(TAKIP); }
+    else if (PUAN && !bootedPuan) { bootedPuan = true; openRating(PUAN); }
     else { go('menu', true); }
   });
 }
@@ -885,6 +976,7 @@ function applyMenu(r){
   INFO.isletme = r.isletme || INFO.isletme || {};
   INFO.kurallar = r.kurallar || INFO.kurallar || [];
   INFO.odemeler = r.odemeler || INFO.odemeler || [];
+  if (r.puanlar) INFO.puanlar = r.puanlar;
   ITEM = {}; ORDER = []; CATS = [];
   var catIdx = {};
   (r.menu || []).forEach(function(m){
@@ -902,7 +994,7 @@ function applyMenu(r){
   buildPays();
 }
 function initFromBaslat(r){
-  INFO = { musteri:r.musteri || null, kullanici:r.kullanici || null };
+  INFO = { musteri:r.musteri || null, kullanici:r.kullanici || null, puanlar:r.puanlar || null, bekleyen:r.bekleyenPuan || null };
   applyMenu(r);
   var m = INFO.musteri;
   S.ret = !!m;
@@ -953,7 +1045,7 @@ function buildMenu(){
     return '<section class="cat" id="cat-' + c.id + '" aria-labelledby="cath-' + c.id + '"><h2 class="cat-h" id="cath-' + c.id + '">' + esc(c.name) + '</h2><div class="list">' +
       c.items.map(function(it){
         return '<div class="prod"><div class="tile ' + it.tile + '" aria-hidden="true">' + it.e + '</div><div class="prod-body">' +
-          '<h3 class="prod-name">' + esc(it.ad) + '</h3>' + (it.aciklama ? '<p class="prod-desc">' + esc(it.aciklama) + '</p>' : '') +
+          '<h3 class="prod-name">' + esc(it.ad) + '</h3>' + prodRateHTML(it.id) + (it.aciklama ? '<p class="prod-desc">' + esc(it.aciklama) + '</p>' : '') +
           '<div class="prod-foot"><span class="price">' + tl(it.fiyat) + '</span><span class="qslot" data-q="' + esc(it.id) + '"></span></div></div></div>';
       }).join('') + '</div></section>';
   }).join('') : '<p class="card empty-menu">Menüde şu an ürün yok.</p>';
@@ -983,8 +1075,12 @@ var DURUM_LABEL = { 'Yeni':'Alındı', 'Hazırlanıyor':'Hazırlanıyor', 'Hazı
 function renderMenuTop(){
   if (!INFO) return;
   var is = INFO.isletme, h = is.hazirlikDk != null ? Number(is.hazirlikDk) : null;
-  $('#restMeta').innerHTML = S.closed ? '<span class="rest-closed">● Şu an kapalı</span>'
-    : '<span class="rest-open">● Açık</span>' + (h != null ? ' · ' + h + '–' + (h + 10) + ' dk' : '');
+  var rm = rateMetaHTML(INFO.puanlar && INFO.puanlar.isletme);
+  $('#restMeta').innerHTML = (S.closed ? '<span class="rest-closed">● Şu an kapalı</span>'
+    : '<span class="rest-open">● Açık</span>' + (h != null ? ' · ' + h + '–' + (h + 10) + ' dk' : '')) + (rm ? ' · ' + rm : '');
+  var bp = INFO.bekleyen, showR = !!(bp && bp.no != null && !isLater(bp.no));
+  $('#rateAsk').hidden = !showR;
+  if (showR) $('#rateAskText').innerHTML = '<b>#' + esc(bp.no) + '</b>' + (bp.metin ? ' · ' + esc(bp.metin) : '');
   var cb = $('#closedBanner');
   cb.hidden = !S.closed;
   if (S.closed) cb.innerHTML = '<span aria-hidden="true">🔒</span><span>' + esc(is.kapaliMesaj || 'Şu an sipariş almıyoruz.') + '</span>';
@@ -1521,6 +1617,7 @@ function applyDurum(r){
   if (r.iptalSonMs != null) o.deadline = localDeadline(r.iptalSonMs, lim, false);
   ['kalemler', 'araToplam', 'teslimatUcreti', 'toplam', 'adres', 'odeme'].forEach(function(k){ if (r[k] != null) o[k] = r[k]; });
   o.isletmeTel = r.isletmeTel || o.isletmeTel || INFO.isletme.telefon;
+  if (r.puan != null) o.puan = r.puan;
   if (!o.etaAt && o.adimlar[0]) {
     var t0 = parseSaat(o.adimlar[0].saat), h = Number(INFO.isletme.hazirlikDk || 20);
     if (t0) o.etaAt = t0.getTime() + (h + 10) * 60000;
@@ -1558,6 +1655,8 @@ function renderDone(){
   $('#eta').hidden = x || delivered || !o.etaAt;
   if (o.etaAt) $('#etaTime').textContent = hm(new Date(o.etaAt));
   $('#secTrack').hidden = x;
+  $('#rateDoneBtn').hidden = o.puan !== 'uygun';
+  $('#rateDoneInfo').hidden = o.puan !== 'puanlandi';
   renderTrack();
   renderTrackNote();
   renderCancel();
@@ -1678,6 +1777,148 @@ function poll(manual){
 }
 d.addEventListener('visibilitychange', function(){ if (d.hidden) stopPoll(); else schedulePoll(400); });
 
+/* ---------- puanlama (yalnız yıldız, yorum yok) ---------- */
+var RATE_LBL = ['', 'Çok kötü', 'Kötü', 'Orta', 'İyi', 'Mükemmel'];
+var LATER_KEY = 'adisyo360-puan-sonra-' + B;
+function fmtRate(n){ return Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 }); }
+function rateMetaHTML(p){
+  if (!p || !p.adet) return '';
+  return '<span class="rate-meta" role="img" aria-label="Ortalama puan ' + fmtRate(p.ort) + ', ' + esc(p.adet) + ' değerlendirme">' +
+    '<span class="st">★</span> ' + fmtRate(p.ort) + ' <span class="muted">(' + esc(p.adet) + ')</span></span>';
+}
+function prodRateHTML(id){
+  var p = INFO && INFO.puanlar && INFO.puanlar.urunler && INFO.puanlar.urunler[id];
+  if (!p || !p.adet) return '';
+  return '<p class="prod-rate" role="img" aria-label="Puan ' + fmtRate(p.ort) + ', ' + esc(p.adet) + ' değerlendirme">' +
+    '<span class="st">★</span><b>' + fmtRate(p.ort) + '</b><span>(' + esc(p.adet) + ')</span></p>';
+}
+function laterList(){ try { var x = JSON.parse(LS.get(LATER_KEY) || '[]'); return Array.isArray(x) ? x : []; } catch(e){ return []; } }
+function isLater(no){ return laterList().indexOf(String(no)) >= 0; }
+function rateLater(){
+  var bp = INFO && INFO.bekleyen; if (!bp) return;
+  var l = laterList(); l.push(String(bp.no)); LS.set(LATER_KEY, JSON.stringify(l.slice(-20)));
+  renderMenuTop();
+  $('#restName').focus({ preventScroll:true });
+  toast("Tamam. Telegram'daki «Siparişi puanla» butonuyla sonra da puanlayabilirsiniz.");
+}
+function canRate(){ var R = S.rate; return !!(R && R.data && !R.sent && R.data.uygunluk === 'uygun'); }
+function openRating(no){
+  no = String(no).replace(/^#/, '');
+  var R = S.rate = { no:no, loading:true, err:'', data:null, biz:0, items:{}, sent:false, busy:false, msg:'' };
+  go('rate');
+  call('puan', { no:no }).then(function(r){
+    if (S.rate !== R) return;
+    R.loading = false;
+    if (r.ok) {
+      R.data = r;
+      if (r.verilen) { R.biz = Number(r.verilen.isletme) || 0; R.items = r.verilen.urunler || {}; }
+    } else R.err = r.hata || 'Sipariş bulunamadı.';
+    if (S.screen === 'rate') { renderRate(); updateMain(); focusHeading('rate'); }
+  });
+}
+function starsHTML(key, name, val, ro){
+  var h = '<div class="stars" role="group" aria-label="' + esc(name) + ' için puan' + (ro && val ? ': ' + val + ' yıldız' : '') + '">';
+  for (var i = 1; i <= 5; i++) {
+    h += '<button type="button" class="star-btn' + (i <= val ? ' on' : '') + '" data-act="star" data-k="' + esc(key) + '" data-v="' + i + '"' +
+      ' aria-pressed="' + (i === val ? 'true' : 'false') + '" aria-label="' + i + ' yıldız, ' + RATE_LBL[i] + '"' + (ro ? ' disabled' : '') + '>★</button>';
+  }
+  return h + '</div>';
+}
+function rateRowHTML(key, lead, name, sub, val, ro){
+  return '<div class="ritem" data-rk="' + esc(key) + '"><div class="ritem-top">' + lead +
+    '<div class="ritem-name">' + esc(name) + (sub ? '<div class="ritem-sub">' + esc(sub) + '</div>' : '') + '</div>' +
+    '<span class="rlbl' + (val ? '' : ' none') + '" aria-hidden="true">' + (val ? RATE_LBL[val] : (ro ? 'Puanlanmadı' : '')) + '</span></div>' +
+    starsHTML(key, name, val, ro) + '</div>';
+}
+function renderRate(){
+  var R = S.rate;
+  $('#rateLoading').hidden = !(R && R.loading);
+  $('#rateError').hidden = !R || R.loading || !R.err;
+  $('#rateErrText').textContent = (R && R.err) || '';
+  $('#rateBody').hidden = !R || R.loading || !!R.err;
+  if (!R || R.loading || R.err) return;
+  var x = R.data, can = canRate(), st = R.sent ? 'puanlandi' : x.uygunluk, shown = can || st === 'puanlandi';
+  var T = {
+    uygun:['Siparişinizi puanlayın', 'Yıldızlara dokunmanız yeterli, yorum yazmanız gerekmez.', 'star', '★'],
+    puanlandi:R.sent ? ['Teşekkürler!', 'Puanınız kaydedildi. Afiyet olsun!', '', '✓'] : ['Bu siparişi puanladınız', 'Teşekkürler! Verdiğiniz puanlar aşağıda.', '', '✓'],
+    erken:['Henüz puanlanamaz', x.mesaj || 'Siparişiniz teslim edildikten sonra puanlayabilirsiniz.', 'wait', '⏳'],
+    sure:['Puanlama süresi doldu', x.mesaj || 'Siparişler teslimden sonraki 7 gün içinde puanlanabilir.', 'wait', '⌛'],
+    iptal:['Bu sipariş iptal edildi', x.mesaj || 'İptal edilen siparişler puanlanamaz.', 'x', '✕']
+  }[st] || ['Bu sipariş puanlanamaz', x.mesaj || '', 'wait', 'ℹ️'];
+  var ico = $('#rateIco');
+  ico.className = 'hero-ico' + (T[2] ? ' ' + T[2] : '');
+  ico.textContent = T[3];
+  $('#rateTitle').textContent = T[0];
+  $('#rateText').textContent = T[1];
+  $('#rateNo').textContent = '#' + x.no;
+  var items = x.kalemler || [], ro = !can || R.busy;
+  $('#rateBizSec').hidden = !shown;
+  $('#rateItemsSec').hidden = !shown || !items.length;
+  $('#rateItemsOpt').hidden = !can;
+  if (shown) {
+    var a = d.activeElement, foc = (a && a.getAttribute && a.getAttribute('data-act') === 'star') ? [a.getAttribute('data-k'), a.getAttribute('data-v')] : null;
+    $('#rateBiz').innerHTML = rateRowHTML('i', '<span class="ritem-logo" aria-hidden="true">' + esc(initials(x.isletmeAd)) + '</span>',
+      x.isletmeAd || 'İşletme', 'Genel memnuniyet', R.biz, ro);
+    $('#rateItems').innerHTML = items.map(function(k){
+      var it = ITEM[String(k.id)];
+      var lead = '<div class="tile ' + (it ? it.tile : 't0') + '" aria-hidden="true">' + (it ? it.e : emojiFor(k.ad, '')) + '</div>';
+      return rateRowHTML(String(k.id), lead, k.ad, Number(k.adet) > 1 ? k.adet + ' adet' : '', Number(R.items[k.id]) || 0, ro);
+    }).join('');
+    if (foc) { var t = $$('#scrRate .star-btn').filter(function(b){ return b.getAttribute('data-k') === foc[0] && b.getAttribute('data-v') === foc[1] && !b.disabled; })[0]; if (t) t.focus({ preventScroll:true }); }
+  }
+  $('#rateErrBox').hidden = !R.msg;
+  $('#rateErrMsg').textContent = R.msg || '';
+  $('#rateMenuBtn').hidden = can;
+}
+function rateSet(k, v){
+  var R = S.rate;
+  if (!canRate() || R.busy || !(v >= 1 && v <= 5)) return;
+  if (k === 'i') R.biz = v; else R.items[k] = v;
+  var row = $$('#scrRate .ritem').filter(function(el){ return el.getAttribute('data-rk') === k; })[0];
+  if (row) {
+    $$('.star-btn', row).forEach(function(b){
+      var n = +b.getAttribute('data-v');
+      b.classList.toggle('on', n <= v);
+      b.setAttribute('aria-pressed', n === v ? 'true' : 'false');
+    });
+    var l = $('.rlbl', row); l.textContent = RATE_LBL[v]; l.classList.remove('none');
+  }
+  if (R.msg) { R.msg = ''; $('#rateErrBox').hidden = true; }
+  haptic('impact', 'light');
+  announce(v + ' yıldız, ' + RATE_LBL[v]);
+  updateMain();
+}
+function rateSubmit(){
+  var R = S.rate;
+  if (!canRate() || R.busy || !R.biz) return;
+  R.busy = true; R.msg = ''; renderRate(); updateMain();
+  var urunler = {};
+  Object.keys(R.items).forEach(function(k){ if (R.items[k]) urunler[k] = R.items[k]; });
+  call('puanVer', { no:R.data.no, isletme:R.biz, urunler:urunler }).then(function(r){
+    if (S.rate !== R) return;
+    R.busy = false;
+    if (r.ok || r.kod === 'ZATEN') {
+      R.sent = true;
+      if (r.puanlar && INFO) { INFO.puanlar = r.puanlar; buildMenu(); }
+      if (INFO && INFO.bekleyen && String(INFO.bekleyen.no) === String(R.data.no)) INFO.bekleyen = null;
+      if (S.order && String(S.order.no) === String(R.data.no)) S.order.puan = 'puanlandi';
+      haptic('notify', 'success');
+      renderRate(); updateMain();
+      scroller.scrollTo({ top:0, behavior:smooth() });
+      $('#rateTitle').focus({ preventScroll:true });
+      announce('Teşekkürler! Puanınız kaydedildi.');
+    } else {
+      var st = { SURE:'sure', IPTAL:'iptal', ERKEN:'erken' }[r.kod];
+      if (st) { R.data.uygunluk = st; R.data.mesaj = r.hata || ''; }
+      else R.msg = r.hata || 'Puan gönderilemedi. Lütfen tekrar deneyin.';
+      haptic('notify', 'error');
+      renderRate(); updateMain();
+      if (R.msg) { scrollToEl($('#rateErrBox'), 80); $('#rateErrBox').focus({ preventScroll:true }); }
+      else $('#rateTitle').focus({ preventScroll:true });
+    }
+  });
+}
+
 /* ---------- toast ---------- */
 var toastT = null, toastFn = null;
 function toast(msg, actLabel, fn){
@@ -1734,6 +1975,11 @@ d.addEventListener('click', function(e){
     case 'retry-order': hideOrderErr(); submit(); break;
     case 'tg-close': closeApp(); break;
     case 'boot': boot(); break;
+    case 'star': rateSet(el.getAttribute('data-k'), parseInt(el.getAttribute('data-v'), 10)); break;
+    case 'rate-open': if (INFO && INFO.bekleyen) openRating(INFO.bekleyen.no); break;
+    case 'rate-later': rateLater(); break;
+    case 'rate-order': if (S.order) openRating(S.order.no); break;
+    case 'rate-retry': if (S.rate) openRating(S.rate.no); break;
   }
 });
 $('#demoClosedBtn').addEventListener('click', function(){ $('#demoClosed').hidden = true; });
@@ -1773,6 +2019,11 @@ function makeMock(){
   ].map(withRule) : [];
   var sharedTel = musteriOn ? '05321112233' : null, contactTries = 0;
   var orders = {}, byReq = {}, seq = 1005;
+  var puanlar = { isletme:{ ort:4.6, adet:128 }, urunler:{ 'tavuk-durum':{ ort:4.8, adet:54 }, 'et-durum':{ ort:4.7, adet:61 },
+    'yarim-ekmek':{ ort:4.5, adet:22 }, 'iskender':{ ort:4.9, adet:33 }, 'kasarli-tost':{ ort:4.4, adet:18 }, 'ayran':{ ort:4.6, adet:40 } } };
+  var rated = {};
+  function puanKopya(){ return JSON.parse(JSON.stringify(puanlar)); }
+  function puanDurum(o){ var s = st(o); return rated[o.no] ? 'puanlandi' : (s === -1 ? 'iptal' : (s === 4 ? 'uygun' : 'erken')); }
   var NAMES = ['Yeni', 'Hazırlanıyor', 'Hazır', 'Yolda', 'Teslim Edildi'];
   function hhmm(t){ return hm(new Date(t)); }
   function st(o){ if (o.iptalAt) return -1; if (!stepMs) return 0; return Math.min(4, Math.floor((Date.now() - o.at) / stepMs)); }
@@ -1782,7 +2033,7 @@ function makeMock(){
     else for (var i = 0; i <= s; i++) ad.push({ ad:NAMES[i], saat:hhmm(o.at + i * stepMs) });
     return { ok:true, no:o.no, durum:s === -1 ? 'İptal' : NAMES[s], adimlar:ad, iptalEdilebilir:s === 0 && Date.now() < o.iptalSon,
       iptalSonMs:o.iptalSon, kalemler:o.kalemler, araToplam:o.ara, teslimatUcreti:o.ucret, toplam:o.ara + o.ucret,
-      adres:o.adres, odeme:o.odeme, isletmeTel:isletme.telefon };
+      adres:o.adres, odeme:o.odeme, isletmeTel:isletme.telefon, puan:puanDurum(o) };
   }
   function find(id){ for (var i = 0; i < menu.length; i++) if (menu[i].id === id) return menu[i]; return null; }
   function makeOrder(p, extra){
@@ -1800,7 +2051,8 @@ function makeMock(){
             kullanici:{ id:1, ad:'Ferhat Aydın' },
             musteri:musteriOn ? { ad:'Ferhat Aydın', tel:'05321112233', aranacak:'05321112233', adresler:adresler,
               sonSiparis:{ kalemler:[{ id:'et-durum', adet:2 }, { id:'ayran', adet:2 }], metin:'2 × Et Döner Dürüm, 2 × Ayran', toplam:410, odeme:'Nakit', adresId:'a1' } } : null,
-            telefon:null, sohbetKonumu:null, aktifSiparis:aktif };
+            telefon:null, sohbetKonumu:null, aktifSiparis:aktif, puanlar:puanKopya(),
+            bekleyenPuan:musteriOn && !rated[1004] ? { no:1004, metin:'2 × Et Döner Dürüm, 2 × Ayran' } : null };
         }
         case 'konum': { var r = rule(konumKm); return { ok:true, km:konumKm, kapsamda:!!r, ucret:r ? r.ucret : 0, minSiparis:r ? r.minSiparis : 0, maksKm:isletme.maksKm }; }
         case 'konumSohbet': return { ok:true };
@@ -1821,7 +2073,7 @@ function makeMock(){
           var kal = [], ara = 0;
           for (var i = 0; i < (p.sepet || []).length; i++) {
             var m = find(p.sepet[i].id); if (!m) return { ok:false, kod:'URUN', hata:'Sepetinizdeki bir ürün artık menüde yok.' };
-            kal.push({ ad:m.ad, adet:p.sepet[i].adet, tutar:m.fiyat * p.sepet[i].adet }); ara += m.fiyat * p.sepet[i].adet;
+            kal.push({ id:m.id, ad:m.ad, adet:p.sepet[i].adet, tutar:m.fiyat * p.sepet[i].adet }); ara += m.fiyat * p.sepet[i].adet;
           }
           var ad, rr;
           if (p.adres && p.adres.id != null) {
@@ -1857,6 +2109,27 @@ function makeMock(){
           x.iptalAt = Date.now();
           return { ok:true, durum:'İptal' };
         }
+        case 'puan': {
+          var pn = Number(p.no), po = orders[pn], kal2, uy;
+          if (po) { uy = puanDurum(po); kal2 = po.kalemler.map(function(k){ return { id:k.id || k.ad, ad:k.ad, adet:k.adet }; }); }
+          else if (/^\d+$/.test(String(p.no))) { uy = rated[pn] ? 'puanlandi' : 'uygun'; kal2 = [{ id:'et-durum', ad:'Et Döner Dürüm', adet:2 }, { id:'ayran', ad:'Ayran', adet:2 }]; }
+          else return { ok:false, kod:'YOK', hata:'Sipariş bulunamadı.' };
+          var pm = { erken:'Siparişiniz teslim edildikten sonra puanlayabilirsiniz.', iptal:'İptal edilen siparişler puanlanamaz.' };
+          var pr = { ok:true, no:pn, uygunluk:uy, mesaj:pm[uy] || '', isletmeAd:isletme.ad, kalemler:kal2 };
+          if (uy === 'puanlandi') pr.verilen = rated[pn];
+          return pr;
+        }
+        case 'puanVer': {
+          var vn = Number(p.no);
+          if (rated[vn]) return { ok:false, kod:'ZATEN', hata:'Bu siparişi zaten puanladınız. Teşekkürler!' };
+          if (!(p.isletme >= 1 && p.isletme <= 5)) return { ok:false, kod:'PUAN', hata:'Lütfen işletmeye 1 ile 5 arasında yıldız verin.' };
+          if (orders[vn] && puanDurum(orders[vn]) !== 'uygun') return { ok:false, kod:'ERKEN', hata:'Siparişiniz teslim edildikten sonra puanlayabilirsiniz.' };
+          rated[vn] = { isletme:p.isletme, urunler:p.urunler || {} };
+          var ekle = function(x, v){ return x ? { ort:Math.round((x.ort * x.adet + v) / (x.adet + 1) * 10) / 10, adet:x.adet + 1 } : { ort:v, adet:1 }; };
+          puanlar.isletme = ekle(puanlar.isletme, p.isletme);
+          Object.keys(p.urunler || {}).forEach(function(id){ puanlar.urunler[id] = ekle(puanlar.urunler[id], p.urunler[id]); });
+          return { ok:true, puanlar:puanKopya() };
+        }
         default: return { ok:false, kod:'BILINMEYEN', hata:'Bilinmeyen istek.' };
       }
     });
@@ -1887,7 +2160,7 @@ if (tg && tg.onEvent) tg.onEvent('themeChanged', function(){ setTimeout(tgRenkle
 applyTheme();
 try { tg.onEvent('themeChanged', applyTheme); } catch(e){}
 try { tg.onEvent('activated', function(){ appActive = true; schedulePoll(400); }); tg.onEvent('deactivated', function(){ appActive = false; stopPoll(); }); } catch(e){}
-try { if (ver('6.1') && tg.BackButton) tg.BackButton.onClick(function(){ if (S.screen === 'cart') { go('menu'); focusHeading('menu'); } }); } catch(e){}
+try { if (ver('6.1') && tg.BackButton) tg.BackButton.onClick(function(){ if (S.screen === 'cart' || S.screen === 'rate') { go('menu'); focusHeading('menu'); } }); } catch(e){}
 if (!B) { showError('Bağlantı eksik', 'İşletme bilgisi bulunamadı. Lütfen restoranın Telegram botundaki «🍽️ Sipariş ver» butonunu kullanın.', false); return; }
 boot();
 })();
