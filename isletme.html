@@ -527,6 +527,17 @@ textarea.inp{resize:vertical;min-height:64px;line-height:1.4}
 .odl .od-ad{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
 .pk-t{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
 .row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* QR afişleri */
+.afis-on{display:flex;justify-content:center;background:var(--bg2);border-radius:14px;padding:14px}
+.afis-on canvas{display:block;width:100%;max-width:300px;height:auto;border-radius:6px;box-shadow:0 2px 10px rgb(0 0 0 / .18);background:#fff}
+.afis-olcu{display:flex;align-items:stretch;gap:8px}
+.afis-olcu .opt{flex:1}
+.afis-kutu{flex:none;width:56px;border:0;border-radius:12px;background:var(--bg2);display:grid;place-items:center;color:var(--on-accent);box-shadow:inset 0 0 0 2px var(--field-line)}
+.afis-kutu[aria-checked="true"]{background:var(--accent);box-shadow:none}
+.afis-kutu .ico{width:22px;height:22px;stroke-width:2.6}
+.logo-satir{display:flex;align-items:center;gap:12px}
+.logo-on{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--sep);padding:4px}
+.afis-kart .btn{align-self:flex-start;margin-top:10px}
 @media (min-width:1200px){ .scr.ayar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start} .scr.ayar .pk{grid-column:1 / -1} .tile{width:60px;height:60px;font-size:34px} }
 /* ---------- geniş ekran (masaüstü, büyük tablet): ekranı doldur, yazıları büyüt ---------- */
 @media (min-width:1200px){
@@ -675,7 +686,8 @@ var IC = {
   ayar:'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6',
   tablo:'M3 4h18v16H3z M3 10h18 M3 15h18 M9 4v16',
   oynat:circ(12, 12, 9.5) + ' M10 8.5l5.5 3.5-5.5 3.5z',
-  geri:'M15 6l-6 6 6 6'
+  geri:'M15 6l-6 6 6 6',
+  qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z'
 };
 function ic(n, cls){ return '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + IC[n] + '"/></svg>'; }
 
@@ -2410,6 +2422,9 @@ function ayarEkrani(){
     }).join('') + '</ul><div class="kform"><input class="inp" id="odYeni" maxlength="40" placeholder="Yeni yöntem (ör. IBAN ile ödeme)" autocomplete="off" aria-label="Yeni ödeme yöntemi">' +
     '<button class="btn sm line" type="button" data-act="odEkle">Ekle</button></div>' +
     '<button class="btn pri" type="submit"' + (ob ? ' disabled' : '') + '>' + (ob ? bekle('ayOdeme') : ic('tik')) + 'Ödeme yöntemlerini kaydet</button></form>';
+  h += '<section class="card pad afis-kart"><h2 class="frm-h">QR afişleri</h2><p class="tip-txt">Kapınıza, camınıza ya da masalarınıza koyabileceğiniz QR afişleri hazırlayın. Müşteri telefon kamerasıyla okutunca botunuz açılır ve sipariş verir.</p>' +
+    '<p class="tip-txt">5 ölçü: A4, A5, A6 masa kartı, 10×10 cm cam etiketi ve Instagram hikâyesi. Logonuzu da ekleyebilirsiniz.</p>' +
+    '<button class="btn line" data-act="afisAc">' + ic('qr', 'sm') + 'QR afişi hazırla</button></section>';
   h += videoDugme('ayarlar', 'Ayarlar nasıl yapılır? Videoyu izleyin');
   if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a yazabilirsiniz.</p>' +
     '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button><button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button></div></section>';
@@ -2799,6 +2814,461 @@ document.addEventListener('input', function(e){
 document.addEventListener('change', function(e){
   if (SH && SH.tip === 'kampanya' && /^kp-t-/.test(e.target.id || '')) { kpOku(SH); renderSheet(); }
 });
+
+/* ---------- QR afişleri (yalnız sahip) ----------
+ * Müşteri QR'ı Telegram'la okutunca işletmenin botu açılır (t.me/BOT?start=qr).
+ * Afiş tarayıcıda çizilir; baskı ölçüleri tek PDF'te, Instagram hikâyesi ayrı
+ * JPEG olarak sahibin Telegram sohbetine gönderilir. Logo küçültülüp Ayarlar'a
+ * kaydedilir; sipariş sayfasının başlığında da görünür. */
+var AFIS_OLCU = [
+  { k:'a4', ad:'A4 afiş', alt:'Duvar, kapı, pano', w:1400, h:1980, mm:[210, 297] },
+  { k:'a5', ad:'A5 afiş', alt:'Vitrin, tezgâh', w:990, h:1400, mm:[148, 210] },
+  { k:'a6', ad:'A6 masa kartı', alt:'Masalar, kasa önü', w:700, h:990, mm:[105, 148] },
+  { k:'kare', ad:'10×10 cm cam etiketi', alt:'Cam, kapı', w:700, h:700, mm:[100, 100] },
+  { k:'hikaye', ad:'Instagram hikâyesi', alt:'1080×1920 görsel', w:1080, h:1920, resim:true }
+];
+var AFIS_STIL = [{ k:'canli', ad:'Canlı' }, { k:'gece', ad:'Gece' }, { k:'sade', ad:'Sade' }];
+var AFIS_RENK = {
+  restoran:{ a:'#E4572E', k:'#8C2B12', y:'#FFE6DC' },
+  kafe:{ a:'#9A6440', k:'#4B2C19', y:'#F4E6D8' },
+  pastane:{ a:'#D9487D', k:'#7C1D44', y:'#FCE3ED' },
+  market:{ a:'#23955A', k:'#135733', y:'#DDF3E5' },
+  diger:{ a:'#3B6FD8', k:'#1B3B7E', y:'#E1EAFB' }
+};
+var AFIS_FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+var LOGO_SINIR = 45000;   // Ayarlar hücresine sığsın diye (karakter)
+
+function afisOlcu(k){ return AFIS_OLCU.filter(function(o){ return o.k === k; })[0] || AFIS_OLCU[0]; }
+function afisTur(){ var t = D && D.isletme && D.isletme.tur; return AFIS_RENK[t] ? t : 'diger'; }
+function afisLink(){ return D && D.botAdi ? 'https://t.me/' + D.botAdi + '?start=qr' : ''; }
+function afisMetin(){
+  var m = afisTur() === 'market';
+  return { bas:m ? 'Telegram\'dan alışveriş yapın' : 'Telegram\'dan sipariş verin', en:m ? 'Scan to shop on Telegram' : 'Scan to order on Telegram',
+    adim:['Kamerayla okutun', m ? 'Ürünleri seçin' : 'Menüden seçin', 'Sipariş verin'] };
+}
+
+/* --- çizim yardımcıları --- */
+function afRR(c, x, y, w, h, r){
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+function afFont(c, px, kalin){ c.font = (kalin ? '800 ' : '500 ') + Math.round(px) + 'px ' + AFIS_FONT; }
+// Metni en fazla «satir» satıra böler; sığmazsa yazıyı küçültür
+function afSatirlar(c, metin, maxW, px, kalin, satir, enAz){
+  metin = String(metin || '').replace(/\s+/g, ' ').trim();
+  if (!metin) return { px:px, l:[] };
+  for (var p = px; p >= enAz; p *= 0.94) {
+    afFont(c, p, kalin);
+    var kel = metin.split(' '), l = [], s = '';
+    for (var i = 0; i < kel.length; i++) {
+      var dene = s ? s + ' ' + kel[i] : kel[i];
+      if (c.measureText(dene).width <= maxW || !s) s = dene; else { l.push(s); s = kel[i]; }
+    }
+    if (s) l.push(s);
+    var tasan = l.some(function(x){ return c.measureText(x).width > maxW; });
+    if (l.length <= satir && !tasan) return { px:p, l:l };
+  }
+  afFont(c, enAz, kalin);
+  var k = metin;
+  while (k.length > 1 && c.measureText(k + '…').width > maxW) k = k.slice(0, -1);
+  return { px:enAz, l:[k === metin ? k : k + '…'] };
+}
+function afYaz(c, s, x, y, renk, kalin, hiza){
+  afFont(c, s.px, kalin);
+  c.fillStyle = renk; c.textAlign = hiza || 'center'; c.textBaseline = 'top';
+  s.l.forEach(function(t, i){ c.fillText(t, x, y + i * s.px * 1.18); });
+  return s.l.length * s.px * 1.18;
+}
+function afQR(link){
+  var q = window.qrcode(0, 'M');
+  q.addData(link); q.make();
+  return q;
+}
+function afQRCiz(c, q, x, y, boy, renk){
+  var n = q.getModuleCount(), m = boy / n;
+  c.fillStyle = renk;
+  for (var r = 0; r < n; r++) for (var k = 0; k < n; k++) {
+    if (q.isDark(r, k)) c.fillRect(Math.floor(x + k * m), Math.floor(y + r * m), Math.ceil(m) + 0.5, Math.ceil(m) + 0.5);
+  }
+}
+function afBasHarf(ad){
+  var w = String(ad || '').trim().split(/\s+/).filter(Boolean);
+  return ((w[0] ? w[0].charAt(0) : '') + (w[1] ? w[1].charAt(0) : '')).toLocaleUpperCase('tr-TR') || 'M';
+}
+// İşletme türüne göre küçük süs simgesi (çizgi)
+function afIkon(c, tur, cx, cy, s, renk, kal){
+  c.save(); c.strokeStyle = renk; c.fillStyle = renk; c.lineWidth = kal; c.lineCap = 'round'; c.lineJoin = 'round';
+  c.beginPath();
+  if (tur === 'kafe') {
+    afRR(c, cx - s * 0.42, cy - s * 0.1, s * 0.62, s * 0.5, s * 0.12); c.stroke();
+    c.beginPath(); c.arc(cx + s * 0.26, cy + s * 0.14, s * 0.13, -Math.PI / 2, Math.PI / 2); c.stroke();
+    [-0.24, -0.06, 0.12].forEach(function(dx){ c.beginPath(); c.moveTo(cx + dx * s, cy - s * 0.2); c.quadraticCurveTo(cx + dx * s + s * 0.08, cy - s * 0.32, cx + dx * s, cy - s * 0.44); c.stroke(); });
+  } else if (tur === 'pastane') {
+    c.moveTo(cx - s * 0.36, cy); c.lineTo(cx - s * 0.26, cy + s * 0.42); c.lineTo(cx + s * 0.26, cy + s * 0.42); c.lineTo(cx + s * 0.36, cy); c.closePath(); c.stroke();
+    c.beginPath(); c.arc(cx, cy, s * 0.36, Math.PI, 0); c.stroke();
+    c.beginPath(); c.arc(cx, cy - s * 0.44, s * 0.07, 0, Math.PI * 2); c.fill();
+  } else if (tur === 'market') {
+    c.moveTo(cx - s * 0.46, cy - s * 0.3); c.lineTo(cx - s * 0.32, cy - s * 0.3); c.lineTo(cx - s * 0.2, cy + s * 0.2); c.lineTo(cx + s * 0.34, cy + s * 0.2);
+    c.lineTo(cx + s * 0.44, cy - s * 0.16); c.lineTo(cx - s * 0.27, cy - s * 0.16); c.stroke();
+    [-0.12, 0.26].forEach(function(dx){ c.beginPath(); c.arc(cx + dx * s, cy + s * 0.36, s * 0.07, 0, Math.PI * 2); c.fill(); });
+  } else if (tur === 'restoran') {
+    c.arc(cx, cy, s * 0.3, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.moveTo(cx - s * 0.48, cy - s * 0.36); c.lineTo(cx - s * 0.48, cy + s * 0.4);
+    c.moveTo(cx - s * 0.56, cy - s * 0.36); c.lineTo(cx - s * 0.56, cy - s * 0.12); c.moveTo(cx - s * 0.4, cy - s * 0.36); c.lineTo(cx - s * 0.4, cy - s * 0.12);
+    c.moveTo(cx + s * 0.5, cy - s * 0.36); c.quadraticCurveTo(cx + s * 0.62, cy - s * 0.1, cx + s * 0.5, cy); c.lineTo(cx + s * 0.5, cy + s * 0.4); c.stroke();
+  } else {
+    for (var i = 0; i < 10; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? s * 0.2 : s * 0.46;
+      if (i) c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); else c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+    c.closePath(); c.stroke();
+  }
+  c.restore();
+}
+
+/* --- afiş --- o: { w, h, stil, tur, ad, aciklama, telefon, link, bot, logo (Image|null) } */
+function afisCiz(cv, o){
+  cv.width = o.w; cv.height = o.h;
+  var c = cv.getContext('2d'), W = o.w, H = o.h, u = W / 100;
+  var R = AFIS_RENK[o.tur] || AFIS_RENK.diger, metin = afisMetin();
+  var gece = o.stil === 'gece', sade = o.stil === 'sade';
+  var arka = gece ? '#121418' : sade ? '#FFFFFF' : R.a;
+  var yazi = sade ? '#17191C' : '#FFFFFF', soluk = sade ? '#5B6068' : gece ? 'rgba(255,255,255,.72)' : 'rgba(255,255,255,.86)';
+  var kart = gece ? '#1F2329' : '#FFFFFF', kartYazi = gece ? '#FFFFFF' : R.k, kartSoluk = gece ? 'rgba(255,255,255,.66)' : '#61656C';
+  // zemin ve süs
+  c.fillStyle = arka; c.fillRect(0, 0, W, H);
+  c.save();
+  if (sade) {
+    c.fillStyle = R.a; c.fillRect(0, 0, W, 2.2 * u); c.fillRect(0, H - 2.2 * u, W, 2.2 * u);
+  } else {
+    c.globalAlpha = gece ? 0.22 : 0.16; c.fillStyle = gece ? R.a : R.y;
+    c.beginPath(); c.arc(W * 0.92, H * 0.02, W * 0.42, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(W * 0.04, H * 0.98, W * 0.36, 0, Math.PI * 2); c.fill();
+  }
+  c.restore();
+  var kare = W === H;
+  var q = afQR(o.link);
+  if (kare) return afisKare(c, o, q, { W:W, H:H, u:u, R:R, metin:metin, gece:gece, sade:sade, yazi:yazi, soluk:soluk, kart:kart, kartYazi:kartYazi, kartSoluk:kartSoluk });
+
+  // dikey yerleşim: bloklar ölçülür, QR kalan yere göre büyür, boşluk eşit dağıtılır
+  var bloklar = [];
+  // 1) logo / baş harfler + ad + açıklama
+  var logoH = 0, logoW = 0;
+  if (o.logo && o.logo.width) {
+    var oran = o.logo.width / o.logo.height;
+    logoH = 13 * u; logoW = logoH * oran;
+    if (logoW > 44 * u) { logoW = 44 * u; logoH = logoW / oran; }
+  }
+  var adS = afSatirlar(c, o.ad, 86 * u, 8.2 * u, true, 2, 4.6 * u);
+  var acS = o.aciklama ? afSatirlar(c, o.aciklama, 84 * u, 3.9 * u, false, 2, 3 * u) : null;
+  var rozet = logoH ? logoH + (sade ? 0 : 3.6 * u) : 14 * u;
+  var basH = rozet + 2.6 * u + adS.l.length * adS.px * 1.18 + (acS ? 1.2 * u + acS.l.length * acS.px * 1.18 : 0);
+  bloklar.push({ h:basH, ciz:function(y){
+    if (logoH) {
+      var bw = logoW + (sade ? 0 : 3.6 * u), bh = rozet, bx = (W - bw) / 2;
+      if (!sade) { c.fillStyle = '#FFFFFF'; afRR(c, bx, y, bw, bh, 3 * u); c.fill(); }
+      c.drawImage(o.logo, (W - logoW) / 2, y + (bh - logoH) / 2, logoW, logoH);
+    } else {
+      c.fillStyle = sade ? R.a : '#FFFFFF';
+      c.beginPath(); c.arc(W / 2, y + rozet / 2, rozet / 2, 0, Math.PI * 2); c.fill();
+      afFont(c, rozet * 0.4, true); c.fillStyle = sade ? '#FFFFFF' : (gece ? '#121418' : R.a); c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(afBasHarf(o.ad), W / 2, y + rozet / 2 + rozet * 0.02);
+    }
+    var yy = y + rozet + 2.6 * u;
+    yy += afYaz(c, adS, W / 2, yy, yazi, true);
+    if (acS) afYaz(c, acS, W / 2, yy + 1.2 * u, soluk, false);
+  } });
+  // 2) çağrı: «Telegram'dan sipariş verin» + İngilizce satır
+  var bS = afSatirlar(c, metin.bas, 90 * u, 6.4 * u, true, 2, 4 * u);
+  var enS = afSatirlar(c, metin.en, 86 * u, 3.2 * u, false, 1, 2.4 * u);
+  var cagriH = bS.l.length * bS.px * 1.18 + 0.8 * u + enS.px * 1.18;
+  bloklar.push({ h:cagriH, ciz:function(y){
+    var yy = y + afYaz(c, bS, W / 2, y, sade ? R.k : (gece ? R.y : '#FFFFFF'), true) + 0.8 * u;
+    afYaz(c, enS, W / 2, yy, soluk, false);
+  } });
+  // 3) QR kartı (boyutu sonra hesaplanır)
+  var pad = 4 * u, botS = afSatirlar(c, '@' + o.bot, 74 * u, 4.4 * u, true, 1, 2.6 * u);
+  var kartSabit = pad + 2.8 * u + botS.px * 1.18 + pad * 0.9;
+  var kart_ = { h:0, ciz:null };
+  bloklar.push(kart_);
+  // 4) üç adım
+  var adimS = metin.adim.map(function(t){ return afSatirlar(c, t, 27 * u, 3.2 * u, true, 2, 2.4 * u); });
+  var adimH = 7 * u + 1.6 * u + Math.max.apply(null, adimS.map(function(s){ return s.l.length * s.px * 1.18; }));
+  bloklar.push({ h:adimH, ciz:function(y){
+    adimS.forEach(function(s, i){
+      var cx = W / 2 + (i - 1) * 30 * u, r = 3.5 * u;
+      c.fillStyle = sade ? R.y : gece ? R.a : 'rgba(255,255,255,.96)';
+      c.beginPath(); c.arc(cx, y + r, r, 0, Math.PI * 2); c.fill();
+      afFont(c, 3.6 * u, true); c.fillStyle = sade ? R.k : gece ? '#FFFFFF' : R.a; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(String(i + 1), cx, y + r + 0.15 * u);
+      if (i < 2) { c.strokeStyle = sade ? R.y : 'rgba(255,255,255,.5)'; c.lineWidth = 0.45 * u; c.beginPath(); c.moveTo(cx + r + 2 * u, y + r); c.lineTo(cx + 30 * u - r - 2 * u, y + r); c.stroke(); }
+      afYaz(c, s, cx, y + 2 * r + 1.6 * u, yazi, true);
+    });
+  } });
+  // 5) telefon + alt satır
+  var telS = o.telefon ? afSatirlar(c, 'Tel: ' + o.telefon, 80 * u, 4.2 * u, true, 1, 3 * u) : null;
+  var altS = afSatirlar(c, 'YourPOS 360 · komisyonsuz sipariş', 80 * u, 2.4 * u, false, 1, 2 * u);
+  var altH = (telS ? telS.px * 1.18 + 1.4 * u : 0) + altS.px * 1.18;
+  bloklar.push({ h:altH, ciz:function(y){
+    var yy = y;
+    if (telS) { yy += afYaz(c, telS, W / 2, yy, yazi, true) + 1.4 * u; }
+    afYaz(c, altS, W / 2, yy, soluk, false);
+  } });
+  // QR: kalan yükseklik kadar (en az 34u, en çok 58u), kart genişliği QR'a göre
+  var kenar = 4 * u, enAzBos = 2 * u;
+  var digerleri = bloklar.reduce(function(t, b){ return t + b.h; }, 0);
+  var qb = Math.max(34 * u, Math.min(58 * u, H - 2 * kenar - (bloklar.length + 1) * enAzBos - digerleri - kartSabit));
+  var kw = Math.min(90 * u, Math.max(qb + 2 * pad, 64 * u));
+  kart_.h = kartSabit + qb;
+  kart_.ciz = function(y){
+    var kx = (W - kw) / 2;
+    c.save(); c.shadowColor = 'rgba(0,0,0,' + (sade ? 0.10 : 0.22) + ')'; c.shadowBlur = 4 * u; c.shadowOffsetY = 1.2 * u;
+    c.fillStyle = gece ? '#FFFFFF' : kart; afRR(c, kx, y, kw, kart_.h, 4 * u); c.fill(); c.restore();
+    if (sade) { c.strokeStyle = R.a; c.lineWidth = 0.6 * u; afRR(c, kx, y, kw, kart_.h, 4 * u); c.stroke(); }
+    afQRCiz(c, q, (W - qb) / 2, y + pad, qb, '#111111');
+    afYaz(c, botS, W / 2, y + pad + qb + 2.8 * u, gece ? '#121418' : kartYazi, true);
+  };
+  // süs simgesi: sol üst köşe
+  afIkon(c, o.tur, 9 * u, 8 * u, 8 * u, sade ? R.a : 'rgba(255,255,255,' + (gece ? 0.55 : 0.75) + ')', 0.65 * u);
+  var top = bloklar.reduce(function(t, b){ return t + b.h; }, 0);
+  var bos = Math.max(enAzBos, (H - 2 * kenar - top) / (bloklar.length + 1));
+  var y = kenar + bos;
+  bloklar.forEach(function(b){ b.ciz(y); y += b.h + bos; });
+  return cv;
+}
+// 10×10 cm cam etiketi: ad üstte, büyük QR ortada, kısa çağrı altta
+function afisKare(c, o, q, s){
+  var W = s.W, u = s.u, R = s.R;
+  var adS = afSatirlar(c, o.ad, (o.logo && o.logo.width ? 70 : 88) * u, 7.4 * u, true, 1, 3.8 * u);
+  var y = 6.5 * u, adH = adS.px * 1.18;
+  if (o.logo && o.logo.width) {
+    var lh = Math.max(adH, 9 * u), lw = Math.min(lh * o.logo.width / o.logo.height, 22 * u); lh = lw / (o.logo.width / o.logo.height);
+    afFont(c, adS.px, true);
+    var tw = Math.min(c.measureText(adS.l[0]).width, 70 * u), top = lw + (s.sade ? 2.4 : 4.4) * u + tw, x0 = (W - top) / 2;
+    if (!s.sade) { c.fillStyle = '#FFFFFF'; afRR(c, x0, y + adH / 2 - lh / 2 - 1 * u, lw + 2 * u, lh + 2 * u, 1.6 * u); c.fill(); }
+    c.drawImage(o.logo, x0 + (s.sade ? 0 : 1 * u), y + adH / 2 - lh / 2, lw, lh);
+    afYaz(c, adS, x0 + lw + (s.sade ? 2.4 : 4.4) * u, y, s.yazi, true, 'left');
+  } else afYaz(c, adS, W / 2, y, s.yazi, true);
+  var kb = 60 * u, kx = (W - kb) / 2, ky = y + adH + 4 * u;
+  c.save(); c.shadowColor = 'rgba(0,0,0,.2)'; c.shadowBlur = 3 * u; c.shadowOffsetY = 1 * u;
+  c.fillStyle = '#FFFFFF'; afRR(c, kx, ky, kb, kb, 4 * u); c.fill(); c.restore();
+  if (s.sade) { c.strokeStyle = R.a; c.lineWidth = 0.7 * u; afRR(c, kx, ky, kb, kb, 4 * u); c.stroke(); }
+  afQRCiz(c, q, kx + 4 * u, ky + 4 * u, kb - 8 * u, '#111111');
+  var bS = afSatirlar(c, s.metin.bas, 90 * u, 6 * u, true, 1, 3.4 * u);
+  var yy = ky + kb + 4 * u;
+  yy += afYaz(c, bS, W / 2, yy, s.sade ? R.k : s.yazi, true);
+  afYaz(c, afSatirlar(c, '@' + o.bot, 90 * u, 4.2 * u, false, 1, 2.6 * u), W / 2, yy + 0.8 * u, s.soluk, false);
+}
+
+/* --- PDF (her sayfa bir JPEG) --- */
+function pdfYap(sayfalar){
+  var enc = new TextEncoder(), parca = [], boy = 0, ofs = [];
+  function ekle(x){ var b = typeof x === 'string' ? enc.encode(x) : x; parca.push(b); boy += b.length; }
+  function nesne(no, govde){ ofs[no] = boy; ekle(no + ' 0 obj\n'); govde(); ekle('\nendobj\n'); }
+  ekle('%PDF-1.4\n%');
+  ekle(new Uint8Array([0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  var n = sayfalar.length;
+  nesne(1, function(){ ekle('<< /Type /Catalog /Pages 2 0 R >>'); });
+  nesne(2, function(){ ekle('<< /Type /Pages /Kids [' + sayfalar.map(function(s, i){ return (3 + i * 3) + ' 0 R'; }).join(' ') + '] /Count ' + n + ' >>'); });
+  sayfalar.forEach(function(s, i){
+    var p = 3 + i * 3, pw = (s.mm[0] / 25.4 * 72).toFixed(2), ph = (s.mm[1] / 25.4 * 72).toFixed(2);
+    var icerik = 'q ' + pw + ' 0 0 ' + ph + ' 0 0 cm /Im' + i + ' Do Q';
+    nesne(p, function(){ ekle('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pw + ' ' + ph + '] /Resources << /XObject << /Im' + i + ' ' + (p + 2) + ' 0 R >> /ProcSet [/PDF /ImageC] >> /Contents ' + (p + 1) + ' 0 R >>'); });
+    nesne(p + 1, function(){ ekle('<< /Length ' + icerik.length + ' >>\nstream\n' + icerik + '\nendstream'); });
+    nesne(p + 2, function(){
+      ekle('<< /Type /XObject /Subtype /Image /Width ' + s.w + ' /Height ' + s.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + s.jpeg.length + ' >>\nstream\n');
+      ekle(s.jpeg); ekle('\nendstream');
+    });
+  });
+  var xref = boy, top = 3 + n * 3, x = 'xref\n0 ' + top + '\n0000000000 65535 f \n';
+  for (var k = 1; k < top; k++) x += ('0000000000' + ofs[k]).slice(-10) + ' 00000 n \n';
+  ekle(x + 'trailer\n<< /Size ' + top + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+  var out = new Uint8Array(boy), o = 0;
+  parca.forEach(function(b){ out.set(b, o); o += b.length; });
+  return out;
+}
+function b64Bayt(dataUrl){
+  var s = atob(String(dataUrl).split(',')[1] || ''), b = new Uint8Array(s.length);
+  for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i);
+  return b;
+}
+function baytB64(b){
+  var s = '';
+  for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+/* --- logo: dosyayı küçültüp veri adresine çevirir (şeffaflık varsa PNG) --- */
+function resimYukle(src){
+  return new Promise(function(ok, hata){
+    var im = new Image();
+    im.onload = function(){ ok(im); };
+    im.onerror = function(){ hata(new Error('RESIM')); };
+    im.src = src;
+  });
+}
+function logoHazirla(dosya){
+  if (!dosya || !/^image\//.test(dosya.type || '')) return Promise.reject(new Error('Lütfen bir resim dosyası seçin (PNG, JPG).'));
+  if (dosya.size > 15 * 1024 * 1024) return Promise.reject(new Error('Resim çok büyük. 15 MB\'tan küçük bir dosya seçin.'));
+  var url = URL.createObjectURL(dosya);
+  return resimYukle(url).then(function(im){
+    URL.revokeObjectURL(url);
+    var cv = document.createElement('canvas'), c = cv.getContext('2d');
+    function boyut(maks){
+      var o = Math.min(1, maks / Math.max(im.width, im.height));
+      cv.width = Math.max(1, Math.round(im.width * o)); cv.height = Math.max(1, Math.round(im.height * o));
+      c.clearRect(0, 0, cv.width, cv.height); c.drawImage(im, 0, 0, cv.width, cv.height);
+    }
+    boyut(64);
+    var d = c.getImageData(0, 0, cv.width, cv.height).data, seffaf = false;
+    for (var i = 3; i < d.length; i += 4) if (d[i] < 245) { seffaf = true; break; }
+    var olcu = [360, 300, 240, 200, 160], sonuc = '';
+    for (var k = 0; k < olcu.length && !sonuc; k++) {
+      boyut(olcu[k]);
+      if (seffaf) { var p = cv.toDataURL('image/png'); if (p.length <= LOGO_SINIR) sonuc = p; }
+      if (!sonuc) {
+        if (seffaf) { var t = document.createElement('canvas'); t.width = cv.width; t.height = cv.height; var tc = t.getContext('2d'); tc.fillStyle = '#FFFFFF'; tc.fillRect(0, 0, t.width, t.height); tc.drawImage(cv, 0, 0); cv = t; c = tc; }
+        for (var q = 0.9; q >= 0.6 && !sonuc; q -= 0.1) { var j = cv.toDataURL('image/jpeg', q); if (j.length <= LOGO_SINIR) sonuc = j; }
+      }
+    }
+    if (!sonuc) throw new Error('Logo küçültülemedi. Daha sade bir resim deneyin.');
+    return sonuc;
+  }, function(){ URL.revokeObjectURL(url); throw new Error('Resim açılamadı. PNG ya da JPG bir dosya seçin.'); });
+}
+
+/* --- ekran --- */
+function afisAyar(){ var a = (U.ay && U.ay.ayarlar) || {}; return { logo:a.Logo || '', aciklama:a.AfisAciklama || '', telefon:a.AfisTelefon !== 'Hayır', stil:a.AfisStil || 'canli', tel:a.Telefon || '' }; }
+function afisSecenek(s){
+  var a = afisAyar();
+  return { stil:s.stil, tur:afisTur(), ad:(D.isletme && D.isletme.ad) || 'İşletme', aciklama:s.aciklama, telefon:s.telefon && a.tel ? telGoster(a.tel) : '',
+    link:afisLink(), bot:D.botAdi || '', logo:AFIS_LOGO.src === a.logo && a.logo ? AFIS_LOGO.im : null };
+}
+var AFIS_LOGO = { src:'', im:null };
+function afisLogoHazir(){
+  var src = afisAyar().logo;
+  if (AFIS_LOGO.src === src) return Promise.resolve();
+  AFIS_LOGO.src = src; AFIS_LOGO.im = null;
+  if (!src) return Promise.resolve();
+  return resimYukle(src).then(function(im){ if (AFIS_LOGO.src === src) AFIS_LOGO.im = im; }, function(){});
+}
+function afisOnizle(){
+  var cv = $('#afisCv');
+  if (!cv || !SH || SH.tip !== 'afis' || !afisLink()) return;
+  afisLogoHazir().then(function(){
+    var cv2 = $('#afisCv');
+    if (!cv2 || !SH || SH.tip !== 'afis') return;
+    var o = afisOlcu(SH.olcu), en = Math.min(720, Math.round((cv2.parentNode.clientWidth || 320) * (window.devicePixelRatio || 1)));
+    var sc = afisSecenek(SH); sc.w = en; sc.h = Math.round(en * o.h / o.w);
+    afisCiz(cv2, sc);
+  });
+}
+SHEET.afis = function(s){
+  var a = afisAyar(), link = afisLink(), b = U.busy.afis || s.uretiyor, lb = U.busy.logo;
+  var h = shBas('QR afişi') + '<div class="sh-body" data-scroll="afis">';
+  if (!link) {
+    h += '<div class="note-box">QR afişi için önce işletmenizin Telegram botunu bağlayın. Afişteki QR kod müşterileri doğrudan botunuza götürür.</div>';
+    if (D.uyeUrl) h += '<button class="btn line" data-act="uyeGit" data-k="#bot">Botumu bağla</button>';
+    return h + '</div>';
+  }
+  h += '<p class="tip-txt">Müşteri QR\'ı telefon kamerasıyla okutunca Telegram\'da <b>@' + esc(D.botAdi) + '</b> açılır ve sipariş verebilir.</p>';
+  h += '<div class="afis-on" aria-label="Afiş önizlemesi"><canvas id="afisCv" role="img" aria-label="' + esc(afisOlcu(s.olcu).ad) + ' önizlemesi"></canvas></div>';
+  h += '<div class="blk"><h3 class="blk-h">Görünüm</h3><div class="seg" role="group" aria-label="Afiş görünümü">' + AFIS_STIL.map(function(x){
+    return '<button type="button" data-act="afisStil" data-k="' + x.k + '" aria-pressed="' + (s.stil === x.k) + '">' + x.ad + '</button>';
+  }).join('') + '</div></div>';
+  h += '<div class="blk"><h3 class="blk-h">Ölçüler</h3><p class="tip-txt">Önizlemek için ölçünün adına, PDF\'e eklemek ya da çıkarmak için kutusuna dokunun.</p><div class="opt-list">' + AFIS_OLCU.map(function(x){
+    var sec = !!s.secili[x.k];
+    return '<div class="afis-olcu' + (s.olcu === x.k ? ' on' : '') + '"><button type="button" class="opt" data-act="afisOlcu" data-k="' + x.k + '" aria-pressed="' + (s.olcu === x.k) + '">' +
+      '<span class="o-main">' + esc(x.ad) + '<span class="o-sub">' + esc(x.alt) + (x.resim ? ' · ayrı resim olarak gelir' : '') + '</span></span></button>' +
+      '<button type="button" class="afis-kutu" role="checkbox" aria-checked="' + sec + '" data-act="afisSec" data-k="' + x.k + '" aria-label="' + esc(x.ad) + ' gönderilsin">' + (sec ? ic('tik', 'sm') : '') + '</button></div>';
+  }).join('') + '</div></div>';
+  h += '<div class="blk"><h3 class="blk-h">Logo</h3>' + (a.logo ? '<div class="logo-satir"><img class="logo-on" src="' + esc(a.logo) + '" alt="İşletme logosu"><span class="tip-txt">Sipariş sayfanızın başlığında da görünür.</span></div>'
+    : '<p class="tip-txt">Logonuz yoksa afişte adınızın baş harfleri kullanılır. Logo sipariş sayfanızın başlığında da görünür.</p>') +
+    '<input type="file" id="logoDosya" accept="image/png,image/jpeg,image/webp" hidden>' +
+    '<div class="row2"><button type="button" class="btn line sm" data-act="logoSec"' + (lb ? ' disabled' : '') + '>' + (lb ? bekle('logo') : ic('arti', 'sm')) + (a.logo ? 'Logoyu değiştir' : 'Logo yükle') + '</button>' +
+    (a.logo ? '<button type="button" class="btn ghost sm" data-act="logoKaldir"' + (lb ? ' disabled' : '') + '>Logoyu kaldır</button>' : '') + '</div>' +
+    (s.logoHata ? '<div class="err-txt" role="alert">' + esc(s.logoHata) + '</div>' : '') + '</div>';
+  h += '<div class="field"><label for="afisAc">Ne iş yapıyorsunuz? <span class="muted">(isteğe bağlı, tek satır)</span></label><input class="inp" id="afisAc" maxlength="60" value="' + esc(s.aciklama) + '" placeholder="ör. Ev yapımı dürüm ve lahmacun" autocomplete="off"></div>';
+  h += '<button type="button" class="opt" role="switch" aria-checked="' + (s.telefon && !!a.tel) + '" data-act="afisTel"' + (a.tel ? '' : ' disabled') + '><span class="o-main">Telefon numarası görünsün' +
+    '<span class="o-sub">' + (a.tel ? esc(telGoster(a.tel)) : 'Ayarlar\'da telefon kayıtlı değil') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  h += '</div><div class="sh-foot">';
+  var adet = AFIS_OLCU.filter(function(x){ return s.secili[x.k]; }).length;
+  if (D.cihaz) h += '<p class="tip-txt">Afiş Telegram\'a gönderilir; bu ekranı Telegram\'dan açın.</p>';
+  else h += '<button class="btn pri block" data-act="afisGonder"' + (b || !adet ? ' disabled' : '') + '>' + (b ? '<span class="spin" aria-hidden="true"></span>' + (s.uretiyor ? 'Afişler hazırlanıyor…' : 'Gönderiliyor…') : ic('gonder') + (adet ? 'Seçilen ' + adet + ' ölçüyü Telegram\'a gönder' : 'En az bir ölçü seçin')) + '</button>' +
+    '<p class="tip-txt">Baskı ölçüleri tek PDF\'te gelir; matbaaya ya da yazıcıya gönderebilirsiniz.</p>';
+  setTimeout(afisOnizle, 0);
+  return h + '</div>';
+};
+function afisUret(s){
+  var sc = afisSecenek(s), cv = document.createElement('canvas'), sayfa = [], resim = null;
+  AFIS_OLCU.forEach(function(o){
+    if (!s.secili[o.k]) return;
+    sc.w = o.w; sc.h = o.h;
+    afisCiz(cv, sc);
+    var j = cv.toDataURL('image/jpeg', 0.92);
+    if (o.resim) resim = j.split(',')[1];
+    else sayfa.push({ w:o.w, h:o.h, mm:o.mm, jpeg:b64Bayt(j) });
+  });
+  return { pdf:sayfa.length ? baytB64(pdfYap(sayfa)) : '', resim:resim || '',
+    olcular:AFIS_OLCU.filter(function(o){ return s.secili[o.k]; }).map(function(o){ return o.ad; }) };
+}
+function afisAyarKaydet(veri, mesaj){
+  return islem('ekAyarKaydet', { veri:veri }, { busy:'logo' }).then(function(r){
+    if (r) { ayarAl(r); renderSheet(); if (mesaj) toast(mesaj); }
+    return r;
+  });
+}
+var ACT_AFIS = {
+  afisAc:function(){
+    var ac = function(){ var a = afisAyar(); sheetAc({ tip:'afis', stil:a.stil, olcu:'a4', aciklama:a.aciklama, telefon:a.telefon, secili:{ a4:true, a5:true, a6:true, kare:true, hikaye:true } }); };
+    if (U.ay) return ac();
+    ayarYukle();
+    var bekleT = setInterval(function(){ if (U.ay || U.ayHata) { clearInterval(bekleT); if (U.ay) ac(); else toast(U.ayHata, true); } }, 150);
+  },
+  afisStil:function(el){ SH.stil = el.getAttribute('data-k'); haptic('select'); renderSheet(); },
+  afisOlcu:function(el){ SH.olcu = el.getAttribute('data-k'); haptic('select'); renderSheet(); },
+  afisSec:function(el){ var k = el.getAttribute('data-k'); SH.secili[k] = !SH.secili[k]; haptic('select'); renderSheet(); },
+  afisTel:function(){ SH.telefon = !SH.telefon; renderSheet(); },
+  logoSec:function(){ var i = $('#logoDosya'); if (i) i.click(); },
+  logoKaldir:function(){ SH.logoHata = ''; afisAyarKaydet({ Logo:'' }, 'Logo kaldırıldı'); },
+  afisGonder:function(){
+    var s = SH;
+    if (!s || s.uretiyor) return;
+    s.uretiyor = true; renderSheet();
+    afisLogoHazir().then(function(){
+      return new Promise(function(ok){ setTimeout(ok, 30); });
+    }).then(function(){
+      var veri;
+      try { veri = afisUret(s); } catch(e){ s.uretiyor = false; renderSheet(); toast('Afiş hazırlanamadı. Sayfayı yenileyip tekrar deneyin.', true); return; }
+      s.uretiyor = false;
+      veri.ayar = { AfisAciklama:s.aciklama, AfisTelefon:s.telefon ? 'Evet' : 'Hayır', AfisStil:s.stil };
+      return islem('ekAfisGonder', veri, { busy:'afis' }).then(function(r){
+        if (!r) return;
+        if (U.ay && U.ay.ayarlar) { U.ay.ayarlar.AfisAciklama = s.aciklama; U.ay.ayarlar.AfisTelefon = veri.ayar.AfisTelefon; U.ay.ayarlar.AfisStil = s.stil; }
+        sheetKapat();
+        toast('Afişler Telegram sohbetinize gönderildi.');
+      });
+    });
+  }
+};
+Object.assign(ACT_EK, ACT_AFIS);
+document.addEventListener('input', function(e){ if (e.target.id === 'afisAc' && SH && SH.tip === 'afis') { SH.aciklama = e.target.value; clearTimeout(SH.t); SH.t = setTimeout(afisOnizle, 250); } });
+document.addEventListener('change', function(e){
+  if (e.target.id !== 'logoDosya' || !SH || SH.tip !== 'afis') return;
+  var f = e.target.files && e.target.files[0];
+  if (!f) return;
+  SH.logoHata = '';
+  U.busy.logo = true; renderSheet();
+  logoHazirla(f).then(function(veri){
+    delete U.busy.logo;
+    return afisAyarKaydet({ Logo:veri }, 'Logo kaydedildi');
+  }, function(err){
+    delete U.busy.logo;
+    if (SH && SH.tip === 'afis') { SH.logoHata = err.message; renderSheet(); }
+  });
+});
+// önizleme modunda testler için
+if (DEMO) window.__afis = { ciz:afisCiz, olcu:afisOlcu, secenek:function(s){ return afisSecenek(s || SH); }, link:afisLink, sh:function(){ return SH; }, ayar:function(){ return U.ay && U.ay.ayarlar; } };
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
@@ -3477,6 +3947,12 @@ function demoMock(rol){
     ekKurallarKaydet:function(d){ KURAL = kopya(d.liste || []); return { ok:true, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; },
     ekOdemelerKaydet:function(d){ ODEME = kopya(d.liste || []); return { ok:true, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; },
     ekSablonGonder:function(){ return { ok:true }; },
+    ekAfisGonder:function(d){
+      if (!d.pdf && !d.resim) return hata('FORM', 'En az bir ölçü seçin.');
+      window.__afisSon = { pdfBoy:(d.pdf || '').length, resimBoy:(d.resim || '').length, olcular:d.olcular, ayar:d.ayar, pdf:d.pdf };
+      if (d.ayar) Object.keys(d.ayar).forEach(function(k){ AYAR[k] = d.ayar[k]; });
+      return { ok:true };
+    },
     ekKampanyalar:function(){ return { ok:true, kampanyalar:kopya(KAMP) }; },
     ekKampanyaKaydet:function(d){
       var k = d.k || {};
@@ -3491,7 +3967,7 @@ function demoMock(rol){
   };
   return function(act, d){
     var f = islemler[act];
-    var gecikme = act === 'ekYenile' ? 120 : act === 'ekRaporGonder' ? 1100 : 380 + Math.random() * 320;
+    var gecikme = act === 'ekYenile' ? 120 : act === 'ekRaporGonder' || act === 'ekAfisGonder' ? 1100 : 380 + Math.random() * 320;
     return new Promise(function(ok){
       setTimeout(function(){
         var r = f ? f(d) : hata('ISTEK', 'Bilinmeyen işlem.');
