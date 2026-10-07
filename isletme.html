@@ -291,6 +291,14 @@ a{color:var(--link)}
 .qr{align-self:center;background:#fff;padding:12px;border-radius:12px;line-height:0}
 .qr svg{display:block;width:200px;height:200px}
 .tip-txt{font-size:14px;color:var(--sub)}
+/* ses ve bildirim */
+.zil-list{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:600px){ .zil-list{grid-template-columns:1fr 1fr} }
+.zil-list .opt > svg,.zil-kendi .opt > svg{color:var(--hint);flex:none}
+.zil-kendi{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.seg-sar{display:flex;flex-wrap:wrap;max-width:100%}
+.seg-sar button{flex:1 1 auto}
+.rng{width:100%;height:44px;accent-color:var(--accent);margin:0}
 
 /* ---------- menü ---------- */
 .search{position:relative}
@@ -954,6 +962,13 @@ function kartMi(s){ return /kart/i.test(String(s || '')); }
 
 /* ---------- ses ve uyarılar ---------- */
 var SES = { acik:LS.get('yourpos360-ses') !== '0', ctx:null, son:0 };
+// Zil ayarları (bu cihazda): ses, tip (tek · uc · tekrar; boşsa rolün varsayılanı), tekrar aralığı (sn), seviye (%), arka planda çal
+var ZIL = (function(){
+  var v = {};
+  try { v = JSON.parse(LS.get('yourpos360-zil') || '{}') || {}; } catch(e){}
+  return { ses:typeof v.ses === 'string' && v.ses ? v.ses : 'klasik', tip:['tek', 'uc', 'tekrar'].indexOf(v.tip) >= 0 ? v.tip : '',
+    aralik:[10, 15, 30, 60].indexOf(v.aralik) >= 0 ? v.aralik : 15, seviye:v.seviye >= 10 && v.seviye <= 100 ? v.seviye : 100, arka:v.arka !== false };
+})();
 function sesCtx(){
   if (!SES.ctx) { var A = window.AudioContext || window.webkitAudioContext; if (A) { try { SES.ctx = new A(); } catch(e){} } }
   return SES.ctx;
@@ -963,22 +978,8 @@ function sesAc(){
   var c = sesCtx();
   if (c && c.state !== 'running' && c.resume) c.resume().then(function(){ renderBanners(); }).catch(function(){});
 }
-function bip(tur){
-  var c = sesCtx();
-  if (!c || c.state !== 'running') return false;
-  var t = c.currentTime + 0.02;
-  var notalar = tur === 'kurye' ? [660, 990] : [880, 1320, 880, 1320];
-  notalar.forEach(function(f, i){
-    var o = c.createOscillator(), g = c.createGain(), d = i * 0.17;
-    o.type = 'sine'; o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, t + d);
-    g.gain.exponentialRampToValueAtTime(0.45, t + d + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.15);
-    o.connect(g); g.connect(c.destination);
-    o.start(t + d); o.stop(t + d + 0.16);
-  });
-  return true;
-}
+// Seçili zili çalar (sesler ve ayarlar: 4e_ses.js)
+function bip(tur, kez){ return zilCal(kez || 1); }
 var WL = null;
 function ekranAcikKalsin(){
   if (!('wakeLock' in navigator) || document.hidden || WL) return;
@@ -1011,19 +1012,19 @@ function degisiklikleriIsle(){
       toast(kurye() ? '📦 Hazır sipariş: ' + no : '🔔 Yeni sipariş: ' + no);
       haptic('notify', 'warning');
       try { if (navigator.vibrate) navigator.vibrate([180, 90, 180]); } catch(e){}
-      if (SES.acik && bip(kurye() ? 'kurye' : 'yeni')) SES.son = Date.now();
+      if (SES.acik && bip(kurye() ? 'kurye' : 'yeni', zilTip() === 'uc' ? 3 : 1)) SES.son = Date.now();
     }
   }
   GORULEN = {};
   D.siparisler.forEach(function(o){ GORULEN[anahtar(o)] = 1; });
   yzKontrol();
 }
-// Restoranda yeni sipariş onaylanana kadar 12 sn'de bir çalar
+// «Onaylanana kadar» zil tipinde: restoranda sipariş onaylanana, kuryede hazır sipariş alınana kadar seçilen aralıkla çalar
 setInterval(function(){
   if (!D) return;
   var bekleyen = kurye() ? 0 : sayac('Y');
   document.title = (bekleyen ? '(' + bekleyen + ') Yeni sipariş · ' : '') + ekranAdi();
-  if (bekleyen && SES.acik && Date.now() - SES.son >= 12000) { if (bip('yeni')) SES.son = Date.now(); }
+  if (SES.acik && zilTip() === 'tekrar' && zilBekleyen() && Date.now() - SES.son >= ZIL.aralik * 1000) { if (bip('yeni')) SES.son = Date.now(); }
 }, 1000);
 
 /* ---------- canlı yenileme ---------- */
@@ -1178,8 +1179,8 @@ function renderTop(){
   }
   var koyuT = root.getAttribute('data-theme') === 'dark';
   h += '<button class="icon-btn" data-act="tema" aria-label="' + (koyuT ? 'Gündüz moduna geç' : 'Gece moduna geç') + '">' + ic(koyuT ? 'gunes' : 'ay') + '</button>';
-  h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-pressed="' + (SES.acik ? 'true' : 'false') + '" aria-label="' +
-    (SES.acik ? 'Sipariş sesi açık' : 'Sipariş sesi kapalı') + '">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
+  h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-haspopup="dialog" aria-label="Ses ve bildirim (' +
+    (SES.acik ? 'sipariş sesi açık' : 'sipariş sesi kapalı') + ')">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
   koruyarakYaz($('#top'), h);
 }
 function renderBanners(){
@@ -3650,6 +3651,297 @@ document.addEventListener('change', function(e){
 });
 // önizleme modunda testler için
 if (DEMO) window.__afis = { ciz:afisCiz, olcu:afisOlcu, secenek:function(s){ return afisSecenek(s || SH); }, link:afisLink, sh:function(){ return SH; }, ayar:function(){ return U.ay && U.ay.ayarlar; } };
+/* ---------- ses ve bildirim: zil sesi, zil tipi, ses seviyesi, Telegram mesaj tercihi ----------
+ * Zil ayarları bu cihazda saklanır (her tablet kendi sesini seçer). Telegram mesaj tercihi kişinin hesabına
+ * kaydedilir (sunucu: ekBildirim) ve telefonundaki Telegram'ı da etkiler. */
+var ZIL_SESLER = [
+  ['klasik', 'Klasik', 'Kısa ve net çift bip'],
+  ['dingdong', 'Ding-dong', 'Kapı zili gibi iki ton'],
+  ['kasa', 'Yazar kasa', 'Tık tık, çın!'],
+  ['telefon', 'Eski telefon', 'Çınlayan telefon zili'],
+  ['marimba', 'Marimba', 'Neşeli dört nota'],
+  ['can', 'Çan', 'Uzun, yankılı çan'],
+  ['alarm', 'Alarm', 'En keskini; gürültülü mutfaklar için'],
+  ['yumusak', 'Yumuşak', 'Sakin, kısa iki nota']
+];
+var ZIL_ARALIK = [10, 15, 30, 60];
+var ZIL_KENDI = { buf:null, ad:'', gecici:false };
+
+function zilTip(){ return ZIL.tip || (kurye() ? 'tek' : 'tekrar'); }
+function zilKaydet(){ LS.set('yourpos360-zil', JSON.stringify(ZIL)); }
+function zilAdi(k){
+  if (k === 'kendi') return 'Kendi sesim';
+  var s = ZIL_SESLER.filter(function(x){ return x[0] === k; })[0];
+  return s ? s[1] : 'Klasik';
+}
+// Ekranda bekleyen iş: restoranda onay bekleyen sipariş, kuryede sahipsiz hazır sipariş
+function zilBekleyen(){
+  if (!D) return 0;
+  return kurye() ? D.siparisler.filter(function(o){ return o.kod === 'R' && !o.kuryeId; }).length : sayac('Y');
+}
+
+/* --- ses sentezi (dosya gerekmez) --- */
+function zNota(c, h, t, f, sure, tip, tepe, atak, tut){
+  var o = c.createOscillator(), g = c.createGain();
+  o.type = tip || 'sine'; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(tepe, t + (atak || 0.01));
+  if (tut) g.gain.setValueAtTime(tepe, t + tut);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+  o.connect(g); g.connect(h);
+  o.start(t); o.stop(t + sure + 0.03);
+}
+// Çan: uyumsuz üst tınılar (gerçek çan gibi)
+function zCan(c, h, t, f, sure, tepe){
+  [[1, 1], [2, 0.5], [2.76, 0.35], [5.4, 0.14], [8.93, 0.06]].forEach(function(p){
+    zNota(c, h, t, f * p[0], sure / Math.sqrt(p[0]), 'sine', tepe * p[1], 0.004);
+  });
+}
+function zGurultu(c, h, t, sure, tepe){
+  var n = Math.max(1, Math.floor(c.sampleRate * sure)), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+  for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+  s.buffer = b; f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 1.2; g.gain.value = tepe;
+  s.connect(f); f.connect(g); g.connect(h); s.start(t);
+}
+// Her ses: (bağlam, çıkış, başlangıç) → süre (sn)
+var ZIL_CAL = {
+  klasik:function(c, h, t){
+    [880, 1320, 880, 1320].forEach(function(f, i){ zNota(c, h, t + i * 0.17, f, 0.15, 'sine', 0.45, 0.02); });
+    return 0.7;
+  },
+  dingdong:function(c, h, t){ zCan(c, h, t, 659.25, 1.4, 0.38); zCan(c, h, t + 0.5, 523.25, 1.8, 0.38); return 2.1; },
+  kasa:function(c, h, t){
+    zGurultu(c, h, t, 0.04, 0.5); zGurultu(c, h, t + 0.09, 0.04, 0.45);
+    [2093, 2637, 3136].forEach(function(f){ zNota(c, h, t + 0.2, f, 0.9, 'sine', 0.2, 0.004); });
+    zNota(c, h, t + 0.2, 4186, 0.45, 'sine', 0.07, 0.004);
+    return 1.1;
+  },
+  telefon:function(c, h, t){
+    [0, 0.6].forEach(function(b){
+      var o = c.createOscillator(), g = c.createGain(), s = t + b;
+      o.type = 'triangle';
+      for (var i = 0; i < 16; i++) o.frequency.setValueAtTime(i % 2 ? 1180 : 1420, s + i * 0.025);
+      g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.35, s + 0.01);
+      g.gain.setValueAtTime(0.35, s + 0.38); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.42);
+      o.connect(g); g.connect(h); o.start(s); o.stop(s + 0.45);
+    });
+    return 1.05;
+  },
+  marimba:function(c, h, t){
+    [523.25, 659.25, 783.99, 1046.5].forEach(function(f, i){
+      zNota(c, h, t + i * 0.12, f, 0.42, 'sine', 0.45, 0.005);
+      zNota(c, h, t + i * 0.12, f * 4, 0.08, 'sine', 0.07, 0.002);
+    });
+    return 0.85;
+  },
+  can:function(c, h, t){ zCan(c, h, t, 880, 2.4, 0.42); zCan(c, h, t + 0.8, 880, 2, 0.28); return 2.6; },
+  alarm:function(c, h, t){
+    for (var i = 0; i < 6; i++) zNota(c, h, t + i * 0.16, i % 2 ? 1150 : 950, 0.13, 'square', 0.2, 0.005, 0.1);
+    return 1;
+  },
+  yumusak:function(c, h, t){ zNota(c, h, t, 392, 0.7, 'sine', 0.3, 0.05); zNota(c, h, t + 0.28, 587.33, 0.9, 'sine', 0.3, 0.05); return 1.2; }
+};
+
+// Zili çal: kez = arka arkaya kaç kez, onizle = seçilen sesi denemek için (arka plan kuralı uygulanmaz)
+function zilCal(kez, onizle){
+  var c = sesCtx();
+  if (!c || c.state !== 'running') return false;
+  if (!onizle && !ZIL.arka && document.hidden) return false;
+  var k = onizle || ZIL.ses;
+  if (k === 'kendi' && !ZIL_KENDI.buf) k = 'klasik';
+  var h = c.createGain();
+  h.gain.value = Math.max(0.05, Math.min(1, ZIL.seviye / 100));
+  h.connect(c.destination);
+  var t = c.currentTime + 0.03;
+  for (var i = 0; i < (kez || 1); i++) {
+    var sure;
+    if (k === 'kendi') {
+      var s = c.createBufferSource();
+      s.buffer = ZIL_KENDI.buf; s.connect(h);
+      sure = Math.min(ZIL_KENDI.buf.duration, 12);
+      s.start(t, 0, sure);
+    } else sure = (ZIL_CAL[k] || ZIL_CAL.klasik)(c, h, t);
+    t += sure + 0.35;
+  }
+  return true;
+}
+
+/* --- kendi ses dosyası: bu cihazda (IndexedDB) saklanır --- */
+function zilDb(){
+  return new Promise(function(ok, no){
+    try {
+      var r = indexedDB.open('yourpos360-zil', 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore('dosya'); };
+      r.onsuccess = function(){ ok(r.result); };
+      r.onerror = function(){ no(r.error); };
+    } catch(e){ no(e); }
+  });
+}
+function zilDbIs(mod, f){
+  return zilDb().then(function(db){
+    return new Promise(function(ok, no){
+      var tx = db.transaction('dosya', mod), st = tx.objectStore('dosya'), sonuc;
+      var q = f(st);
+      if (q) q.onsuccess = function(){ sonuc = q.result; };
+      tx.oncomplete = function(){ ok(sonuc); };
+      tx.onerror = tx.onabort = function(){ no(tx.error); };
+    });
+  });
+}
+function zilCoz(ab){
+  var c = sesCtx();
+  return new Promise(function(ok, no){
+    if (!c) return no(new Error('ses yok'));
+    try { var p = c.decodeAudioData(ab.slice(0), ok, no); if (p && p.then) p.then(ok, no); } catch(e){ no(e); }
+  });
+}
+function dosyaOku(f){
+  if (f.arrayBuffer) return f.arrayBuffer();
+  return new Promise(function(ok, no){ var r = new FileReader(); r.onload = function(){ ok(r.result); }; r.onerror = function(){ no(r.error); }; r.readAsArrayBuffer(f); });
+}
+function zilDosyaSecildi(f){
+  if (!f) return;
+  if (f.size > 3 * 1024 * 1024) return toast('Dosya çok büyük. En fazla 3 MB olabilir (kısa bir ses seçin).', true);
+  U.busy.zilDosya = true; renderSheet();
+  var ab;
+  dosyaOku(f).then(function(x){ ab = x; return zilCoz(ab); }).then(function(buf){
+    if (!(buf.duration > 0.15)) throw new Error('kısa');
+    ZIL_KENDI.buf = buf; ZIL_KENDI.ad = f.name || 'Ses dosyası'; ZIL_KENDI.gecici = false;
+    return zilDbIs('readwrite', function(st){ return st.put({ ad:ZIL_KENDI.ad, veri:ab }, 'kendi'); }).catch(function(){ ZIL_KENDI.gecici = true; });
+  }).then(function(){
+    delete U.busy.zilDosya;
+    ZIL.ses = 'kendi'; zilKaydet();
+    renderSheet();
+    sesAc(); setTimeout(function(){ zilCal(1, 'kendi'); }, 120);
+    toast(ZIL_KENDI.gecici ? 'Ses seçildi (bu cihaz kaydetmeye izin vermedi; ekran kapanınca yeniden seçmeniz gerekir)' : 'Kendi zil sesiniz seçildi');
+  }).catch(function(){
+    delete U.busy.zilDosya; renderSheet();
+    toast('Bu ses dosyası açılamadı. MP3, M4A ya da WAV dosyası deneyin.', true);
+  });
+}
+function zilKendiYukle(){
+  zilDbIs('readonly', function(st){ return st.get('kendi'); }).then(function(k){
+    if (!k || !k.veri) return;
+    ZIL_KENDI.ad = k.ad || 'Ses dosyası';
+    return zilCoz(k.veri).then(function(b){ ZIL_KENDI.buf = b; if (SH && SH.tip === 'ses') renderSheet(); });
+  }).catch(function(){});
+}
+setTimeout(zilKendiYukle, 300);
+
+/* --- pencere --- */
+SHEET.ses = function(){
+  var h = shBas('🔔 Ses ve bildirim') + '<div class="sh-body">';
+  var sw = function(act, acik, ad, alt){
+    return '<button class="opt" role="switch" aria-checked="' + acik + '" data-act="' + act + '"><span class="o-main">' + ad +
+      '<span class="o-sub">' + alt + '</span></span><span class="sw" aria-hidden="true" aria-checked="' + acik + '" style="pointer-events:none"><span class="knob"></span></span></button>';
+  };
+  var seg = function(act, deger, secenek, etiket){
+    return '<div class="seg seg-sar" role="group" aria-label="' + etiket + '">' + secenek.map(function(s){
+      return '<button data-act="' + act + '" data-k="' + s[0] + '" aria-pressed="' + (String(deger) === String(s[0])) + '">' + s[1] + '</button>';
+    }).join('') + '</div>';
+  };
+  h += sw('sesAcKapa', SES.acik, 'Bu ekranda sipariş sesi', kurye() ? 'Hazır sipariş gelince bu cihaz çalar' : 'Yeni sipariş gelince bu cihaz çalar');
+  if (SES.acik) {
+    var secili = ZIL.ses === 'kendi' && !ZIL_KENDI.buf ? 'klasik' : ZIL.ses;
+    h += '<div class="blk"><h3 class="blk-h">Zil sesi <span class="muted">· dokununca çalar</span></h3><div class="opt-list zil-list" role="radiogroup" aria-label="Zil sesi">' +
+      ZIL_SESLER.map(function(s){
+        return '<button class="opt" role="radio" aria-checked="' + (secili === s[0]) + '" data-act="zilSec" data-k="' + s[0] + '">' +
+          '<span class="radio" aria-hidden="true"></span><span class="o-main">' + s[1] + '<span class="o-sub">' + s[2] + '</span></span>' + ic('zil', 'sm') + '</button>';
+      }).join('') + '</div>';
+    var yukleniyor = U.busy.zilDosya;
+    h += '<div class="zil-kendi">';
+    if (ZIL_KENDI.buf) {
+      h += '<button class="opt" role="radio" aria-checked="' + (secili === 'kendi') + '" data-act="zilSec" data-k="kendi">' +
+        '<span class="radio" aria-hidden="true"></span><span class="o-main">Kendi sesim<span class="o-sub">' + esc(ZIL_KENDI.ad) +
+        ' · ' + Math.max(1, Math.round(Math.min(ZIL_KENDI.buf.duration, 12))) + ' sn</span></span>' + ic('zil', 'sm') + '</button>';
+    }
+    h += '<div class="links"><button class="btn line sm" data-act="zilYukle"' + (yukleniyor ? ' disabled' : '') + '>' + (yukleniyor ? '<span class="spin"></span>' : '♪ ') +
+      (ZIL_KENDI.buf ? 'Başka ses dosyası seç' : 'Kendi ses dosyamı seç') + '</button>' +
+      (ZIL_KENDI.buf ? '<button class="btn line sm" data-act="zilKendiSil">Kendi sesimi kaldır</button>' : '') + '</div>' +
+      '<input type="file" id="zilDosya" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" hidden>' +
+      '<p class="tip-txt">MP3, M4A ya da WAV; en fazla 3 MB. Uzun seslerin ilk 12 saniyesi çalar.</p></div></div>';
+    var tip = zilTip();
+    h += '<div class="blk"><h3 class="blk-h">Zil tipi</h3>' + seg('zilTip', tip, [['tek', 'Bir kez'], ['uc', '3 kez'], ['tekrar', kurye() ? 'Alınana kadar' : 'Onaylanana kadar']], 'Zil tipi') +
+      '<p class="tip-txt">' + (tip === 'tek' ? 'Her yeni siparişte zil bir kez çalar.' : tip === 'uc' ? 'Her yeni siparişte zil arka arkaya 3 kez çalar.' :
+        (kurye() ? 'Hazır sipariş bir kurye tarafından alınana kadar zil tekrar tekrar çalar.' : 'Sipariş onaylanana kadar zil tekrar tekrar çalar.')) + '</p>';
+    if (tip === 'tekrar') h += '<h3 class="blk-h">Kaç saniyede bir?</h3>' + seg('zilAralik', ZIL.aralik, ZIL_ARALIK.map(function(x){ return [x, x < 60 ? x + ' sn' : '1 dk']; }), 'Tekrar aralığı');
+    h += '</div>';
+    h += '<div class="blk"><h3 class="blk-h">Ses seviyesi <span class="muted" id="zilSeviyeYaz">%' + ZIL.seviye + '</span></h3>' +
+      '<input class="rng" type="range" min="10" max="100" step="10" value="' + ZIL.seviye + '" data-act-change="zilSeviye" aria-label="Ses seviyesi">' +
+      '<p class="tip-txt">Tabletin kendi ses düzeyi de etkiler; tableti sessize almayın.</p></div>';
+    h += sw('zilArka', ZIL.arka, 'Ekran küçültülmüşken de çalsın', 'Telegram\'da başka sohbete geçseniz ya da ekranı küçültseniz bile');
+  }
+  var tg = D.ben && D.ben.bildirim;
+  if (tg) {
+    var r = function(k, ad, alt){
+      return '<button class="opt" role="radio" aria-checked="' + (tg === k) + '" data-act="tgBildirim" data-k="' + k + '"' + (U.busy.tgBildirim ? ' disabled' : '') + '>' +
+        '<span class="radio" aria-hidden="true"></span><span class="o-main">' + ad + '<span class="o-sub">' + alt + '</span></span></button>';
+    };
+    var ne = kurye() ? 'hazır sipariş' : 'yeni sipariş';
+    h += '<div class="blk"><h3 class="blk-h">Telegram mesajları ' + bekle('tgBildirim') + '</h3><div class="opt-list" role="radiogroup" aria-label="Telegram mesajları">' +
+      r('sesli', 'Sesli', 'Her ' + ne + 'te Telegram\'dan sesli mesaj gelir') +
+      r('sessiz', 'Sessiz', 'Mesaj gelir ama Telegram ses çıkarmaz; ses yalnızca bu ekrandan gelir') +
+      r('kapali', 'Gönderme', ne.charAt(0).toUpperCase() + ne.slice(1) + ' mesajı gelmez; siparişleri yalnızca bu ekranda görürsünüz') + '</div>' +
+      (tg === 'kapali' ? '<div class="note-box">Bu ekran kapalıyken gelen siparişleri kaçırabilirsiniz. Ekranı açık tutun ya da «Sessiz»i seçin.</div>' : '') +
+      '<p class="tip-txt">Bu seçim Telegram hesabınıza kaydedilir; telefonunuzdaki Telegram\'da da aynı şekilde çalışır. ' +
+      'Tabletin bildirimleri kapalı olsa bile Telegram açıkken mesaj sesi çalabilir; sesi yalnızca bu ekrandan duymak için «Sessiz»i seçin.</p>' +
+      '<p class="tip-txt">Telegram mesajının kendi sesini değiştirmek için: botun sohbetinde en üstteki ada dokunun → Bildirimler → Ses.</p></div>';
+  } else if (D.cihaz) {
+    h += '<p class="tip-txt">Bu tablet bağlantıyla açıldığı için Telegram mesajı almaz; siparişler yalnızca ekranda ve zille bildirilir.</p>';
+  }
+  h += '</div><div class="sh-foot"><button class="btn line block" data-act="zilDene"' + (SES.acik ? '' : ' disabled') + '>' + ic('zil', 'sm') + 'Seçili sesi dene</button></div>';
+  return h;
+};
+
+var ACT_SES = {
+  ses:function(){ sesAc(); sheetAc({ tip:'ses' }); },
+  sesAcKapa:function(){
+    SES.acik = !SES.acik;
+    LS.set('yourpos360-ses', SES.acik ? '1' : '0');
+    if (SES.acik) { sesAc(); setTimeout(function(){ zilCal(1, ZIL.ses); renderBanners(); }, 150); }
+    toast(SES.acik ? 'Sipariş sesi açık' : 'Sipariş sesi kapalı');
+    renderSheet(); renderTop(); renderBanners();
+  },
+  zilSec:function(el){
+    ZIL.ses = el.getAttribute('data-k'); zilKaydet(); renderSheet();
+    sesAc(); setTimeout(function(){ zilCal(1, ZIL.ses); }, 60);
+  },
+  zilTip:function(el){ ZIL.tip = el.getAttribute('data-k'); zilKaydet(); renderSheet(); },
+  zilAralik:function(el){ ZIL.aralik = Number(el.getAttribute('data-k')) || 15; zilKaydet(); renderSheet(); },
+  zilArka:function(){ ZIL.arka = !ZIL.arka; zilKaydet(); renderSheet(); },
+  zilDene:function(){ sesAc(); setTimeout(function(){ zilCal(zilTip() === 'uc' ? 3 : 1, ZIL.ses); renderBanners(); }, 120); },
+  zilYukle:function(){ var i = $('#zilDosya'); if (i) { i.value = ''; i.click(); } },
+  zilKendiSil:function(){
+    ZIL_KENDI.buf = null; ZIL_KENDI.ad = '';
+    if (ZIL.ses === 'kendi') { ZIL.ses = 'klasik'; zilKaydet(); }
+    zilDbIs('readwrite', function(st){ return st.delete('kendi'); }).catch(function(){});
+    renderSheet(); toast('Kendi sesiniz kaldırıldı');
+  },
+  tgBildirim:function(el){
+    var k = el.getAttribute('data-k');
+    if (!D.ben || k === D.ben.bildirim) return;
+    islem('ekBildirim', { tg:k }, { busy:'tgBildirim' }).then(function(r){
+      if (!r) return;
+      D.ben.bildirim = r.bildirim;
+      renderSheet();
+      toast(r.bildirim === 'sesli' ? 'Telegram mesajları sesli' : r.bildirim === 'sessiz' ? 'Telegram mesajları sessiz gelecek' : 'Telegram\'a sipariş mesajı gönderilmeyecek');
+    });
+  }
+};
+Object.assign(ACT_EK, ACT_SES);
+document.addEventListener('change', function(e){
+  if (e.target && e.target.id === 'zilDosya') zilDosyaSecildi(e.target.files && e.target.files[0]);
+  if (e.target && e.target.getAttribute && e.target.getAttribute('data-act-change') === 'zilSeviye') {
+    ZIL.seviye = Number(e.target.value) || 80; zilKaydet();
+    sesAc(); setTimeout(function(){ zilCal(1, ZIL.ses); }, 60);
+  }
+});
+document.addEventListener('input', function(e){
+  if (e.target && e.target.getAttribute && e.target.getAttribute('data-act-change') === 'zilSeviye') {
+    var y = $('#zilSeviyeYaz'); if (y) y.textContent = '%' + e.target.value;
+  }
+});
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
@@ -4064,6 +4356,7 @@ function demoMock(rol){
   var ODEMELER = ['Nakit', 'Kredi Kartı (kapıda)', 'Multinet', 'Nakit', 'Pluxee (Sodexo)', 'Kredi Kartı (kapıda)'];
   var KURYELER = [{ id:'7001', ad:'Ali Kurye' }, { id:'cihaz:C2', ad:'Kurye telefonu' }];
   var BEN = rol === 'Kurye' ? { id:'7001', ad:'Ali Kurye' } : rol === 'Personel' ? { id:'7002', ad:'Mehmet' } : { id:'7000', ad:'Ahmet Usta' };
+  BEN.bildirim = 'sesli';
   var ISL = { ad:DEMO_MARKET ? 'Örnek Bakkal' : 'Örnek Dönerci', acik:true, hizmet:true, hazirlikDk:20, telefon:'02161234567', lat:40.9871, lng:29.0285,
     tur:DEMO_MARKET ? 'market' : 'restoran' };
   if (PRM.get('kurulum') === '1') { MENU = []; ISL.lat = 0; ISL.lng = 0; AYAR.Enlem = ''; AYAR.Boylam = ''; }
@@ -4359,6 +4652,7 @@ function demoMock(rol){
     },
     ekUrunSil:function(d){ var ids = d.ids || []; MENU = MENU.filter(function(x){ return ids.indexOf(x.id) < 0; }); return { ok:true, menu:kopya(MENU), urunLimiti:LIMIT }; },
     ekAyarlar:function(){ return { ok:true, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; },
+    ekBildirim:function(d){ BEN.bildirim = d.tg; return { ok:true, bildirim:d.tg }; },
     ekStok:function(d){
       var an = String(d.anahtar || ''), v = String(d.kalan === undefined || d.kalan === null ? '' : d.kalan).trim();
       MENU.forEach(function(u){ if (grupAnahtar(u.kat, u.ad) === an) u.stok = { gunluk:u.stok ? u.stok.gunluk : null, kalan:v === '' ? null : Number(v) }; });
