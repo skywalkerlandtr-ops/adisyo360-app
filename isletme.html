@@ -15,6 +15,7 @@
     var dark = (w && w.initData) ? w.colorScheme === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
     var q = new URLSearchParams(location.search);
     if ((q.get('tema') === 'dark' || q.get('tema') === 'light') && !(w && w.initData)) dark = q.get('tema') === 'dark';
+    try { var tp = localStorage.getItem('yourpos360-tema'); if (tp === 'dark' || tp === 'light') dark = tp === 'dark'; } catch (e2) {}
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   } catch (e) {}
 })();
@@ -494,6 +495,23 @@ textarea.inp{resize:vertical;min-height:64px;line-height:1.4}
 .sh-head .icon-btn:first-child{margin-left:-6px}
 
 .m-kp{font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);border-radius:8px;padding:2px 8px;align-self:flex-start;margin-top:3px}
+.m-gs{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;width:100%}
+.m-gun{font-size:13px;font-weight:600;color:var(--sub)}
+.m-gun.yok{color:var(--danger)}
+.m-stok{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border-radius:10px;border:0;background:var(--bg2);color:var(--text);font-size:14px;font-weight:600}
+.m-stok.az{background:var(--warn-soft,#fff3d6);color:var(--warn-ink,#8a5a00)}
+.m-stok.bitti{background:var(--danger-soft);color:var(--danger)}
+.gunler{display:flex;flex-wrap:wrap;gap:6px}
+.oz-grup{border:1.5px solid var(--sep);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.oz-g-bas{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;align-items:center}
+.oz-g-bas .inp{font-weight:700}
+.oz-bag{grid-column:1 / -1;font-size:13px;color:var(--ok-ink,#1d7a3a);margin-top:-4px}
+.saatler{display:flex;flex-direction:column;gap:8px}
+.saat-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:center}
+.saat-row label{font-weight:600}
+.flag.ileri{background:var(--accent-soft);color:var(--accent-ink)}
+.note-box.ileri{background:var(--accent-soft);color:var(--accent-ink)}
+.items .ks.gr{color:var(--text);font-weight:700}
 .m-oz{font-size:13px;font-weight:700;color:var(--sub);background:var(--bg2);border-radius:8px;padding:2px 8px;align-self:flex-start;margin-top:3px}
 .oz-blk{gap:8px}
 .oz-acik{margin:0;padding:0 0 0 2px;list-style:none;font-size:14px;line-height:1.4;display:flex;flex-direction:column;gap:2px}
@@ -703,6 +721,8 @@ var IC = {
   geri:'M15 6l-6 6 6 6',
   buyut:'M4 9V4h5 M20 9V4h-5 M4 15v5h5 M20 15v5h-5',
   kucult:'M9 4v5H4 M15 4v5h5 M9 20v-5H4 M15 20v-5h5',
+  gunes:circ(12, 12, 4) + ' M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
+  ay:'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z',
   qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z'
 };
 function ic(n, cls){ return '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + IC[n] + '"/></svg>'; }
@@ -799,6 +819,8 @@ function applyTheme(){
   var dark = tg ? tg.colorScheme === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
   var f = params.get('tema');
   if (!tg && (f === 'dark' || f === 'light')) dark = f === 'dark';
+  var tp = LS.get('yourpos360-tema');
+  if (tp === 'dark' || tp === 'light') dark = tp === 'dark';
   root.setAttribute('data-theme', dark ? 'dark' : 'light');
   try {
     if (ver('6.1')) {
@@ -888,9 +910,11 @@ function siparisKoy(o){
 }
 function sahip(){ return D && D.rol === 'Sahip'; }
 function kurye(){ return D && D.rol === 'Kurye'; }
+var KAPALI = ['T', 'I'];
 function kalemOzet(k){
   return (k || []).map(function(x){
     var ek = [];
+    if (x.gr && x.gr.length) x.gr.forEach(function(g){ ek.push(g.s.join(', ')); });
     if (x.cikar && x.cikar.length) ek.push(x.cikar.join(', ') + ' olmasın');
     if (x.ekle && x.ekle.length) ek.push('+' + x.ekle.join(', +'));
     if (x.ekstra && x.ekstra.length) ek.push('+' + x.ekstra.map(function(e){ return e.ad; }).join(', +'));
@@ -901,6 +925,7 @@ function kalemOzet(k){
 // Müşterinin ürün seçimleri (çıkarılan malzemeler büyük harfle; mutfak gözden kaçırmasın)
 function kalemSecimleri(k){
   var l = [];
+  if (k.gr && k.gr.length) k.gr.forEach(function(g){ l.push(['gr', g.g + ': ' + g.s.join(', ')]); });
   if (k.cikar && k.cikar.length) l.push(['cik', '✖ ' + k.cikar.join(', ').toLocaleUpperCase('tr') + ' OLMASIN']);
   if (k.ekle && k.ekle.length) l.push(['ekle', '+ ' + k.ekle.join(', ') + ' eklensin']);
   if (k.ekstra && k.ekstra.length) l.push(['ekle', '+ Ekstra: ' + k.ekstra.map(function(e){ return e.ad; }).join(', ')]);
@@ -1021,9 +1046,10 @@ function poll(){
       D.rev = r.rev;
       if (r.siparisler) D.siparisler = r.siparisler;
       if (typeof r.acik === 'boolean') D.isletme.acik = r.acik;
+      if (r.saat) D.isletme.saat = r.saat;
       degisiklikleriIsle();
       ciz(true);
-    } else renderTop();
+    } else { if (r.saat) D.isletme.saat = r.saat; renderTop(); }
     renderBanners();
   }).then(function(){ pollPlanla(); }, function(){ pollPlanla(); });
 }
@@ -1150,6 +1176,8 @@ function renderTop(){
     var te = tamEkranda();
     h += '<button class="icon-btn" data-act="tamEkran" aria-pressed="' + (te ? 'true' : 'false') + '" aria-label="' + (te ? 'Tam ekrandan çık' : 'Tam ekran') + '">' + ic(te ? 'kucult' : 'buyut') + '</button>';
   }
+  var koyuT = root.getAttribute('data-theme') === 'dark';
+  h += '<button class="icon-btn" data-act="tema" aria-label="' + (koyuT ? 'Gündüz moduna geç' : 'Gece moduna geç') + '">' + ic(koyuT ? 'gunes' : 'ay') + '</button>';
   h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-pressed="' + (SES.acik ? 'true' : 'false') + '" aria-label="' +
     (SES.acik ? 'Sipariş sesi açık' : 'Sipariş sesi kapalı') + '">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
   koruyarakYaz($('#top'), h);
@@ -1184,6 +1212,10 @@ function renderBanners(){
   } else if (!kurye() && !D.isletme.acik) {
     h += '<div class="banner warn">' + ic('dukkan') + '<span class="b-txt">Sipariş alımı kapalı. Müşteriler menüyü görür ama sipariş veremez.</span>' +
       '<button data-act="acik">Aç</button></div>';
+  } else if (!kurye() && D.isletme.saat && D.isletme.saat.kontrol && !D.isletme.saat.acik) {
+    var sa = D.isletme.saat;
+    h += '<div class="banner info">' + ic('saat') + '<span class="b-txt">Çalışma saatleri dışındasınız' + (sa.sonraki ? '; ' + esc(sa.sonraki) + '\'de kendiliğinden açılır' : '') + '. ' +
+      (sa.ileri ? 'Müşteriler şimdilik yalnız ileri saate sipariş verebilir.' : 'Müşteriler şu an sipariş veremez.') + '</span></div>';
   }
   if (sahip() && D.botVar === false) {
     h += '<div class="banner info">' + ic('gonder') + '<span class="b-txt">Sipariş almak için kendi Telegram botunuzu bağlayın. Birkaç dakika sürer.</span>' +
@@ -1243,12 +1275,14 @@ function ileri(o){
 }
 function siparisKarti(o, rozetli){
   var acik = ACIK.indexOf(o.kod) >= 0;
-  var gec = o.kod === 'Y' && dkGecti(o.tarihMs) >= 5;
   var sure = D.isletme.hazirlikDk || 20;
+  // ileri saatli sipariş: teslim saatine hazırlık + yol kadar kala «geç» sayılır
+  var gec = o.teslimMs ? (o.kod === 'Y' && simdi() > o.teslimMs - (sure + 30) * 60000) : (o.kod === 'Y' && dkGecti(o.tarihMs) >= 5);
   var yavas = o.kod === 'H' && dkGecti(o.tarihMs) > sure;
   var taze = U.taze[o.no] && Date.now() - U.taze[o.no] < 8000;
   var bayrak = '';
-  if (gec) bayrak += '<span class="flag late">' + ic('saat', 'sm') + '<span class="t">' + dkGecti(o.tarihMs) + ' dk\'dır bekliyor</span></span>';
+  if (o.teslimMs && KAPALI.indexOf(o.kod) < 0) bayrak += '<span class="flag ileri' + (gec ? ' late' : '') + '">' + ic('saat', 'sm') + '<span class="t">' + saatYaz(o.teslimMs) + '\'de teslim' + (gec ? ' · hazırlamaya başlayın' : '') + '</span></span>';
+  else if (gec) bayrak += '<span class="flag late">' + ic('saat', 'sm') + '<span class="t">' + dkGecti(o.tarihMs) + ' dk\'dır bekliyor</span></span>';
   if (o.kod === 'H') bayrak += '<span class="flag' + (yavas ? ' slow' : '') + '">' + ic('saat', 'sm') + '<span class="t num">' + dkGecti(o.tarihMs) + ' / ' + sure + ' dk</span></span>';
   if (o.not) bayrak += '<span class="flag note">' + ic('not', 'sm') + '<span class="t">' + esc(kisalt(o.not, 48)) + '</span></span>';
   if (o.kurye && (o.kod === 'O' || o.kod === 'T')) bayrak += '<span class="flag">' + ic('kurye', 'sm') + '<span class="t">' + esc(o.kurye) + '</span></span>';
@@ -1382,6 +1416,7 @@ SHEET.siparis = function(s){
   if (!o) return shBas('Sipariş #' + s.no) + '<div class="sh-body">' + bosDurum('fis', 'Sipariş ekranda yok', 'Bu sipariş 3 günden eski ya da başka bir güne ait olabilir.') + '</div>';
   var h = shBas('<span class="num">#' + o.no + '</span>' + rozet(o.kod)) + '<div class="sh-body">';
   h += '<div class="muted">' + tarihYazi(o.tarihMs) + ' · ' + onceYazi(o.tarihMs) + '</div>';
+  if (o.teslimMs) h += '<div class="note-box ileri">⏰ İleri saatli sipariş: <b>' + saatYaz(o.teslimMs) + '</b>\'de teslim edilecek.</div>';
   if (o.not) h += '<div class="note-box">Müşteri notu: ' + esc(o.not) + '</div>';
   if (o.kod === 'I') h += '<div class="note-box" style="background:var(--danger-soft);color:var(--danger)">İptal eden: ' + esc(o.iptalEden || '—') +
     (o.iptalNedeni ? ' · ' + esc(o.iptalNedeni) : '') + '</div>';
@@ -1879,6 +1914,7 @@ function tarayiciYazdir(o){
 function fisHtml(o){
   var r = function(a, b, cls){ return '<div class="r' + (cls ? ' ' + cls : '') + '"><span>' + a + '</span><span>' + b + '</span></div>'; };
   var bir = '<h1>' + esc(D.isletme.ad) + '</h1><div class="c b">SİPARİŞ #' + o.no + '</div><div class="c">' + gunYaz(gunKey(o.tarihMs), true) + ' ' + saatYaz(o.tarihMs) + '</div><hr>' +
+    (o.teslimMs ? '<div class="c b">TESLİM SAATİ: ' + saatYaz(o.teslimMs) + '</div><hr>' : '') +
     '<div class="b">' + esc(o.ad) + '</div><div>' + esc(telGoster(o.tel)) + '</div><div>' + esc(o.adres) + '</div>' + (o.tarif ? '<div>Tarif: ' + esc(o.tarif) + '</div>' : '') +
     '<hr>' + (o.kalemler || []).map(function(k){
       return r('<b>' + adet(k.adet) + '×</b> ' + esc(k.ad), tl(k.tutar), 'k') + kalemSecimleri(k).map(function(x){
@@ -1938,6 +1974,7 @@ function fisBayt(o){
   boy(17); sat('#' + o.no); boy(0);
   sat(gunYaz(gunKey(o.tarihMs), true) + ' ' + saatYaz(o.tarihMs));
   hiza(0); cizgi();
+  if (o.teslimMs) { hiza(1); boy(17); kalin(1); sat('TESLIM ' + saatYaz(o.teslimMs)); kalin(0); boy(0); hiza(0); cizgi(); }
   kalin(1); satirBol(o.ad || 'Müşteri', n).forEach(sat); kalin(0);
   if (o.tel) sat('Tel: ' + telGoster(o.tel));
   satirBol(o.adres, n).forEach(sat);
@@ -2173,6 +2210,8 @@ function menuGruplari(q){
     var ur = k.urunler[k.ui[an]];
     ur.satirlar.push(u);
     if (!ur.oz && u.oz) ur.oz = u.oz;
+    if (!ur.gun && u.gun) ur.gun = u.gun;
+    if (!ur.stok && u.stok) ur.stok = u.stok;
     if (!ur.gorsel && u.gorsel) ur.gorsel = u.gorsel;
     if (!ur.aciklama && u.aciklama) ur.aciklama = u.aciklama;
   });
@@ -2241,8 +2280,32 @@ function ozOzet(oz){
   var p = [], ic = oz.ic || [];
   if (ic.length) p.push(ic.length + ' malzeme');
   if ((oz.ek || []).length) p.push(oz.ek.length + ' ekstra');
+  if ((oz.gr || []).length) p.unshift(oz.gr.length + ' seçim grubu');
   if (oz.not) p.push('not');
   return p.join(' · ');
+}
+var GUN_KISA = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+function gunYazi(g){ return !g || !g.length ? '' : g.map(function(n){ return GUN_KISA[n - 1]; }).join(', '); }
+function bugunHg(){ var d = new Date(simdi()).getDay(); return d === 0 ? 7 : d; }
+function urunAnahtar(ur){ return grupAnahtar(ur.kat, ur.ad); }
+// Menü listesinde: satış günleri ve bugünkü porsiyon (personel de değiştirebilir)
+function stokSatir(ur){
+  if (kurye()) return '';
+  var p = [], an = urunAnahtar(ur), st = ur.stok, bugunYok = ur.gun && ur.gun.indexOf(bugunHg()) < 0;
+  if (ur.gun) p.push('<span class="m-gun' + (bugunYok ? ' yok' : '') + '">📅 ' + esc(gunYazi(ur.gun)) + (bugunYok ? ' · bugün satılmıyor' : '') + '</span>');
+  if (U.stokK === an) {
+    var b = U.busy['stok~' + an];
+    p.push('<form class="m-edit" data-form="stok" data-k="' + esc(an) + '"><label class="sr" for="stokInp">Bugünkü porsiyon</label><input class="inp num" id="stokInp" inputmode="numeric" value="' +
+      esc(st && st.kalan !== null && st.kalan !== undefined ? st.kalan : '') + '" placeholder="Sınırsız" autocomplete="off">' +
+      '<button class="btn pri sm" type="submit"' + (b ? ' disabled' : '') + '>' + bekle('stok~' + an) + 'Kaydet</button>' +
+      '<button class="btn sm" type="button" data-act="stokIptal">Vazgeç</button></form>' + (U.stokHata ? '<div class="err-txt" role="alert">' + esc(U.stokHata) + '</div>' : ''));
+  } else if (st && st.kalan !== null && st.kalan !== undefined) {
+    p.push('<button class="m-stok' + (st.kalan === 0 ? ' bitti' : st.kalan <= 3 ? ' az' : '') + '" data-act="stokDuzenle" data-k="' + esc(an) + '" aria-label="' + esc(ur.ad) + ' bugünkü porsiyon, değiştir">🍲 ' +
+      (st.kalan === 0 ? 'Bugün bitti' : 'Bugün <b class="num">' + st.kalan + '</b>' + (st.gunluk ? ' / ' + st.gunluk : '') + ' porsiyon') + ic('kalem', 'sm') + '</button>');
+  } else if (sahip() && ur.stok) {
+    p.push('<button class="m-stok" data-act="stokDuzenle" data-k="' + esc(an) + '">🍲 Bugün sınırsız' + ic('kalem', 'sm') + '</button>');
+  }
+  return p.length ? '<div class="m-gs">' + p.join('') + '</div>' : '';
 }
 function ozEtiket(ur){ var t = ozOzet(ur.oz); return t ? '<span class="m-oz">🧾 ' + esc(t) + '</span>' : ''; }
 function kpEtiket(ur){
@@ -2273,9 +2336,9 @@ function urunKarti(ur){
     } else if (sahip()) {
       fiyat = '<button class="m-fiyat" data-act="fiyat" data-id="' + esc(u.id) + '" aria-label="' + esc(u.ad) + ' fiyatı ' + tl(u.fiyat) + ', değiştir">' + tl(u.fiyat) + ic('kalem', 'sm') + '</button>';
     } else fiyat = '<span class="m-fiyat">' + tl(u.fiyat) + '</span>';
-    return '<div class="mrow' + (u.aktif ? '' : ' off') + '">' + bas + '<div class="m-alt"><div class="m-f">' + fiyat + '</div>' + stokDugme(u, ur.ad) + '</div></div>';
+    return '<div class="mrow' + (u.aktif ? '' : ' off') + '">' + bas + stokSatir(ur) + '<div class="m-alt"><div class="m-f">' + fiyat + '</div>' + stokDugme(u, ur.ad) + '</div></div>';
   }
-  return '<div class="mrow' + (hepsiKapali ? ' off' : '') + '">' + bas + '<ul class="vlist" aria-label="' + esc(ur.ad) + ' seçenekleri">' + ur.satirlar.map(function(s){
+  return '<div class="mrow' + (hepsiKapali ? ' off' : '') + '">' + bas + stokSatir(ur) + '<ul class="vlist" aria-label="' + esc(ur.ad) + ' seçenekleri">' + ur.satirlar.map(function(s){
     return '<li class="vrow' + (s.aktif ? '' : ' off') + '"><span class="v-ad">' + esc(s.sec || 'Normal') + '</span><span class="v-f num">' + tl(s.fiyat) + '</span>' +
       stokDugme(s, ur.ad + ' ' + (s.sec || '')) + '</li>';
   }).join('') + '</ul></div>';
@@ -2284,19 +2347,29 @@ function urunKarti(ur){
 /* --- ürün penceresi --- */
 /* Malzeme / ekstra / not seçimleri (taslak): ic.d = '1' içinde gelir, çıkarılabilir · '2' içinde gelir, çıkarılamaz · '0' istenirse eklenir */
 function ozTaslak(oz){
-  if (!oz) return { acik:false, ic:[{ a:'', d:'1' }, { a:'', d:'1' }], ek:[], not:true };
+  if (!oz) return { acik:false, ic:[{ a:'', d:'1' }, { a:'', d:'1' }], ek:[], not:true, gr:[] };
   return { acik:true, ic:(oz.ic || []).map(function(m){ return { a:m.a, d:m.v ? (m.c ? '1' : '2') : '0' }; }),
-    ek:(oz.ek || []).map(function(e){ return { a:e.a, f:String(e.f).replace('.', ',') }; }), not:!!oz.not };
+    ek:(oz.ek || []).map(function(e){ return { a:e.a, f:String(e.f).replace('.', ',') }; }), not:!!oz.not,
+    gr:(oz.gr || []).map(function(g){ return { a:g.a, mm:g.min + '-' + g.max, fy:!!g.fy, s:g.s.map(function(o){ return { a:o.a, f:o.f ? String(o.f).replace('.', ',') : '' }; }) }; }) };
+}
+var GR_SAYI = [['1-1', 'Tam 1 tane (zorunlu)'], ['0-1', 'En fazla 1 (isteğe bağlı)'], ['2-2', 'Tam 2 tane'], ['0-2', 'En fazla 2'], ['1-2', '1 ya da 2 tane'], ['3-3', 'Tam 3 tane'], ['0-3', 'En fazla 3']];
+function grFiyatli(oz){ return !!(oz && oz.acik && oz.gr.some(function(g){ return g.fy && g.mm === '1-1'; })); }
+// menüdeki ürün adları (seçenek adı bunlardan biriyle aynıysa ona bağlanır)
+function menuAdlari(haric){
+  var l = [], gor = {};
+  (D.menu || []).forEach(function(u){ var k = trKucuk(u.ad); if (!gor[k] && k !== trKucuk(haric || '')) { gor[k] = 1; l.push(u.ad); } });
+  return l;
 }
 var OZ_HIZLI = ['Domates', 'Marul', 'Soğan', 'Maydanoz', 'Turşu', 'Biber', 'Ketçap', 'Mayonez', 'Hardal', 'Acı sos', 'Tuz', 'Pul biber', 'Sumak', 'Kekik', 'Patates', 'Kaşar'];
 function urunTaslak(ur){
   if (!ur) return { tip:'urun', ids:[], ad:'', kat:(U.sonKat || ''), aciklama:'', gorsel:'', aktif:true, fiyat:'', secenekli:false,
-    secenekler:[{ id:'', ad:'', fiyat:'' }, { id:'', ad:'', fiyat:'' }], oz:ozTaslak(null), hata:'', odak:'#urAd' };
+    secenekler:[{ id:'', ad:'', fiyat:'' }, { id:'', ad:'', fiyat:'' }], oz:ozTaslak(null), gun:[], gunluk:'', hata:'', odak:'#urAd' };
   var sec = ur.secenekli;
   return { tip:'urun', ids:ur.satirlar.map(function(s){ return s.id; }), ad:ur.ad, kat:ur.kat, aciklama:ur.aciklama, gorsel:ur.gorsel,
     aktif:ur.satirlar.some(function(s){ return s.aktif; }), fiyat:sec ? '' : String(ur.satirlar[0].fiyat).replace('.', ','), secenekli:sec,
     secenekler:sec ? ur.satirlar.map(function(s){ return { id:s.id, ad:s.sec, fiyat:String(s.fiyat).replace('.', ','), aktif:s.aktif }; }) : [{ id:'', ad:'', fiyat:'' }, { id:'', ad:'', fiyat:'' }],
-    oz:ozTaslak(ur.oz), hata:'', katSira:ur.katSira };
+    oz:ozTaslak(ur.oz), gun:(ur.gun || []).slice(), gunluk:ur.stok && ur.stok.gunluk !== null && ur.stok.gunluk !== undefined ? String(ur.stok.gunluk) : '',
+    hata:'', katSira:ur.katSira };
 }
 function kategoriListesi(){ var l = []; (D.menu || []).forEach(function(u){ if (l.indexOf(u.kat) < 0) l.push(u.kat); }); return l; }
 SHEET.urun = function(s){
@@ -2318,7 +2391,9 @@ SHEET.urun = function(s){
     '<span class="gsec-t"><b>' + (gp.oto ? 'Otomatik' : 'Seçildi') + '</b><span class="muted">' + (gp.oto ? 'Ürün adına göre seçilir. Değiştirmek için dokunun.' : 'Değiştirmek için dokunun.') + '</span></span>' + ic('sag') + '</button></div>';
   h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.secenekli ? 'true' : 'false') + '" data-act="secenekAc"><span class="o-main">Boy / çeşit seçenekleri var' +
     '<span class="o-sub">' + (market() ? 'ör. 500 g / 1 kg, 10\'lu / 30\'lu' : 'ör. Küçük / Orta / Büyük, 1 / 1,5 porsiyon') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
-  if (!s.secenekli) {
+  if (!s.secenekli && grFiyatli(s.oz)) {
+    h += '<div class="note-box">Bu ürünün fiyatı müşterinin seçimine göre belirlenir (aşağıdaki «Müşteri seçimleri» bölümünde).</div>';
+  } else if (!s.secenekli) {
     h += '<div class="field"><label for="urFiyat">Fiyat (TL)</label><input class="inp num" id="urFiyat" inputmode="decimal" value="' + esc(s.fiyat) + '" autocomplete="off" placeholder="ör. 120"></div>';
   } else {
     h += '<div class="blk"><h3 class="blk-h">Seçenekler ve fiyatları</h3><div class="vedit">' + s.secenekler.map(function(x, i){
@@ -2328,6 +2403,12 @@ SHEET.urun = function(s){
         (s.secenekler.length > 1 ? '<button class="icon-btn" type="button" data-act="secenekSil" data-k="' + i + '" aria-label="' + (i + 1) + '. seçeneği sil">' + ic('x') + '</button>' : '') + '</div>';
     }).join('') + '</div>' + (s.secenekler.length < 10 ? '<button class="btn ghost sm" type="button" data-act="secenekEkle">' + ic('arti', 'sm') + 'Seçenek ekle</button>' : '') + '</div>';
   }
+  h += '<div class="field"><span class="lbl" id="gunH">Satış günleri</span><div class="gunler" role="group" aria-labelledby="gunH">' +
+    '<button class="chip sm" type="button" data-act="gunHep" aria-pressed="' + (!s.gun.length) + '">Her gün</button>' +
+    GUN_KISA.map(function(g, i){ return '<button class="chip sm" type="button" data-act="gunSec" data-k="' + (i + 1) + '" aria-pressed="' + (s.gun.indexOf(i + 1) >= 0) + '">' + g + '</button>'; }).join('') +
+    '</div><span class="tip-txt">Seçilen günler dışında müşteriler bu ürünü görmez (günün menüsü).</span></div>';
+  h += '<div class="field"><label for="urPorsiyon">Günlük porsiyon <span class="muted">(isteğe bağlı)</span></label><input class="inp num" id="urPorsiyon" inputmode="numeric" value="' + esc(s.gunluk) +
+    '" placeholder="Sınırsız" autocomplete="off"><span class="tip-txt">Her gün bu sayıdan başlar; satıldıkça düşer, bitince «Tükendi» görünür. Gün içinde Menü listesinden değiştirebilirsiniz.</span></div>';
   h += '<div class="field"><label for="urAc">Açıklama <span class="muted">(isteğe bağlı)</span></label><textarea class="inp" id="urAc" maxlength="200" rows="2" placeholder="' +
     (market() ? 'ör. Tam yağlı, Ezine' : 'ör. Lavaş, tavuk döner, domates, turşu') + '">' + esc(s.aciklama) + '</textarea></div>';
   h += ozBolum(s);
@@ -2338,10 +2419,41 @@ SHEET.urun = function(s){
     '<button class="btn pri" data-act="urunKaydet"' + (b ? ' disabled' : '') + '>' + (b ? bekle('urunKaydet') : ic('tik')) + 'Kaydet</button></div></div>';
   return h;
 };
+function grBolum(s){
+  var oz = s.oz, adlar = menuAdlari(s.ad), bag = {};
+  adlar.forEach(function(a){ bag[trKucuk(a)] = 1; });
+  var h = '<div class="blk oz-blk"><h3 class="blk-h">Menü kurma (seçim grupları)</h3><p class="muted oz-ipucu">Müşteri her gruptan seçim yapar. Ör. 4\'lü menü: önce ana yemek (fiyatı belirler), sonra pilav, sonra yanına 2 çeşit. ' +
+    'Seçenek adı menünüzdeki bir yemekle aynıysa ona bağlanır 🔗: o gün yoksa görünmez, porsiyonu biterse «Tükendi» olur.</p>';
+  h += oz.gr.map(function(g, i){
+    var fy = g.fy && g.mm === '1-1', var_ = {};
+    g.s.forEach(function(o){ if (String(o.a).trim()) var_[trKucuk(String(o.a).trim())] = 1; });
+    var sayilar = GR_SAYI.slice();
+    if (!sayilar.some(function(x){ return x[0] === g.mm; })) sayilar.push([g.mm, g.mm.replace('-', ' – ') + ' tane']);
+    return '<div class="oz-grup" role="group" aria-label="' + (i + 1) + '. seçim grubu"><div class="oz-g-bas"><input class="inp" id="oz-gr-a-' + i + '" maxlength="40" value="' + esc(g.a) +
+      '" placeholder="Grup adı (ör. Ana yemek)" aria-label="' + (i + 1) + '. grubun adı" autocomplete="off"><button class="icon-btn" type="button" data-act="ozGrSil" data-k="' + i + '" aria-label="' + (i + 1) + '. grubu sil">' + ic('cop') + '</button></div>' +
+      '<div class="field"><label for="oz-gr-mm-' + i + '">Kaç tane seçilsin?</label><select class="inp oz-sel" id="oz-gr-mm-' + i + '" data-act-change="ozGrSayi" data-k="' + i + '">' +
+      sayilar.map(function(x){ return '<option value="' + x[0] + '"' + (g.mm === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></div>' +
+      (g.mm === '1-1' ? '<button class="opt" type="button" role="switch" aria-checked="' + (fy ? 'true' : 'false') + '" data-act="ozGrFy" data-k="' + i + '"><span class="o-main">Menünün fiyatını bu seçim belirler' +
+        '<span class="o-sub">Her seçeneğe menünün fiyatını yazın (ör. Kuru fasulye 230, Karnıyarık 300).</span></span><span class="tgl" aria-hidden="true"></span></button>' : '') +
+      '<div class="vedit">' + g.s.map(function(o, j){
+        var bagli = bag[trKucuk(String(o.a).trim())];
+        return '<div class="ve-row"><input class="inp" id="oz-gr-s-a-' + i + '-' + j + '" maxlength="40" value="' + esc(o.a) + '" placeholder="Seçenek" aria-label="' + (i + 1) + '. grup, ' + (j + 1) + '. seçenek" autocomplete="off">' +
+          '<input class="inp num" id="oz-gr-s-f-' + i + '-' + j + '" inputmode="decimal" value="' + esc(o.f) + '" placeholder="' + (fy ? 'Fiyat' : '+ ücret') + '" aria-label="' + (i + 1) + '. grup, ' + (j + 1) + '. seçenek ' + (fy ? 'fiyatı' : 'ek ücreti') + ' (TL)" autocomplete="off">' +
+          '<button class="icon-btn" type="button" data-act="ozGrSecSil" data-k="' + i + ':' + j + '" aria-label="Seçeneği sil">' + ic('x') + '</button>' + (bagli ? '<span class="oz-bag">🔗 menüdeki «' + esc(String(o.a).trim()) + '» ürününe bağlı</span>' : '') + '</div>';
+      }).join('') + '</div><button class="btn ghost sm" type="button" data-act="ozGrSecEkle" data-k="' + i + '">' + ic('arti', 'sm') + 'Seçenek ekle</button>' +
+      (adlar.filter(function(a){ return !var_[trKucuk(a)]; }).length ? '<div class="lbl" style="margin-top:4px">Menünüzden ekleyin</div><div class="kat-chips" role="group" aria-label="Menüden seçenek ekle">' +
+        adlar.filter(function(a){ return !var_[trKucuk(a)]; }).slice(0, 40).map(function(a){ return '<button class="chip sm" type="button" data-act="ozGrHizli" data-k="' + i + '" data-a="' + esc(a) + '">+ ' + esc(a) + '</button>'; }).join('') + '</div>' : '') +
+      '</div>';
+  }).join('');
+  h += '<div class="row2">' + (oz.gr.length < 8 ? '<button class="btn line sm" type="button" data-act="ozGrEkle">' + ic('arti', 'sm') + 'Seçim grubu ekle</button>' : '') +
+    (!oz.gr.length ? '<button class="btn line sm" type="button" data-act="ozGrSablon">🍽️ 4\'lü menü şablonu</button>' : '') + '</div></div>';
+  return h;
+}
 function ozBolum(s){
-  var oz = s.oz, h = '<button class="opt" type="button" role="switch" aria-checked="' + (oz.acik ? 'true' : 'false') + '" data-act="ozAc"><span class="o-main">Malzeme ve ekstra seçimi' +
-    '<span class="o-sub">Müşteri istemediği malzemeyi çıkarır, ekstra ekler, ürüne not yazar.</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  var oz = s.oz, h = '<button class="opt" type="button" role="switch" aria-checked="' + (oz.acik ? 'true' : 'false') + '" data-act="ozAc"><span class="o-main">Müşteri seçimleri' +
+    '<span class="o-sub">Menü kurma (ana yemek, pilav, yan), malzeme çıkarma, ekstra ve ürüne not.</span></span><span class="tgl" aria-hidden="true"></span></button>';
   if (!oz.acik) return h;
+  h += grBolum(s);
   var var_ = {};
   oz.ic.forEach(function(m){ if (String(m.a).trim()) var_[trKucuk(String(m.a).trim())] = 1; });
   oz.ek.forEach(function(m){ if (String(m.a).trim()) var_[trKucuk(String(m.a).trim())] = 1; });
@@ -2388,9 +2500,31 @@ function ozCoz(oz){
     if (!(f > 0)) { hata = hata || '«' + a + '» ekstrası için fiyat yazın. Ücretsizse İçindekiler\'e «İsteğe bağlı» olarak ekleyin.'; return; }
     ek.push({ a:a, f:f });
   });
+  var gr = [];
+  oz.gr.forEach(function(g){
+    var a = String(g.a || '').replace(/\s+/g, ' ').trim(), mm = String(g.mm || '1-1').split('-'), min = Number(mm[0]), max = Number(mm[1]), sg = {}, s = [];
+    g.s.forEach(function(o){
+      var oa = String(o.a || '').replace(/\s+/g, ' ').trim(), fs = String(o.f || '').trim(), f = fs ? fiyatCoz(fs) : 0;
+      if (!oa && !fs) return;
+      if (!oa) { hata = hata || '«' + (a || 'Seçim') + '» grubunda fiyatın yanına seçenek adını yazın.'; return; }
+      if (sg[trKucuk(oa)]) { hata = hata || '«' + oa + '» iki kez yazılmış.'; return; }
+      sg[trKucuk(oa)] = 1;
+      if (fs && !(f > 0)) { hata = hata || '«' + oa + '» için fiyatı doğru yazın.'; return; }
+      s.push(f ? { a:oa, f:f } : { a:oa });
+    });
+    if (!a && !s.length) return;
+    if (!a) { hata = hata || 'Seçim grubunun adını yazın (ör. Ana yemek).'; return; }
+    if (!s.length) { hata = hata || '«' + a + '» grubuna seçenek ekleyin.'; return; }
+    if (max > s.length) { hata = hata || '«' + a + '» grubunda en az ' + max + ' seçenek olmalı.'; return; }
+    var fy = g.fy && min === 1 && max === 1;
+    if (fy && s.some(function(o){ return !(o.f > 0); })) { hata = hata || '«' + a + '» menünün fiyatını belirliyor: her seçeneğin fiyatını yazın.'; return; }
+    var x = { a:a, min:min, max:max, s:s };
+    if (fy) x.fy = 1;
+    gr.push(x);
+  });
   if (hata) return { hata:hata };
-  if (!ic.length && !ek.length && !oz.not) return { oz:null };
-  return { oz:{ ic:ic, ek:ek, not:oz.not ? 1 : 0 } };
+  if (!ic.length && !ek.length && !oz.not && !gr.length) return { oz:null };
+  return { oz:{ ic:ic, ek:ek, not:oz.not ? 1 : 0, gr:gr } };
 }
 function urunTaslakOku(s){
   var al = function(id){ var e = document.getElementById(id); return e ? e.value : null; };
@@ -2403,7 +2537,16 @@ function urunTaslakOku(s){
     if ((v = al('sv-ad-' + i)) !== null) x.ad = v;
     if ((v = al('sv-f-' + i)) !== null) x.fiyat = v;
   });
+  if ((v = al('urPorsiyon')) !== null) s.gunluk = v;
   if (s.oz) {
+    s.oz.gr.forEach(function(g, i){
+      if ((v = al('oz-gr-a-' + i)) !== null) g.a = v;
+      if ((v = al('oz-gr-mm-' + i)) !== null) g.mm = v;
+      g.s.forEach(function(o, j){
+        if ((v = al('oz-gr-s-a-' + i + '-' + j)) !== null) o.a = v;
+        if ((v = al('oz-gr-s-f-' + i + '-' + j)) !== null) o.f = v;
+      });
+    });
     s.oz.ic.forEach(function(m, i){
       if ((v = al('oz-ic-a-' + i)) !== null) m.a = v;
       if ((v = al('oz-ic-d-' + i)) !== null) m.d = v;
@@ -2489,6 +2632,9 @@ function ayarAl(r){
   if (!U.ayK.length) U.ayK = [{ min:0, max:'3', ucret:'', minSiparis:'', ucretsiz:'' }];
   U.ayO = (r.odemeler || []).map(function(o){ return { ad:o.ad, aktif:o.aktif, aciklama:o.aciklama }; });
   var a = r.ayarlar || {};
+  var cs = a.CalismaSaatleri || {}, gs = {};
+  for (var g = 1; g <= 7; g++) gs[g] = String(cs[g] || '');
+  U.aySaat = { kontrol:!!a.SaatKontrol, gun:gs, ileri:!!a.IleriSiparis };
   D.isletme.ad = a.IsletmeAdi || D.isletme.ad; D.isletme.telefon = a.Telefon || '';
   D.isletme.lat = Number(a.Enlem) || 0; D.isletme.lng = Number(a.Boylam) || 0; D.isletme.hazirlikDk = Number(a.HazirlikSuresiDk) || D.isletme.hazirlikDk;
 }
@@ -2530,6 +2676,20 @@ function ayarEkrani(){
     '<div class="field"><label for="ayIpt">Müşteri iptal süresi (dk)</label><input class="inp num" id="ayIpt" inputmode="numeric" value="' + esc(a.IptalSuresiDk === undefined ? '' : a.IptalSuresiDk) + '"></div></div>' +
     '<div class="field"><label for="ayKar">Karşılama mesajı</label><textarea class="inp" id="ayKar" maxlength="300" rows="2">' + esc(a.KarsilamaMesaji || '') + '</textarea></div>' +
     '<button class="btn pri" type="submit"' + (bb ? ' disabled' : '') + '>' + (bb ? bekle('ayBilgi') : ic('tik')) + 'Bilgileri kaydet</button></form>';
+  // çalışma saatleri ve ileri saatli sipariş
+  var sv = U.aySaat || { kontrol:false, gun:{}, ileri:false }, sb = U.busy.aySaat, GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+  h += '<form class="card pad frm" data-form="aySaat"><h2 class="frm-h">Çalışma saatleri ve ileri saatli sipariş</h2>' +
+    '<button class="opt" type="button" role="switch" aria-checked="' + (sv.kontrol ? 'true' : 'false') + '" data-act="saatSw"><span class="o-main">Saatlere göre otomatik aç / kapat' +
+    '<span class="o-sub">Sipariş alımı bu saatlerde kendiliğinden açılır; dışında müşteriye açılış saati yazılır.</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (sv.kontrol) {
+    h += '<p class="tip-txt">Her güne açılış ve kapanış saatini yazın (ör. 11:00-16:00). Gün içinde ara veriyorsanız virgülle yazın: 11:00-15:00, 18:00-22:00. Boş gün kapalıdır.</p><div class="saatler">' +
+      GUNLER.map(function(ad, i){
+        return '<div class="saat-row"><label for="sa-' + (i + 1) + '">' + ad + '</label><input class="inp num" id="sa-' + (i + 1) + '" value="' + esc(sv.gun[i + 1] || '') + '" placeholder="Kapalı" inputmode="text" autocomplete="off"></div>';
+      }).join('') + '</div><button class="btn ghost sm" type="button" data-act="saatKopya">Pazartesi saatlerini bütün günlere kopyala</button>';
+  }
+  h += '<button class="opt" type="button" role="switch" aria-checked="' + (sv.ileri ? 'true' : 'false') + '" data-act="ileriSw"><span class="o-main">İleri saatli sipariş al' +
+    '<span class="o-sub">Müşteri bugün için teslim saati seçebilir (ör. sabah verir, öğlen 12:30\'da alır). Kapalı saatlerde de ileri saate sipariş alınır.</span></span><span class="tgl" aria-hidden="true"></span></button>' +
+    '<button class="btn pri" type="submit"' + (sb ? ' disabled' : '') + '>' + (sb ? bekle('aySaat') : ic('tik')) + 'Saatleri kaydet</button></form>';
   // konum
   var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
   h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
@@ -2573,6 +2733,10 @@ function ayarEkrani(){
   if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a yazabilirsiniz.</p>' +
     '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button><button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button></div></section>';
   return h + '</div>';
+}
+function saatOku(){
+  if (!U.aySaat) return;
+  for (var g = 1; g <= 7; g++) { var e = document.getElementById('sa-' + g); if (e) U.aySaat.gun[g] = e.value; }
 }
 function konumCoz(t){
   t = String(t || '').trim();
@@ -2625,6 +2789,41 @@ var ACT_MENU = {
   ozEkEkle:function(){ urunTaslakOku(SH); SH.oz.ek.push({ a:'', f:'' }); renderSheet(); var e = $('#oz-ek-a-' + (SH.oz.ek.length - 1)); if (e) e.focus(); },
   ozEkSil:function(el){ urunTaslakOku(SH); SH.oz.ek.splice(Number(el.getAttribute('data-k')), 1); renderSheet(); },
   ozNot:function(){ urunTaslakOku(SH); SH.oz.not = !SH.oz.not; renderSheet(); },
+  gunHep:function(){ urunTaslakOku(SH); SH.gun = []; renderSheet(); },
+  gunSec:function(el){
+    urunTaslakOku(SH);
+    var n = Number(el.getAttribute('data-k')), i = SH.gun.indexOf(n);
+    if (i >= 0) SH.gun.splice(i, 1); else SH.gun.push(n);
+    SH.gun.sort();
+    if (SH.gun.length === 7) SH.gun = [];
+    haptic('select'); renderSheet();
+  },
+  ozGrEkle:function(){ urunTaslakOku(SH); SH.oz.gr.push({ a:'', mm:'1-1', fy:false, s:[{ a:'', f:'' }, { a:'', f:'' }] }); renderSheet(); var e = $('#oz-gr-a-' + (SH.oz.gr.length - 1)); if (e) e.focus(); },
+  ozGrSil:function(el){ urunTaslakOku(SH); SH.oz.gr.splice(Number(el.getAttribute('data-k')), 1); renderSheet(); },
+  ozGrSecEkle:function(el){ urunTaslakOku(SH); var i = Number(el.getAttribute('data-k')); SH.oz.gr[i].s.push({ a:'', f:'' }); renderSheet(); var e = $('#oz-gr-s-a-' + i + '-' + (SH.oz.gr[i].s.length - 1)); if (e) e.focus(); },
+  ozGrSecSil:function(el){ urunTaslakOku(SH); var k = el.getAttribute('data-k').split(':'); SH.oz.gr[Number(k[0])].s.splice(Number(k[1]), 1); renderSheet(); },
+  ozGrFy:function(el){ urunTaslakOku(SH); var g = SH.oz.gr[Number(el.getAttribute('data-k'))]; g.fy = !g.fy; renderSheet(); },
+  ozGrHizli:function(el){
+    urunTaslakOku(SH);
+    var g = SH.oz.gr[Number(el.getAttribute('data-k'))], a = el.getAttribute('data-a'), bos = g.s.filter(function(o){ return !String(o.a).trim(); })[0];
+    if (bos) bos.a = a; else g.s.push({ a:a, f:'' });
+    haptic('select'); renderSheet();
+  },
+  ozGrSablon:function(){
+    urunTaslakOku(SH);
+    SH.oz.gr = [
+      { a:'Ana yemek', mm:'1-1', fy:true, s:[{ a:'', f:'' }, { a:'', f:'' }, { a:'', f:'' }] },
+      { a:'Pilav', mm:'1-1', fy:false, s:[{ a:'Pirinç pilavı', f:'' }, { a:'Bulgur pilavı', f:'' }] },
+      { a:'Yanına 2 seçim', mm:'2-2', fy:false, s:[{ a:'Cacık', f:'' }, { a:'Çoban salata', f:'' }, { a:'Tatlı', f:'' }, { a:'Çorba', f:'' }] }
+    ];
+    if (!SH.ad) SH.ad = '4\'lü Menü';
+    renderSheet(); toast('Şablon eklendi: ana yemekleri «Menünüzden ekleyin» düğmeleriyle seçip fiyatlarını yazın.');
+  },
+  stokDuzenle:function(el){ U.stokK = el.getAttribute('data-k'); U.stokHata = ''; renderMain(); var i = $('#stokInp'); if (i) { i.focus(); try { i.select(); } catch(e){} } },
+  stokIptal:function(){ U.stokK = null; U.stokHata = ''; renderMain(); },
+  saatSw:function(){ saatOku(); U.aySaat.kontrol = !U.aySaat.kontrol; renderMain(); },
+  ileriSw:function(){ saatOku(); U.aySaat.ileri = !U.aySaat.ileri; renderMain(); },
+  saatKopya:function(){ saatOku(); for (var g = 2; g <= 7; g++) U.aySaat.gun[g] = U.aySaat.gun[1]; renderMain(); toast('Pazartesi saatleri bütün günlere kopyalandı'); },
   galeriAc:function(){
     urunTaslakOku(SH);
     var kats = kategoriListesi();
@@ -2650,6 +2849,7 @@ var ACT_MENU = {
     var s = SH, u = { ids:s.ids, ad:String(s.ad).trim(), kat:String(s.kat).trim(), aciklama:String(s.aciklama).trim(), gorsel:s.gorsel, aktif:s.aktif };
     var hata = '';
     if (u.ad.length < 2) hata = 'Ürün adını yazın.';
+    else if (!s.secenekli && grFiyatli(s.oz)) u.fiyat = 0;
     else if (!s.secenekli) { u.fiyat = fiyatCoz(s.fiyat); if (!(u.fiyat > 0)) hata = 'Geçerli bir fiyat yazın (ör. 120 ya da 42,50).'; }
     else {
       var gor = {};
@@ -2666,6 +2866,11 @@ var ACT_MENU = {
       if (!hata && !u.secenekler.length) hata = 'En az bir seçenek ve fiyatını yazın.';
     }
     if (!hata && s.oz) { var oc = ozCoz(s.oz); if (oc.hata) hata = oc.hata; else u.oz = oc.oz; }
+    if (!hata && s.secenekli && grFiyatli(s.oz)) hata = 'Fiyatı seçime göre belirlenen üründe boy / çeşit seçeneği olamaz.';
+    u.gunler = s.gun.slice();
+    var gp = String(s.gunluk || '').trim();
+    if (!hata && gp && !(/^\d{1,4}$/.test(gp))) hata = 'Günlük porsiyonu sayı olarak yazın (sınırsızsa boş bırakın).';
+    u.stok = { gunluk:gp };
     s.hata = hata;
     if (hata) { renderSheet(); haptic('notify', 'error'); return; }
     U.sonKat = u.kat;
@@ -2787,6 +2992,20 @@ document.addEventListener('submit', function(e){
     });
     if (hata) return toast(hata, true);
     ayarKaydet('ekKurallarKaydet', { liste:liste }, 'ayKural', 'Teslimat ayarları kaydedildi');
+  } else if (f === 'aySaat') {
+    e.preventDefault();
+    saatOku();
+    var sv = U.aySaat, gs = {}, dolu = 0, hataS = '';
+    for (var g = 1; g <= 7; g++) {
+      var v = String(sv.gun[g] || '').replace(/\s+/g, '').replace(/\./g, ':');
+      if (v && !/^([01]?\d|2[0-3]):[0-5]\d-([01]?\d|2[0-3]):[0-5]\d(,([01]?\d|2[0-3]):[0-5]\d-([01]?\d|2[0-3]):[0-5]\d)*$/.test(v)) hataS = hataS || ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'][g - 1] + ' saatleri geçersiz. Örnek: 11:00-16:00';
+      gs[g] = v; if (v) dolu++;
+    }
+    if (sv.kontrol && !dolu) hataS = hataS || 'En az bir gün için çalışma saati yazın (ör. 11:00-16:00).';
+    if (hataS) return toast(hataS, true);
+    ayarKaydet('ekAyarKaydet', { veri:{ SaatKontrol:sv.kontrol, CalismaSaatleri:gs, IleriSiparis:sv.ileri } }, 'aySaat', 'Çalışma saatleri kaydedildi').then(function(r){
+      if (r) tamYenile && tamYenile();
+    });
   } else if (f === 'ayOdeme') {
     e.preventDefault();
     if (!U.ayO.some(function(o){ return o.aktif; })) return toast('En az bir ödeme yöntemi açık olmalı.', true);
@@ -3553,6 +3772,11 @@ var ACT = {
       if (r) toast(yeni ? 'Sipariş alımı açıldı' : 'Sipariş alımı kapatıldı. Müşteriler sipariş veremez.');
     });
   },
+  tema:function(){
+    var koyu = root.getAttribute('data-theme') !== 'dark';
+    LS.set('yourpos360-tema', koyu ? 'dark' : 'light');
+    applyTheme(); renderTop(); haptic('select');
+  },
   tamEkran:function(){
     var ac = !tamEkranda();
     LS.set(TAM_KEY, ac ? '1' : '0');
@@ -3682,6 +3906,12 @@ document.addEventListener('submit', function(e){
     islem('ekFiyat', { id:id, fiyat:v }, { busy:'fiyat:' + id }).then(function(r){
       if (r) { U.fiyat = null; U.fiyatHata = ''; renderMain(); toast((u ? u.ad + ' · ' : '') + 'yeni fiyat ' + tl(v)); }
     });
+  } else if (f === 'stok') {
+    var an = e.target.getAttribute('data-k'), sv = String($('#stokInp').value || '').trim();
+    if (sv && !/^\d{1,4}$/.test(sv)) { U.stokHata = 'Porsiyon sayısını yazın (sınırsızsa boş bırakın).'; renderMain(); var si = $('#stokInp'); if (si) si.focus(); return; }
+    islem('ekStok', { anahtar:an, kalan:sv }, { busy:'stok~' + an }).then(function(r){
+      if (r) { if (r.menu) D.menu = r.menu; U.stokK = null; U.stokHata = ''; renderMain(); toast(sv === '' ? 'Bugün sınırsız' : 'Bugünkü porsiyon: ' + sv); }
+    });
   } else if (f === 'ozel') {
     var b1 = $('#rBas').value, b2 = $('#rBit').value;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(b1) || !/^\d{4}-\d{2}-\d{2}$/.test(b2)) return toast('Tarihleri seçin.', true);
@@ -3689,6 +3919,10 @@ document.addEventListener('submit', function(e){
     U.ozelBas = b1; U.ozelBit = b2;
     renderMain();
   }
+});
+document.addEventListener('change', function(e){
+  // seçim grubunda «kaç tane» değişince pencere yenilenir (fiyat düğmesi yalnız «tam 1» için)
+  if (e.target.getAttribute && e.target.getAttribute('data-act-change') === 'ozGrSayi' && SH && SH.oz) { urunTaslakOku(SH); renderSheet(); }
 });
 document.addEventListener('input', function(e){
   if (e.target.id === 'menuAra') { U.menuQ = e.target.value; var l = $('#mliste'); if (l) l.innerHTML = menuListe(); }
@@ -3810,7 +4044,7 @@ function demoMock(rol){
     ek:[{ a:'Kaşar peyniri', f:20 }, { a:'Ekstra tavuk (50 g)', f:45 }], not:1 };
   if (!DEMO_MARKET) MENU.forEach(function(u){ if (u.id === 'U001') u.oz = JSON.parse(JSON.stringify(DEMO_OZ)); });
   function tamAd(u){ return u.sec ? u.ad + ' (' + u.sec + ')' : u.ad; }
-  var AYAR = { IsletmeAdi:DEMO_MARKET ? 'Örnek Bakkal' : 'Örnek Dönerci', Telefon:'02161234567', Enlem:40.9871, Boylam:29.0285, HazirlikSuresiDk:20, IptalSuresiDk:3,
+  var AYAR = { SaatKontrol:false, CalismaSaatleri:{ 1:'11:00-22:00', 2:'11:00-22:00', 3:'11:00-22:00', 4:'11:00-22:00', 5:'11:00-23:00', 6:'11:00-23:00', 7:'' }, IleriSiparis:false, IsletmeAdi:DEMO_MARKET ? 'Örnek Bakkal' : 'Örnek Dönerci', Telefon:'02161234567', Enlem:40.9871, Boylam:29.0285, HazirlikSuresiDk:20, IptalSuresiDk:3,
     KarsilamaMesaji:'Hoş geldiniz! 🍽️ Telegram üzerinden kolayca sipariş verebilirsiniz.', SiparisAlimi:true, YolKatsayisi:1.3 };
   var KURAL = [{ min:0, max:2, ucret:0, minSiparis:100, ucretsiz:0, aciklama:'' }, { min:2, max:5, ucret:30, minSiparis:150, ucretsiz:500, aciklama:'' }];
   var ODEME = [{ ad:'Nakit', aktif:true, aciklama:'' }, { ad:'Kredi Kartı (kapıda)', aktif:true, aciklama:'' }, { ad:'Multinet', aktif:true, aciklama:'' },
@@ -4114,6 +4348,10 @@ function demoMock(rol){
         var y = { id:id, kat:kat, ad:ad, sec:x.ad || '', fiyat:Number(x.fiyat), aktif:u.aktif !== false && x.aktif !== false, sira:sira + i / 100, gorsel:u.gorsel || '', aciklama:u.aciklama || '' };
         var oz = u.oz === undefined ? (eski[0] && eski[0].oz) : u.oz;
         if (oz) y.oz = JSON.parse(JSON.stringify(oz));
+        var gun = u.gunler !== undefined ? u.gunler : (eski[0] && eski[0].gun);
+        if (gun && gun.length) y.gun = gun.slice();
+        var gp = u.stok ? String(u.stok.gunluk || '').trim() : (eski[0] && eski[0].stok ? String(eski[0].stok.gunluk === null ? '' : eski[0].stok.gunluk) : '');
+        if (gp !== '') y.stok = { gunluk:Number(gp), kalan:Number(gp) };
         return y;
       });
       MENU = MENU.filter(function(x){ return ids.indexOf(x.id) < 0; }).concat(yeniler).sort(function(a, b){ return a.sira - b.sira; });
@@ -4121,6 +4359,11 @@ function demoMock(rol){
     },
     ekUrunSil:function(d){ var ids = d.ids || []; MENU = MENU.filter(function(x){ return ids.indexOf(x.id) < 0; }); return { ok:true, menu:kopya(MENU), urunLimiti:LIMIT }; },
     ekAyarlar:function(){ return { ok:true, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; },
+    ekStok:function(d){
+      var an = String(d.anahtar || ''), v = String(d.kalan === undefined || d.kalan === null ? '' : d.kalan).trim();
+      MENU.forEach(function(u){ if (grupAnahtar(u.kat, u.ad) === an) u.stok = { gunluk:u.stok ? u.stok.gunluk : null, kalan:v === '' ? null : Number(v) }; });
+      return { ok:true, menu:kopya(MENU) };
+    },
     ekAyarKaydet:function(d){
       var v = d.veri || {};
       Object.keys(v).forEach(function(k){ AYAR[k] = v[k]; });
