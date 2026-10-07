@@ -41,7 +41,8 @@
   --shadow:0 1px 2px rgb(16 24 40 / .06),0 1px 3px rgb(16 24 40 / .08);
   --tile0:#fde4cc; --tile1:#fadbd2; --tile2:#f8edc2; --tile3:#dff0d4; --tile4:#d8e7f7;
   --safe-b:max(env(safe-area-inset-bottom,0px),var(--tg-safe-area-inset-bottom,0px));
-  --safe-t:max(env(safe-area-inset-top,0px),var(--tg-content-safe-area-inset-top,0px));
+  /* tam ekranda Telegram'ın üstteki düğmeleri sayfanın üstüne biner: cihaz boşluğu + Telegram boşluğu kadar aşağıdan başlanır */
+  --safe-t:calc(max(env(safe-area-inset-top,0px),var(--tg-safe-area-inset-top,0px)) + var(--tg-content-safe-area-inset-top,0px));
   color-scheme:light;
 }
 :root[data-theme="dark"]{
@@ -700,6 +701,8 @@ var IC = {
   tablo:'M3 4h18v16H3z M3 10h18 M3 15h18 M9 4v16',
   oynat:circ(12, 12, 9.5) + ' M10 8.5l5.5 3.5-5.5 3.5z',
   geri:'M15 6l-6 6 6 6',
+  buyut:'M4 9V4h5 M20 9V4h-5 M4 15v5h5 M20 15v5h-5',
+  kucult:'M9 4v5H4 M15 4v5h5 M9 20v-5H4 M15 20v-5h5',
   qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z'
 };
 function ic(n, cls){ return '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + IC[n] + '"/></svg>'; }
@@ -806,6 +809,17 @@ function applyTheme(){
     }
   } catch(e){}
 }
+/* Tam ekran: Telegram tablette (iPad vb.) ve bilgisayarda sayfayı telefon boyutunda bir pencerede açar.
+   Telegram 8.0 ve üstünde tam ekrana geçilebilir: tablette kendiliğinden açılır, üstteki düğmeyle açılıp kapanır (tercih cihazda saklanır). */
+var TAM_KEY = 'yourpos360-tamekran';
+function tamEkranVar(){ return !!(tg && ver('8.0') && tg.requestFullscreen); }
+function tabletMi(){
+  try { var p = String(tg.platform || ''); return (p === 'ios' || p === 'android') && Math.min(screen.width, screen.height) >= 600; } catch(e){ return false; }
+}
+function masaustuMu(){ try { return /tdesktop|macos|web/.test(String(tg.platform || '')); } catch(e){ return false; } }
+function tamEkranDugmesi(){ return tamEkranVar() && (tabletMi() || masaustuMu()); }
+function tamEkranda(){ try { return !!(tg && tg.isFullscreen); } catch(e){ return false; } }
+function tamEkranAc(ac){ try { if (ac) tg.requestFullscreen(); else tg.exitFullscreen(); } catch(e){} }
 function backBtn(show){
   try { if (ver('6.1') && tg.BackButton) { if (show) tg.BackButton.show(); else tg.BackButton.hide(); } } catch(e){}
 }
@@ -1131,6 +1145,10 @@ function renderTop(){
     var yzUyari = YZ.acik && !yzHazir();
     h += '<button class="icon-btn' + (yzHazir() ? ' on' : '') + '" data-act="yazici" aria-label="Fiş yazıcısı: ' +
       (yzHazir() ? 'açık' : yzUyari ? 'bağlı değil' : 'kapalı') + '">' + ic('yazici') + (yzUyari ? '<span class="nokta" aria-hidden="true"></span>' : '') + '</button>';
+  }
+  if (tamEkranDugmesi()) {
+    var te = tamEkranda();
+    h += '<button class="icon-btn" data-act="tamEkran" aria-pressed="' + (te ? 'true' : 'false') + '" aria-label="' + (te ? 'Tam ekrandan çık' : 'Tam ekran') + '">' + ic(te ? 'kucult' : 'buyut') + '</button>';
   }
   h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-pressed="' + (SES.acik ? 'true' : 'false') + '" aria-label="' +
     (SES.acik ? 'Sipariş sesi açık' : 'Sipariş sesi kapalı') + '">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
@@ -3535,6 +3553,11 @@ var ACT = {
       if (r) toast(yeni ? 'Sipariş alımı açıldı' : 'Sipariş alımı kapatıldı. Müşteriler sipariş veremez.');
     });
   },
+  tamEkran:function(){
+    var ac = !tamEkranda();
+    LS.set(TAM_KEY, ac ? '1' : '0');
+    tamEkranAc(ac);
+  },
   ses:function(){
     SES.acik = !SES.acik;
     LS.set('yourpos360-ses', SES.acik ? '1' : '0');
@@ -3739,6 +3762,14 @@ if (tg) {
     tg.ready();
     tg.expand();
     if (ver('7.7') && tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+    if (tamEkranVar()) {
+      tg.onEvent('fullscreenChanged', function(){ renderTop(); });
+      tg.onEvent('fullscreenFailed', function(e){
+        if (e && e.error === 'UNSUPPORTED') toast('Bu cihazdaki Telegram tam ekranı desteklemiyor. Telegram\'ı güncelleyin.', true);
+      });
+      var tercih = LS.get(TAM_KEY);
+      if (tercih === '1' || (tercih === null && tabletMi())) tamEkranAc(true);
+    }
     tg.onEvent('themeChanged', function(){ applyTheme(); });
     if (ver('6.1')) tg.BackButton.onClick(function(){ if (SH) sheetKapat(); });
   } catch(e){}
