@@ -289,6 +289,7 @@ details.ek summary{cursor:pointer;color:var(--link);font-weight:700;min-height:4
 .sk{background:var(--sk);border-radius:14px;animation:skp 1.1s ease-in-out infinite alternate}
 @keyframes skp{from{opacity:.55}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+.secim.tek{width:100%;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -490,6 +491,29 @@ function video(k){ var v = (D && D.videolar || []).filter(function(x){ return x.
 function videoDugme(k, metin){ return video(k) ? '<button class="btn ghost" data-act="video" data-k="' + k + '">' + ic('oynat') + esc(metin || 'Videolu anlatımı izleyin') + '</button>' : ''; }
 function ekranUrl(ek){ var d = durum(); return d && d.ekranUrl ? d.ekranUrl + (ek || '') : ''; }
 function market(){ var t = durum() ? durum().tur : S.form.tur; return t === 'market'; }
+function hzm(){ var t = durum() ? durum().tur : S.form.tur; return t === 'hizmet'; }
+/* --- iş kolu: sunucudaki listeden (D.isKollari: [{ grup, ad, liste:[{ k, ad, e }] }]) --- */
+function isKoluBul(k){
+  var r = null;
+  ((D && D.isKollari) || []).forEach(function(g){ g.liste.forEach(function(x){ if (x.k === k) r = { k:x.k, ad:x.ad, e:x.e, grup:g.grup }; }); });
+  return r;
+}
+// sunucudaki turIsKolundan_ ile aynı
+function turKoldan(k){
+  var x = isKoluBul(k);
+  if (!x) return 'restoran';
+  return x.grup === 'urun' ? 'market' : x.grup === 'hizmet' ? 'hizmet' : x.k === 'kafe' ? 'kafe' : (x.k === 'pastane' || x.k === 'tatli') ? 'pastane' : 'restoran';
+}
+function isKoluSecimi(onek, deger, hata){
+  var id = onek + '-isKolu';
+  return '<div class="field"><label for="' + id + '">İş kolunuz</label><select class="inp" id="' + id + '"' + (hata ? ' aria-invalid="true" aria-describedby="e-isKolu"' : '') + '>' +
+    '<option value="">Seçin</option>' + ((D && D.isKollari) || []).map(function(g){
+      return '<optgroup label="' + esc(g.ad) + '">' + g.liste.map(function(x){
+        return '<option value="' + esc(x.k) + '"' + (x.k === deger ? ' selected' : '') + '>' + esc(x.e + ' ' + x.ad) + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('') + '</select>' + (hata ? '<div class="err" id="e-isKolu" role="alert">' + esc(hata) + '</div>' : '') +
+    '<div class="tip">Listede yoksa en yakınını seçin. Müşteriler «Yakınımdaki işletmeler» listesinde sizi bu iş koluna göre bulur.</div></div>';
+}
 
 /* ---------- çizim ---------- */
 function ciz(){
@@ -587,9 +611,8 @@ function kayitEkrani(){
     h += '<section class="card"><h2>1 / 3 · İşletme bilgileri</h2>' + (onayli() ? '<div class="field"><span class="lbl" id="bvH">Ne istiyorsunuz?</span><div class="secimler" role="radiogroup" aria-labelledby="bvH">' +
       '<button class="secim" type="button" role="radio" aria-checked="' + (S.basvuruTur !== 'satin') + '" data-act="bvTurSec" data-k="deneme"><b>🎁 ' + (D.denemeGun || 14) + ' gün ücretsiz dene</b><span>Başvurunuz onaylanınca deneme süreniz başlar.</span></button>' +
       '<button class="secim" type="button" role="radio" aria-checked="' + (S.basvuruTur === 'satin') + '" data-act="bvTurSec" data-k="satin"><b>🛒 Satın almak istiyorum</b><span>Talebinizi alır, sizinle iletişime geçeriz.</span></button></div></div>' : '') +
-      '<div class="field"><span class="lbl" id="turH">İşletme türü</span><div class="turler" role="radiogroup" aria-labelledby="turH">' +
-      (D.turler || []).map(function(t){ return '<button class="chip" type="button" role="radio" aria-checked="' + (f.tur === t.k) + '" data-act="turSec" data-k="' + t.k + '">' + esc(t.ad) + '</button>'; }).join('') + '</div></div>' +
-      alan('isletmeAdi', 'İşletmenin adı', f.isletmeAdi, { ph:market() ? 'ör. Yılmaz Market' : 'ör. Lezzet Dürüm', not:'Müşterileriniz bu adı görür.' }) +
+      isKoluSecimi('f', f.isKolu, S.hata.isKolu) +
+      alan('isletmeAdi', 'İşletmenin adı', f.isletmeAdi, { ph:market() ? 'ör. Yılmaz Market' : hzm() ? 'ör. Usta Tesisat' : 'ör. Lezzet Dürüm', not:'Müşterileriniz bu adı görür.' }) +
       alan('yetkili', 'Yetkili kişinin adı soyadı', f.yetkili || (D.kullanici && D.kullanici.ad) || '', { ac:'name' }) +
       '<div class="two st">' + alan('telefon', 'Telefon', f.telefon, { tip:'tel', im:'tel', ac:'tel', ph:'0532 123 45 67', max:20 }) +
       alan('eposta', 'E-posta', f.eposta, { tip:'email', im:'email', ac:'email', ph:'ornek@mail.com', max:100, not:'Aylık raporlarınız bu adrese gelir.' }) + '</div>' +
@@ -621,14 +644,17 @@ function kayitEkrani(){
 }
 function paketAd(k){ var p = (D.paketler || []).filter(function(x){ return x.kod === k; })[0]; return p ? p.ad : ''; }
 function formOku(){
-  ['isletmeAdi', 'yetkili', 'telefon', 'eposta', 'il', 'ilce', 'adres', 'faturaUnvani', 'vergiDairesi', 'vergiNo'].forEach(function(k){
+  ['isKolu', 'isletmeAdi', 'yetkili', 'telefon', 'eposta', 'il', 'ilce', 'adres', 'faturaUnvani', 'vergiDairesi', 'vergiNo'].forEach(function(k){
     var e = document.getElementById('f-' + k); if (e) S.form[k] = e.value;
   });
+  if (S.form.isKolu) S.form.tur = turKoldan(S.form.isKolu);
   taslakKaydet();
 }
 function adim1Kontrol(){
   var f = S.form, h = {};
   var tel = String(f.telefon || '').replace(/\D/g, '');
+  if (!isKoluBul(f.isKolu)) h.isKolu = 'İş kolunuzu listeden seçin.';
+  else f.tur = turKoldan(f.isKolu);
   if (String(f.isletmeAdi || '').trim().length < 2) h.isletmeAdi = 'İşletmenizin adını yazın.';
   if (String(f.yetkili || '').trim().split(/\s+/).length < 2) h.yetkili = 'Adınızı ve soyadınızı yazın.';
   if (tel.length < 10 || tel.length > 13) h.telefon = 'Geçerli bir telefon numarası yazın.';
@@ -646,7 +672,7 @@ function tamamEkrani(){
   var d = durum();
   return '<div class="full"><div class="ic" aria-hidden="true">🎉</div><h1>Hoş geldiniz! Üyeliğiniz açıldı</h1>' +
     '<p>İşletme kodunuz <b class="num">' + esc(d.kod) + '</b>. Ödemelerde açıklamaya yalnızca bu kodu yazın. Belgelerinizin PDF kopyaları Telegram\'a gönderildi.</p>' +
-    '<div class="btns"><button class="btn pri block" data-act="ekran" data-k="&sekme=menu">' + (market() ? 'Ürünlerimi ekle' : 'Menümü oluştur') + '</button>' +
+    '<div class="btns"><button class="btn pri block" data-act="ekran" data-k="&sekme=menu">' + (market() ? 'Ürünlerimi ekle' : hzm() ? 'Hizmetlerimi ekle' : 'Menümü oluştur') + '</button>' +
     '<button class="btn line block" data-act="panel">Panelime git</button></div></div>';
 }
 
@@ -670,9 +696,9 @@ function panelEkrani(){
   var d = durum(), k = d.kurulum || {};
   var adimlar = [
     { ok:true, ad:'Üyelik', alt:'Hesabınız açıldı.' },
-    { ok:k.menu, ad:market() ? 'Ürünlerinizi ekleyin' : 'Menünüzü oluşturun', alt:k.menu ? adet(d.kullanim.urun) + ' ürün eklendi.' : 'Uygulamadan ya da Excel şablonuyla.',
+    { ok:k.menu, ad:market() ? 'Ürünlerinizi ekleyin' : hzm() ? 'Hizmetlerinizi ekleyin' : 'Menünüzü oluşturun', alt:k.menu ? adet(d.kullanim.urun) + (hzm() ? ' hizmet' : ' ürün') + ' eklendi.' : 'Uygulamadan ya da Excel şablonuyla.',
       dugme:['ekran', '&sekme=menu', k.menu ? 'Düzenle' : 'Ekle'] },
-    { ok:k.konum, ad:'Konum ve teslimat', alt:k.konum ? 'Konum kayıtlı. Teslimat bölgelerini kontrol edin.' : 'Konum olmadan sipariş alınamaz.', dugme:['ekran', '&sekme=ayar', k.konum ? 'Kontrol et' : 'Ayarla'] },
+    { ok:k.konum, ad:hzm() ? 'Konum ve hizmet bölgesi' : 'Konum ve teslimat', alt:k.konum ? (hzm() ? 'Konum kayıtlı. Hizmet bölgelerini kontrol edin.' : 'Konum kayıtlı. Teslimat bölgelerini kontrol edin.') : 'Konum olmadan sipariş alınamaz.', dugme:['ekran', '&sekme=ayar', k.konum ? 'Kontrol et' : 'Ayarla'] },
     { ok:k.bot, ad:'Kendi botunuzu bağlayın', alt:k.bot ? '@' + d.bot.kullanici + ' bağlı.' : 'Adım adım anlatıyoruz, birkaç dakika sürer.', dugme:['botRehber', '', k.bot ? 'Paylaş' : 'Bağla'] }
   ];
   var biten = adimlar.filter(function(x){ return x.ok; }).length;
@@ -681,7 +707,9 @@ function panelEkrani(){
       d.deneme && d.deneme.kalanGun > 0 ? 'Deneme: ' + d.deneme.kalanGun + ' gün kaldı' : esc(d.paket.ad) + ' paketi') + '</span></div>' +
     (biten === adimlar.length && k.acik !== false && !(d.hesap && d.hesap.durduruldu) ? '<div class="okbox">✅ İşletmeniz sipariş almaya hazır.</div>' : '') +
     (D.basvuru && D.basvuru.durum === 'bekliyor' ? '<div class="info">📝 <b>' + esc(D.basvuru.ad) + '</b> için ' + (D.basvuru.tur === 'satin' ? 'satın alma talebiniz' : 'başvurunuz') +
-      ' inceleniyor (<span class="num">' + esc(D.basvuru.no) + '</span>). Onaylandığında Telegram\'dan haber vereceğiz.</div>' : '') + '</section>';
+      ' inceleniyor (<span class="num">' + esc(D.basvuru.no) + '</span>). Onaylandığında Telegram\'dan haber vereceğiz.</div>' : '') +
+    (d.isKoluSecildi === false ? '<div class="note" role="alert">🏷️ <b>İş kolunuzu seçin.</b> Müşteriler «Yakınımdaki işletmeler» listesinde sizi iş kolunuza göre bulur. ' +
+      '<button class="btn sm pri" data-act="bilgiDuzenle">Seç</button></div>' : '') + '</section>';
   h += '<div class="grid2"><section class="card"><h2>Kurulum <span class="tip" style="margin-left:auto">' + biten + ' / ' + adimlar.length + '</span></h2><div class="ilerleme" aria-hidden="true"><span style="width:' +
     Math.round(biten / adimlar.length * 100) + '%"></span></div><ol class="kurulum">' + adimlar.map(function(x, i){
       return '<li class="kur' + (x.ok ? ' ok' : '') + '"><span class="n" aria-hidden="true">' + (x.ok ? '✓' : i + 1) + '</span><div class="d"><b>' + esc(x.ad) + '</b><span>' + esc(x.alt) + '</span></div>' +
@@ -693,7 +721,9 @@ function panelEkrani(){
     '</div><button class="btn line block" data-act="paketDegis">Paketi değiştir</button></section></div>';
   h += '<div class="grid2">' + odemeKarti(d);
   var b = d.bilgi || {};
-  h += '<section class="card"><h2>İşletme ve fatura bilgileri</h2><dl class="kv"><dt>Yetkili</dt><dd>' + esc(b.yetkili) + '</dd><dt>Telefon</dt><dd class="num">' + esc(b.telefon) + '</dd>' +
+  var kol = isKoluBul(d.isKolu);
+  h += '<section class="card"><h2>İşletme ve fatura bilgileri</h2><dl class="kv"><dt>İş kolu</dt><dd>' + (kol && d.isKoluSecildi !== false ? esc(kol.e + ' ' + kol.ad) : '<span class="muted">Seçilmedi</span>') + '</dd>' +
+    '<dt>Yakındakiler listesi</dt><dd>' + (d.rehberGizli ? 'Gizli' : 'Görünüyor') + '</dd><dt>Yetkili</dt><dd>' + esc(b.yetkili) + '</dd><dt>Telefon</dt><dd class="num">' + esc(b.telefon) + '</dd>' +
     '<dt>E-posta</dt><dd>' + esc(b.eposta) + '</dd><dt>Adres</dt><dd>' + esc([b.adres, b.ilce, b.il].filter(Boolean).join(', ')) + '</dd>' +
     '<dt>Fatura</dt><dd>' + (b.faturaUnvani ? esc(b.faturaUnvani) + ' · ' + esc(b.vergiDairesi) + ' · ' + esc(b.vergiNo) : '<span class="muted">Eklenmedi</span>') + '</dd></dl>' +
     '<button class="btn line sm" data-act="bilgiDuzenle">Düzenle</button></section></div>';
@@ -812,16 +842,24 @@ function sheetCiz(){
       '<div class="sh-foot"><button class="btn pri block" data-act="destekGonder"' + (S.busy.destek ? ' disabled' : '') + '>' + (S.busy.destek ? bekle(1) + 'Gönderiliyor…' : ic('gonder') + 'Gönder') + '</button></div>';
   } else if (SH.tip === 'bilgi') {
     var b = SH.f;
-    h = shBas('Bilgileri düzenle') + '<div class="sh-body">' + bilgiAlan('yetkili', 'Yetkili adı soyadı', b.yetkili) + bilgiAlan('telefon', 'Telefon', b.telefon, 'tel') +
+    h = shBas('Bilgileri düzenle') + '<div class="sh-body">' + isKoluSecimi('b', b.isKolu, SH.alan === 'isKolu' ? SH.hata : '') +
+      '<button class="secim tek" type="button" role="switch" aria-checked="' + (b.rehberGizli ? 'false' : 'true') + '" data-act="rehberSw"><b>📍 «Yakınımdaki işletmeler» listesinde görün</b>' +
+      '<span>' + (b.rehberGizli ? 'Şu an gizli: müşteriler sizi listede görmez, yalnız botunuzdan sipariş verir.' : 'Telegram kullanıcıları yakınındaki işletmeler arasında sizi görür ve botunuza geçer.') + '</span></button>' +
+      bilgiAlan('yetkili', 'Yetkili adı soyadı', b.yetkili) + bilgiAlan('telefon', 'Telefon', b.telefon, 'tel') +
       bilgiAlan('eposta', 'E-posta', b.eposta, 'email') + '<div class="two">' + '<div class="field"><label for="b-il">İl</label><select class="inp" id="b-il"><option value="">Seçin</option>' +
       ILLER.map(function(x){ return '<option' + (x === b.il ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' + ilceSecimi('b', b.il, b.ilce, null) + '</div>' +
       bilgiAlan('adres', 'Açık adres', b.adres) + bilgiAlan('faturaUnvani', 'Ticari unvan', b.faturaUnvani) + '<div class="two">' + bilgiAlan('vergiDairesi', 'Vergi dairesi', b.vergiDairesi) +
-      bilgiAlan('vergiNo', 'VKN / T.C. no', b.vergiNo, 'numeric') + '</div>' + (SH.hata ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '') + '</div>' +
+      bilgiAlan('vergiNo', 'VKN / T.C. no', b.vergiNo, 'numeric') + '</div>' + (SH.hata && SH.alan !== 'isKolu' ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '') + '</div>' +
       '<div class="sh-foot"><button class="btn pri block" data-act="bilgiKaydet"' + (S.busy.bilgi ? ' disabled' : '') + '>' + bekle(S.busy.bilgi) + 'Kaydet</button></div>';
   }
   $('#sheet').innerHTML = h;
 }
 function destekOku(){ var b = $('#d-baslik'), m = $('#d-mesaj'); if (b) SH.baslik = b.value; if (m) SH.mesaj = m.value; }
+// Bilgi penceresindeki alanları SH.f'e okur (iş kolu ve görünürlük dahil)
+function bilgiOku(){
+  if (!SH || SH.tip !== 'bilgi') return;
+  ['isKolu', 'yetkili', 'telefon', 'eposta', 'il', 'ilce', 'adres', 'faturaUnvani', 'vergiDairesi', 'vergiNo'].forEach(function(k){ var e = document.getElementById('b-' + k); if (e) SH.f[k] = e.value; });
+}
 function bilgiAlan(k, e, v, tip){
   return '<div class="field"><label for="b-' + k + '">' + e + '</label><input class="inp" id="b-' + k + '" value="' + esc(v || '') + '"' +
     (tip === 'tel' ? ' type="tel" inputmode="tel"' : tip === 'email' ? ' type="email" inputmode="email"' : tip === 'numeric' ? ' inputmode="numeric"' : '') + ' autocomplete="off"></div>';
@@ -924,7 +962,8 @@ var ACT = {
       durumAl(r); sheetKapat(); ciz(); toast('Paketiniz değişti: ' + durum().paket.ad);
     });
   },
-  bilgiDuzenle:function(){ sheetAc({ tip:'bilgi', f:Object.assign({}, durum().bilgi) }); },
+  bilgiDuzenle:function(){ var d = durum(); sheetAc({ tip:'bilgi', f:Object.assign({}, d.bilgi, { isKolu:d.isKoluSecildi === false ? '' : (d.isKolu || ''), rehberGizli:!!d.rehberGizli }) }); },
+  rehberSw:function(){ bilgiOku(); SH.f.rehberGizli = !SH.f.rehberGizli; haptic('select'); sheetCiz(); },
   destekAc:function(){ sheetAc({ tip:'destek', konu:'', baslik:'', mesaj:'', hata:'', alan:'' }); },
   destekKonu:function(el){ destekOku(); SH.konu = el.getAttribute('data-k'); if (SH.alan === 'konu') { SH.hata = ''; SH.alan = ''; } haptic('select'); sheetCiz(); },
   destekGonder:function(){
@@ -941,9 +980,10 @@ var ACT = {
     });
   },
   bilgiKaydet:function(){
-    var f = {};
-    ['yetkili', 'telefon', 'eposta', 'il', 'ilce', 'adres', 'faturaUnvani', 'vergiDairesi', 'vergiNo'].forEach(function(k){ var e = document.getElementById('b-' + k); if (e) f[k] = e.value; });
-    SH.f = f;
+    bilgiOku();
+    var f = Object.assign({}, SH.f);
+    if (!f.isKolu) { SH.hata = 'İş kolunuzu listeden seçin.'; SH.alan = 'isKolu'; sheetCiz(); return; }
+    SH.alan = '';
     S.busy.bilgi = true; sheetCiz();
     call('uyBilgi', { b:durum().id, bilgi:f }).then(function(r){
       S.busy.bilgi = false;
@@ -1011,6 +1051,15 @@ document.addEventListener('submit', function(e){
 });
 document.addEventListener('change', function(e){
   if (e.target.id === 'islSec') { S.secili = e.target.value; yukle(); }
+  else if (e.target.id === 'f-isKolu') {
+    formOku();
+    if (S.hata.isKolu) { delete S.hata.isKolu; e.target.removeAttribute('aria-invalid'); var ek = $('#e-isKolu'); if (ek) ek.remove(); }
+    var ad = $('#f-isletmeAdi'); if (ad) ad.placeholder = market() ? 'ör. Yılmaz Market' : hzm() ? 'ör. Usta Tesisat' : 'ör. Lezzet Dürüm';
+  }
+  else if (e.target.id === 'b-isKolu' && SH && SH.tip === 'bilgi') {
+    bilgiOku();
+    if (SH.alan === 'isKolu') { SH.hata = ''; SH.alan = ''; sheetCiz(); }
+  }
   else if (e.target.id === 'f-il') {
     formOku();
     if (ilceleri(S.form.il).indexOf(S.form.ilce) < 0) { S.form.ilce = ''; taslakKaydet(); }
@@ -1076,14 +1125,16 @@ if (DEMO) MOCK = uyeDemo(params.get('durum') || 'kurulum');
 basla();
 /* ---------- önizleme (?demo=1): örnek verilerle, sunucuya gitmeden ---------- */
 function uyeDemo(hal){
+  var Q0 = new URLSearchParams(location.search);
   var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200, urun:50, hafta:500, ekip:3, asim:1, aciklama:'' },
     { kod:'STANDART', ad:'Standart', ucret:300, urun:150, hafta:1500, ekip:8, asim:1, aciklama:'' },
     { kod:'PROFESYONEL', ad:'Profesyonel', ucret:400, urun:1000, hafta:5000, ekip:20, asim:1, aciklama:'' }];
+  var IS_KOLLARI = [{"grup":"yemek","ad":"Yeme · içme","liste":[{"k":"restoran","ad":"Restoran","e":"🍽️"},{"k":"lokanta","ad":"Lokanta / Ev yemekleri","e":"🍲"},{"k":"kebap","ad":"Kebap / Döner / Izgara","e":"🌯"},{"k":"pide","ad":"Pide / Lahmacun","e":"🫓"},{"k":"pizza","ad":"Pizza / Burger / Fast food","e":"🍕"},{"k":"balik","ad":"Balık restoranı","e":"🐟"},{"k":"cigkofte","ad":"Çiğ köfte","e":"🥙"},{"k":"kahvalti","ad":"Kahvaltı / Börek / Simit","e":"🍳"},{"k":"kafe","ad":"Kafe / Kahveci","e":"☕"},{"k":"pastane","ad":"Pastane / Fırın","e":"🥐"},{"k":"tatli","ad":"Tatlıcı / Dondurma","e":"🍨"},{"k":"bar","ad":"Bar / Pub","e":"🍺"},{"k":"catering","ad":"Catering / Toplu yemek","e":"🍱"},{"k":"diger_yemek","ad":"Diğer yeme-içme","e":"🍴"}]},{"grup":"urun","ad":"Market · dükkân","liste":[{"k":"market","ad":"Market / Süpermarket","e":"🛒"},{"k":"bakkal","ad":"Bakkal / Büfe / Tekel","e":"🏪"},{"k":"manav","ad":"Manav / Meyve-sebze","e":"🥦"},{"k":"kasap","ad":"Kasap / Şarküteri","e":"🥩"},{"k":"kuruyemis","ad":"Kuruyemiş / Kahve / Lokum","e":"🥜"},{"k":"su","ad":"Su / Tüp bayii","e":"💧"},{"k":"aktar","ad":"Aktar / Organik ürünler","e":"🌿"},{"k":"hirdavat","ad":"Hırdavat / Nalbur","e":"🔧"},{"k":"elektrik","ad":"Elektrik malzemeleri / Aydınlatma","e":"💡"},{"k":"zuccaciye","ad":"Züccaciye / Milyoncu / Ev gereçleri","e":"🧺"},{"k":"yapi","ad":"Boya / Yapı market","e":"🪣"},{"k":"kirtasiye","ad":"Kırtasiye / Kitap","e":"✏️"},{"k":"cicek","ad":"Çiçekçi","e":"💐"},{"k":"petshop","ad":"Pet shop / Mama","e":"🐾"},{"k":"kozmetik","ad":"Kozmetik / Parfümeri","e":"💄"},{"k":"elektronik","ad":"Telefon / Elektronik","e":"📱"},{"k":"giyim","ad":"Giyim / Ayakkabı","e":"👕"},{"k":"oyuncak","ad":"Oyuncak / Bebek ürünleri","e":"🧸"},{"k":"diger_urun","ad":"Diğer ürün satışı","e":"🛍️"}]},{"grup":"hizmet","ad":"Eve hizmet · usta","liste":[{"k":"tesisat","ad":"Su tesisatı / Sıhhi tesisat","e":"🚿"},{"k":"elektrikci","ad":"Elektrikçi","e":"⚡"},{"k":"marangoz","ad":"Marangoz / Mobilya ustası","e":"🪚"},{"k":"boya","ad":"Boya / Badana","e":"🎨"},{"k":"temizlik","ad":"Ev / Ofis temizliği","e":"🧹"},{"k":"hali","ad":"Halı / Koltuk yıkama","e":"🛋️"},{"k":"klima","ad":"Klima / Kombi servisi","e":"❄️"},{"k":"beyazesya","ad":"Beyaz eşya / Teknik servis","e":"🔌"},{"k":"cilingir","ad":"Çilingir","e":"🔑"},{"k":"camci","ad":"Camcı / PVC / Cam balkon","e":"🪟"},{"k":"nakliyat","ad":"Nakliyat / Taşıma","e":"🚚"},{"k":"tamir","ad":"Bilgisayar / Telefon tamiri","e":"💻"},{"k":"terzi","ad":"Terzi / Kuru temizleme","e":"🧵"},{"k":"bahce","ad":"Bahçe / Peyzaj","e":"🌳"},{"k":"ilaclama","ad":"İlaçlama / Haşere","e":"🪲"},{"k":"kuafor","ad":"Kuaför / Berber (eve servis)","e":"💇"},{"k":"oto","ad":"Oto yıkama / Oto servis","e":"🚗"},{"k":"diger_hizmet","ad":"Diğer hizmet","e":"🛠️"}]}];
   var TUR = [{ k:'restoran', ad:'Restoran' }, { k:'kafe', ad:'Kafe' }, { k:'pastane', ad:'Pastane / Fırın' }, { k:'market', ad:'Bakkal / Market' }, { k:'diger', ad:'Diğer' }];
   var BELGE = { hizmet:'Hizmet (Üyelik) Sözleşmesi', kvkk:'KVKK Aydınlatma Metni', veri:'Veri İşleme Sözleşmesi' };
   var taban = location.pathname.replace(/uye\.html$/, '');
   function durumYap(ad, tur, hazir){
-    return { id:'ornek', kod:'YP360-D3M0', ad:ad, durum:'Aktif', tur:tur, paket:PAKET[0], kullanim:{ urun:hazir ? 23 : 0, hafta:hazir ? 41 : 0, ekip:hazir ? 2 : 0 },
+    return { id:'ornek', kod:'YP360-D3M0', ad:ad, durum:'Aktif', tur:tur, isKolu:Q0.get('kol') || (tur === 'hizmet' ? 'tesisat' : 'kebap'), isKoluSecildi:Q0.get('kol') !== '0', rehberGizli:false, paket:PAKET[0], kullanim:{ urun:hazir ? 23 : 0, hafta:hazir ? 41 : 0, ekip:hazir ? 2 : 0 },
       deneme:{ bitis:'20.10.2026 10:00', kalanGun:14 }, ucretsiz:'', bot:hazir ? { bagli:true, kullanici:'lezzet_durum_bot', link:'https://t.me/lezzet_durum_bot' } : { bagli:false, kullanici:'', link:'' },
       kurulum:{ menu:hazir, konum:hazir, bot:hazir, acik:true }, ekranUrl:taban + 'isletme.html?b=ornek&demo=1&rol=sahip&ana=1' + (hazir ? '' : '&kurulum=1'),
       bilgi:{ yetkili:'Hasan Kaya', telefon:'0532 111 22 33', eposta:'hasan@lezzet.com', il:'Ankara', ilce:'Çankaya', adres:'Kızılay Mah. Atatürk Blv. No: 5', faturaUnvani:'', vergiDairesi:'', vergiNo:'' },
@@ -1104,7 +1155,7 @@ function uyeDemo(hal){
   function kopya(x){ return JSON.parse(JSON.stringify(x)); }
   function hata(k, m, alan){ return { ok:false, kod:k, hata:m, alan:alan }; }
   var islem = {
-    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PAKET), turler:TUR, denemeGun:14,
+    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PAKET), turler:TUR, isKollari:IS_KOLLARI, denemeGun:14,
       videolar:[{ k:'uyelik', ad:'YourPOS 360\'a nasıl üye olunur?', url:'https://www.instagram.com/' }, { k:'bot', ad:'Telegram\'da kendi botunuzu oluşturma', url:'https://www.instagram.com/' },
         { k:'menu', ad:'Menü ve ürünleri ekleme', url:'https://www.instagram.com/' }], anaBot:'yourpos360_bot',
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t] }; }), destek:'destek@yourpos360.com',
@@ -1127,7 +1178,9 @@ function uyeDemo(hal){
         BV = { no:'B-1001', tur:d.basvuru === 'satin' ? 'satin' : 'deneme', durum:'bekliyor', ad:f.isletmeAdi || 'Yeni işletme', tarih:'06.10.2026 21:14', telefon:f.telefon || '' };
         return { ok:true, basvuru:kopya(BV) };
       }
+      if (!f.isKolu) return hata('FORM', 'İş kolunuzu listeden seçin.', 'isKolu');
       DUR = durumYap(f.isletmeAdi || 'Yeni işletme', f.tur || 'restoran', false);
+      DUR.isKolu = f.isKolu; DUR.isKoluSecildi = true;
       DUR.paket = kopya(PAKET.filter(function(p){ return p.kod === d.paket; })[0] || PAKET[0]);
       DUR.bilgi = { yetkili:f.yetkili, telefon:f.telefon, eposta:f.eposta, il:f.il, ilce:f.ilce, adres:f.adres, faturaUnvani:f.faturaUnvani || '', vergiDairesi:f.vergiDairesi || '', vergiNo:f.vergiNo || '' };
       ISL = [{ id:'ornek', kod:DUR.kod, ad:DUR.ad, bot:'' }];
@@ -1147,6 +1200,8 @@ function uyeDemo(hal){
     uyBilgi:function(d){
       var b = d.bilgi || {};
       if (b.eposta !== undefined && !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(b.eposta)) return hata('FORM', 'Geçerli bir e-posta adresi yazın.');
+      if (b.isKolu !== undefined) { DUR.isKolu = b.isKolu; DUR.isKoluSecildi = true; delete b.isKolu; }
+      if (b.rehberGizli !== undefined) { DUR.rehberGizli = !!b.rehberGizli; delete b.rehberGizli; }
       Object.keys(b).forEach(function(k){ DUR.bilgi[k] = b[k]; }); return { ok:true, durum:kopya(DUR) };
     },
     uyBelgeGonder:function(){ return { ok:true, adet:3 }; },

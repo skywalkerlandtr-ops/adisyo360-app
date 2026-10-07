@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex">
+<title>Yakınımdaki işletmeler · YourPOS 360</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function(){
+  try {
+    var w = window.Telegram && window.Telegram.WebApp;
+    var dark = (w && w.initData) ? w.colorScheme === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    var q = new URLSearchParams(location.search);
+    if ((q.get('tema') === 'dark' || q.get('tema') === 'light') && !(w && w.initData)) dark = q.get('tema') === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  } catch (e) {}
+})();
+</script>
+<style>
+/* YourPOS 360 · Yakınımdaki işletmeler (yakin.html). @yourpos360_bot → «📍 Yakınımdaki işletmeler» düğmesiyle açılır. */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --bg2:#f1f2f6; --bg:#ffffff; --text:#0f0f0f; --hint:#8a8a8f; --sub:#5d5d63; --link:#2481cc; --sep:#e2e3e8;
+  --field-bg:#f6f7f9; --field-line:#d5d8de; --focus:#2481cc;
+  --accent:#e8590c; --on-accent:#ffffff; --accent-soft:#fdebdf; --accent-ink:#b0420a;
+  --ok:#2e9e4f; --ok-ink:#1d7536; --ok-soft:#e1f3e6;
+  --warn-soft:#fff2dc; --warn-ink:#7f4600;
+  --closed-soft:#eceef2; --closed-ink:#4c5059;
+  --star:#f5a300;
+  --tile0:#fde4cc; --tile1:#fadbd2; --tile2:#f8edc2; --tile3:#dff0d4; --tile4:#d8e7f7;
+  --sk:#e2e4e9; --toast-bg:#2a2b30; --toast-text:#ffffff;
+  --shadow:0 1px 2px rgb(16 24 40 / .06),0 1px 3px rgb(16 24 40 / .08);
+  --me:#2481cc;
+  --safe-b:max(env(safe-area-inset-bottom,0px),var(--tg-safe-area-inset-bottom,0px));
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg2:#0e1621; --bg:#17212b; --text:#f5f5f5; --hint:#708499; --sub:#97a8ba; --link:#6ab3f3; --sep:#25313d;
+  --field-bg:#0e1621; --field-line:#2c3a48; --focus:#6ab3f3;
+  --accent:#ff7a33; --on-accent:#1b0c03; --accent-soft:#3a2518; --accent-ink:#ffa477;
+  --ok:#4cc46e; --ok-ink:#72d891; --ok-soft:#163125;
+  --warn-soft:#382a14; --warn-ink:#ffc77f;
+  --closed-soft:#202c38; --closed-ink:#a9b6c3;
+  --tile0:#3b2a1b; --tile1:#3a2320; --tile2:#35301b; --tile3:#1f3122; --tile4:#1b2b3c;
+  --sk:#223040; --toast-bg:#2b3846; --toast-text:#f5f5f5;
+  --shadow:none; --me:#6ab3f3;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg2);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.4;min-height:100%;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-user-select:none;user-select:none}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{font-variant-numeric:tabular-nums}
+
+.ust{position:sticky;top:0;z-index:20;background:var(--bg2);padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px}
+.ust.golge{box-shadow:0 1px 0 var(--sep)}
+.bas{display:flex;align-items:center;gap:12px}
+.bas h1{font-size:22px;font-weight:800;letter-spacing:-.01em;flex:1;min-width:0}
+.yer{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--sub);min-height:32px}
+.yer b{color:var(--text);font-weight:600}
+.link{background:none;border:0;padding:6px 4px;color:var(--link);font-weight:600;font-size:15px;min-height:36px}
+.seg{display:inline-flex;background:var(--bg);border-radius:12px;padding:3px;box-shadow:var(--shadow)}
+.seg button{border:0;background:none;border-radius:9px;padding:7px 14px;font-weight:600;font-size:15px;color:var(--sub);min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.cips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cips::-webkit-scrollbar{display:none}
+.cip{flex:none;border:1.5px solid var(--sep);background:var(--bg);border-radius:999px;padding:7px 14px;font-size:15px;font-weight:600;min-height:40px;white-space:nowrap}
+.cip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.cip .n{color:var(--hint);font-weight:500;margin-left:4px}
+.cip[aria-pressed="true"] .n{color:inherit;opacity:.8}
+.cip:disabled{opacity:.45}
+.satir{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sel{min-height:40px;border-radius:12px;border:1.5px solid var(--field-line);background:var(--field-bg);padding:6px 32px 6px 12px;font-size:15px;
+  -webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--hint) 50%),linear-gradient(135deg,var(--hint) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat;max-width:100%}
+.acik-sw{display:inline-flex;align-items:center;gap:8px;border:0;background:none;padding:4px 0;min-height:40px;font-size:15px;font-weight:600}
+.acik-sw .tg{width:44px;height:26px;border-radius:13px;background:var(--sep);position:relative;flex:none;transition:background .15s}
+.acik-sw .tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0 / .3);transition:transform .15s}
+.acik-sw[aria-checked="true"] .tg{background:var(--ok)}
+.acik-sw[aria-checked="true"] .tg::after{transform:translateX(18px)}
+
+main{padding:4px 16px calc(24px + var(--safe-b))}
+.ozet{font-size:14px;color:var(--sub);margin:6px 2px 10px}
+.liste{display:flex;flex-direction:column;gap:10px}
+.kart{background:var(--bg);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.k-ust{display:flex;gap:12px;align-items:flex-start}
+.k-logo{width:52px;height:52px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:28px;overflow:hidden}
+.k-logo img{width:100%;height:100%;object-fit:cover;display:block;background:#fff}
+.k-bilgi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.k-ad{font-size:17px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.k-ad .sube{font-weight:500;color:var(--sub)}
+.k-kol{font-size:14px;color:var(--sub)}
+.k-km{flex:none;font-weight:700;font-size:15px;white-space:nowrap}
+.rozetler{display:flex;flex-wrap:wrap;gap:6px}
+.rz{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}
+.rz.acik{background:var(--ok-soft);color:var(--ok-ink)}
+.rz.kapali{background:var(--closed-soft);color:var(--closed-ink)}
+.rz.ileri{background:var(--warn-soft);color:var(--warn-ink)}
+.rz.puan{background:var(--bg2);color:var(--text)}
+.rz.puan i{color:var(--star);font-style:normal}
+.rz.uzak{background:var(--warn-soft);color:var(--warn-ink)}
+.k-alt{display:flex;gap:8px}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn.pri{background:var(--accent);color:var(--on-accent);flex:1}
+.btn.line{background:var(--bg2);color:var(--text)}
+.bos{text-align:center;padding:36px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.bos .ic{font-size:44px}
+.bos h2{font-size:19px}
+.bos p{color:var(--sub);max-width:340px}
+.sk{background:var(--sk);border-radius:16px;height:118px;animation:nab 1.2s ease-in-out infinite}
+@keyframes nab{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.sk{animation:none}}
+.not{font-size:13px;color:var(--hint);text-align:center;margin-top:16px}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + var(--safe-b));z-index:60;background:var(--toast-bg);color:var(--toast-text);border-radius:12px;
+  padding:12px 14px;font-size:15px;transform:translateY(150%);transition:transform .2s;max-width:520px;margin:0 auto}
+.toast.on{transform:none}
+
+#harita{height:calc(100vh - var(--ust-h, 210px) - 24px);min-height:320px;border-radius:16px;overflow:hidden;background:var(--bg);box-shadow:var(--shadow)}
+.leaflet-container{font:inherit;background:var(--bg2)}
+:root[data-theme="dark"] .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9)}
+.pin{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--bg);border:2.5px solid var(--accent);font-size:19px;box-shadow:0 2px 6px rgb(0 0 0 / .25)}
+.pin.kapali{border-color:var(--hint);filter:grayscale(.6)}
+.ben{width:18px;height:18px;border-radius:50%;background:var(--me);border:3px solid #fff;box-shadow:0 0 0 6px rgb(36 129 204 / .25)}
+.leaflet-popup-content{margin:12px 14px;min-width:190px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--bg);color:var(--text)}
+.pp-ad{font-weight:700;font-size:16px}
+.pp-alt{color:var(--sub);font-size:14px;margin:2px 0 8px}
+.pp .btn{width:100%}
+
+@media (min-width:720px){
+  main,.ust{max-width:760px;margin-left:auto;margin-right:auto}
+  .liste{display:grid;grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="ust" id="ust">
+  <div class="bas"><h1>Yakınımdaki işletmeler</h1>
+    <div class="seg" role="group" aria-label="Görünüm"><button type="button" data-act="gorunum" data-k="liste" aria-pressed="true">Liste</button><button type="button" data-act="gorunum" data-k="harita" aria-pressed="false">Harita</button></div>
+  </div>
+  <div class="yer" id="yer"></div>
+  <div id="filtre"></div>
+</div>
+<main id="main" aria-live="polite"></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+'use strict';
+(function(){
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var params = new URLSearchParams(location.search);
+var DEMO = params.get('demo') === '1';
+var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
+var realTg = window.Telegram && window.Telegram.WebApp;
+var inTelegram = !!(realTg && realTg.initData);
+var tg = inTelegram ? realTg : null;
+var LS = {
+  get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set:function(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+};
+function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+var NF1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 });
+var NF = new Intl.NumberFormat('tr-TR');
+function kmYaz(k){ return k < 1 ? NF.format(Math.max(50, Math.round(k * 1000 / 50) * 50)) + ' m' : NF1.format(k) + ' km'; }
+function ver(v){ try { return !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v)); } catch(e){ return false; } }
+function haptic(){ try { if (ver('6.1') && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch(e){} }
+function disaAc(u){ try { if (tg && ver('6.1')) { tg.openLink(u); return; } } catch(e){} window.open(u, '_blank', 'noopener'); }
+function telegramAc(u){ try { if (tg && ver('6.1')) { tg.openTelegramLink(u); return; } } catch(e){} window.open(u, '_blank', 'noopener'); }
+var toastT = null;
+function toast(m){ var t = $('#toast'); t.textContent = m; t.className = 'toast on'; clearTimeout(toastT); toastT = setTimeout(function(){ t.className = 'toast'; }, 3600); }
+if (tg) {
+  try { tg.ready(); tg.expand(); } catch(e){}
+  try { if (ver('7.7')) tg.disableVerticalSwipes(); } catch(e){}
+  try { if (ver('6.1')) { tg.setHeaderColor('secondary_bg_color'); tg.setBackgroundColor('secondary_bg_color'); } } catch(e){}
+}
+
+var ILLER = ['Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya', 'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt',
+  'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum',
+  'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkâri', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul', 'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu',
+  'Kayseri', 'Kilis', 'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa', 'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde',
+  'Ordu', 'Osmaniye', 'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt', 'Sinop', 'Şırnak', 'Sivas', 'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova',
+  'Yozgat', 'Zonguldak'];
+var KM = [2, 5, 10, 25, 50, 100];
+var GRUP_EMOJI = { yemek:'🍽️', urun:'🛒', hizmet:'🛠️' };
+
+/* ---------- sunucu ---------- */
+var MOCK = DEMO ? demoMock() : null;
+function call(act, data){
+  var payload = Object.assign({ act:act, initData:inTelegram ? realTg.initData : '' }, data || {});
+  if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
+  var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
+  var ctrl = window.AbortController ? new AbortController() : null;
+  var t = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 40000);
+  return fetch(url, { method:'POST', body:JSON.stringify(payload), redirect:'follow', signal:ctrl ? ctrl.signal : undefined })
+    .then(function(r){ return r.text(); })
+    .then(function(x){ clearTimeout(t); try { return JSON.parse(x); } catch(e){ return { ok:false, kod:'SUNUCU', hata:'Sunucu beklenmedik bir yanıt verdi. Biraz sonra tekrar deneyin.' }; } })
+    .catch(function(e){ clearTimeout(t); return { ok:false, kod:'AG', hata:(e && e.name === 'AbortError') ? 'Sunucu geç yanıt verdi. Tekrar deneyin.' : 'İnternet bağlantısı yok gibi görünüyor.' }; });
+}
+
+/* ---------- durum ---------- */
+var S = {
+  durum:'konum',          // konum | yukleniyor | hazir | hata | il
+  konum:null,             // { lat, lng } — yalnız bu sayfada, kaydedilmez
+  il:LS.get('yp-yakin-il') || '',
+  km:Number(LS.get('yp-yakin-km')) || 10,
+  grup:'', kol:'', acik:LS.get('yp-yakin-acik') === '1',
+  gorunum:'liste', liste:[], kollar:[], hata:'', konumHata:''
+};
+if (KM.indexOf(S.km) < 0) S.km = 10;
+function kolBul(k){
+  var r = null;
+  S.kollar.forEach(function(g){ g.liste.forEach(function(x){ if (x.k === k) r = { k:x.k, ad:x.ad, e:x.e, grup:g.grup }; }); });
+  return r || { k:k, ad:'İşletme', e:'🏪', grup:'yemek' };
+}
+// filtrelenmiş liste (mesafe sınırı uygulanmadan önce: grup / tür / açık)
+function suzgec(l, yok){
+  return l.filter(function(x){
+    var k = kolBul(x.kol);
+    if (yok !== 'grup' && S.grup && k.grup !== S.grup) return false;
+    if (yok !== 'kol' && S.kol && x.kol !== S.kol) return false;
+    if (yok !== 'acik' && S.acik && !x.acik) return false;
+    return true;
+  });
+}
+function kmIcinde(l){ return S.konum ? l.filter(function(x){ return x.km <= S.km; }) : l; }
+function gorunen(){ return kmIcinde(suzgec(S.liste)); }
+
+/* ---------- konum ---------- */
+function konumAl(){
+  return new Promise(function(ok){
+    var bitti = false, son = function(x, neden){ if (!bitti) { bitti = true; ok({ k:x, neden:neden || '' }); } };
+    var tarayici = function(){
+      if (!navigator.geolocation) return son(null, 'yok');
+      navigator.geolocation.getCurrentPosition(function(p){ son({ lat:p.coords.latitude, lng:p.coords.longitude }); },
+        function(e){ son(null, e && e.code === 1 ? 'izin' : 'alinamadi'); }, { enableHighAccuracy:false, timeout:15000, maximumAge:300000 });
+    };
+    var lm = tg && ver('8.0') ? tg.LocationManager : null;
+    if (lm) {
+      try {
+        lm.init(function(){
+          if (!lm.isLocationAvailable) return tarayici();
+          lm.getLocation(function(l){
+            if (l && typeof l.latitude === 'number') son({ lat:l.latitude, lng:l.longitude });
+            else son(null, lm.isAccessRequested && !lm.isAccessGranted ? 'tgizin' : 'alinamadi');
+          });
+        });
+      } catch(e){ tarayici(); }
+    } else tarayici();
+    setTimeout(function(){ son(null, 'zaman'); }, 25000);
+  });
+}
+function konumuKullan(){
+  S.durum = 'konum'; S.konumHata = ''; ciz();
+  konumAl().then(function(r){
+    if (r.k) { S.konum = r.k; S.il = ''; return yukle(); }
+    S.konumHata = r.neden;
+    S.durum = S.il ? 'yukleniyor' : 'il';
+    if (S.il) yukle(); else ciz();
+  });
+}
+function yukle(){
+  S.durum = 'yukleniyor'; S.hata = ''; ciz();
+  var d = S.konum ? { lat:S.konum.lat, lng:S.konum.lng, km:100 } : { il:S.il };
+  call('uyRehber', d).then(function(r){
+    if (!r || !r.ok) {
+      if (r && r.kod === 'KONUM') { S.durum = 'il'; ciz(); return; }
+      S.durum = 'hata'; S.hata = (r && r.hata) || 'Liste alınamadı.'; ciz(); return;
+    }
+    S.liste = r.liste || []; S.kollar = r.kollar || [];
+    if (S.kol && !S.liste.some(function(x){ return x.kol === S.kol; })) S.kol = '';
+    // seçili mesafede hiç yoksa sonuç olan ilk mesafeye geç
+    if (S.konum && !kmIcinde(suzgec(S.liste)).length) {
+      var l = suzgec(S.liste);
+      for (var i = 0; i < KM.length; i++) if (l.some(function(x){ return x.km <= KM[i]; })) { if (KM[i] > S.km) { S.km = KM[i]; toast(KM[i] + ' km içindeki işletmeler gösteriliyor'); } break; }
+    }
+    S.durum = 'hazir'; ciz();
+  });
+}
+
+/* ---------- çizim ---------- */
+function yerHtml(){
+  if (S.konum) return '<span aria-hidden="true">📍</span><span><b>Konumunuza göre</b></span><button class="link" data-act="ilSec">İl seç</button>';
+  if (S.il) return '<span aria-hidden="true">🏙️</span><span><b>' + esc(S.il) + '</b> ili</span><button class="link" data-act="konum">Konumumu kullan</button>';
+  return '<span aria-hidden="true">📍</span><span>Konumunuzla ya da il seçerek arayın</span>';
+}
+function filtreHtml(){
+  if (S.durum !== 'hazir') return '';
+  var h = '';
+  if (S.konum) {
+    var l0 = suzgec(S.liste);
+    h += '<div class="cips" role="group" aria-label="Mesafe">' + KM.map(function(k){
+      var n = l0.filter(function(x){ return x.km <= k; }).length;
+      return '<button class="cip" type="button" data-act="km" data-k="' + k + '" aria-pressed="' + (S.km === k) + '">' + k + ' km<span class="n num">' + n + '</span></button>';
+    }).join('') + '</div>';
+  }
+  var tab = kmIcinde(suzgec(S.liste, 'grup'));
+  var say = {}; tab.forEach(function(x){ var g = kolBul(x.kol).grup; say[g] = (say[g] || 0) + 1; });
+  h += '<div class="cips" role="group" aria-label="İşletme türü"><button class="cip" type="button" data-act="grup" data-k="" aria-pressed="' + (!S.grup) + '">Tümü<span class="n num">' + tab.length + '</span></button>' +
+    S.kollar.map(function(g){
+      return '<button class="cip" type="button" data-act="grup" data-k="' + esc(g.grup) + '" aria-pressed="' + (S.grup === g.grup) + '"' + (!say[g.grup] && S.grup !== g.grup ? ' disabled' : '') + '>' +
+        (GRUP_EMOJI[g.grup] || '') + ' ' + esc(g.ad) + '<span class="n num">' + (say[g.grup] || 0) + '</span></button>';
+    }).join('') + '</div>';
+  var kt = kmIcinde(suzgec(S.liste, 'kol')), ks = {};
+  kt.forEach(function(x){ ks[x.kol] = (ks[x.kol] || 0) + 1; });
+  var secenek = [];
+  S.kollar.forEach(function(g){ if (!S.grup || g.grup === S.grup) g.liste.forEach(function(x){ if (ks[x.k] || x.k === S.kol) secenek.push(x); }); });
+  h += '<div class="satir">' + (secenek.length > 1 || S.kol ? '<label class="sr" for="kolSec">Tür</label><select class="sel" id="kolSec"><option value="">Tüm türler</option>' + secenek.map(function(x){
+      return '<option value="' + esc(x.k) + '"' + (x.k === S.kol ? ' selected' : '') + '>' + esc(x.e + ' ' + x.ad) + ' (' + (ks[x.k] || 0) + ')</option>';
+    }).join('') + '</select>' : '') +
+    '<button class="acik-sw" type="button" role="switch" aria-checked="' + S.acik + '" data-act="acik"><span class="tg" aria-hidden="true"></span>Şu an açık olanlar</button></div>';
+  return h;
+}
+function logoHtml(x, k, i){
+  if (x.logo) return '<span class="k-logo"><img src="' + esc(x.logo) + '" alt="" loading="lazy" onerror="this.parentNode.textContent=\'' + k.e + '\'"></span>';
+  return '<span class="k-logo" style="background:var(--tile' + (i % 5) + ')" aria-hidden="true">' + k.e + '</span>';
+}
+function dugmeAd(k){ return k.grup === 'hizmet' ? 'Hizmet al' : 'Sipariş ver'; }
+function kartHtml(x, i){
+  var k = kolBul(x.kol);
+  var rz = [];
+  rz.push(x.acik ? '<span class="rz acik">● Açık</span>' : x.ileri ? '<span class="rz ileri">🕒 ' + (k.grup === 'hizmet' ? 'Randevu alınır' : 'İleri saate sipariş') + '</span>' : '<span class="rz kapali">● Şu an kapalı</span>');
+  if (x.puan && x.puan.n) rz.push('<span class="rz puan"><i aria-hidden="true">★</i>' + NF1.format(x.puan.o) + ' <span class="num">(' + NF.format(x.puan.n) + ')</span></span>');
+  if (S.konum && x.maks && x.km > x.maks) rz.push('<span class="rz uzak">' + (k.grup === 'hizmet' ? 'Hizmet alanı ' : 'Teslimat alanı ') + NF.format(x.maks) + ' km</span>');
+  return '<li class="kart"><div class="k-ust">' + logoHtml(x, k, i) + '<div class="k-bilgi"><span class="k-ad">' + esc(x.ad) + (x.sube ? ' <span class="sube">· ' + esc(x.sube) + '</span>' : '') + '</span>' +
+    '<span class="k-kol">' + k.e + ' ' + esc(k.ad) + (x.ilce ? ' · ' + esc(x.ilce) : '') + '</span></div>' +
+    (x.km !== undefined ? '<span class="k-km num">' + kmYaz(x.km) + '</span>' : '') + '</div>' +
+    '<div class="rozetler">' + rz.join('') + '</div>' +
+    '<div class="k-alt"><button class="btn pri" type="button" data-act="git" data-k="' + esc(x.link) + '">' + dugmeAd(k) + ' ›</button>' +
+    '<button class="btn line" type="button" data-act="yol" data-lat="' + x.lat + '" data-lng="' + x.lng + '" aria-label="' + esc(x.ad) + ' yol tarifi">🧭 Yol tarifi</button></div></li>';
+}
+function bosHtml(ic, b, m, dugme){ return '<div class="bos"><div class="ic" aria-hidden="true">' + ic + '</div><h2>' + b + '</h2>' + (m ? '<p>' + m + '</p>' : '') + (dugme || '') + '</div>'; }
+function anaHtml(){
+  if (S.durum === 'konum') return bosHtml('📍', 'Konumunuz alınıyor…', 'Telegram konum izni isterse «İzin ver»e dokunun. Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.',
+    '<button class="link" data-act="ilSec">Konum yerine il seçin</button>');
+  if (S.durum === 'il') {
+    var neden = { izin:'Konum izni verilmedi.', tgizin:'Telegram\'da konum izni kapalı.', yok:'Bu cihazda konum alınamıyor.', alinamadi:'Konumunuz alınamadı.', zaman:'Konum zamanında alınamadı.' }[S.konumHata] || '';
+    return '<div class="bos"><div class="ic" aria-hidden="true">🏙️</div><h2>Hangi ilde arıyorsunuz?</h2>' + (neden ? '<p>' + neden + ' İl seçerek de bakabilirsiniz.</p>' : '<p>Seçtiğiniz ildeki işletmeleri listeleriz.</p>') +
+      '<label class="sr" for="ilSec">İl</label><select class="sel" id="ilSec"><option value="">İl seçin</option>' + ILLER.map(function(x){ return '<option' + (x === S.il ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
+      (S.konumHata === 'tgizin' ? '<button class="link" data-act="ayarlar">Telegram konum ayarını aç</button>' : '') +
+      '<button class="link" data-act="konum">📍 Konumumu yeniden dene</button></div>';
+  }
+  if (S.durum === 'yukleniyor') return '<div class="liste" aria-busy="true"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>';
+  if (S.durum === 'hata') return bosHtml('⚠️', 'Liste alınamadı', esc(S.hata), '<button class="btn pri" data-act="yenile" style="flex:none;padding:10px 22px">Tekrar dene</button>');
+  var l = gorunen();
+  if (S.gorunum === 'harita') return '<p class="ozet num">' + NF.format(l.length) + ' işletme' + (S.konum ? ' · ' + S.km + ' km içinde' : '') + '</p><div id="harita" role="region" aria-label="Harita"></div>';
+  if (!l.length) {
+    var tumu = suzgec(S.liste).length;
+    if (!S.liste.length) return bosHtml('🔍', S.konum ? 'Yakınınızda henüz işletme yok' : esc(S.il) + ' ilinde henüz işletme yok',
+      'YourPOS 360 ile çalışan işletmeler arttıkça burada görünecek. Başka bir il seçebilirsiniz.', '<button class="link" data-act="ilSec">İl seç</button>');
+    if (S.konum && tumu) return bosHtml('🔍', S.km + ' km içinde sonuç yok', 'Mesafeyi artırın: daha uzakta ' + NF.format(tumu) + ' işletme var.', '<button class="btn pri" data-act="km" data-k="100" style="flex:none;padding:10px 22px">100 km\'ye kadar göster</button>');
+    return bosHtml('🔍', 'Bu seçimle eşleşen işletme yok', 'Filtreleri değiştirin.', '<button class="link" data-act="temizle">Filtreleri temizle</button>');
+  }
+  return '<p class="ozet num">' + NF.format(l.length) + ' işletme' + (S.konum ? ' · en yakından uzağa' : ' · A\'dan Z\'ye') + '</p><ul class="liste">' + l.map(kartHtml).join('') + '</ul>' +
+    '<p class="not">🔒 Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.</p>';
+}
+function ciz(){
+  $('#yer').innerHTML = yerHtml();
+  $('#filtre').innerHTML = filtreHtml();
+  $('#filtre').hidden = !$('#filtre').innerHTML;
+  document.querySelectorAll('[data-act="gorunum"]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-k') === S.gorunum)); });
+  $('#main').innerHTML = anaHtml();
+  document.documentElement.style.setProperty('--ust-h', $('#ust').offsetHeight + 'px');
+  if (S.gorunum === 'harita' && S.durum === 'hazir') haritaCiz();
+}
+
+/* ---------- harita (Leaflet + OpenStreetMap; yalnız harita açılınca yüklenir) ---------- */
+var LEAF = null, HARITA = null;
+function leafletYukle(){
+  if (window.L) return Promise.resolve(window.L);
+  if (LEAF) return LEAF;
+  LEAF = new Promise(function(ok, hata){
+    var c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(c);
+    var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = function(){ ok(window.L); }; s.onerror = function(){ LEAF = null; hata(new Error('harita')); };
+    document.head.appendChild(s);
+  });
+  return LEAF;
+}
+function haritaCiz(){
+  var kutu = $('#harita');
+  if (!kutu) return;
+  leafletYukle().then(function(L){
+    if (!document.body.contains(kutu)) return;
+    if (HARITA) { try { HARITA.remove(); } catch(e){} HARITA = null; }
+    var m = L.map(kutu, { zoomControl:true, attributionControl:true });
+    HARITA = m;
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'© OpenStreetMap' }).addTo(m);
+    var sinir = [];
+    if (S.konum) {
+      L.marker([S.konum.lat, S.konum.lng], { icon:L.divIcon({ className:'', html:'<div class="ben" aria-label="Siz"></div>', iconSize:[18, 18], iconAnchor:[9, 9] }), keyboard:false }).addTo(m);
+      sinir.push([S.konum.lat, S.konum.lng]);
+    }
+    gorunen().forEach(function(x){
+      var k = kolBul(x.kol);
+      var mk = L.marker([x.lat, x.lng], { icon:L.divIcon({ className:'', html:'<div class="pin' + (x.acik ? '' : ' kapali') + '">' + k.e + '</div>', iconSize:[38, 38], iconAnchor:[19, 19] }), title:x.ad }).addTo(m);
+      mk.bindPopup('<div class="pp"><div class="pp-ad">' + esc(x.ad) + '</div><div class="pp-alt">' + k.e + ' ' + esc(k.ad) + (x.km !== undefined ? ' · ' + kmYaz(x.km) : '') +
+        ' · ' + (x.acik ? 'Açık' : 'Kapalı') + '</div><button class="btn pri" type="button" data-act="git" data-k="' + esc(x.link) + '">' + dugmeAd(k) + ' ›</button></div>');
+      sinir.push([x.lat, x.lng]);
+    });
+    if (sinir.length > 1) m.fitBounds(sinir, { padding:[30, 30], maxZoom:15 });
+    else if (sinir.length) m.setView(sinir[0], 14);
+    else m.setView([39.0, 35.2], 5);
+  }, function(){ kutu.innerHTML = bosHtml('🗺️', 'Harita açılamadı', 'İnternet bağlantınızı kontrol edin. Liste görünümünü kullanabilirsiniz.'); });
+}
+
+/* ---------- olaylar ---------- */
+var ACT = {
+  gorunum:function(el){ S.gorunum = el.getAttribute('data-k'); haptic(); ciz(); },
+  km:function(el){ S.km = Number(el.getAttribute('data-k')); LS.set('yp-yakin-km', String(S.km)); haptic(); ciz(); },
+  grup:function(el){ S.grup = el.getAttribute('data-k'); S.kol = ''; haptic(); ciz(); },
+  acik:function(){ S.acik = !S.acik; LS.set('yp-yakin-acik', S.acik ? '1' : '0'); haptic(); ciz(); },
+  temizle:function(){ S.grup = ''; S.kol = ''; S.acik = false; LS.set('yp-yakin-acik', '0'); ciz(); },
+  git:function(el){ var u = el.getAttribute('data-k'); if (u) telegramAc(u); },
+  yol:function(el){ disaAc('https://www.google.com/maps/dir/?api=1&destination=' + el.getAttribute('data-lat') + ',' + el.getAttribute('data-lng')); },
+  konum:function(){ konumuKullan(); },
+  ilSec:function(){ S.durum = 'il'; S.konumHata = ''; ciz(); var s = $('#ilSec'); if (s) s.focus(); },
+  ayarlar:function(){ try { tg.LocationManager.openSettings(); } catch(e){} },
+  yenile:function(){ if (S.konum || S.il) yukle(); else konumuKullan(); }
+};
+document.addEventListener('click', function(e){
+  var el = e.target.closest && e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  var f = ACT[el.getAttribute('data-act')];
+  if (f) { e.preventDefault(); f(el); }
+});
+document.addEventListener('change', function(e){
+  if (e.target.id === 'ilSec' && e.target.value) { S.il = e.target.value; S.konum = null; LS.set('yp-yakin-il', S.il); yukle(); }
+  else if (e.target.id === 'kolSec') { S.kol = e.target.value; ciz(); }
+});
+window.addEventListener('scroll', function(){ $('#ust').classList.toggle('golge', window.scrollY > 4); }, { passive:true });
+window.addEventListener('resize', function(){ document.documentElement.style.setProperty('--ust-h', $('#ust').offsetHeight + 'px'); });
+
+/* ---------- önizleme (?demo=1): örnek işletmeler, sunucuya gitmez ---------- */
+function demoMock(){
+  var KOLLAR = [{ grup:'yemek', ad:'Yeme · içme', liste:[{ k:'restoran', ad:'Restoran', e:'🍽️' }, { k:'kebap', ad:'Kebap / Döner / Izgara', e:'🌯' }, { k:'pide', ad:'Pide / Lahmacun', e:'🫓' },
+      { k:'pizza', ad:'Pizza / Burger / Fast food', e:'🍕' }, { k:'kafe', ad:'Kafe / Kahveci', e:'☕' }, { k:'pastane', ad:'Pastane / Fırın', e:'🥐' }, { k:'bar', ad:'Bar / Pub', e:'🍺' }] },
+    { grup:'urun', ad:'Market · dükkân', liste:[{ k:'market', ad:'Bakkal / Market', e:'🛒' }, { k:'manav', ad:'Manav', e:'🥬' }, { k:'hirdavat', ad:'Hırdavat / Nalbur', e:'🔩' },
+      { k:'zuccaciye', ad:'Züccaciye / Milyoncu', e:'🍳' }, { k:'eczane', ad:'Kozmetik / Parfümeri', e:'🧴' }] },
+    { grup:'hizmet', ad:'Eve hizmet · usta', liste:[{ k:'tesisat', ad:'Tesisatçı', e:'🔧' }, { k:'elektrikci', ad:'Elektrikçi', e:'💡' }, { k:'marangoz', ad:'Marangoz', e:'🪚' },
+      { k:'temizlik', ad:'Temizlik', e:'🧽' }, { k:'cilingir', ad:'Çilingir', e:'🔑' }] }];
+  var I = [
+    ['Lezzet Dürüm', 'kebap', 40.9905, 29.0303, true, 4.7, 212, 'Kadıköy'], ['Moda Pide Salonu', 'pide', 40.9846, 29.0257, true, 4.5, 96, 'Kadıköy'],
+    ['Köşe Kafe', 'kafe', 40.9875, 29.0270, true, 4.8, 61, 'Kadıköy'], ['Yıldız Market', 'market', 40.9921, 29.0288, true, 4.4, 38, 'Kadıköy'],
+    ['Usta Tesisat', 'tesisat', 40.9958, 29.0420, true, 4.9, 44, 'Kadıköy'], ['Işık Elektrik', 'elektrikci', 41.0034, 29.0441, false, 4.6, 19, 'Kadıköy'],
+    ['Fırın Ekmek Evi', 'pastane', 40.9805, 29.0480, true, 4.6, 120, 'Kadıköy'], ['Nalbur Hasan', 'hirdavat', 41.0049, 29.0472, true, 4.3, 12, 'Üsküdar'],
+    ['Pizza Hattı', 'pizza', 40.9758, 29.0378, false, 4.2, 88, 'Kadıköy'], ['Milyoncu Bereket', 'zuccaciye', 41.0100, 29.0600, true, 0, 0, 'Üsküdar'],
+    ['Taze Manav', 'manav', 40.9700, 29.0600, true, 4.5, 23, 'Kadıköy'], ['Ahşap Atölye', 'marangoz', 41.0250, 29.0950, true, 4.7, 9, 'Ümraniye'],
+    ['Pırıl Temizlik', 'temizlik', 40.9600, 29.1100, true, 4.8, 57, 'Maltepe'], ['Anahtar Çilingir', 'cilingir', 41.0450, 29.0300, true, 0, 0, 'Üsküdar'],
+    ['Boğaz Restoran', 'restoran', 41.0800, 29.0500, false, 4.6, 140, 'Beşiktaş'], ['Ege Kebap', 'kebap', 40.7650, 29.9400, true, 4.5, 77, 'İzmit']
+  ];
+  var MERKEZ = { lat:40.9878, lng:29.0300 };
+  function mesafe(a1, o1, a2, o2){ var r = Math.PI / 180, dA = (a2 - a1) * r, dO = (o2 - o1) * r; var x = Math.sin(dA / 2) * Math.sin(dA / 2) + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin(dO / 2) * Math.sin(dO / 2); return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
+  var LISTE = I.map(function(x, i){
+    return { b:'d' + i, ad:x[0], sube:'', kol:x[1], lat:x[2], lng:x[3], il:x[7] === 'İzmit' ? 'Kocaeli' : 'İstanbul', ilce:x[7], bot:'ornek' + i + '_bot', logo:'', acik:x[4], ileri:!x[4] && i % 2 === 0,
+      puan:x[5] ? { o:x[5], n:x[6] } : null, maks:x[1] === 'tesisat' || x[1] === 'elektrikci' ? 15 : 5 };
+  });
+  if (params.get('konum') !== '0' && !navigator.__gercekKonum) {
+    try {
+      navigator.geolocation.getCurrentPosition = function(ok){ setTimeout(function(){ ok({ coords:{ latitude:MERKEZ.lat, longitude:MERKEZ.lng } }); }, 500); };
+    } catch(e){}
+  }
+  return function(act, d){
+    return new Promise(function(ok){
+      setTimeout(function(){
+        if (act !== 'uyRehber') return ok({ ok:false, kod:'ISTEK', hata:'Önizlemede bu işlem yok.' });
+        var konum = d.lat !== undefined && d.lng !== undefined;
+        if (!konum && !d.il) return ok({ ok:false, kod:'KONUM', hata:'Konumunuzu paylaşın ya da bir il seçin.' });
+        var l = LISTE.map(function(x){ var y = JSON.parse(JSON.stringify(x)); if (konum) y.km = Math.round(mesafe(d.lat, d.lng, x.lat, x.lng) * 10) / 10; y.link = 'https://t.me/' + x.bot; return y; })
+          .filter(function(x){ return konum ? x.km <= (d.km || 25) : x.il.toLocaleLowerCase('tr') === String(d.il).toLocaleLowerCase('tr'); })
+          .sort(function(a, b){ return konum ? a.km - b.km : a.ad.localeCompare(b.ad, 'tr'); });
+        ok({ ok:true, liste:l, kollar:KOLLAR, km:konum ? d.km : null, il:konum ? '' : d.il });
+      }, 450);
+    });
+  };
+}
+
+/* ---------- başlat ---------- */
+if (!DEMO && !inTelegram) {
+  $('#main').innerHTML = bosHtml('📱', 'Bu sayfa Telegram içinde açılır', 'Telegram\'da <b>@yourpos360_bot</b> sohbetinde «📍 Yakınımdaki işletmeler» düğmesine dokunun.',
+    '<a class="link" href="?demo=1">Örnek listeyi gör</a>');
+  $('#filtre').hidden = true;
+} else if (S.il && params.get('konum') === '0') { yukle(); }
+else konumuKullan();
+})();
+</script>
+</body>
+</html>
