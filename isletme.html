@@ -299,6 +299,38 @@ a{color:var(--link)}
 .seg-sar{display:flex;flex-wrap:wrap;max-width:100%}
 .seg-sar button{flex:1 1 auto}
 .rng{width:100%;height:44px;accent-color:var(--accent);margin:0}
+/* zincir merkez ekranı */
+.mz-acik{flex:none;display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:20px;background:var(--ok-soft);color:var(--ok-ink);font-weight:700;font-size:14px;white-space:nowrap}
+.mz-acik .l-long{margin-inline-start:4px}
+.flag.sube{background:var(--accent-soft);color:var(--accent-ink)}
+.mz-kpis{margin-bottom:4px}
+.mz-seg{margin:2px 0}
+.mz-subeler{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start}
+.mz-sube{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.mz-sube.kapali{opacity:.7}
+.mz-s-bas{display:flex;align-items:flex-start;gap:10px}
+.mz-s-ad{flex:1;min-width:0}
+.mz-s-ad h2{font-size:18px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;vertical-align:3px}
+.mz-durum{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;margin-top:2px}
+.mz-durum .dot{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.mz-durum.ok{color:var(--ok-ink)}
+.mz-durum.warn{color:var(--warn-ink)}
+.mz-durum.off{color:var(--danger)}
+.mz-s-say{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--sub)}
+.mz-s-say b{color:var(--text)}
+.mz-s-act{margin-top:0}
+.mz-paket .mz-pk-t{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mz-ekip{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.mz-ekip li{display:flex;align-items:center;gap:8px;min-height:56px;border-bottom:1px solid var(--sep)}
+.mz-ekip li:last-child{border-bottom:0}
+.mz-e-ad{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.mz-e-ad .o-sub{display:block;font-size:14px;font-weight:500;color:var(--sub)}
+.mz-link{display:flex;flex-direction:column;gap:8px;background:var(--bg2);box-shadow:none}
+.mz-hb{border:0;background:none;text-align:left;width:100%;color:inherit;font:inherit;cursor:pointer}
+.mz-hb:hover,.mz-hb:focus-visible{background:color-mix(in srgb,var(--text) 5%,transparent)}
+.mz-sube-not{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mz-hedef .kat-chips{margin-bottom:4px}
 
 /* ---------- menü ---------- */
 .search{position:relative}
@@ -731,6 +763,7 @@ var IC = {
   kucult:'M9 4v5H4 M15 4v5h5 M9 20v-5H4 M15 20v-5h5',
   gunes:circ(12, 12, 4) + ' M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
   ay:'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z',
+  bina:'M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-4h6v4 M9 9h1 M14 9h1 M9 13h1 M14 13h1',
   qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z'
 };
 function ic(n, cls){ return '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + IC[n] + '"/></svg>'; }
@@ -790,10 +823,11 @@ function gunHafta(k){ return GUNLER[gunDate(k).getUTCDay()]; }
 var params = new URLSearchParams(location.search);
 var B = params.get('b') || '';
 var DEMO = params.get('demo') === '1';
-var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
+var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye', merkez:'Merkez' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
 var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
 var ACILACAK_NO = Number(params.get('no')) || 0;
-var ANA = params.get('ana') === '1';          // işletme sahibi ekranı YourPOS 360 ana botundan açtı
+var ANA = params.get('ana') === '1';
+var MERKEZ = params.get('merkez') === '1' || (params.get('demo') === '1' && String(params.get('rol') || '').toLowerCase() === 'merkez');   // zincir merkez ekranı          // işletme sahibi ekranı YourPOS 360 ana botundan açtı
 var SEKME = String(params.get('sekme') || '');
 var CIHAZ_KEY = 'yourpos360-cihaz-' + B;
 var CIHAZ = null;
@@ -866,7 +900,7 @@ function telegramAc(url){
 var MOCK = null;   // önizlemede 5_demo.js doldurur
 function auth(){ return inTelegram ? (ANA ? { initData:realTg.initData, ana:1 } : { initData:realTg.initData }) : (CIHAZ ? { cihaz:CIHAZ } : {}); }
 function call(act, data){
-  var payload = Object.assign({ act:act, b:B }, auth(), data || {});
+  var payload = Object.assign({ act:act, b:B }, auth(), MERKEZ ? { merkez:1 } : {}, data || {});
   if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
   var body = JSON.stringify(payload);
   var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
@@ -1003,12 +1037,12 @@ function degisiklikleriIsle(){
   var izlenen = kurye()
     ? D.siparisler.filter(function(o){ return o.kod === 'R' && (!o.kuryeId || benim(o)); })
     : D.siparisler.filter(function(o){ return o.kod === 'Y'; });
-  var anahtar = function(o){ return o.no + ':' + o.kod; };
+  var anahtar = function(o){ return (o.b ? o.b + '/' : '') + o.no + ':' + o.kod; };
   if (GORULEN) {
     var yeniler = izlenen.filter(function(o){ return !GORULEN[anahtar(o)]; });
     if (yeniler.length) {
-      yeniler.forEach(function(o){ U.taze[o.no] = Date.now(); });
-      var no = yeniler.map(function(o){ return '#' + o.no; }).join(', ');
+      yeniler.forEach(function(o){ U.taze[(o.b ? o.b + '/' : '') + o.no] = Date.now(); });
+      var no = yeniler.map(function(o){ return '#' + o.no + (o.sube ? ' (' + o.sube + ')' : ''); }).join(', ');
       toast(kurye() ? '📦 Hazır sipariş: ' + no : '🔔 Yeni sipariş: ' + no);
       haptic('notify', 'warning');
       try { if (navigator.vibrate) navigator.vibrate([180, 90, 180]); } catch(e){}
@@ -1042,6 +1076,7 @@ function poll(){
   return call('ekYenile', { rev:D.rev }).then(function(r){
     if (!r || !r.ok) return hataIsle(r);
     pollHata = 0; U.net = true; U.sonOk = Date.now();
+    if (r.subeler) D.subeler = r.subeler;
     if (benimNesil !== nesil) return;   // bu arada bir işlem yapıldı; bir sonraki tur doğru veriyi getirir
     if (!r.ayni) {
       D.rev = r.rev;
@@ -1154,6 +1189,7 @@ function siparisGorunumu(){ return kurye() || U.tab === 'siparis'; }
 
 function renderTop(){
   if (!D) return;
+  if (merkez()) return mzTopCiz();
   var i = D.isletme;
   var rolAd = D.cihaz ? D.ben.ad + ' · ' + (kurye() ? 'kurye cihazı' : 'tablet') : D.ben.ad + ' · ' + D.rol;
   var canli = U.net
@@ -1177,6 +1213,7 @@ function renderTop(){
     var te = tamEkranda();
     h += '<button class="icon-btn" data-act="tamEkran" aria-pressed="' + (te ? 'true' : 'false') + '" aria-label="' + (te ? 'Tam ekrandan çık' : 'Tam ekran') + '">' + ic(te ? 'kucult' : 'buyut') + '</button>';
   }
+  if (D.zincir && D.zincir.yetkili) h += '<button class="icon-btn" data-act="mzGit" aria-label="Zincir merkez ekranı">' + ic('bina') + '</button>';
   var koyuT = root.getAttribute('data-theme') === 'dark';
   h += '<button class="icon-btn" data-act="tema" aria-label="' + (koyuT ? 'Gündüz moduna geç' : 'Gece moduna geç') + '">' + ic(koyuT ? 'gunes' : 'ay') + '</button>';
   h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-haspopup="dialog" aria-label="Ses ve bildirim (' +
@@ -1192,7 +1229,7 @@ function renderBanners(){
       return '<a href="?' + esc(q.toString()) + '"' + (DEMO_ROL.toLowerCase() === k ? ' aria-current="page"' : '') + '>' + ad + '</a>';
     };
     h += '<div class="demo-bar"><span>Önizleme · örnek verilerle</span><span class="d-roles" role="group" aria-label="Görünüm">' +
-      r('sahip', 'Sahip') + r('personel', 'Personel') + r('kurye', 'Kurye') + '</span></div>';
+      r('sahip', 'Sahip') + r('personel', 'Personel') + r('kurye', 'Kurye') + r('merkez', 'Merkez') + '</span></div>';
   }
   if (!U.net) {
     h += '<div class="banner err" role="alert">' + ic('uyari') + '<span class="b-txt">Bağlantı kurulamıyor' +
@@ -1234,6 +1271,7 @@ function renderBanners(){
 }
 function renderTabs(){
   if (!D) return;
+  if (merkez()) return mzSekmeler();
   var t;
   if (kurye()) {
     var hazir = D.siparisler.filter(function(o){ return o.kod === 'R' && (!o.kuryeId || benim(o)); }).length;
@@ -1253,6 +1291,7 @@ function renderMain(){
   if (!D) return;
   var h;
   main.classList.remove('fill');
+  if (merkez()) { koruyarakYaz(main, mzEkran()); mzBagla(); return; }
   if (kurye()) h = kuryeEkrani();
   else if (U.tab === 'menu') h = menuEkrani();
   else if (U.tab === 'rapor') h = raporEkrani();
@@ -2619,11 +2658,11 @@ SHEET.excel = function(){
 function ayarYukle(){
   if (U.ayYuk) return;
   U.ayYuk = true;
-  call('ekAyarlar').then(function(r){
+  call(merkez() ? 'ekMzAyarlar' : 'ekAyarlar', merkez() ? { sb:mzKaynak() } : {}).then(function(r){
     U.ayYuk = false;
-    if (!r || !r.ok) { U.ayHata = (r && r.hata) || 'Ayarlar yüklenemedi.'; if (U.tab === 'ayar') renderMain(); return; }
+    if (!r || !r.ok) { U.ayHata = (r && r.hata) || 'Ayarlar yüklenemedi.'; if (U.tab === 'ayar' || U.tab === 'mzOrtak') renderMain(); return; }
     ayarAl(r);
-    if (U.tab === 'ayar') renderMain();
+    if (U.tab === 'ayar' || U.tab === 'mzOrtak') renderMain();
   });
 }
 function ayarAl(r){
@@ -2636,6 +2675,7 @@ function ayarAl(r){
   var cs = a.CalismaSaatleri || {}, gs = {};
   for (var g = 1; g <= 7; g++) gs[g] = String(cs[g] || '');
   U.aySaat = { kontrol:!!a.SaatKontrol, gun:gs, ileri:!!a.IleriSiparis };
+  if (merkez()) return;
   D.isletme.ad = a.IsletmeAdi || D.isletme.ad; D.isletme.telefon = a.Telefon || '';
   D.isletme.lat = Number(a.Enlem) || 0; D.isletme.lng = Number(a.Boylam) || 0; D.isletme.hazirlikDk = Number(a.HazirlikSuresiDk) || D.isletme.hazirlikDk;
 }
@@ -2677,6 +2717,30 @@ function ayarEkrani(){
     '<div class="field"><label for="ayIpt">Müşteri iptal süresi (dk)</label><input class="inp num" id="ayIpt" inputmode="numeric" value="' + esc(a.IptalSuresiDk === undefined ? '' : a.IptalSuresiDk) + '"></div></div>' +
     '<div class="field"><label for="ayKar">Karşılama mesajı</label><textarea class="inp" id="ayKar" maxlength="300" rows="2">' + esc(a.KarsilamaMesaji || '') + '</textarea></div>' +
     '<button class="btn pri" type="submit"' + (bb ? ' disabled' : '') + '>' + (bb ? bekle('ayBilgi') : ic('tik')) + 'Bilgileri kaydet</button></form>';
+  h += ayarSaatHtml();
+  // konum
+  var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
+  h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
+    (lat ? '<div class="ok-box">' + ic('pin') + '<span>Konum kayıtlı <span class="muted num">(' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')</span></span>' +
+      '<button class="btn ghost sm" data-act="konumHarita">Haritada gör</button></div>'
+      : '<div class="note-box">Konum kayıtlı değil. Müşterilerin mesafesi hesaplanamadığı için sipariş alınamaz.</div>') +
+    '<p class="tip-txt">Dükkândayken aşağıdaki düğmeye basın. Ya da Google Haritalar\'dan konumun koordinatını (ör. 41.0082, 28.9784) veya uzun linkini yapıştırın.</p>' +
+    '<button class="btn line" data-act="konumAl"' + (kb ? ' disabled' : '') + '>' + (kb ? bekle('ayKonum') : ic('pin')) + 'Bulunduğum yeri kaydet</button>' +
+    '<form class="kform" data-form="ayKonum"><input class="inp" id="ayKonumInp" placeholder="Koordinat ya da Google Haritalar linki" autocomplete="off" aria-label="Koordinat ya da Google Haritalar linki">' +
+    '<button class="btn sm pri" type="submit"' + (kb ? ' disabled' : '') + '>Kaydet</button></form>' + (U.konumHata ? '<div class="err-txt" role="alert">' + esc(U.konumHata) + '</div>' : '') + '</section>';
+  h += ayarKuralHtml();
+  h += ayarOdemeHtml();
+  h += '<section class="card pad afis-kart"><h2 class="frm-h">QR afişleri</h2><p class="tip-txt">Kapınıza, camınıza ya da masalarınıza koyabileceğiniz QR afişleri hazırlayın. Müşteri telefon kamerasıyla okutunca botunuz açılır ve sipariş verir.</p>' +
+    '<p class="tip-txt">5 ölçü: A4, A5, A6 masa kartı, 10×10 cm cam etiketi ve Instagram hikâyesi. Logonuzu da ekleyebilirsiniz.</p>' +
+    '<button class="btn line" data-act="afisAc">' + ic('qr', 'sm') + 'QR afişi hazırla</button></section>';
+  h += videoDugme('ayarlar', 'Ayarlar nasıl yapılır? Videoyu izleyin');
+  if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a yazabilirsiniz.</p>' +
+    '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button><button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button></div></section>';
+  return h + '</div>';
+}
+// Ayar formları: restoran ekranı (Ayarlar) ve merkez ekranı (Ortak ayarlar)
+function ayarSaatHtml(){
+  var h = '';
   // çalışma saatleri ve ileri saatli sipariş
   var sv = U.aySaat || { kontrol:false, gun:{}, ileri:false }, sb = U.busy.aySaat, GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
   h += '<form class="card pad frm" data-form="aySaat"><h2 class="frm-h">Çalışma saatleri ve ileri saatli sipariş</h2>' +
@@ -2690,17 +2754,11 @@ function ayarEkrani(){
   }
   h += '<button class="opt" type="button" role="switch" aria-checked="' + (sv.ileri ? 'true' : 'false') + '" data-act="ileriSw"><span class="o-main">İleri saatli sipariş al' +
     '<span class="o-sub">Müşteri bugün için teslim saati seçebilir (ör. sabah verir, öğlen 12:30\'da alır). Kapalı saatlerde de ileri saate sipariş alınır.</span></span><span class="tgl" aria-hidden="true"></span></button>' +
-    '<button class="btn pri" type="submit"' + (sb ? ' disabled' : '') + '>' + (sb ? bekle('aySaat') : ic('tik')) + 'Saatleri kaydet</button></form>';
-  // konum
-  var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
-  h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
-    (lat ? '<div class="ok-box">' + ic('pin') + '<span>Konum kayıtlı <span class="muted num">(' + lat.toFixed(5) + ', ' + lng.toFixed(5) + ')</span></span>' +
-      '<button class="btn ghost sm" data-act="konumHarita">Haritada gör</button></div>'
-      : '<div class="note-box">Konum kayıtlı değil. Müşterilerin mesafesi hesaplanamadığı için sipariş alınamaz.</div>') +
-    '<p class="tip-txt">Dükkândayken aşağıdaki düğmeye basın. Ya da Google Haritalar\'dan konumun koordinatını (ör. 41.0082, 28.9784) veya uzun linkini yapıştırın.</p>' +
-    '<button class="btn line" data-act="konumAl"' + (kb ? ' disabled' : '') + '>' + (kb ? bekle('ayKonum') : ic('pin')) + 'Bulunduğum yeri kaydet</button>' +
-    '<form class="kform" data-form="ayKonum"><input class="inp" id="ayKonumInp" placeholder="Koordinat ya da Google Haritalar linki" autocomplete="off" aria-label="Koordinat ya da Google Haritalar linki">' +
-    '<button class="btn sm pri" type="submit"' + (kb ? ' disabled' : '') + '>Kaydet</button></form>' + (U.konumHata ? '<div class="err-txt" role="alert">' + esc(U.konumHata) + '</div>' : '') + '</section>';
+    '<button class="btn pri" type="submit"' + (sb ? ' disabled' : '') + '>' + (sb ? bekle('aySaat') : ic('tik')) + (merkez() ? 'Seçili şubelere uygula' : 'Saatleri kaydet') + '</button></form>';
+  return h;
+}
+function ayarKuralHtml(){
+  var h = '';
   // teslimat bölgeleri
   var tb = U.busy.ayKural;
   h += '<form class="card pad frm" data-form="ayKural"><h2 class="frm-h">Teslimat bölgeleri ve kurye ücreti</h2>' +
@@ -2716,7 +2774,11 @@ function ayarEkrani(){
         '<p class="b-cumle" id="bz-' + i + '" aria-live="polite">' + esc(bolgeCumle(k, i)) + '</p></div>';
     }).join('') + '</div>' +
     (U.ayK.length < 6 ? '<button class="btn ghost sm" type="button" data-act="bolgeEkle">' + ic('arti', 'sm') + 'Bölge ekle</button>' : '') +
-    '<button class="btn pri" type="submit"' + (tb ? ' disabled' : '') + '>' + (tb ? bekle('ayKural') : ic('tik')) + 'Teslimat ayarlarını kaydet</button></form>';
+    '<button class="btn pri" type="submit"' + (tb ? ' disabled' : '') + '>' + (tb ? bekle('ayKural') : ic('tik')) + (merkez() ? 'Seçili şubelere uygula' : 'Teslimat ayarlarını kaydet') + '</button></form>';
+  return h;
+}
+function ayarOdemeHtml(){
+  var h = '';
   // ödeme yöntemleri
   var ob = U.busy.ayOdeme;
   h += '<form class="card pad frm" data-form="ayOdeme"><h2 class="frm-h">Ödeme yöntemleri</h2><p class="tip-txt">Müşteriler kapıda yalnızca açık olan yöntemlerle ödeyebilir.</p>' +
@@ -2726,14 +2788,8 @@ function ayarEkrani(){
         '<button class="icon-btn" type="button" data-act="odSil" data-k="' + i + '" aria-label="' + esc(o.ad) + ' yöntemini kaldır">' + ic('x') + '</button></li>';
     }).join('') + '</ul><div class="kform"><input class="inp" id="odYeni" maxlength="40" placeholder="Yeni yöntem (ör. IBAN ile ödeme)" autocomplete="off" aria-label="Yeni ödeme yöntemi">' +
     '<button class="btn sm line" type="button" data-act="odEkle">Ekle</button></div>' +
-    '<button class="btn pri" type="submit"' + (ob ? ' disabled' : '') + '>' + (ob ? bekle('ayOdeme') : ic('tik')) + 'Ödeme yöntemlerini kaydet</button></form>';
-  h += '<section class="card pad afis-kart"><h2 class="frm-h">QR afişleri</h2><p class="tip-txt">Kapınıza, camınıza ya da masalarınıza koyabileceğiniz QR afişleri hazırlayın. Müşteri telefon kamerasıyla okutunca botunuz açılır ve sipariş verir.</p>' +
-    '<p class="tip-txt">5 ölçü: A4, A5, A6 masa kartı, 10×10 cm cam etiketi ve Instagram hikâyesi. Logonuzu da ekleyebilirsiniz.</p>' +
-    '<button class="btn line" data-act="afisAc">' + ic('qr', 'sm') + 'QR afişi hazırla</button></section>';
-  h += videoDugme('ayarlar', 'Ayarlar nasıl yapılır? Videoyu izleyin');
-  if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Yardım ve destek</h2><p class="tip-txt">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a yazabilirsiniz.</p>' +
-    '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button><button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button></div></section>';
-  return h + '</div>';
+    '<button class="btn pri" type="submit"' + (ob ? ' disabled' : '') + '>' + (ob ? bekle('ayOdeme') : ic('tik')) + (merkez() ? 'Seçili şubelere uygula' : 'Ödeme yöntemlerini kaydet') + '</button></form>';
+  return h;
 }
 function saatOku(){
   if (!U.aySaat) return;
@@ -2750,6 +2806,7 @@ function konumCoz(t){
   return { lat:lat, lng:lng };
 }
 function ayarKaydet(act, veri, busy, mesaj){
+  if (merkez()) return mzAyarKaydet(act, veri, busy, mesaj);
   return islem(act, veri, { busy:busy }).then(function(r){
     if (r) { ayarAl(r); renderMain(); renderTop(); renderBanners(); toast(mesaj); }
     return r;
@@ -3076,13 +3133,17 @@ SHEET.kampanyalar = function(){
   return h;
 };
 function kpTaslak(k){
-  if (k) return { tip:'kampanya', id:k.id, ad:k.ad, hedefler:(k.hedefler || []).slice(), kademeler:J2(k.kademeler), tekrar:k.tekrar !== false, aktif:k.aktif !== false, bas:k.bas || '', bit:k.bit || '', hata:'' };
-  return { tip:'kampanya', id:'', ad:'', hedefler:[], kademeler:J2(KP_SABLON[0][1]), tekrar:true, aktif:true, bas:'', bit:'', hata:'', yeni:true };
+  var sb = merkez() ? (k && k.subeler ? k.subeler.slice() : mzAcikSubeler().map(function(s){ return s.b; })) : null;
+  if (k) return { tip:'kampanya', id:k.id, ad:k.ad, hedefler:(k.hedefler || []).slice(), kademeler:J2(k.kademeler), tekrar:k.tekrar !== false, aktif:k.aktif !== false, bas:k.bas || '', bit:k.bit || '', hata:'', subeler:sb };
+  return { tip:'kampanya', id:'', ad:'', hedefler:[], kademeler:J2(KP_SABLON[0][1]), tekrar:true, aktif:true, bas:'', bit:'', hata:'', yeni:true, subeler:sb };
 }
 function J2(x){ return JSON.parse(JSON.stringify(x || [])); }
 SHEET.kampanya = function(s){
   var b = U.busy.kpKaydet;
   var h = shBas(s.id ? 'Kampanyayı düzenle' : 'Yeni kampanya') + '<div class="sh-body">';
+  if (merkez()) h += '<div class="blk"><h3 class="blk-h">Hangi şubelerde?</h3><div class="kat-chips">' + (D.subeler || []).map(function(x){
+    return '<button class="chip sm" type="button" data-act="kpSube" data-k="' + esc(x.b) + '" aria-pressed="' + ((s.subeler || []).indexOf(x.b) >= 0) + '">' + esc(x.ad) + '</button>';
+  }).join('') + '</div><p class="tip-txt">Ürünler merkez şubenin menüsünden seçilir; aynı adlı ürün ve kategoriler her şubede geçerli olur.</p></div>';
   h += '<div class="blk"><h3 class="blk-h">Hazır kalıplar</h3><div class="kat-chips">' + KP_SABLON.map(function(x, i){
     return '<button class="chip sm" type="button" data-act="kpSablon" data-k="' + i + '">' + esc(x[0]) + '</button>';
   }).join('') + '</div></div>';
@@ -3165,26 +3226,32 @@ var ACT_KP = {
     });
     if (!s.hedefler.length) hata = hata || 'Kampanyanın geçerli olacağı ürünleri ya da kategoriyi seçin.';
     if (s.bas && s.bit && s.bas > s.bit) hata = hata || 'Bitiş tarihi başlangıçtan önce olamaz.';
+    if (merkez() && !(s.subeler || []).length) hata = hata || 'Kampanyanın geçerli olacağı en az bir şube seçin.';
     s.hata = hata;
     if (hata) { renderSheet(); haptic('notify', 'error'); return; }
-    islem('ekKampanyaKaydet', { k:{ id:s.id, ad:s.ad, hedefler:s.hedefler, kademeler:kad, tekrar:s.tekrar, aktif:s.aktif, bas:s.bas, bit:s.bit } }, { busy:'kpKaydet' }).then(function(r){
+    var kv = { k:{ id:s.id, ad:s.ad, hedefler:s.hedefler, kademeler:kad, tekrar:s.tekrar, aktif:s.aktif, bas:s.bas, bit:s.bit } };
+    if (merkez()) kv.hedef = s.subeler;
+    islem(merkez() ? 'ekMzKampanyaKaydet' : 'ekKampanyaKaydet', kv, { busy:'kpKaydet' }).then(function(r){
       if (!r) return;
       D.kampanyalar = r.kampanyalar; renderMain();
-      sheetAc({ tip:'kampanyalar' }); toast('Kampanya kaydedildi');
+      if (merkez()) sheetKapat(); else sheetAc({ tip:'kampanyalar' });
+      toast(r.uyari || 'Kampanya kaydedildi', !!r.uyari);
     });
   },
   kpSil:function(){
     var id = SH.id, ad = SH.ad || kpAdOner(SH.kademeler), geri = SH;
     sheetAc({ tip:'onay', baslik:'Kampanyayı sil', metin:'<b>' + esc(ad) + '</b> silinsin mi?', dugme:'Sil', busy:'kpSil', yap:function(){
-      islem('ekKampanyaSil', { id:id }, { busy:'kpSil' }).then(function(r){
-        if (r) { D.kampanyalar = r.kampanyalar; renderMain(); sheetAc({ tip:'kampanyalar' }); toast('Kampanya silindi'); } else sheetAc(geri);
+      islem(merkez() ? 'ekMzKampanyaSil' : 'ekKampanyaSil', { id:id }, { busy:'kpSil' }).then(function(r){
+        if (r) { D.kampanyalar = r.kampanyalar; renderMain(); if (merkez()) sheetKapat(); else sheetAc({ tip:'kampanyalar' }); toast('Kampanya silindi'); } else sheetAc(geri);
       });
     } });
   },
   kpAktif:function(el){
     var k = (D.kampanyalar || []).filter(function(x){ return x.id === el.getAttribute('data-k'); })[0];
     if (!k) return;
-    islem('ekKampanyaKaydet', { k:{ id:k.id, ad:k.ad, hedefler:k.hedefler, kademeler:k.kademeler, tekrar:k.tekrar, aktif:!k.aktif, bas:k.bas, bit:k.bit } }, { busy:'kpAktif:' + k.id }).then(function(r){
+    var kv = { k:{ id:k.id, ad:k.ad, hedefler:k.hedefler, kademeler:k.kademeler, tekrar:k.tekrar, aktif:!k.aktif, bas:k.bas, bit:k.bit } };
+    if (merkez()) kv.hedef = k.subeler || [];
+    islem(merkez() ? 'ekMzKampanyaKaydet' : 'ekKampanyaKaydet', kv, { busy:'kpAktif:' + k.id }).then(function(r){
       if (r) { D.kampanyalar = r.kampanyalar; renderMain(); if (SH && SH.tip === 'kampanyalar') renderSheet(); }
     });
   }
@@ -3667,7 +3734,7 @@ var ZIL_SESLER = [
 var ZIL_ARALIK = [10, 15, 30, 60];
 var ZIL_KENDI = { buf:null, ad:'', gecici:false };
 
-function zilTip(){ return ZIL.tip || (kurye() ? 'tek' : 'tekrar'); }
+function zilTip(){ return ZIL.tip || (kurye() || merkez() ? 'tek' : 'tekrar'); }
 function zilKaydet(){ LS.set('yourpos360-zil', JSON.stringify(ZIL)); }
 function zilAdi(k){
   if (k === 'kendi') return 'Kendi sesim';
@@ -3942,6 +4009,621 @@ document.addEventListener('input', function(e){
     var y = $('#zilSeviyeYaz'); if (y) y.textContent = '%' + e.target.value;
   }
 });
+/* ---------- zincir merkez ekranı (isletme.html?merkez=1) ----------
+ * Bütün şubelerin canlı siparişleri, şube karşılaştırmalı raporlar, şubeler (aç/kapat, ekip, yeni şube, menü kopyala),
+ * ortak kampanya ve ayarlar. Sipariş numaraları şubeden şubeye tekrar edebildiği için sipariş anahtarı «şube/no». */
+function merkez(){ return !!(D && D.rol === 'Merkez'); }
+function mzSube(b){ return ((D && D.subeler) || []).filter(function(s){ return s.b === b; })[0] || null; }
+function mzSiparis(b, no){ no = Number(no); return (D.siparisler || []).filter(function(o){ return o.b === b && o.no === no; })[0] || null; }
+function mzAcikSubeler(){ return (D.subeler || []).filter(function(s){ return !s.kapali; }); }
+function mzHedefler(){
+  var l = U.mzHedef || mzAcikSubeler().map(function(s){ return s.b; });
+  return l.filter(function(b){ return !!mzSube(b); });
+}
+function mzBugun(){
+  var bugun = gunKey(simdi()), m = {};
+  (D.siparisler || []).forEach(function(o){
+    if (gunKey(o.tarihMs) !== bugun) return;
+    var x = m[o.b] = m[o.b] || { siparis:0, ciro:0, acik:0, yeni:0 };
+    if (o.kod !== 'I') { x.siparis++; x.ciro += Number(o.toplam) || 0; }
+    if (ACIK.indexOf(o.kod) >= 0) x.acik++;
+    if (o.kod === 'Y') x.yeni++;
+  });
+  return m;
+}
+function mzUrl(b, ek){
+  var q = new URLSearchParams(location.search);
+  q.set('b', b); q.delete('merkez'); q.delete('no'); q.delete('sekme');
+  Object.keys(ek || {}).forEach(function(k){ q.set(k, ek[k]); });
+  return location.pathname + '?' + q.toString() + location.hash;
+}
+function mzMerkezeGit(){
+  var q = new URLSearchParams(location.search);
+  q.set('b', (D.zincir && D.zincir.merkez) || B); q.set('merkez', '1'); q.delete('m'); q.delete('no'); q.delete('sekme');
+  location.href = location.pathname + '?' + q.toString() + location.hash;
+}
+function mzSubeDurumu(s){
+  if (s.kapali) return { cls:'off', txt:'Şube kapatıldı' };
+  if (!s.hizmet) return { cls:'off', txt:'Hizmet durdu (ödeme)' };
+  if (!s.kurulu) return { cls:'warn', txt:'Konum kayıtlı değil' };
+  if (!s.alim) return { cls:'off', txt:'Sipariş almıyor' };
+  if (s.saat && s.saat.kontrol && !s.saat.acik) return { cls:'warn', txt:'Kapalı · ' + (s.saat.sonraki ? 'açılış ' + s.saat.sonraki : 'saat dışında') };
+  return { cls:'ok', txt:'Sipariş alıyor' };
+}
+
+/* --- üst çubuk ve sekmeler --- */
+function mzTopCiz(){
+  var z = D.zincir || {}, acik = (D.subeler || []).filter(function(s){ return s.acik; }).length, top = mzAcikSubeler().length;
+  var canli = U.net ? '<span class="live" aria-hidden="true"></span><span class="sr">Bağlantı canlı.</span>' : '<span class="live off" aria-hidden="true"></span><span class="sr">Bağlantı yok.</span>';
+  var h = '<div class="logo" aria-hidden="true">' + esc(basHarf(z.ad || D.isletme.ad)) + '</div>' +
+    '<div class="top-txt"><div class="top-name">' + esc(z.ad || D.isletme.ad) + '</div>' +
+    '<div class="top-sub">' + canli + '<span class="who">Merkez · ' + esc(D.ben.ad) + '</span></div></div><div class="top-acts">' +
+    '<span class="mz-acik" title="Şu an sipariş alan şube"><span class="num">' + acik + '/' + top + '</span><span class="l-long"> şube açık</span></span>';
+  if (tamEkranDugmesi()) {
+    var te = tamEkranda();
+    h += '<button class="icon-btn" data-act="tamEkran" aria-pressed="' + (te ? 'true' : 'false') + '" aria-label="' + (te ? 'Tam ekrandan çık' : 'Tam ekran') + '">' + ic(te ? 'kucult' : 'buyut') + '</button>';
+  }
+  var koyuT = root.getAttribute('data-theme') === 'dark';
+  h += '<button class="icon-btn" data-act="tema" aria-label="' + (koyuT ? 'Gündüz moduna geç' : 'Gece moduna geç') + '">' + ic(koyuT ? 'gunes' : 'ay') + '</button>';
+  h += '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="ses" aria-haspopup="dialog" aria-label="Ses ve bildirim (' +
+    (SES.acik ? 'sipariş sesi açık' : 'sipariş sesi kapalı') + ')">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
+  koruyarakYaz($('#top'), h);
+}
+function mzSekmeler(){
+  var yeni = (D.siparisler || []).filter(function(o){ return o.kod === 'Y'; }).length;
+  var t = [['siparis', 'Canlı', 'fis', yeni], ['mzRapor', 'Raporlar', 'rapor', 0], ['mzSube', 'Şubeler', 'dukkan', 0], ['mzOrtak', 'Ortak ayarlar', 'ayar', 0]];
+  koruyarakYaz($('#tabs'), t.map(function(x){
+    return '<button class="tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
+      '<span>' + x[1] + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' adet">' + x[3] + '</span>' : '') + '</button>';
+  }).join(''));
+}
+function mzEkran(){
+  if (U.tab === 'mzRapor') return mzRaporEkrani();
+  if (U.tab === 'mzSube') return mzSubeEkrani();
+  if (U.tab === 'mzOrtak') return mzOrtakEkrani();
+  return mzCanliEkrani();
+}
+function mzBagla(){ if (U.tab === 'mzRapor') mzRaporBagla(); }
+
+/* --- canlı siparişler --- */
+function mzKart(o){
+  var acik = ACIK.indexOf(o.kod) >= 0, s = mzSube(o.b);
+  var gec = o.teslimMs ? (o.kod === 'Y' && simdi() > o.teslimMs - 50 * 60000) : (o.kod === 'Y' && dkGecti(o.tarihMs) >= 5);
+  var taze = U.taze[o.b + '/' + o.no] && Date.now() - U.taze[o.b + '/' + o.no] < 8000;
+  var bayrak = '<span class="flag sube">' + ic('dukkan', 'sm') + '<span class="t">' + esc(o.sube || (s && s.ad) || '') + '</span></span>';
+  if (o.teslimMs && acik) bayrak += '<span class="flag ileri' + (gec ? ' late' : '') + '">' + ic('saat', 'sm') + '<span class="t">' + saatYaz(o.teslimMs) + '\'de teslim</span></span>';
+  else if (gec) bayrak += '<span class="flag late">' + ic('saat', 'sm') + '<span class="t">' + dkGecti(o.tarihMs) + ' dk\'dır onay bekliyor</span></span>';
+  if (o.kod === 'H') bayrak += '<span class="flag">' + ic('saat', 'sm') + '<span class="t num">' + dkGecti(o.tarihMs) + ' dk</span></span>';
+  if (o.kod === 'I') bayrak += '<span class="flag late"><span class="t">' + esc(o.iptalEden || 'İptal') + (o.iptalNedeni ? ': ' + esc(o.iptalNedeni) : '') + '</span></span>';
+  return '<article class="ord k-' + o.kod + (gec ? ' late' : '') + (taze ? ' fresh' : '') + (acik ? '' : ' closed') + '" aria-label="' + esc(o.sube || '') + ' sipariş ' + o.no + '">' +
+    '<button class="ord-main" data-act="mzAc" data-b="' + esc(o.b) + '" data-no="' + o.no + '">' +
+      '<span class="ord-top"><span class="ord-no">#' + o.no + '</span>' + rozet(o.kod) + '<span class="ord-ago" data-ago="' + o.tarihMs + '">' + once(o.tarihMs) + '</span></span>' +
+      '<span class="ord-who"><span class="nm">' + esc(o.ad || 'Müşteri') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
+      '<span class="ord-items">' + kalemOzet(o.kalemler) + '</span>' +
+      '<span class="ord-flags">' + bayrak + '</span>' +
+      '<span class="ord-foot"><span class="ord-total">' + tl(o.toplam) + '</span><span class="ord-pay">' + esc(o.odeme) + '</span></span>' +
+    '</button></article>';
+}
+function mzCanliEkrani(){
+  var f = U.mzF || '', bg = mzBugun(), top = { siparis:0, ciro:0, acik:0, yeni:0 };
+  Object.keys(bg).forEach(function(b){ ['siparis', 'ciro', 'acik', 'yeni'].forEach(function(k){ top[k] += bg[b][k]; }); });
+  var l = (D.siparisler || []).filter(function(o){ return !f || o.b === f; });
+  var acik = l.filter(function(o){ return ACIK.indexOf(o.kod) >= 0; }).sort(sirala);
+  var bugun = gunKey(simdi());
+  var kapali = l.filter(function(o){ return KAPALI.indexOf(o.kod) >= 0 && gunKey(o.tarihMs) === bugun; }).sort(function(a, b){ return b.tarihMs - a.tarihMs; });
+  var h = '<div class="scr">';
+  h += '<div class="kpis mz-kpis">' + kpi('Bugünkü ciro', tl(top.ciro), 'Bütün şubeler · iptaller hariç', true) + kpi('Sipariş', adet(top.siparis), 'bugün') +
+    kpi('Açık sipariş', adet(top.acik), top.yeni ? top.yeni + ' onay bekliyor' : 'onay bekleyen yok') + '</div>';
+  h += '<div class="chips" role="group" aria-label="Şube"><button class="chip" data-act="mzF" data-k="" aria-pressed="' + (!f) + '">Bütün şubeler</button>' +
+    (D.subeler || []).map(function(s){
+      var n = (bg[s.b] || {}).acik || 0, y = (bg[s.b] || {}).yeni || 0;
+      return '<button class="chip" data-act="mzF" data-k="' + esc(s.b) + '" aria-pressed="' + (f === s.b) + '">' + esc(s.ad) +
+        ' <span class="n' + (y ? ' hot' : '') + '">' + n + '</span></button>';
+    }).join('') + '</div>';
+  var seg = [['aktif', 'Açık', acik.length], ['Y', 'Yeni', acik.filter(function(o){ return o.kod === 'Y'; }).length], ['H', 'Hazırlanıyor', acik.filter(function(o){ return o.kod === 'H'; }).length],
+    ['R', 'Hazır', acik.filter(function(o){ return o.kod === 'R'; }).length], ['O', 'Yolda', acik.filter(function(o){ return o.kod === 'O'; }).length], ['kapali', 'Bugün kapanan', kapali.length]];
+  var sg = U.mzSeg || 'aktif';
+  var liste = sg === 'aktif' ? acik : sg === 'kapali' ? kapali : acik.filter(function(o){ return o.kod === sg; });
+  h += '<div class="seg seg-sar mz-seg" role="group" aria-label="Sipariş durumu">' + seg.map(function(s){
+    return '<button data-act="mzSeg" data-k="' + s[0] + '" aria-pressed="' + (sg === s[0]) + '">' + s[1] + ' <span class="num">' + s[2] + '</span></button>';
+  }).join('') + '</div>';
+  if (!liste.length) {
+    h += sg === 'kapali' ? bosDurum('fis', 'Bugün kapanan sipariş yok', '') :
+      bosDurum('zil', 'Şu an açık sipariş yok', 'Herhangi bir şubeye sipariş gelince burada görünür' + (SES.acik ? ' ve ses çalar.' : '.'));
+  } else h += '<div class="olist mz-olist">' + liste.map(mzKart).join('') + '</div>';
+  return h + '<div class="toolbar">' + guncelSatiri() + '</div></div>';
+}
+SHEET.mzSiparis = function(s){
+  var o = mzSiparis(s.b, s.no);
+  if (!o) return shBas('Sipariş #' + s.no) + '<div class="sh-body">' + bosDurum('fis', 'Sipariş ekranda yok', 'Bu sipariş kapanmış ya da başka bir güne ait olabilir.') + '</div>';
+  var h = shBas('<span class="num">#' + o.no + '</span>' + rozet(o.kod)) + '<div class="sh-body">';
+  h += '<div class="note-box mz-sube-not">' + ic('dukkan', 'sm') + ' <b>' + esc(o.sube) + '</b> şubesi · ' + tarihYazi(o.tarihMs) + ' · ' + onceYazi(o.tarihMs) + '</div>';
+  if (o.teslimMs) h += '<div class="note-box ileri">⏰ İleri saatli sipariş: <b>' + saatYaz(o.teslimMs) + '</b>\'de teslim edilecek.</div>';
+  if (o.not) h += '<div class="note-box">Müşteri notu: ' + esc(o.not) + '</div>';
+  h += blk('Müşteri', '<div class="big">' + esc(o.ad || 'Müşteri') + '</div>' + telefonlar(o));
+  h += blk('Teslimat adresi' + (o.km ? ' · ' + kmYaz(o.km) : ''), '<div>' + esc(o.adres || '—') + '</div>');
+  h += blk('Sipariş', '<ul class="items">' + (o.kalemler || []).map(function(k){
+    return '<li><span class="q">' + adet(k.adet) + '×</span><span class="a">' + esc(k.ad) + kalemSecimHtml(k) + '</span><span class="p">' + tl(k.tutar) + '</span></li>';
+  }).join('') + '</ul>' + '<div class="kv tot"><span>Toplam</span><span>' + tl(o.toplam) + '</span></div><div class="kv"><span>Ödeme</span><span>' + esc(o.odeme) + '</span></div>');
+  if (o.kurye) h += blk('Kurye', '<div class="big">' + esc(o.kurye) + '</div>');
+  h += blk('Geçmiş', '<ul class="hist">' + gecmisListe(o.gecmis) + '</ul>');
+  h += '</div><div class="sh-foot"><button class="btn pri block" data-act="mzSubeEkran" data-b="' + esc(o.b) + '" data-no="' + o.no + '">' + ic('fis', 'sm') + 'Şube ekranında aç</button></div>';
+  return h;
+};
+
+/* --- raporlar --- */
+function mzRaporEkrani(){
+  var per = U.mzPer || 'bugun', a = aralik(per), key = a.join('_');
+  var h = '<div class="scr"><div class="chips" role="group" aria-label="Dönem">' + PERIYOT.filter(function(p){ return p[0] !== 'ozel'; }).map(function(p){
+    return '<button class="chip" data-act="mzPer" data-k="' + p[0] + '" aria-pressed="' + (per === p[0]) + '">' + p[1] + '</button>';
+  }).join('') + '</div>';
+  h += '<h2 class="donem">' + donemYazi(a) + (U.mzRYuk && U.mzR && U.mzRKey === key ? '<span class="spin" aria-label="Güncelleniyor"></span>' : '') + '</h2>';
+  if (U.mzRHata && U.mzRHataKey === key) {
+    h += '<div class="card pad" role="alert"><p class="err-txt">' + esc(U.mzRHata) + '</p><button class="btn line" style="margin-top:10px" data-act="mzRTekrar">' + ic('yenile', 'sm') + 'Tekrar dene</button></div>';
+  } else if (U.mzR && U.mzRKey === key) h += mzRaporIcerik(U.mzR);
+  else h += '<div class="kpis"><div class="sk" style="height:96px;grid-column:1/-1"></div><div class="sk" style="height:96px"></div><div class="sk" style="height:96px"></div></div><div class="sk" style="height:240px"></div>';
+  return h + '</div>';
+}
+function mzRaporBagla(){
+  var a = aralik(U.mzPer || 'bugun'), key = a.join('_');
+  if (U.mzRYuk || (U.mzRHata && U.mzRHataKey === key)) return;
+  var bayat = U.mzRKey === key && a[1] === gunKey(simdi()) && Date.now() - (U.mzRZaman || 0) > 60000;
+  if (U.mzRKey !== key || bayat) {
+    U.mzRYuk = true; U.mzRHata = '';
+    if (U.mzRKey !== key) renderMain();
+    call('ekMzRapor', { bas:a[0], bit:a[1] }).then(function(r){
+      U.mzRYuk = false;
+      if (!r || !r.ok) {
+        if (r && (r.kod === 'GIRIS' || r.kod === 'YETKI')) return cikisEkrani(r);
+        U.mzRHata = (r && r.hata) || 'Rapor alınamadı.'; U.mzRHataKey = key;
+      } else { U.mzR = r; U.mzRKey = key; U.mzRZaman = Date.now(); }
+      if (merkez() && U.tab === 'mzRapor') renderMain();
+    });
+  }
+}
+function mzRaporIcerik(r){
+  var t = r.toplam;
+  var h = '<div class="kpis">' + kpi('Toplam ciro', tl(t.ciro), 'Bütün şubeler · iptaller hariç', true) + kpi('Sipariş', adet(t.siparis), t.teslimEdilen + ' teslim edildi') +
+    kpi('Ortalama sepet', tl(t.ortalama), 'Sipariş başına') + kpi('İptal', adet(t.iptal), t.iptal ? 'bütün şubelerde' : 'İptal yok') + '</div>';
+  var l = r.subeler.slice().sort(function(a, b){ return (b.ciro - a.ciro) || (b.siparis - a.siparis); });
+  var maxC = Math.max.apply(null, l.map(function(s){ return s.ciro; }).concat([0])) || 1;
+  h += '<section class="chart"><h3 class="ch-title">Şubelere göre ciro<span class="ch-sub">Dokunun: şubenin ayrıntısı</span></h3><div class="hbars">' + l.map(function(s){
+    var pay = t.ciro ? Math.round(s.ciro / t.ciro * 100) : 0;
+    return '<button class="hb mz-hb" data-act="mzRSube" data-b="' + esc(s.b) + '"><span class="hb-ad">' + esc(s.ad) + (s.kapali ? ' <span class="muted">(kapalı)</span>' : '') + '</span>' +
+      '<span class="hb-v"><b>' + tl(s.ciro) + '</b> · %' + pay + '</span><span class="hb-track" aria-hidden="true"><span class="hb-bar" style="width:' + (s.ciro / maxC * 100) + '%"></span></span></button>';
+  }).join('') + '</div></section>';
+  h += '<section class="chart"><h3 class="ch-title">Şube karşılaştırması</h3><div class="tbl-wrap"><table class="tbl mz-tbl"><thead><tr><th>Şube</th><th class="r">Ciro</th><th class="r">Sipariş</th>' +
+    '<th class="r">Ort. sepet</th><th class="r">İptal</th><th class="r">Puan</th></tr></thead><tbody>' + l.map(function(s){
+      return '<tr><td>' + esc(s.ad) + '</td><td class="r">' + tl(s.ciro) + '</td><td class="r">' + adet(s.siparis) + '</td><td class="r">' + tl(s.ortalama) + '</td>' +
+        '<td class="r">' + adet(s.iptal) + '</td><td class="r">' + (s.puan ? '★ ' + NF1.format(s.puan.ort) + ' <span class="muted">(' + s.puan.adet + ')</span>' : '—') + '</td></tr>';
+    }).join('') + '</tbody><tfoot><tr><td>Toplam</td><td class="r">' + tl(t.ciro) + '</td><td class="r">' + adet(t.siparis) + '</td><td class="r">' + tl(t.ortalama) + '</td><td class="r">' + adet(t.iptal) + '</td><td></td></tr></tfoot></table></div></section>';
+  if (r.urunler.length) {
+    var maxU = r.urunler[0].adet || 1;
+    h += '<section class="chart"><h3 class="ch-title">En çok satanlar<span class="ch-sub">Bütün şubeler</span></h3><div class="hbars">' + r.urunler.map(function(u){
+      return '<div class="hb"><span class="hb-ad">' + esc(u.ad) + '</span><span class="hb-v"><b>' + adet(u.adet) + '</b> adet · ' + tl(u.tutar) + '</span>' +
+        '<span class="hb-track" aria-hidden="true"><span class="hb-bar" style="width:' + (u.adet / maxU * 100) + '%"></span></span></div>';
+    }).join('') + '</div></section>';
+  } else if (!t.siparis) h += bosDurum('rapor', 'Bu dönemde sipariş yok', 'Başka bir dönem seçebilirsiniz.');
+  return h;
+}
+SHEET.mzRSube = function(s){
+  var r = U.mzR, x = r ? r.subeler.filter(function(y){ return y.b === s.b; })[0] : null;
+  if (!x) return shBas('Şube') + '<div class="sh-body">' + bosDurum('rapor', 'Rapor yok', '') + '</div>';
+  var h = shBas(esc(x.ad) + ' şubesi') + '<div class="sh-body"><p class="muted">' + donemYazi([r.bas, r.bit]) + '</p><div class="kpis">' +
+    kpi('Ciro', tl(x.ciro), '', true) + kpi('Sipariş', adet(x.siparis), x.teslimEdilen + ' teslim') + kpi('Ortalama sepet', tl(x.ortalama), '') +
+    kpi('İptal', adet(x.iptal), x.iptal ? tl(x.iptalTutar) : '') + kpi('Puan', x.puan ? '★ ' + NF1.format(x.puan.ort) : '—', x.puan ? x.puan.adet + ' değerlendirme' : 'henüz yok') + '</div>';
+  if (x.gun && x.gun.length > 1) {
+    var maxG = Math.max.apply(null, x.gun.map(function(g){ return g.c; }).concat([0])) || 1;
+    h += blk('Günlere göre ciro', '<div class="hbars">' + x.gun.map(function(g){
+      return '<div class="hb"><span class="hb-ad">' + gunYaz(g.g) + ' ' + gunHafta(g.g) + '</span><span class="hb-v"><b>' + tl(g.c) + '</b> · ' + g.a + ' sipariş</span>' +
+        '<span class="hb-track" aria-hidden="true"><span class="hb-bar" style="width:' + (g.c / maxG * 100) + '%"></span></span></div>';
+    }).join('') + '</div>');
+  }
+  if (x.urunler.length) h += blk('En çok satanlar', '<ul class="items">' + x.urunler.map(function(u){
+    return '<li><span class="q">' + adet(u.adet) + '×</span><span class="a">' + esc(u.ad) + '</span><span class="p">' + tl(u.tutar) + '</span></li>';
+  }).join('') + '</ul>');
+  return h + '</div>';
+};
+
+/* --- şubeler --- */
+function mzSubeEkrani(){
+  var z = D.zincir || {}, bg = mzBugun(), acik = mzAcikSubeler().length, dolu = z.limit && acik >= z.limit;
+  var h = '<div class="scr"><section class="card pad mz-paket"><div class="mz-pk-t"><div><div class="blk-h">Zincir paketi</div><div class="big">' + esc(z.paket || 'Zincir') + '</div>' +
+    '<div class="tip-txt"><b class="num">' + acik + ' / ' + (z.limit || '—') + '</b> şube açık' + (z.bot ? ' · bot @' + esc(z.bot) : '') + '</div></div>' +
+    '<button class="btn pri" data-act="mzYeniSube"' + (dolu ? ' disabled' : '') + '>' + ic('arti', 'sm') + 'Yeni şube</button></div>' +
+    (dolu ? '<p class="tip-txt">Paketinizin şube sınırı doldu. Daha fazla şube için YourPOS 360\'a yazın.</p>' : '') + '</section>';
+  h += '<div class="mz-subeler">' + (D.subeler || []).map(function(s){
+    var d = mzSubeDurumu(s), b = bg[s.b] || { siparis:0, ciro:0, acik:0 }, bA = U.busy['mzAlim:' + s.b];
+    return '<section class="card mz-sube' + (s.kapali ? ' kapali' : '') + '"><div class="mz-s-bas"><div class="mz-s-ad"><h2>' + esc(s.ad) +
+      (s.merkez ? ' <span class="pill">Merkez</span>' : '') + '</h2>' +
+      '<p class="tip-txt">' + esc([s.adres, s.ilce].filter(Boolean).join(', ') || s.tam) + '</p>' +
+      '<p class="mz-durum ' + d.cls + '"><span class="dot" aria-hidden="true"></span>' + esc(d.txt) + '</p></div>' +
+      (s.kapali ? '' : '<button class="sw" role="switch" aria-checked="' + (s.alim ? 'true' : 'false') + '" data-act="mzAlim" data-b="' + esc(s.b) + '" aria-label="' + esc(s.ad) + ' sipariş alımı"' + (bA ? ' disabled' : '') + '>' +
+        '<span class="lbl" aria-hidden="true">' + (bA ? '<span class="spin"></span>' : s.alim ? 'Açık' : 'Kapalı') + '</span><span class="knob" aria-hidden="true"></span></button>') + '</div>' +
+      '<div class="mz-s-say"><span><b class="num">' + adet(b.siparis) + '</b> sipariş bugün</span><span><b class="num">' + tl(b.ciro) + '</b></span><span><b class="num">' + adet(b.acik) + '</b> açık</span>' +
+      (s.ekip != null ? '<span><b class="num">' + s.ekip + '</b> ekip</span>' : '') + '</div>' +
+      '<div class="row2 mz-s-act"><button class="btn line sm" data-act="mzEkip" data-b="' + esc(s.b) + '">' + ic('ekip', 'sm') + 'Ekip ve yetkili</button>' +
+      '<button class="btn line sm" data-act="mzSubeEkran" data-b="' + esc(s.b) + '">' + ic('fis', 'sm') + 'Şube ekranı</button>' +
+      '<button class="btn line sm" data-act="mzSubeAyar" data-b="' + esc(s.b) + '">' + ic('ayar', 'sm') + 'Diğer</button></div></section>';
+  }).join('') + '</div>';
+  h += '<section class="card pad"><h2 class="frm-h">Merkez ekibi</h2><p class="tip-txt">Merkez yetkilileri bu ekranı açar ve bütün şubelerde «Sahip» yetkisiyle çalışır (ör. operasyon müdürü).</p>' +
+    '<button class="btn line" data-act="mzEkip" data-b="' + esc((D.zincir && D.zincir.merkez) || B) + '" data-k="merkez">' + ic('ekip', 'sm') + 'Merkez yetkilileri</button></section>';
+  return h + '</div>';
+}
+var MZ_ROLLER = [['Sahip', 'Şube müdürü', 'Şubenin bütün ayarları, menüsü, ekibi ve raporları'], ['Personel', 'Personel', 'Siparişleri görür ve durumunu değiştirir'],
+  ['Kurye', 'Kurye', 'Hazır siparişi alır, teslim eder']];
+SHEET.mzEkip = function(s){
+  var sb = mzSube(s.b), mz = s.merkez, h = shBas(mz ? 'Merkez yetkilileri' : esc(sb ? sb.ad : '') + ' · ekip') + '<div class="sh-body">';
+  if (s.yeni) h += '<div class="ok-box">' + ic('tik') + '<span><b>' + esc(sb ? sb.ad : '') + '</b> şubesi açıldı. Şimdi şube müdürünü davet edin; konumunu şube ekranındaki Ayarlar\'dan kaydedin.</span></div>';
+  if (!s.ekip) h += '<div class="sk" style="height:120px"></div>';
+  else {
+    var l = s.ekip.filter(function(u){ return mz ? u.rol === 'Merkez' : u.rol !== 'Merkez'; });
+    h += l.length ? '<ul class="mz-ekip">' + l.map(function(u){
+      var b = U.busy['mzUyeSil:' + u.uyeId];
+      return '<li><span class="mz-e-ad">' + esc(u.ad) + '<span class="o-sub">' + esc(u.rol === 'Sahip' ? 'Şube müdürü' : u.rol) + (u.durum === 'Davet' ? ' · davet bekleniyor' : '') + '</span></span>' +
+        (u.link ? '<button class="btn ghost sm" data-act="mzLinkKopya" data-k="' + esc(u.link) + '">Linki kopyala</button>' : '') +
+        (u.tgId === D.ben.id ? '' : '<button class="icon-btn" data-act="mzUyeSil" data-b="' + esc(s.b) + '" data-k="' + esc(u.uyeId) + '" aria-label="' + esc(u.ad) + ' ekipten çıkar"' + (b ? ' disabled' : '') + '>' + (b ? '<span class="spin"></span>' : ic('x')) + '</button>') + '</li>';
+    }).join('') + '</ul>' : '<p class="muted">' + (mz ? 'Henüz merkez yetkilisi yok.' : 'Henüz ekipte kimse yok.') + '</p>';
+  }
+  if (s.link) {
+    h += '<div class="card pad mz-link"><div class="blk-h">Davet bağlantısı · ' + esc(s.linkRol) + '</div><div class="linkbox">' + esc(s.link) + '</div>' +
+      '<p class="tip-txt">Bağlantıyı kişiye gönderin; Telegram\'da açıp «Başlat»a basınca ekibe katılır. ' + DAVET_GUN_YAZI + '</p>' +
+      '<div class="row2"><button class="btn line sm" data-act="mzLinkKopya" data-k="' + esc(s.link) + '">Kopyala</button>' +
+      '<button class="btn pri sm" data-act="mzLinkPaylas" data-k="' + esc(s.link) + '">' + ic('gonder', 'sm') + 'Telegram\'da gönder</button></div></div>';
+  }
+  var bd = U.busy.mzDavet;
+  h += '<div class="blk"><h3 class="blk-h">Davet et</h3><div class="opt-list">' + (mz ? [['Merkez', 'Merkez yetkilisi', 'Merkez ekranı ve bütün şubeler']] : MZ_ROLLER).map(function(r){
+    return '<button class="opt" data-act="mzDavet" data-b="' + esc(s.b) + '" data-k="' + r[0] + '"' + (bd ? ' disabled' : '') + '><span class="o-main">' + r[1] + '<span class="o-sub">' + r[2] + '</span></span>' + ic('arti', 'sm') + '</button>';
+  }).join('') + '</div></div>';
+  return h + '</div>';
+};
+var DAVET_GUN_YAZI = 'Bağlantı 7 gün geçerlidir ve bir kez kullanılır.';
+SHEET.mzSubeAyar = function(s){
+  var sb = mzSube(s.b) || {}, bd = U.busy.mzSubeAyar;
+  var kaynaklar = (D.subeler || []).filter(function(x){ return x.b !== s.b; });
+  var h = shBas(esc(sb.ad) + ' şubesi') + '<div class="sh-body">' +
+    '<form class="frm" data-form="mzSubeAd"><div class="field"><label for="mzsAd">Şube adı <span class="muted">(müşteri görür)</span></label><input class="inp" id="mzsAd" maxlength="40" value="' + esc(sb.ad) + '"></div>' +
+    '<div class="field"><label for="mzsAdres">Adres <span class="muted">(şube listesinde görünür)</span></label><input class="inp" id="mzsAdres" maxlength="120" value="' + esc(sb.adres || '') + '"></div>' +
+    '<button class="btn pri" type="submit"' + (bd ? ' disabled' : '') + '>' + (bd ? bekle('mzSubeAyar') : ic('tik')) + 'Kaydet</button></form>';
+  if (kaynaklar.length) {
+    h += '<div class="blk"><h3 class="blk-h">Menüyü başka şubeden kopyala</h3><p class="tip-txt">Bu şubenin menüsü seçtiğiniz şubenin menüsüyle <b>değiştirilir</b>. Fiyatları sonra şube ekranından ayrı ayrı değiştirebilirsiniz.</p>' +
+      '<div class="kform"><select class="inp" id="mzsKaynak" aria-label="Kaynak şube">' + kaynaklar.map(function(x){ return '<option value="' + esc(x.b) + '">' + esc(x.ad) + '</option>'; }).join('') + '</select>' +
+      '<button class="btn line sm" type="button" data-act="mzMenuKopya" data-b="' + esc(s.b) + '"' + (U.busy.mzMenuKopya ? ' disabled' : '') + '>' + bekle('mzMenuKopya') + 'Kopyala</button></div></div>';
+  }
+  var bk = U.busy['mzDurum:' + s.b];
+  h += '<div class="blk"><h3 class="blk-h">' + (sb.kapali ? 'Şubeyi yeniden aç' : 'Şubeyi kapat') + '</h3><p class="tip-txt">' +
+    (sb.kapali ? 'Şube müşterilerin şube listesinde yeniden görünür ve sipariş alabilir.' : 'Kapatılan şube müşterilere görünmez, sipariş almaz ve paket şube sınırına sayılmaz. Menüsü, ekibi ve geçmişi silinmez.') + '</p>' +
+    '<button class="btn ' + (sb.kapali ? 'line' : 'dng-line') + '" data-act="mzDurum" data-b="' + esc(s.b) + '"' + (bk ? ' disabled' : '') + '>' + bekle('mzDurum:' + s.b) + (sb.kapali ? 'Şubeyi aç' : 'Şubeyi kapat') + '</button></div>';
+  return h + '</div>';
+};
+SHEET.mzYeniSube = function(s){
+  var b = U.busy.mzYeniSube;
+  var h = shBas('Yeni şube') + '<div class="sh-body"><form class="frm" data-form="mzYeniSube" id="mzYeniForm">' +
+    '<div class="field"><label for="mzyAd">Şube adı</label><input class="inp" id="mzyAd" maxlength="40" placeholder="ör. Kadıköy" value="' + esc(s.ad || '') + '" autocomplete="off"></div>' +
+    '<div class="two"><div class="field"><label for="mzyIlce">İlçe / semt</label><input class="inp" id="mzyIlce" maxlength="40" value="' + esc(s.ilce || '') + '"></div>' +
+    '<div class="field"><label for="mzyTel">Telefon</label><input class="inp" id="mzyTel" type="tel" inputmode="tel" value="' + esc(s.telefon || '') + '"></div></div>' +
+    '<div class="field"><label for="mzyAdres">Adres <span class="muted">(şube listesinde görünür)</span></label><input class="inp" id="mzyAdres" maxlength="120" value="' + esc(s.adres || '') + '"></div>' +
+    '<div class="field"><label for="mzyKaynak">Menü ve ayarlar şuradan kopyalansın</label><select class="inp" id="mzyKaynak"><option value="">Kopyalama (boş başlasın)</option>' +
+    (D.subeler || []).map(function(x){ return '<option value="' + esc(x.b) + '"' + ((s.kaynak === undefined ? x.merkez : s.kaynak === x.b) ? ' selected' : '') + '>' + esc(x.ad) + '</option>'; }).join('') + '</select></div>' +
+    '<p class="tip-txt">Menü, çalışma saatleri, teslimat bölgeleri, ödeme yöntemleri ve ortak kampanyalar kopyalanır. Şubenin konumunu şube ekranındaki Ayarlar\'dan kaydedin; konum kaydedilince sipariş almaya başlar.</p>' +
+    (s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '') + '</form></div>' +
+    '<div class="sh-foot"><button class="btn pri block" type="submit" form="mzYeniForm"' + (b ? ' disabled' : '') + '>' + (b ? bekle('mzYeniSube') : ic('arti')) + 'Şubeyi aç</button></div>';
+  return h;
+};
+
+/* --- ortak kampanya ve ayarlar --- */
+function mzOrtakEkrani(){
+  var z = D.zincir || {}, hed = mzHedefler();
+  var h = '<div class="scr ayar">';
+  // ortak kampanyalar
+  var kl = D.kampanyalar || [];
+  h += '<section class="card pad"><h2 class="frm-h">Ortak kampanyalar</h2><p class="tip-txt">Seçtiğiniz şubelerin hepsinde aynı anda geçerli olur. Şube müdürleri kendi şubelerine ayrıca kampanya ekleyebilir.</p>' +
+    (kl.length ? '<ul class="kplist">' + kl.map(function(k){
+      var gec = kpGecerli(k), b = U.busy['kpAktif:' + k.id];
+      return '<li class="kp' + (gec ? '' : ' off') + '"><button class="kp-bas" data-act="kpDuzenle" data-k="' + esc(k.id) + '"><span class="kp-ad">🏷️ ' + esc(k.ad) + '</span>' +
+        '<span class="kp-alt">' + esc(kpHedefYazi(k.hedefler)) + ' · ' + (k.subeler || []).length + ' şube' + (kpTarih(k) ? ' · ' + esc(kpTarih(k)) : '') + (!k.aktif ? ' · kapalı' : '') + '</span></button>' +
+        '<button class="sw" role="switch" aria-checked="' + (k.aktif ? 'true' : 'false') + '" data-act="kpAktif" data-k="' + esc(k.id) + '" aria-label="' + esc(k.ad) + ' açık"' + (b ? ' disabled' : '') + '>' +
+        '<span class="lbl" aria-hidden="true">' + (b ? '<span class="spin"></span>' : k.aktif ? 'Açık' : 'Kapalı') + '</span><span class="knob" aria-hidden="true"></span></button></li>';
+    }).join('') + '</ul>' : '<p class="muted">Henüz ortak kampanya yok.</p>') +
+    '<button class="btn line" data-act="kpYeni">' + ic('arti', 'sm') + 'Yeni ortak kampanya</button></section>';
+  // ortak ayarlar
+  h += '<section class="card pad mz-hedef"><h2 class="frm-h">Ortak ayarlar</h2><p class="tip-txt">Aşağıdaki ayarlar <b>seçili şubelere</b> uygulanır. Her bölümün kendi «uygula» düğmesi vardır; diğer ayarlar değişmez.</p>' +
+    '<div class="blk-h">Uygulanacak şubeler</div><div class="kat-chips">' + (D.subeler || []).map(function(s){
+      return '<button class="chip sm" type="button" data-act="mzHedef" data-k="' + esc(s.b) + '" aria-pressed="' + (hed.indexOf(s.b) >= 0) + '">' + esc(s.ad) + (s.kapali ? ' (kapalı)' : '') + '</button>';
+    }).join('') + '</div><div class="row2"><button class="btn ghost sm" type="button" data-act="mzHedefHepsi">Hepsini seç</button>' +
+    '<button class="btn ghost sm" type="button" data-act="mzHedefHic">Hiçbiri</button></div>' +
+    '<div class="field"><label for="mzKaynak">Formlar şu şubenin şimdiki ayarlarıyla dolsun</label><select class="inp" id="mzKaynak" data-act-change="mzKaynak">' +
+    (D.subeler || []).map(function(s){ return '<option value="' + esc(s.b) + '"' + (s.b === mzKaynak() ? ' selected' : '') + '>' + esc(s.ad) + '</option>'; }).join('') + '</select></div></section>';
+  if (!U.ay) {
+    if (!U.ayYuk && !U.ayHata) setTimeout(ayarYukle, 0);
+    h += U.ayHata ? '<div class="card pad">' + bosDurum('uyari', 'Ayarlar açılamadı', esc(U.ayHata)) + '<button class="btn line" data-act="ayTekrar">' + ic('yenile', 'sm') + 'Tekrar dene</button></div>'
+      : '<div class="sk" style="height:180px"></div><div class="sk" style="height:220px"></div>';
+  } else {
+    var a = U.ay.ayarlar || {}, bb = U.busy.mzBilgi;
+    h += '<form class="card pad frm" data-form="mzBilgi"><h2 class="frm-h">Hazırlık, iptal ve karşılama</h2>' +
+      '<div class="two"><div class="field"><label for="mzHaz">Hazırlık süresi (dk)</label><input class="inp num" id="mzHaz" inputmode="numeric" value="' + esc(a.HazirlikSuresiDk || '') + '"></div>' +
+      '<div class="field"><label for="mzIpt">Müşteri iptal süresi (dk)</label><input class="inp num" id="mzIpt" inputmode="numeric" value="' + esc(a.IptalSuresiDk === undefined ? '' : a.IptalSuresiDk) + '"></div></div>' +
+      '<div class="field"><label for="mzKar">Karşılama mesajı</label><textarea class="inp" id="mzKar" maxlength="300" rows="2">' + esc(a.KarsilamaMesaji || '') + '</textarea></div>' +
+      '<button class="btn pri" type="submit"' + (bb ? ' disabled' : '') + '>' + (bb ? bekle('mzBilgi') : ic('tik')) + 'Seçili şubelere uygula</button></form>';
+    h += ayarSaatHtml() + ayarKuralHtml() + ayarOdemeHtml();
+  }
+  var ba = U.busy.mzAd;
+  h += '<form class="card pad frm" data-form="mzAd"><h2 class="frm-h">Zincirin adı</h2><p class="tip-txt">Müşteriler botu açınca ve şube listesinde bu adı görür.</p>' +
+    '<div class="kform"><input class="inp" id="mzAdInp" maxlength="40" value="' + esc(z.ad || '') + '" aria-label="Zincirin adı"><button class="btn sm pri" type="submit"' + (ba ? ' disabled' : '') + '>' + bekle('mzAd') + 'Kaydet</button></div></form>';
+  if (D.uyeUrl) h += '<section class="card pad"><h2 class="frm-h">Paket, bakiye ve destek</h2><div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#paket">Paket</button>' +
+    '<button class="btn line sm" data-act="uyeGit" data-k="#odeme">Bakiye ve ödeme</button><button class="btn line sm" data-act="uyeGit" data-k="#destek">' + ic('gonder', 'sm') + 'Bize yazın</button></div></section>';
+  return h + '</div>';
+}
+function mzKaynak(){ var k = U.mzKaynak; return k && mzSube(k) ? k : ((D.zincir && D.zincir.merkez) || B); }
+// Ayar formları (4c_menu.js) merkezde seçili şubelere uygulanır
+function mzAyarKaydet(act, veri, busy, mesaj){
+  var hedef = mzHedefler();
+  if (!hedef.length) { toast('Önce ayarların uygulanacağı şubeleri seçin.', true); return Promise.resolve(null); }
+  var d = { islem:act, hedef:hedef, kaynak:mzKaynak() };
+  if (veri.veri) d.veri = veri.veri;
+  if (veri.liste) d.liste = veri.liste;
+  return islem('ekMzAyar', d, { busy:busy }).then(function(r){
+    if (!r) return r;
+    ayarAl(r);
+    if (r.subeler) D.subeler = r.subeler;
+    var hata = (r.sonuc || []).filter(function(x){ return !x.ok; });
+    toast(hata.length ? hata.map(function(x){ return x.ad + ': ' + x.hata; }).join(' · ') : (r.sonuc || []).length + ' şubeye uygulandı', !!hata.length);
+    renderMain();
+    return r;
+  });
+}
+
+/* --- olaylar --- */
+var ACT_MZ = {
+  mzGit:function(){ mzMerkezeGit(); },
+  mzF:function(el){ U.mzF = el.getAttribute('data-k'); haptic('select'); renderMain(); },
+  mzSeg:function(el){ U.mzSeg = el.getAttribute('data-k'); renderMain(); },
+  mzAc:function(el){ sheetAc({ tip:'mzSiparis', b:el.getAttribute('data-b'), no:Number(el.getAttribute('data-no')) }); },
+  mzSubeEkran:function(el){
+    var no = el.getAttribute('data-no');
+    location.href = mzUrl(el.getAttribute('data-b'), no ? { m:'1', no:no } : { m:'1' });
+  },
+  mzPer:function(el){ U.mzPer = el.getAttribute('data-k'); renderMain(); },
+  mzRTekrar:function(){ U.mzRHata = ''; U.mzRHataKey = ''; renderMain(); },
+  mzRSube:function(el){ sheetAc({ tip:'mzRSube', b:el.getAttribute('data-b') }); },
+  mzAlim:function(el){
+    var b = el.getAttribute('data-b'), s = mzSube(b);
+    if (!s) return;
+    islem('ekMzSube', { sb:b, alan:'alim', deger:!s.alim }, { busy:'mzAlim:' + b }).then(function(r){
+      if (r) { D.subeler = r.subeler; renderMain(); renderTop(); toast(s.ad + ': sipariş alımı ' + (!s.alim ? 'açık' : 'kapalı')); }
+    });
+  },
+  mzEkip:function(el){
+    var b = el.getAttribute('data-b'), mz = el.getAttribute('data-k') === 'merkez';
+    var st = { tip:'mzEkip', b:b, merkez:mz, ekip:null };
+    sheetAc(st);
+    call('ekMzEkip', { sb:b }).then(function(r){
+      if (SH !== st) return;
+      if (!r || !r.ok) { sheetKapat(); toast((r && r.hata) || 'Ekip yüklenemedi.', true); return; }
+      st.ekip = r.ekip; renderSheet();
+    });
+  },
+  mzDavet:function(el){
+    var b = el.getAttribute('data-b'), rol = el.getAttribute('data-k'), st = SH;
+    islem('ekMzDavet', { sb:b, rol:rol }, { busy:'mzDavet' }).then(function(r){
+      if (!r || !st || SH !== st) return;
+      st.ekip = r.ekip; st.link = r.link;
+      st.linkRol = rol === 'Sahip' ? 'Şube müdürü' : rol === 'Merkez' ? 'Merkez yetkilisi' : rol;
+      renderSheet();
+      kopyala(r.link).then(function(ok){ toast(ok ? 'Davet bağlantısı kopyalandı' : 'Davet bağlantısı hazır'); });
+    });
+  },
+  mzLinkKopya:function(el){ kopyala(el.getAttribute('data-k')).then(function(ok){ toast(ok ? 'Bağlantı kopyalandı' : 'Kopyalanamadı; bağlantıyı basılı tutup kopyalayın.', !ok); }); },
+  mzLinkPaylas:function(el){
+    var l = el.getAttribute('data-k');
+    telegramAc('https://t.me/share/url?url=' + encodeURIComponent(l) + '&text=' + encodeURIComponent('Ekibimize katılmak için bağlantıya dokunun:'));
+  },
+  mzUyeSil:function(el){
+    var b = el.getAttribute('data-b'), id = el.getAttribute('data-k'), st = SH;
+    islem('ekMzUyeSil', { sb:b, uyeId:id }, { busy:'mzUyeSil:' + id }).then(function(r){
+      if (r && st && SH === st) { st.ekip = r.ekip; renderSheet(); toast('Ekipten çıkarıldı'); }
+    });
+  },
+  mzSubeAyar:function(el){ sheetAc({ tip:'mzSubeAyar', b:el.getAttribute('data-b') }); },
+  mzMenuKopya:function(el){
+    var h = el.getAttribute('data-b'), k = ($('#mzsKaynak') || {}).value, ks = mzSube(k), hs = mzSube(h), geri = SH;
+    if (!k || !ks || !hs) return;
+    sheetAc({ tip:'onay', baslik:'Menüyü kopyala', metin:'<b>' + esc(hs.ad) + '</b> şubesinin menüsü <b>' + esc(ks.ad) + '</b> şubesinin menüsüyle değiştirilsin mi?', dugme:'Kopyala', busy:'mzMenuKopya', yap:function(){
+      islem('ekMzMenuKopya', { kaynak:k, hedef:h }, { busy:'mzMenuKopya' }).then(function(r){
+        if (r) { sheetKapat(); toast(r.adet + ' ürün ' + hs.ad + ' şubesine kopyalandı'); } else sheetAc(geri);
+      });
+    } });
+  },
+  mzDurum:function(el){
+    var b = el.getAttribute('data-b'), s = mzSube(b), geri = SH;
+    if (!s) return;
+    var yap = function(){
+      islem('ekMzSube', { sb:b, alan:'durum', deger:!s.kapali }, { busy:'mzDurum:' + b }).then(function(r){
+        if (r) { D.subeler = r.subeler; sheetKapat(); renderMain(); renderTop(); toast(s.ad + (s.kapali ? ' şubesi yeniden açıldı' : ' şubesi kapatıldı')); }
+        else sheetAc(geri);
+      });
+    };
+    if (s.kapali) return yap();
+    sheetAc({ tip:'onay', baslik:'Şubeyi kapat', metin:'<b>' + esc(s.ad) + '</b> şubesi kapatılsın mı? Müşteriler bu şubeyi görmez ve sipariş veremez.', dugme:'Kapat', busy:'mzDurum:' + b, yap:yap });
+  },
+  mzYeniSube:function(){ sheetAc({ tip:'mzYeniSube' }); },
+  mzHedef:function(el){
+    var b = el.getAttribute('data-k'), l = mzHedefler().slice(), i = l.indexOf(b);
+    if (i >= 0) l.splice(i, 1); else l.push(b);
+    U.mzHedef = l; haptic('select'); renderMain();
+  },
+  mzHedefHepsi:function(){ U.mzHedef = (D.subeler || []).map(function(s){ return s.b; }); renderMain(); },
+  mzHedefHic:function(){ U.mzHedef = []; renderMain(); },
+  kpSube:function(el){
+    kpOku(SH);
+    var b = el.getAttribute('data-k'), i = SH.subeler.indexOf(b);
+    if (i >= 0) SH.subeler.splice(i, 1); else SH.subeler.push(b);
+    haptic('select'); renderSheet();
+  }
+};
+Object.assign(ACT_EK, ACT_MZ);
+document.addEventListener('change', function(e){
+  if (e.target && e.target.getAttribute && e.target.getAttribute('data-act-change') === 'mzKaynak' && merkez()) {
+    U.mzKaynak = e.target.value; U.ay = null; U.ayHata = ''; renderMain();
+  }
+});
+document.addEventListener('submit', function(e){
+  var f = e.target.getAttribute && e.target.getAttribute('data-form');
+  if (!f || f.indexOf('mz') !== 0) return;
+  e.preventDefault();
+  if (f === 'mzBilgi') {
+    var haz = sayiOku($('#mzHaz').value), ipt = sayiOku($('#mzIpt').value);
+    if (!(haz >= 5 && haz <= 180)) return toast('Hazırlık süresi 5 ile 180 dakika arasında olmalı.', true);
+    if (!(ipt >= 0 && ipt <= 30)) return toast('İptal süresi 0 ile 30 dakika arasında olmalı.', true);
+    mzAyarKaydet('ekAyarKaydet', { veri:{ HazirlikSuresiDk:haz, IptalSuresiDk:ipt, KarsilamaMesaji:$('#mzKar').value } }, 'mzBilgi');
+  } else if (f === 'mzAd') {
+    var ad = String($('#mzAdInp').value || '').trim();
+    if (ad.length < 2) return toast('Zincirin adını yazın.', true);
+    islem('ekMzZincir', { ad:ad }, { busy:'mzAd' }).then(function(r){ if (r) { D.zincir.ad = r.zincir.ad; ciz(); toast('Zincirin adı kaydedildi'); } });
+  } else if (f === 'mzSubeAd') {
+    var st = SH, b = st.b, sAd = String($('#mzsAd').value || '').trim(), adr = String($('#mzsAdres').value || '').trim(), s = mzSube(b);
+    if (sAd.length < 2) return toast('Şube adını yazın.', true);
+    var isler = [];
+    if (sAd !== s.ad) isler.push({ alan:'ad', deger:sAd });
+    if (adr !== (s.adres || '')) isler.push({ alan:'adres', deger:adr });
+    if (!isler.length) return sheetKapat();
+    var sira = Promise.resolve(true);
+    isler.forEach(function(x){
+      sira = sira.then(function(ok){ return ok ? islem('ekMzSube', { sb:b, alan:x.alan, deger:x.deger }, { busy:'mzSubeAyar' }).then(function(r){ if (r) D.subeler = r.subeler; return !!r; }) : false; });
+    });
+    sira.then(function(ok){ if (ok) { sheetKapat(); renderMain(); toast('Şube bilgileri kaydedildi'); } });
+  } else if (f === 'mzYeniSube') {
+    var st2 = SH, v = { ad:$('#mzyAd').value.trim(), ilce:$('#mzyIlce').value.trim(), telefon:$('#mzyTel').value.trim(), adres:$('#mzyAdres').value.trim(), kaynak:$('#mzyKaynak').value };
+    Object.keys(v).forEach(function(k){ st2[k] = v[k]; });
+    if (v.ad.length < 2) { st2.hata = 'Şubenin adını yazın (ör. Kadıköy).'; return renderSheet(); }
+    st2.hata = '';
+    islem('ekMzSubeEkle', v, { busy:'mzYeniSube' }).then(function(r){
+      if (!r) return;
+      D.subeler = r.subeler; renderMain(); renderTop();
+      var est = { tip:'mzEkip', b:r.b, ekip:null, yeni:true };
+      sheetAc(est);
+      call('ekMzEkip', { sb:r.b }).then(function(x){ if (SH === est && x && x.ok) { est.ekip = x.ekip; renderSheet(); } });
+    });
+  }
+});
+
+/* --- önizleme (demo=1&rol=merkez): üç şubeli örnek zincir --- */
+function mzDemoMock(){
+  var t0 = Date.now(), dk = 60000;
+  var SUBELER = [
+    { b:'demo', ad:'Moda', tam:'Örnek Dönerci Moda', no:1, merkez:true, kapali:false, hizmet:true, kurulu:true, alim:true, acik:true, saat:{ kontrol:false, acik:true, sonraki:'' }, telefon:'02161234567', adres:'Moda Cad. 10', ilce:'Kadıköy', ekip:4 },
+    { b:'demo-besiktas', ad:'Beşiktaş', tam:'Örnek Dönerci Beşiktaş', no:2, merkez:false, kapali:false, hizmet:true, kurulu:true, alim:true, acik:true, saat:{ kontrol:true, acik:true, sonraki:'' }, telefon:'02121234567', adres:'Çarşı', ilce:'Beşiktaş', ekip:3 },
+    { b:'demo-uskudar', ad:'Üsküdar', tam:'Örnek Dönerci Üsküdar', no:3, merkez:false, kapali:false, hizmet:true, kurulu:false, alim:true, acik:false, saat:{ kontrol:false, acik:true, sonraki:'' }, telefon:'', adres:'', ilce:'Üsküdar', ekip:1 }
+  ];
+  var ad = { demo:'Moda', 'demo-besiktas':'Beşiktaş', 'demo-uskudar':'Üsküdar' };
+  var sip = function(b, no, kod, dkOnce, isim, kal, top, ek){
+    return Object.assign({ b:b, sube:ad[b], no:no, kod:kod, tarihMs:t0 - dkOnce * dk, ad:isim, km:1.4, kalemler:kal, toplam:top, odeme:'Nakit', adres:'Örnek Mah. 1. Sk. No:3', tel:'05321112233', gecmis:'' }, ek || {});
+  };
+  var SIP = [
+    sip('demo', 1051, 'Y', 6, 'Emre Bulut', [{ ad:'Et Döner Dürüm', adet:2, tutar:360 }, { ad:'Ayran', adet:2, tutar:50 }], 410),
+    sip('demo-besiktas', 1051, 'Y', 2, 'Selin Ak', [{ ad:'Tavuk Döner Dürüm', adet:1, tutar:150 }], 150),
+    sip('demo-besiktas', 1050, 'H', 14, 'Burak Çelik', [{ ad:'İskender', adet:1, tutar:320 }, { ad:'Kola (33 cl)', adet:1, tutar:40 }], 360),
+    sip('demo', 1050, 'R', 22, 'Deniz Aksoy', [{ ad:'Tavuk Döner Porsiyon', adet:2, tutar:440 }], 440),
+    sip('demo-uskudar', 1012, 'O', 31, 'Kaan Demir', [{ ad:'Karışık Tost', adet:2, tutar:180 }], 180, { kurye:'Ali Kurye' }),
+    sip('demo', 1049, 'T', 75, 'Ayşe Yılmaz', [{ ad:'Et Döner Dürüm', adet:1, tutar:180 }], 180),
+    sip('demo-besiktas', 1049, 'T', 95, 'Mert Kara', [{ ad:'İskender', adet:2, tutar:640 }], 640),
+    sip('demo-besiktas', 1048, 'I', 120, 'Zeynep Tan', [{ ad:'Ayran', adet:3, tutar:75 }], 75, { iptalEden:'Müşteri' })
+  ];
+  var KP = [{ id:'ZDEMO0001', ad:'2. dürüm %50', hedefler:['k:dürümler'], kademeler:[{ n:2, tip:'yuzde', deger:50 }], tekrar:true, aktif:true, bas:'', bit:'', subeler:['demo', 'demo-besiktas'] }];
+  var EKIP = {
+    demo:[{ uyeId:'yonetici:1', ad:'Ahmet Usta', rol:'Sahip', durum:'Aktif', tgId:'7000' }, { uyeId:'U1', ad:'Mehmet', rol:'Personel', durum:'Aktif', tgId:'7002' },
+      { uyeId:'U9', ad:'Ayşe Operasyon', rol:'Merkez', durum:'Aktif', tgId:'7009' }],
+    'demo-besiktas':[{ uyeId:'U2', ad:'Hakan Müdür', rol:'Sahip', durum:'Aktif', tgId:'7100' }, { uyeId:'U3', ad:'Ali Kurye', rol:'Kurye', durum:'Aktif', tgId:'7001' }],
+    'demo-uskudar':[]
+  };
+  var AYAR = { HazirlikSuresiDk:20, IptalSuresiDk:3, KarsilamaMesaji:'Hoş geldiniz!', SaatKontrol:false, CalismaSaatleri:{}, IleriSiparis:false };
+  var KURAL = [{ min:0, max:3, ucret:0, minSiparis:100, ucretsiz:0 }, { min:3, max:6, ucret:25, minSiparis:150, ucretsiz:400 }];
+  var ODEME = [{ ad:'Nakit', aktif:true, aciklama:'' }, { ad:'Kapıda kart', aktif:true, aciklama:'' }];
+  var kopya = function(x){ return JSON.parse(JSON.stringify(x)); };
+  var rev = 1;
+  var ayarlar = function(b){ return { ok:true, b:b, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; };
+  var MENU = [{ id:'U001', kat:'Dürümler', ad:'Tavuk Döner Dürüm', fiyat:150, aktif:true, sira:1 }, { id:'U002', kat:'Dürümler', ad:'Et Döner Dürüm', fiyat:180, aktif:true, sira:2 },
+    { id:'U005', kat:'İçecekler', ad:'Ayran', fiyat:25, aktif:true, sira:5 }];
+  var islemler = {
+    ekBaslat:function(){
+      return { ok:true, rol:'Merkez', merkez:true, ben:{ id:'7000', ad:'Ahmet Usta', bildirim:'' }, cihaz:false, rev:String(rev),
+        isletme:{ ad:'Örnek Dönerci', acik:true, hizmet:true, hazirlikDk:20, telefon:'', lat:41, lng:29, tur:'restoran', saat:{ kontrol:false, acik:true } },
+        zincir:{ id:'Z-DEMO', ad:'Örnek Dönerci', merkez:'demo', limit:5, paket:'Zincir', bot:'ornekdoner_bot', acikSube:3 },
+        subeler:kopya(SUBELER), siparisler:kopya(SIP), iptalNedenleri:[], menu:kopya(MENU), kampanyalar:kopya(KP), kod:'YP360-DEMO', ana:false, anaBot:'yourpos360_bot', uyeUrl:'' };
+    },
+    ekYenile:function(d){ return String(d.rev) === String(rev) ? { ok:true, ayni:true, rev:String(rev), subeler:kopya(SUBELER) } : { ok:true, rev:String(rev), siparisler:kopya(SIP), subeler:kopya(SUBELER) }; },
+    ekMzRapor:function(d){
+      var r = { ok:true, bas:d.bas, bit:d.bit, toplam:{ siparis:41, ciro:9870, iptal:2, indirim:120, teslimEdilen:38, ortalama:240.73 }, subeler:[
+        { b:'demo', ad:'Moda', siparis:19, ciro:4720, ortalama:248.42, iptal:1, iptalTutar:180, teslimEdilen:18, indirim:60, puan:{ ort:4.7, adet:56 }, urunler:[{ ad:'Et Döner Dürüm', adet:22, tutar:3960 }], gun:[] },
+        { b:'demo-besiktas', ad:'Beşiktaş', siparis:15, ciro:3790, ortalama:252.67, iptal:1, iptalTutar:75, teslimEdilen:14, indirim:60, puan:{ ort:4.5, adet:31 }, urunler:[{ ad:'İskender', adet:9, tutar:2880 }], gun:[] },
+        { b:'demo-uskudar', ad:'Üsküdar', siparis:7, ciro:1360, ortalama:194.29, iptal:0, iptalTutar:0, teslimEdilen:6, indirim:0, puan:null, urunler:[{ ad:'Karışık Tost', adet:8, tutar:720 }], gun:[] }],
+        urunler:[{ ad:'Et Döner Dürüm', adet:31, tutar:5580 }, { ad:'Tavuk Döner Dürüm', adet:18, tutar:2700 }, { ad:'İskender', adet:9, tutar:2880 }, { ad:'Ayran', adet:27, tutar:675 }] };
+      if (d.bas !== d.bit) r.subeler.forEach(function(s){ s.gun = [0, 1, 2, 3, 4, 5, 6].map(function(i){ var g = gunEkle(d.bit, i - 6); return { g:g, c:Math.round(s.ciro / 7 * (0.6 + (i % 3) * 0.3)), a:Math.max(1, Math.round(s.siparis / 7)) }; }); });
+      return r;
+    },
+    ekMzSube:function(d){
+      var s = SUBELER.filter(function(x){ return x.b === d.sb; })[0];
+      if (!s) return { ok:false, kod:'YOK', hata:'Şube bulunamadı.' };
+      if (d.alan === 'alim') { s.alim = !!d.deger; s.acik = s.alim && s.kurulu; }
+      if (d.alan === 'durum') { s.kapali = !!d.deger; if (s.kapali) s.acik = false; }
+      if (d.alan === 'ad') s.ad = d.deger;
+      if (d.alan === 'adres') s.adres = d.deger;
+      return { ok:true, subeler:kopya(SUBELER) };
+    },
+    ekMzSubeEkle:function(d){
+      if (SUBELER.filter(function(x){ return !x.kapali; }).length >= 5) return { ok:false, kod:'LIMIT', hata:'Paketinizin şube sınırı doldu (5 / 5).' };
+      var b = 'demo-' + Date.now();
+      SUBELER.push({ b:b, ad:d.ad, tam:'Örnek Dönerci ' + d.ad, no:SUBELER.length + 1, merkez:false, kapali:false, hizmet:true, kurulu:false, alim:true, acik:false,
+        saat:{ kontrol:false, acik:true, sonraki:'' }, telefon:d.telefon || '', adres:d.adres || '', ilce:d.ilce || '', ekip:0 });
+      EKIP[b] = [];
+      return { ok:true, b:b, subeler:kopya(SUBELER) };
+    },
+    ekMzEkip:function(d){ return { ok:true, b:d.sb, ekip:kopya(EKIP[d.sb] || []) }; },
+    ekMzDavet:function(d){
+      var b = d.rol === 'Merkez' ? 'demo' : d.sb, kod = 'DEMO' + Math.random().toString(36).slice(2, 10), link = 'https://t.me/ornekdoner_bot?start=ekip_' + kod;
+      (EKIP[b] = EKIP[b] || []).push({ uyeId:'U' + Date.now(), ad:'Davet bekleniyor', rol:d.rol, durum:'Davet', tgId:'', link:link });
+      return { ok:true, b:b, link:link, rol:d.rol, gun:7, ekip:kopya(EKIP[b]) };
+    },
+    ekMzUyeSil:function(d){ EKIP[d.sb] = (EKIP[d.sb] || []).filter(function(u){ return u.uyeId !== d.uyeId; }); return { ok:true, b:d.sb, ekip:kopya(EKIP[d.sb]) }; },
+    ekMzAyarlar:function(d){ return ayarlar(d.sb || 'demo'); },
+    ekMzAyar:function(d){
+      if (d.islem === 'ekAyarKaydet') Object.keys(d.veri || {}).forEach(function(k){ AYAR[k] = d.veri[k]; });
+      if (d.islem === 'ekKurallarKaydet') KURAL = kopya(d.liste || []);
+      if (d.islem === 'ekOdemelerKaydet') ODEME = kopya(d.liste || []);
+      var r = ayarlar(d.kaynak);
+      r.sonuc = (d.hedef || []).map(function(b){ return { b:b, ad:ad[b] || b, ok:true, hata:'' }; });
+      r.subeler = kopya(SUBELER);
+      return r;
+    },
+    ekMzKampanyaKaydet:function(d){
+      var k = d.k, id = k.id || 'Z' + Math.random().toString(36).slice(2, 10).toUpperCase();
+      KP = KP.filter(function(x){ return x.id !== id; });
+      KP.push({ id:id, ad:k.ad || 'Kampanya', hedefler:k.hedefler, kademeler:k.kademeler, tekrar:k.tekrar, aktif:k.aktif, bas:k.bas, bit:k.bit, subeler:(d.hedef || []).slice() });
+      return { ok:true, id:id, kampanyalar:kopya(KP) };
+    },
+    ekMzKampanyaSil:function(d){ KP = KP.filter(function(x){ return x.id !== d.id; }); return { ok:true, kampanyalar:kopya(KP) }; },
+    ekMzMenuKopya:function(){ return { ok:true, adet:MENU.length }; },
+    ekMzZincir:function(d){ return { ok:true, zincir:{ ad:d.ad } }; }
+  };
+  // canlı akış: 40 sn'de bir rastgele şubeye yeni sipariş
+  setInterval(function(){
+    var b = ['demo', 'demo-besiktas', 'demo-uskudar'][Math.floor(Math.random() * 3)];
+    var no = SIP.filter(function(o){ return o.b === b; }).reduce(function(m, o){ return Math.max(m, o.no); }, 1000) + 1;
+    SIP.push(sip(b, no, 'Y', 0, ['Can', 'Elif', 'Oğuz', 'Seda'][no % 4], [{ ad:'Et Döner Dürüm', adet:1, tutar:180 }], 180));
+    SIP.forEach(function(o){ if (o.kod === 'Y' && Date.now() - o.tarihMs > 3 * dk) o.kod = 'H'; });
+    rev++;
+  }, 40000);
+  return function(act, d){
+    var f = islemler[act];
+    return new Promise(function(ok){
+      setTimeout(function(){
+        var r = f ? f(d) : { ok:false, kod:'ISTEK', hata:'Önizlemede bu işlem yok.' };
+        r.simdiMs = Date.now();
+        ok(r);
+      }, act === 'ekYenile' ? 120 : 300 + Math.random() * 300);
+    });
+  };
+}
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
@@ -4309,6 +4991,7 @@ basla();
 
 /* ---------- önizleme (?demo=1): sunucuya gitmeyen örnek veriler ---------- */
 function demoMock(rol){
+  if (rol === 'Merkez') return mzDemoMock();
   var DN = { Y:'Yeni', H:'Hazırlanıyor', R:'Hazır', O:'Yolda', T:'Teslim Edildi', I:'İptal' };
   var PRM = new URLSearchParams(location.search);
   var DEMO_MARKET = PRM.get('tur') === 'market';

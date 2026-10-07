@@ -427,7 +427,9 @@ function paketKartlari(secili, mevcut){
     return '<button class="paket" type="button" role="radio" aria-checked="' + (secili === p.kod) + '" data-act="paketSec" data-k="' + esc(p.kod) + '">' +
       (i === 1 ? '<span class="rozet">En çok tercih edilen</span>' : '') +
       '<span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span><ul>' +
-      '<li>' + adet(p.urun) + ' ürün</li><li>Haftada ' + adet(p.hafta) + ' sipariş</li><li>' + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li></ul>' +
+      (p.sube ? '<li><b>' + adet(p.sube) + ' şube</b> · tek bot · merkez ekranı</li>' : '') +
+      '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' : 'Sınırsız sipariş') + '</li>' +
+      '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li></ul>' +
       (mevcut === p.kod ? '<span class="simdi">Şu anki paketiniz</span>' : '') + '</button>';
   }).join('') + '</div>';
 }
