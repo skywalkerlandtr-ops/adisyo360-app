@@ -557,6 +557,8 @@ textarea.inp{resize:vertical;min-height:64px;line-height:1.4}
 .oz-grup{border:1.5px solid var(--sep);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .oz-g-bas{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;align-items:center}
 .oz-g-bas .inp{font-weight:700}
+.kb-row{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;align-items:center}
+.kb-ad{min-height:44px;display:flex;align-items:center;padding:8px 12px;border-radius:12px;background:var(--bg2);font-weight:600}
 .oz-bag{grid-column:1 / -1;font-size:13px;color:var(--ok-ink,#1d7a3a);margin-top:-4px}
 .saatler{display:flex;flex-direction:column;gap:8px}
 .saat-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:center}
@@ -2431,6 +2433,7 @@ function menuEkrani(){
       ' ' + urunSoz() + '</b><span class="tip-txt">' + (D.paket ? esc(D.paket.ad) + ' paketi · ' : '') + 'seçenekler tek ' + urunSoz() + ' sayılır</span></div>' +
       (lim ? '<div class="mh-bar' + (dolu ? ' full' : yuzde >= 80 ? ' warn' : '') + '" role="progressbar" aria-label="Ürün sınırı" aria-valuenow="' + n + '" aria-valuemin="0" aria-valuemax="' + lim + '"><span style="width:' + yuzde + '%"></span></div>' : '') +
       '</div><div class="mh-acts"><button class="btn pri" data-act="urunYeni"' + (dolu ? ' disabled' : '') + '>' + ic('arti') + urunSoz(true) + ' ekle</button>' +
+      (!market() && !hzm() ? '<button class="btn line" data-act="komboYeni"' + (dolu ? ' disabled' : '') + '>🍱 Menü oluştur</button>' : '') +
       '<button class="btn line" data-act="excelAc">' + ic('tablo') + 'Excel ile toplu yükle</button>' +
       '<button class="btn line" data-act="kampanyalar">🏷️ Kampanyalar' + ((D.kampanyalar || []).length ? ' (' + D.kampanyalar.length + ')' : '') + '</button></div>' +
       (dolu ? '<div class="note-box">Paketinizin ürün sınırı doldu. Yeni ürün eklemek için paketinizi yükseltin.' +
@@ -2465,7 +2468,9 @@ function ozOzet(oz){
   var p = [], ic = oz.ic || [];
   if (ic.length) p.push(ic.length + ' malzeme');
   if ((oz.ek || []).length) p.push(oz.ek.length + ' ekstra');
-  if ((oz.gr || []).length) p.unshift(oz.gr.length + ' seçim grubu');
+  var sbg = (oz.gr || []).filter(function(g){ return g.sb; })[0], sn = (oz.gr || []).filter(function(g){ return !g.sb; }).length;
+  if (sn) p.unshift(sn + ' seçim grubu');
+  if (sbg) p.unshift(sbg.s.map(function(o){ return o.a; }).join(' + '));
   if (oz.not) p.push('not');
   return p.join(' · ');
 }
@@ -2492,7 +2497,7 @@ function stokSatir(ur){
   }
   return p.length ? '<div class="m-gs">' + p.join('') + '</div>' : '';
 }
-function ozEtiket(ur){ var t = ozOzet(ur.oz); return t ? '<span class="m-oz">🧾 ' + esc(t) + '</span>' : ''; }
+function ozEtiket(ur){ var t = ozOzet(ur.oz); return t ? '<span class="m-oz">' + (ur.oz && (ur.oz.gr || []).some(function(g){ return g.sb; }) ? '🍱 ' : '🧾 ') + esc(t) + '</span>' : ''; }
 function kpEtiket(ur){
   var l = D.kampanyalar ? urunKampanyalari(ur) : [];
   return l.length ? '<span class="m-kp">' + l.map(function(k){ return '🏷️ ' + esc(k.ad); }).join(' · ') + '</span>' : '';
@@ -2535,7 +2540,7 @@ function ozTaslak(oz){
   if (!oz) return { acik:false, ic:[{ a:'', d:'1' }, { a:'', d:'1' }], ek:[], not:true, gr:[] };
   return { acik:true, ic:(oz.ic || []).map(function(m){ return { a:m.a, d:m.v ? (m.c ? '1' : '2') : '0' }; }),
     ek:(oz.ek || []).map(function(e){ return { a:e.a, f:String(e.f).replace('.', ',') }; }), not:!!oz.not,
-    gr:(oz.gr || []).map(function(g){ return { a:g.a, mm:g.min + '-' + g.max, fy:!!g.fy, s:g.s.map(function(o){ return { a:o.a, f:o.f ? String(o.f).replace('.', ',') : '' }; }) }; }) };
+    gr:(oz.gr || []).map(function(g){ return { a:g.a, mm:g.min + '-' + g.max, fy:!!g.fy, sb:!!g.sb, s:g.s.map(function(o){ return { a:o.a, f:o.f ? String(o.f).replace('.', ',') : '' }; }) }; }) };
 }
 var GR_SAYI = [['1-1', 'Tam 1 tane (zorunlu)'], ['0-1', 'En fazla 1 (isteğe bağlı)'], ['2-2', 'Tam 2 tane'], ['0-2', 'En fazla 2'], ['1-2', '1 ya da 2 tane'], ['3-3', 'Tam 3 tane'], ['0-3', 'En fazla 3']];
 function grFiyatli(oz){ return !!(oz && oz.acik && oz.gr.some(function(g){ return g.fy && g.mm === '1-1'; })); }
@@ -2554,7 +2559,40 @@ function urunTaslak(ur){
     aktif:ur.satirlar.some(function(s){ return s.aktif; }), fiyat:sec ? '' : String(ur.satirlar[0].fiyat).replace('.', ','), secenekli:sec,
     secenekler:sec ? ur.satirlar.map(function(s){ return { id:s.id, ad:s.sec, fiyat:String(s.fiyat).replace('.', ','), aktif:s.aktif }; }) : [{ id:'', ad:'', fiyat:'' }, { id:'', ad:'', fiyat:'' }],
     oz:ozTaslak(ur.oz), gun:(ur.gun || []).slice(), gunluk:ur.stok && ur.stok.gunluk !== null && ur.stok.gunluk !== undefined ? String(ur.stok.gunluk) : '',
-    hata:'', katSira:ur.katSira };
+    hata:'', katSira:ur.katSira, kombo:!!(ur.oz && (ur.oz.gr || []).some(function(g){ return g.sb; })) };
+}
+// «Menü oluştur»: menüde hep olan ürünler tek bir sabit grupta (sb) durur
+function komboSabit(oz){
+  var g = (oz.gr || []).filter(function(x){ return x.sb; })[0];
+  if (!g) { g = { a:'Menüde', sb:true, mm:'0-0', fy:false, s:[] }; oz.gr.unshift(g); }
+  return g;
+}
+var KOMBO_GRUP = [['icecek', '🥤 İçecek seçimi', 'Soğuk içecek', /içecek|icecek|meşrubat|mesrubat/i], ['yan', '🍟 Yan ürün seçimi', 'Yan ürün', /yan ürün|yan urun|garnitür|ara sıcak|aperatif/i],
+  ['sos', '🥫 Sos seçimi', 'Sos', null], ['tatli', '🍰 Tatlı seçimi', 'Tatlı', /tatlı|tatli/i]];
+// menüdeki ürünlerin en düşük fiyatı (ayrı ayrı toplamı göstermek için)
+function menuFiyatlari(){
+  var f = {};
+  (D.menu || []).forEach(function(u){ var k = trKucuk(u.ad); if (u.fiyat > 0 && (!f[k] || u.fiyat < f[k])) f[k] = u.fiyat; });
+  return f;
+}
+// başka bir menü (kendisi de «Menü oluştur»la yapılmış ürün) menünün içine konmaz
+function komboMu(ad){ var k = trKucuk(ad); return (D.menu || []).some(function(u){ return trKucuk(u.ad) === k && u.oz && (u.oz.gr || []).some(function(g){ return g.sb; }); }); }
+function komboBolum(s){
+  var oz = s.oz, sb = komboSabit(oz), adlar = menuAdlari(s.ad).filter(function(a){ return !komboMu(a); }), sec = {}, fiy = menuFiyatlari(), top = 0, eksikFiyat = false;
+  sb.s.forEach(function(o){ sec[trKucuk(o.a)] = 1; if (fiy[trKucuk(o.a)]) top += fiy[trKucuk(o.a)]; else eksikFiyat = true; });
+  var h = '<div class="blk oz-blk kb"><h3 class="blk-h">1 · Menüde neler var?</h3><p class="muted oz-ipucu">Satıştaki ürünlerinizden seçin; bunlar menüye hep dahildir, müşteri değiştirmez. ' +
+    'Biri o gün yoksa ya da porsiyonu biterse menü de «Tükendi» görünür.</p>';
+  h += sb.s.length ? '<div class="vedit">' + sb.s.map(function(o, j){
+    return '<div class="kb-row"><span class="kb-ad">🔗 ' + esc(o.a) + '</span><button class="icon-btn" type="button" data-act="komboSil" data-k="' + j + '" aria-label="' + esc(o.a) + ' menüden çıkar">' + ic('x') + '</button></div>';
+  }).join('') + '</div>' + (top && !eksikFiyat ? '<p class="tip-txt">Bu ürünlerin ayrı ayrı toplamı: <b class="num">' + tl(top) + '</b>. Menü fiyatını buna göre belirleyebilirsiniz.</p>' : '')
+    : '<div class="note-box">Henüz ürün seçmediniz. Aşağıdaki ürünlere dokunarak ekleyin.</div>';
+  var kalan = adlar.filter(function(a){ return !sec[trKucuk(a)]; });
+  if (kalan.length && sb.s.length < 10) h += '<div class="lbl" style="margin-top:4px">Menünüzden ekleyin</div><div class="kat-chips" role="group" aria-label="Menüye ürün ekle">' +
+    kalan.slice(0, 60).map(function(a){ return '<button class="chip sm" type="button" data-act="komboEkle" data-a="' + esc(a) + '">+ ' + esc(a) + '</button>'; }).join('') + '</div>';
+  h += '</div>' + grBolum(s);
+  h += '<button class="opt" type="button" role="switch" aria-checked="' + (oz.not ? 'true' : 'false') + '" data-act="ozNot"><span class="o-main">Müşteri bu menüye not yazabilsin' +
+    '<span class="o-sub">ör. «dürüm acılı olsun»</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  return h;
 }
 function kategoriListesi(){ var l = []; (D.menu || []).forEach(function(u){ if (l.indexOf(u.kat) < 0) l.push(u.kat); }); return l; }
 SHEET.urun = function(s){
@@ -2562,11 +2600,12 @@ SHEET.urun = function(s){
   var kats = kategoriListesi();
   var katSira = kats.indexOf(s.kat) >= 0 ? kats.indexOf(s.kat) : kats.length;
   var gp = gorselParca(s.gorsel, s.ad, s.kat, katSira);
-  var h = shBas(s.ids.length ? (hzm() ? 'Hizmeti düzenle' : 'Ürünü düzenle') : (hzm() ? 'Yeni hizmet' : 'Yeni ürün')) + '<div class="sh-body">';
-  h += '<div class="u-onizle" aria-hidden="true">' + urunKutu(s.resimUrl, gp, 'lg') + '<div><div class="u-on-ad">' + esc(s.ad || urunSoz(true) + ' adı') + '</div><div class="muted">' +
+  var h = shBas(s.kombo ? (s.ids.length ? 'Menüyü düzenle' : 'Menü oluştur') : s.ids.length ? (hzm() ? 'Hizmeti düzenle' : 'Ürünü düzenle') : (hzm() ? 'Yeni hizmet' : 'Yeni ürün')) + '<div class="sh-body">';
+  if (s.kombo) { s.secenekli = false; s.oz.acik = true; }
+  h += '<div class="u-onizle" aria-hidden="true">' + urunKutu(s.resimUrl, gp, 'lg') + '<div><div class="u-on-ad">' + esc(s.ad || (s.kombo ? 'Menü' : urunSoz(true)) + ' adı') + '</div><div class="muted">' +
     esc(s.secenekli ? s.secenekler.filter(function(x){ return x.ad; }).map(function(x){ return x.ad; }).join(' · ') || 'Seçenekler' : (s.fiyat ? s.fiyat + ' TL' : 'Fiyat')) + '</div></div></div>';
-  h += '<div class="field"><label for="urAd">' + urunSoz(true) + ' adı</label><input class="inp" id="urAd" maxlength="60" value="' + esc(s.ad) + '" autocomplete="off" placeholder="' +
-    (market() ? 'ör. Beyaz Peynir' : hzm() ? 'ör. Musluk tamiri' : 'ör. Tavuk Dürüm') + '"></div>';
+  h += '<div class="field"><label for="urAd">' + (s.kombo ? 'Menü' : urunSoz(true)) + ' adı</label><input class="inp" id="urAd" maxlength="60" value="' + esc(s.ad) + '" autocomplete="off" placeholder="' +
+    (s.kombo ? 'ör. Dürüm Menü' : market() ? 'ör. Beyaz Peynir' : hzm() ? 'ör. Musluk tamiri' : 'ör. Tavuk Dürüm') + '"></div>';
   h += '<div class="field"><label for="urKat">Kategori</label><input class="inp" id="urKat" maxlength="40" value="' + esc(s.kat) + '" autocomplete="off" placeholder="' +
     (market() ? 'ör. Kahvaltılık' : hzm() ? 'ör. Arıza ve tamir' : 'ör. Dürümler') + '">' +
     (kats.length ? '<div class="kat-chips" role="group" aria-label="Mevcut kategoriler">' + kats.map(function(k){
@@ -2584,12 +2623,12 @@ SHEET.urun = function(s){
     '<input type="file" id="urFoto" accept="image/*" hidden>' +
     '<span class="tip-txt">Telefonla çekin ya da galeriden seçin. Kalitesi korunarak küçültülür; müşteriler sipariş sayfasında görür.</span>' +
     (s.fotoHata ? '<div class="err-txt" role="alert">' + esc(s.fotoHata) + '</div>' : '') + '</div>';
-  h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.secenekli ? 'true' : 'false') + '" data-act="secenekAc"><span class="o-main">Boy / çeşit seçenekleri var' +
+  if (!s.kombo) h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.secenekli ? 'true' : 'false') + '" data-act="secenekAc"><span class="o-main">Boy / çeşit seçenekleri var' +
     '<span class="o-sub">' + (market() ? 'ör. 500 g / 1 kg, 10\'lu / 30\'lu' : hzm() ? 'ör. Daire / Villa, 5 / 10 petek' : 'ör. Küçük / Orta / Büyük, 1 / 1,5 porsiyon') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
   if (!s.secenekli && grFiyatli(s.oz)) {
     h += '<div class="note-box">Bu ürünün fiyatı müşterinin seçimine göre belirlenir (aşağıdaki «Müşteri seçimleri» bölümünde).</div>';
   } else if (!s.secenekli) {
-    h += '<div class="field"><label for="urFiyat">Fiyat (TL)</label><input class="inp num" id="urFiyat" inputmode="decimal" value="' + esc(s.fiyat) + '" autocomplete="off" placeholder="ör. 120"></div>';
+    h += '<div class="field"><label for="urFiyat">' + (s.kombo ? 'Menü fiyatı (TL)' : 'Fiyat (TL)') + '</label><input class="inp num" id="urFiyat" inputmode="decimal" value="' + esc(s.fiyat) + '" autocomplete="off" placeholder="ör. 120"></div>';
   } else {
     h += '<div class="blk"><h3 class="blk-h">Seçenekler ve fiyatları</h3><div class="vedit">' + s.secenekler.map(function(x, i){
       return '<div class="ve-row"><input class="inp" id="sv-ad-' + i + '" maxlength="30" value="' + esc(x.ad) + '" placeholder="' + (i === 0 ? 'ör. Küçük' : i === 1 ? 'ör. Büyük' : 'Seçenek') +
@@ -2598,6 +2637,7 @@ SHEET.urun = function(s){
         (s.secenekler.length > 1 ? '<button class="icon-btn" type="button" data-act="secenekSil" data-k="' + i + '" aria-label="' + (i + 1) + '. seçeneği sil">' + ic('x') + '</button>' : '') + '</div>';
     }).join('') + '</div>' + (s.secenekler.length < 10 ? '<button class="btn ghost sm" type="button" data-act="secenekEkle">' + ic('arti', 'sm') + 'Seçenek ekle</button>' : '') + '</div>';
   }
+  if (s.kombo) h += komboBolum(s);
   h += '<div class="field"><span class="lbl" id="gunH">Satış günleri</span><div class="gunler" role="group" aria-labelledby="gunH">' +
     '<button class="chip sm" type="button" data-act="gunHep" aria-pressed="' + (!s.gun.length) + '">Her gün</button>' +
     GUN_KISA.map(function(g, i){ return '<button class="chip sm" type="button" data-act="gunSec" data-k="' + (i + 1) + '" aria-pressed="' + (s.gun.indexOf(i + 1) >= 0) + '">' + g + '</button>'; }).join('') +
@@ -2606,7 +2646,7 @@ SHEET.urun = function(s){
     '" placeholder="Sınırsız" autocomplete="off"><span class="tip-txt">Her gün bu sayıdan başlar; satıldıkça düşer, bitince «Tükendi» görünür. Gün içinde Menü listesinden değiştirebilirsiniz.</span></div>';
   h += '<div class="field"><label for="urAc">Açıklama <span class="muted">(isteğe bağlı)</span></label><textarea class="inp" id="urAc" maxlength="200" rows="2" placeholder="' +
     (market() ? 'ör. Tam yağlı, Ezine' : hzm() ? 'ör. Malzeme hariç işçilik' : 'ör. Lavaş, tavuk döner, domates, turşu') + '">' + esc(s.aciklama) + '</textarea></div>';
-  h += ozBolum(s);
+  if (!s.kombo) h += ozBolum(s);
   h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.aktif ? 'true' : 'false') + '" data-act="urAktif"><span class="o-main">Satışta' +
     '<span class="o-sub">Kapalıysa müşteriler bu ' + urunSoz() + 'i göremez.</span></span><span class="tgl" aria-hidden="true"></span></button>';
   if (s.hata) h += '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>';
@@ -2615,11 +2655,14 @@ SHEET.urun = function(s){
   return h;
 };
 function grBolum(s){
-  var oz = s.oz, adlar = menuAdlari(s.ad), bag = {};
+  var oz = s.oz, adlar = menuAdlari(s.ad).filter(function(a){ return !s.kombo || !komboMu(a); }), bag = {};
   adlar.forEach(function(a){ bag[trKucuk(a)] = 1; });
-  var h = '<div class="blk oz-blk"><h3 class="blk-h">Menü kurma (seçim grupları)</h3><p class="muted oz-ipucu">Müşteri her gruptan seçim yapar. Ör. 4\'lü menü: önce ana yemek (fiyatı belirler), sonra pilav, sonra yanına 2 çeşit. ' +
+  var h = s.kombo ? '<div class="blk oz-blk"><h3 class="blk-h">2 · Müşteri ne seçsin?</h3><p class="muted oz-ipucu">Ör. «Soğuk içecek» grubuna Kola, Fanta, Ice Tea, Limonata, Ayran koyun; müşteri birini seçer. ' +
+    'Fiyat farkı olan seçeneğe ek ücret yazın (ör. 10). Seçenek menünüzdeki bir ürünse ona bağlanır 🔗: o gün yoksa görünmez, biterse «Tükendi» olur.</p>'
+    : '<div class="blk oz-blk"><h3 class="blk-h">Menü kurma (seçim grupları)</h3><p class="muted oz-ipucu">Müşteri her gruptan seçim yapar. Ör. 4\'lü menü: önce ana yemek (fiyatı belirler), sonra pilav, sonra yanına 2 çeşit. ' +
     'Seçenek adı menünüzdeki bir yemekle aynıysa ona bağlanır 🔗: o gün yoksa görünmez, porsiyonu biterse «Tükendi» olur.</p>';
   h += oz.gr.map(function(g, i){
+    if (g.sb) return '';
     var fy = g.fy && g.mm === '1-1', var_ = {};
     g.s.forEach(function(o){ if (String(o.a).trim()) var_[trKucuk(String(o.a).trim())] = 1; });
     var sayilar = GR_SAYI.slice();
@@ -2628,7 +2671,7 @@ function grBolum(s){
       '" placeholder="Grup adı (ör. Ana yemek)" aria-label="' + (i + 1) + '. grubun adı" autocomplete="off"><button class="icon-btn" type="button" data-act="ozGrSil" data-k="' + i + '" aria-label="' + (i + 1) + '. grubu sil">' + ic('cop') + '</button></div>' +
       '<div class="field"><label for="oz-gr-mm-' + i + '">Kaç tane seçilsin?</label><select class="inp oz-sel" id="oz-gr-mm-' + i + '" data-act-change="ozGrSayi" data-k="' + i + '">' +
       sayilar.map(function(x){ return '<option value="' + x[0] + '"' + (g.mm === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></div>' +
-      (g.mm === '1-1' ? '<button class="opt" type="button" role="switch" aria-checked="' + (fy ? 'true' : 'false') + '" data-act="ozGrFy" data-k="' + i + '"><span class="o-main">Menünün fiyatını bu seçim belirler' +
+      (g.mm === '1-1' && !s.kombo ? '<button class="opt" type="button" role="switch" aria-checked="' + (fy ? 'true' : 'false') + '" data-act="ozGrFy" data-k="' + i + '"><span class="o-main">Menünün fiyatını bu seçim belirler' +
         '<span class="o-sub">Her seçeneğe menünün fiyatını yazın (ör. Kuru fasulye 230, Karnıyarık 300).</span></span><span class="tgl" aria-hidden="true"></span></button>' : '') +
       '<div class="vedit">' + g.s.map(function(o, j){
         var bagli = bag[trKucuk(String(o.a).trim())];
@@ -2641,7 +2684,8 @@ function grBolum(s){
       '</div>';
   }).join('');
   h += '<div class="row2">' + (oz.gr.length < 8 ? '<button class="btn line sm" type="button" data-act="ozGrEkle">' + ic('arti', 'sm') + 'Seçim grubu ekle</button>' : '') +
-    (!oz.gr.length ? '<button class="btn line sm" type="button" data-act="ozGrSablon">🍽️ 4\'lü menü şablonu</button>' : '') + '</div></div>';
+    (s.kombo ? (oz.gr.length < 8 ? KOMBO_GRUP.map(function(x){ return '<button class="btn line sm" type="button" data-act="komboGrup" data-k="' + x[0] + '">' + x[1] + '</button>'; }).join('') : '')
+      : !oz.gr.length ? '<button class="btn line sm" type="button" data-act="ozGrSablon">🍽️ 4\'lü menü şablonu</button>' : '') + '</div></div>';
   return h;
 }
 function ozBolum(s){
@@ -2697,6 +2741,12 @@ function ozCoz(oz){
   });
   var gr = [];
   oz.gr.forEach(function(g){
+    if (g.sb) {
+      var sl = [], sg2 = {};
+      g.s.forEach(function(o){ var oa = String(o.a || '').replace(/\s+/g, ' ').trim(); if (oa && !sg2[trKucuk(oa)]) { sg2[trKucuk(oa)] = 1; sl.push({ a:oa }); } });
+      if (sl.length) gr.push({ a:String(g.a || '').trim() || 'Menüde', min:sl.length, max:sl.length, sb:1, s:sl });
+      return;
+    }
     var a = String(g.a || '').replace(/\s+/g, ' ').trim(), mm = String(g.mm || '1-1').split('-'), min = Number(mm[0]), max = Number(mm[1]), sg = {}, s = [];
     g.s.forEach(function(o){
       var oa = String(o.a || '').replace(/\s+/g, ' ').trim(), fs = String(o.f || '').trim(), f = fs ? fiyatCoz(fs) : 0;
@@ -2986,6 +3036,25 @@ function konumKaydet(lat, lng){
 /* --- olaylar --- */
 var ACT_MENU = {
   urunYeni:function(){ sheetAc(urunTaslak(null)); },
+  komboYeni:function(){
+    var s = urunTaslak(null), mk = kategoriListesi().filter(function(k){ return /men[üu]/i.test(k); })[0];
+    s.kombo = true; s.kat = mk || 'Menüler'; s.odak = '#urAd';
+    s.oz = { acik:true, ic:[], ek:[], not:false, gr:[{ a:'Menüde', sb:true, mm:'0-0', fy:false, s:[] }] };
+    sheetAc(s);
+  },
+  komboEkle:function(el){ urunTaslakOku(SH); komboSabit(SH.oz).s.push({ a:el.getAttribute('data-a'), f:'' }); haptic('select'); renderSheet(); },
+  komboSil:function(el){ urunTaslakOku(SH); komboSabit(SH.oz).s.splice(Number(el.getAttribute('data-k')), 1); renderSheet(); },
+  komboGrup:function(el){
+    urunTaslakOku(SH);
+    var x = KOMBO_GRUP.filter(function(k){ return k[0] === el.getAttribute('data-k'); })[0]; if (!x) return;
+    var ad = x[2], n = 2, gor = {};
+    while (SH.oz.gr.some(function(g){ return trKucuk(g.a) === trKucuk(ad); })) ad = x[2] + ' ' + n++;
+    var l = [];
+    if (x[3]) (D.menu || []).forEach(function(u){ var k = trKucuk(u.ad); if (x[3].test(trKucuk(u.kat || '')) && !gor[k] && k !== trKucuk(SH.ad)) { gor[k] = 1; l.push({ a:u.ad, f:'' }); } });
+    SH.oz.gr.push({ a:ad, mm:'1-1', fy:false, s:l.length ? l.slice(0, 30) : [{ a:'', f:'' }, { a:'', f:'' }] });
+    renderSheet();
+    toast(l.length ? l.length + ' seçenek eklendi; istemediklerinizi ✕ ile çıkarın.' : 'Seçenekleri yazın ya da «Menünüzden ekleyin» ile seçin.');
+  },
   urunDuzenle:function(el){ var ur = urunBulAnahtar(el.getAttribute('data-k')); if (ur) sheetAc(urunTaslak(ur)); },
   katSec:function(el){ urunTaslakOku(SH); SH.kat = el.getAttribute('data-k'); renderSheet(); },
   secenekAc:function(){
@@ -3094,6 +3163,7 @@ var ACT_MENU = {
       if (!hata && !u.secenekler.length) hata = 'En az bir seçenek ve fiyatını yazın.';
     }
     if (!hata && s.oz) { var oc = ozCoz(s.oz); if (oc.hata) hata = oc.hata; else u.oz = oc.oz; }
+    if (!hata && s.kombo && !(u.oz && u.oz.gr && u.oz.gr.length)) hata = 'Menüye en az bir ürün ekleyin («Menüde neler var?»).';
     if (!hata && s.secenekli && grFiyatli(s.oz)) hata = 'Fiyatı seçime göre belirlenen üründe boy / çeşit seçeneği olamaz.';
     u.gunler = s.gun.slice();
     var gp = String(s.gunluk || '').trim();
@@ -6060,6 +6130,10 @@ function demoMock(rol){
   var DEMO_OZ = { ic:[{ a:'Lavaş', v:1, c:0 }, { a:'Domates', v:1, c:1 }, { a:'Soğan', v:1, c:1 }, { a:'Turşu', v:1, c:1 }, { a:'Mayonez', v:1, c:1 }, { a:'Pul biber', v:0, c:1 }],
     ek:[{ a:'Kaşar peyniri', f:20 }, { a:'Ekstra tavuk (50 g)', f:45 }], not:1 };
   if (!DEMO_MARKET && !DEMO_HIZMET) MENU.forEach(function(u){ if (u.id === 'U001') u.oz = JSON.parse(JSON.stringify(DEMO_OZ)); });
+  // örnek menü (Menü oluştur): dürüm + patates hep dahil, içecek müşterinin seçimi
+  if (!DEMO_MARKET && !DEMO_HIZMET) MENU.push({ id:'U016', kat:'Menüler', ad:'Dürüm Menü', sec:'', fiyat:190, aktif:true, sira:MENU.length + 1, gorsel:'', aciklama:'Tavuk döner dürüm, patates ve soğuk içecek',
+    oz:{ gr:[{ a:'Menüde', min:2, max:2, sb:1, s:[{ a:'Tavuk Döner Dürüm' }, { a:'Patates Kızartması' }] },
+      { a:'Soğuk içecek', min:1, max:1, s:[{ a:'Kola' }, { a:'Ayran' }, { a:'Fanta' }, { a:'Ice Tea', f:5 }, { a:'Limonata', f:10 }] }], not:1 } });
   function tamAd(u){ return u.sec ? u.ad + ' (' + u.sec + ')' : u.ad; }
   var AYAR = { SaatKontrol:false, CalismaSaatleri:{ 1:'11:00-22:00', 2:'11:00-22:00', 3:'11:00-22:00', 4:'11:00-22:00', 5:'11:00-23:00', 6:'11:00-23:00', 7:'' }, IleriSiparis:DEMO_HIZMET, IsletmeAdi:DEMO_MARKET ? 'Örnek Bakkal' : DEMO_HIZMET ? 'Usta Tesisat' : 'Örnek Dönerci', Telefon:'02161234567', Enlem:40.9871, Boylam:29.0285, HazirlikSuresiDk:20, IptalSuresiDk:3,
     KarsilamaMesaji:'Hoş geldiniz! 🍽️ Telegram üzerinden kolayca sipariş verebilirsiniz.', SiparisAlimi:true, YolKatsayisi:1.3 };
