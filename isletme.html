@@ -845,6 +845,41 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .wg-kod{font-size:24px;letter-spacing:.3em;text-align:center}
 .wg-yedek{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .wg-yedek span{padding:10px;border-radius:10px;background:var(--field-bg);border:1px solid var(--field-line);text-align:center;font-size:16px;font-weight:700;letter-spacing:.06em}
+.yn-ara{grid-template-columns:minmax(0,1fr) auto auto}
+.yn-gor button{min-height:44px;padding:0 12px}
+.yn-gor .ico{width:20px;height:20px}
+@media (max-width:560px){.yn-ara{grid-template-columns:minmax(0,1fr) auto}.yn-ara .inp[type=search]{grid-column:1/-1}.yn-gor-y{display:none}}
+.yn-tbl-kart{padding:4px 0;overflow:hidden}
+.yn-tbl-wrap{margin:0;padding:0}
+.yn-tbl{min-width:860px;font-size:15px}
+.yn-tbl th,.yn-tbl td{padding:10px 12px;vertical-align:top}
+.yn-tbl thead th{position:sticky;top:0;background:var(--bg);z-index:2;white-space:nowrap;padding-top:8px;padding-bottom:8px}
+.yn-tbl tbody tr{cursor:pointer}
+.yn-tbl tbody tr:hover td,.yn-tbl tbody tr:hover th{background:var(--accent-soft)}
+.yn-tbl tbody th{font-weight:400}
+.yn-tbl .yn-td-ad{position:sticky;left:0;background:var(--bg);z-index:1;min-width:190px;max-width:260px;box-shadow:1px 0 0 var(--sep)}
+.yn-tbl thead th:first-child{left:0;z-index:3;box-shadow:1px 0 0 var(--sep)}
+.yn-tr-ad{border:0;background:none;padding:0;font:inherit;font-weight:800;color:var(--text);text-align:left;cursor:pointer;min-height:24px}
+.yn-tr-ad:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px;border-radius:4px}
+.yn-td-alt{font-size:13px;color:var(--sub);margin-top:3px}
+.yn-td-alt .pill{font-size:12px;white-space:nowrap}
+.yn-td-n{white-space:nowrap;color:var(--sub);font-size:14px}
+.yn-tbl .mz-durum{margin-top:0;font-size:14px;white-space:nowrap}
+.yn-th-btn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--sub);cursor:pointer;min-height:28px;white-space:nowrap}
+.yn-th-btn.on{color:var(--text)}
+.yn-th-btn:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px;border-radius:4px}
+.tbl .r .yn-th-btn{text-align:right}
+.yn-tbl thead th{vertical-align:middle;font-size:13px}
+.yn-tbl tbody th{font-size:15px;color:var(--text);border-bottom:1px solid var(--sep);text-align:left}
+.yn-tbl tbody tr:last-child th{border-bottom:0}
+@media (max-width:640px){
+  .yn-tbl{min-width:0;font-size:14px}
+  .yn-tbl tr > :nth-child(3),.yn-tbl tr > :nth-child(5),.yn-tbl tr > :nth-child(6),.yn-tbl tr > :nth-child(8),.yn-tbl tr > :nth-child(9){display:none}
+  .yn-tbl th,.yn-tbl td{padding:10px 8px}
+  .yn-tbl .yn-td-ad,.yn-tbl thead th:first-child{position:static;min-width:0;max-width:none;box-shadow:none}
+  .yn-tbl .mz-durum{white-space:normal;align-items:flex-start;font-size:13px}
+  .yn-tbl .mz-durum .dot{margin-top:5px}
+}
 </style>
 </head>
 <body>
@@ -5651,6 +5686,7 @@ function ynListeHtml(){
     return String(a.ad).localeCompare(String(b.ad), 'tr');
   });
   if (!l.length) return bosDurum('dukkan', U.ynQ ? 'Aramaya uyan işletme yok' : 'Bu grupta işletme yok', U.ynQ ? 'Başka bir kelimeyle arayın ya da filtreyi kaldırın.' : '');
+  if (ynGorunum() === 'liste') return ynTabloHtml(l);
   return '<div class="yn-liste">' + l.map(function(x){
     var d = ynDurum(x);
     return '<button class="card yn-kart" data-act="ynAc" data-b="' + esc(x.b) + '"><span class="yn-k-bas"><span class="yn-k-ad">' + esc(x.ad) + (x.oneri ? ' <span title="YourPOS 360\'ın önerisi">🏅</span>' : '') + '</span><span class="pill">' + esc(x.kod) + '</span></span>' +
@@ -5667,7 +5703,7 @@ function ynIslEkrani(){
   var h = '<div class="scr"><div class="yn-ara"><label class="sr" for="ynAra">İşletme ara</label><input class="inp" id="ynAra" type="search" autocomplete="off" placeholder="Ara: ad, kod, yetkili, telefon, ilçe" value="' + esc(U.ynQ || '') + '">' +
     '<label class="sr" for="ynSira">Sıralama</label><select class="inp" id="ynSira" data-act-change="ynSira">' + YN_SIRA.map(function(s){
       return '<option value="' + s[0] + '"' + ((U.ynSira || 'ad') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
-    }).join('') + '</select></div>';
+    }).join('') + '</select>' + ynGorSec() + '</div>';
   h += '<div class="chips" role="group" aria-label="Filtre">' + YN_FILTRE.map(function(x){
     var n = l.filter(function(y){ return ynFiltreUyar(y, x[0]); }).length;
     if (x[0] && !n && f !== x[0]) return '';
@@ -7320,6 +7356,58 @@ function whDemoIslemler(){
     whCikis:function(){ return { ok:true }; }
   };
 }
+
+
+/* ---------- 1.17.2 · İşletmeler: kart ya da liste görünümü ---------- */
+IC.izgara = 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z';
+IC.liste = 'M9 6h12 M9 12h12 M9 18h12 M4 6h.01 M4 12h.01 M4 18h.01';
+var YN_GOR_KEY = 'yp360-yn-gorunum';
+function ynGorunum(){ if (!U.ynGor) U.ynGor = LS.get(YN_GOR_KEY) === 'liste' ? 'liste' : 'kart'; return U.ynGor; }
+function ynGorSec(){
+  var g = ynGorunum();
+  return '<div class="seg yn-gor" role="group" aria-label="Görünüm">' +
+    '<button type="button" data-act="ynGor" data-k="kart" aria-pressed="' + (g === 'kart') + '" title="Kart görünümü">' + ic('izgara') + '<span class="yn-gor-y">Kart</span></button>' +
+    '<button type="button" data-act="ynGor" data-k="liste" aria-pressed="' + (g === 'liste') + '" title="Liste görünümü">' + ic('liste') + '<span class="yn-gor-y">Liste</span></button></div>';
+}
+// Sıralanabilir başlık: ad ve bakiye artan, ciro ve kayıt azalan
+function ynSiraBaslik(k, ad, cls){
+  var s = U.ynSira || 'ad', artan = k === 'ad' || k === 'bakiye', on = s === k;
+  return '<th scope="col"' + (cls ? ' class="' + cls + '"' : '') + ' aria-sort="' + (on ? (artan ? 'ascending' : 'descending') : 'none') + '">' +
+    '<button type="button" class="yn-th-btn' + (on ? ' on' : '') + '" data-act="ynSiraTik" data-k="' + k + '">' + ad + (on ? '<span aria-hidden="true">' + (artan ? ' ▲' : ' ▼') + '</span>' : '') + '</button></th>';
+}
+function ynAlt(s){ return s ? '<div class="yn-td-alt">' + s + '</div>' : ''; }
+function ynTabloHtml(l){
+  return '<div class="card yn-tbl-kart"><div class="tbl-wrap yn-tbl-wrap"><table class="tbl yn-tbl"><caption class="sr">İşletmeler · ' + adet(l.length) + '</caption><thead><tr>' +
+    ynSiraBaslik('ad', 'İşletme') + '<th scope="col">Durum</th><th scope="col">Paket</th>' + ynSiraBaslik('bakiye', 'Bakiye', 'r') +
+    '<th scope="col">Yetkili · yer</th><th scope="col" class="r">Bugün</th>' + ynSiraBaslik('ciro', 'Bu hafta', 'r') +
+    '<th scope="col">Son sipariş</th>' + ynSiraBaslik('yeni', 'Kayıt') + '</tr></thead><tbody>' + l.map(function(x){
+      var d = ynDurum(x), sube = ynSube(x);
+      return '<tr class="yn-tr" data-act="ynAc" data-b="' + esc(x.b) + '">' +
+        '<th scope="row" class="yn-td-ad"><button type="button" class="yn-tr-ad" data-act="ynAc" data-b="' + esc(x.b) + '">' + esc(x.ad) + (x.oneri ? ' <span title="YourPOS 360\'ın önerisi">🏅</span>' : '') + '</button>' +
+          '<div class="yn-td-alt"><span class="pill">' + esc(x.kod) + '</span>' + (x.zincir ? ' ' + esc(x.zincir.ad) + (x.zincir.merkez ? ' · merkez' : ' · ' + esc(x.zincir.sube)) : '') + '</div></th>' +
+        '<td><span class="mz-durum ' + d.cls + '"><span class="dot" aria-hidden="true"></span>' + esc(d.txt) + '</span>' + (x.bot || sube ? '' : ynAlt('<span class="yn-uyari">bot yok</span>')) + '</td>' +
+        '<td>' + esc(x.paket.ad) + ynAlt(x.paket.ucret && !sube ? tl(x.paket.ucret) + '/ay' : '') + '</td>' +
+        '<td class="r num' + (x.bakiye < 0 ? ' yn-eksi' : '') + '"><b>' + tl(x.bakiye) + '</b></td>' +
+        '<td>' + esc(x.sahip || '—') + ynAlt(esc(x.yer || '')) + '</td>' +
+        '<td class="r num">' + adet(x.say.bugun) + ynAlt(x.say.bugunCiro ? tl(x.say.bugunCiro) : '') + '</td>' +
+        '<td class="r num">' + adet(x.say.hafta) + ynAlt(x.say.haftaCiro ? tl(x.say.haftaCiro) : '') + '</td>' +
+        '<td class="yn-td-n">' + esc(ynSonSiparis(x)) + '</td><td class="yn-td-n">' + ynTarih(x.kayit) + '</td></tr>';
+    }).join('') + '</tbody></table></div></div>';
+}
+Object.assign(ACT_EK, {
+  ynGor:function(el){
+    var g = el.getAttribute('data-k') === 'liste' ? 'liste' : 'kart';
+    if (g === ynGorunum()) return;
+    U.ynGor = g; LS.set(YN_GOR_KEY, g); haptic('select');
+    var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml();
+    document.querySelectorAll('[data-act="ynGor"]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-k') === g)); });
+  },
+  ynSiraTik:function(el){
+    U.ynSira = el.getAttribute('data-k'); haptic('select');
+    var s = $('#ynSira'); if (s) s.value = U.ynSira;
+    var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml();
+  }
+});
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
