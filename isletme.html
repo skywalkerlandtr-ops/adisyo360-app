@@ -5892,7 +5892,8 @@ function ynBvKart(v){
     (v.fatura ? ynKv('Fatura', esc(v.fatura)) : '') + ynKv('Telegram', esc(v.telegram || '—')) + (v.kaynak ? ynKv('Nereden', esc(v.kaynak)) : '') + '</div>';
   if (v.silinmis && v.silinmis.length) h += '<div class="note-box yn-sil-uyari" role="note">⚠️ <b>Bu kişinin silinmiş işletmesi var:</b> ' + v.silinmis.map(function(y){
     return esc(y.ad) + ' <span class="pill">' + esc(y.kod) + '</span>' + (y.t ? ' · ' + tarihYazi(y.t) : '');
-  }).join(', ') + '<br>Yeni işletme açmak yerine eskisini geri yükleyebilirsiniz. <button class="btn line sm" data-act="ynSilinenler">Silinen işletmeler</button></div>';
+  }).join(', ') + '<br>' + (v.silinmis.some(function(y){ return y.geri !== false; }) ? 'Yeni işletme açmak yerine eskisini geri yükleyebilirsiniz.' :
+    'Arşivin saklama süresi dolduğu için geri yüklenemez; yeni işletme olarak açabilirsiniz.') + ' <button class="btn line sm" data-act="ynSilinenler">Silinen işletmeler</button></div>';
   if (v.tur === 'devam') {
     h += '<div class="row2">' + (v.b ? '<button class="btn pri" data-act="ynAc" data-b="' + esc(v.b) + '" data-k="kredi">' + ic('arti', 'sm') + 'Kredi (TL) yükle</button>' : '') +
       '<button class="btn line" data-act="ynBvKarar" data-k="gorusuldu" data-no="' + esc(v.no) + '"' + (b ? ' disabled' : '') + '>' + bekle('ynBv:' + v.no) + ic('tik', 'sm') + 'Görüşüldü, kapat</button></div>';
@@ -6662,8 +6663,12 @@ function ynDemoMock(){
   Object.assign(islemler, whDemoIslemler());
   (function(){
     var SIL = [{ b:'demo-eski', ad:'Eski Pastane', kod:'R4T8KM', sahip:'Selin Ak', tel:'0532 000 00 41', t:t0 - 12 * gun, kim:'Ferhat', neden:'Üyeliği bitirdi',
-      arsivUrl:'https://drive.google.com/drive/my-drive', arsivAd:'yourpos360-arsiv-eski-pastane-2026-09-26-1412.json', boyut:1843200, foto:6, fotoAtlanan:0, bakiye:0, geriYuklenebilir:true }];
-    BV.forEach(function(v){ if (v.no === 'B-1041') v.silinmis = [{ b:'demo-eski', ad:'Eski Pastane', kod:'R4T8KM', t:t0 - 12 * gun }]; });
+      arsivUrl:'https://drive.google.com/drive/my-drive', arsivAd:'yourpos360-arsiv-eski-pastane-2026-09-26-1412.json', boyut:1843200, foto:6, fotoAtlanan:0, bakiye:0,
+      arsivSonT:t0 + 78 * gun, arsivSilindi:0, geriYuklenebilir:true },
+      { b:'demo-bufe', ad:'Köşe Büfe', kod:'K7B2UF', sahip:'Okan Er', tel:'0533 000 00 77', t:t0 - 120 * gun, kim:'Ferhat', neden:'Kapandı',
+      arsivUrl:'', arsivAd:'yourpos360-arsiv-kose-bufe-2026-06-10-0930.json', boyut:960000, foto:3, fotoAtlanan:0, bakiye:0,
+      arsivSonT:t0 - 30 * gun, arsivSilindi:t0 - 29 * gun, geriYuklenebilir:false }];
+    BV.forEach(function(v){ if (v.no === 'B-1041') v.silinmis = [{ b:'demo-eski', ad:'Eski Pastane', kod:'R4T8KM', t:t0 - 12 * gun, geri:true }]; });
     var eskiIslem = islemler.ynIslem, eskiBaslat = islemler.ynBaslat;
     islemler.ynBaslat = function(d){ var r = eskiBaslat(d); r.ozet.silinen = SIL.length; return r; };
     islemler.ynIslem = function(d){
@@ -6674,13 +6679,14 @@ function ynDemoMock(){
       if (String(d.onay || '').trim().toUpperCase().replace(/\s+/g, '') !== String(x.kod).toUpperCase()) return { ok:false, kod:'ONAY', hata:'Onay için işletme kodunu doğru yazın (' + x.kod + ').' };
       ISL.splice(ISL.indexOf(x), 1);
       SIL.unshift({ b:x.b, ad:x.ad, kod:x.kod, sahip:x.sahip, tel:x.tel, t:Date.now(), kim:'Ferhat', neden:String(d.neden || ''), arsivUrl:'https://drive.google.com/drive/my-drive',
-        arsivAd:'yourpos360-arsiv-' + x.b + '.json', boyut:2400000, foto:8, fotoAtlanan:0, bakiye:x.bakiye, geriYuklenebilir:true, _x:x });
-      return { ok:true, silindi:x.b, mesaj:x.ad + ' (' + x.kod + ') silindi. Arşivi Google Drive\'daki «YourPOS 360 Arşiv» klasöründe.', arsiv:{ url:'https://drive.google.com/drive/my-drive', foto:8, fotoAtlanan:0 } };
+        arsivAd:'yourpos360-arsiv-' + x.b + '.json', boyut:2400000, foto:8, fotoAtlanan:0, bakiye:x.bakiye, arsivSonT:Date.now() + 90 * gun, arsivSilindi:0, geriYuklenebilir:true, _x:x });
+      return { ok:true, silindi:x.b, mesaj:x.ad + ' (' + x.kod + ') silindi. Arşivi Google Drive\'daki «YourPOS 360 Arşiv» klasöründe; 90 gün sonra kendiliğinden silinir.', arsiv:{ url:'https://drive.google.com/drive/my-drive', foto:8, fotoAtlanan:0 } };
     };
     islemler.ynSilinenler = function(){ return { ok:true, silinenler:SIL.map(function(y){ var z = Object.assign({}, y); delete z._x; return z; }) }; };
     islemler.ynGeriYukle = function(d){
       var i = SIL.findIndex(function(y){ return y.b === d.sb; });
       if (i < 0) return { ok:false, kod:'YOK', hata:'Silinmiş işletme bulunamadı.' };
+      if (!SIL[i].geriYuklenebilir) return { ok:false, kod:'ARSIV', hata:'Arşivin 90 günlük saklama süresi doldu; bu işletme geri yüklenemez.' };
       var y = SIL.splice(i, 1)[0];
       var x = y._x || { b:y.b, kod:y.kod, ad:y.ad, tur:'pastane', durum:'Aktif', hizmet:true, paket:{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200 }, bakiye:0, bot:'eskipastane_bot',
         sahip:y.sahip, tel:y.tel, yer:'Moda, İstanbul', kayit:t0 - 200 * gun, deneme:0, ucretsiz:'', odeme:'', cekim:t0 + 20 * gun, zincir:null, say:say(0, 0, 0, 0, null) };
@@ -7490,7 +7496,7 @@ function ynSilPencere(s, x){
   var b = U.busy.ynSil, hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
   return ynGeriBas(s, '🗑️ İşletmeyi sil') + '<div class="sh-body"><p><b>' + esc(x.ad) + '</b> <span class="pill">' + esc(x.kod) + '</span></p>' +
     '<div class="note-box yn-sil-uyari">Silmeden önce işletmenin bütün verisi Google Drive\'ınızdaki <b>«YourPOS 360 Arşiv»</b> klasörüne kaydedilir. Arşiv kaydedilemezse hiçbir şey silinmez. ' +
-      'Gerekirse «Silinen işletmeler»den geri yükleyebilirsiniz.</div>' +
+      'Gerekirse <b>90 gün</b> içinde «Silinen işletmeler»den geri yükleyebilirsiniz; sonra arşiv sözleşme gereği kalıcı olarak silinir.</div>' +
     blk('Silinecekler', ynSilListe(['Menü, ürün fotoğrafları ve logo', 'Siparişler, müşteri kayıtları ve adresler', 'Ayarlar, çalışma saatleri ve teslimat bölgeleri', 'Bot bağlantısı: bot artık sipariş almaz'])) +
     blk('Korunanlar', ynSilListe(['Bakiye ve ödeme hareketleri (bakiye ' + tl(x.bakiye) + ')', 'Sözleşme onayları ve sözleşme PDF\'leri', 'Puan kayıtları', 'İşletme kodu: başka işletmeye verilmez'])) +
     '<div class="field"><label for="ynSilKod">Onaylamak için işletme kodunu yazın: <b>' + esc(x.kod) + '</b></label>' +
@@ -7513,12 +7519,16 @@ function ynSilinenBolum(){
   if (U.ynSilHata) h += '<div class="err-txt" role="alert">' + esc(U.ynSilHata) + '</div>';
   if (!U.ynSilL) return h + '<div class="yn-liste"><div class="sk" style="height:150px"></div><div class="sk" style="height:150px"></div></div></section>';
   if (!U.ynSilL.length) return h + '<p class="muted">Silinen işletme yok.</p></section>';
-  h += '<p class="tip-txt">Arşivler Google Drive\'ınızdaki «YourPOS 360 Arşiv» klasöründe. Bakiye ve ödeme kayıtları ana tabloda saklanır.</p>';
+  h += '<p class="tip-txt">Arşivler Google Drive\'ınızdaki «YourPOS 360 Arşiv» klasöründe; sözleşme gereği <b>90 gün</b> sonra kendiliğinden kalıcı olarak silinir, geri yükleme bu süre içinde yapılır. Bakiye ve ödeme kayıtları ana tabloda saklanır.</p>';
   return h + (ynGorunum() === 'liste' ? ynSilTablo(U.ynSilL) : ynSilKartlar(U.ynSilL)) + '</section>';
 }
 function ynBoyut(b){ return b >= 1048576 ? NF1.format(b / 1048576) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
 function ynSilArsiv(y){
-  return y.geriYuklenebilir ? ynBoyut(y.boyut) + ' · ' + adet(y.foto) + ' fotoğraf' + (y.fotoAtlanan ? ' · ' + adet(y.fotoAtlanan) + ' alınamadı' : '') : '<span class="yn-uyari">arşiv kaydı yok</span>';
+  if (y.arsivSilindi) return '<span class="yn-uyari">90 gün doldu, silindi</span>';
+  if (!y.geriYuklenebilir) return '<span class="yn-uyari">' + (y.arsivSonT && y.arsivSonT <= Date.now() ? 'saklama süresi doldu' : 'arşiv kaydı yok') + '</span>';
+  var kalan = y.arsivSonT ? Math.max(1, Math.ceil((y.arsivSonT - Date.now()) / 86400000)) : 0;
+  return ynBoyut(y.boyut) + ' · ' + adet(y.foto) + ' fotoğraf' + (y.fotoAtlanan ? ' · ' + adet(y.fotoAtlanan) + ' alınamadı' : '') +
+    (kalan ? ' · <span class="' + (kalan <= 7 ? 'yn-uyari' : 'muted') + '">' + adet(kalan) + ' gün sonra silinir</span>' : '');
 }
 function ynSilEylem(y){
   var b = U.busy['ynGeri:' + y.b], hata = (U.ynGeriHata || {})[y.b], h;
