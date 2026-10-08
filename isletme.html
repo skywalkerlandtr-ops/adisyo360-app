@@ -883,9 +883,33 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .yn-sil-uyari{background:var(--warn-soft);color:var(--text)}
 .yn-sil-l{margin:0;padding-left:20px;display:grid;gap:4px}
 .yn-sil-l li{line-height:1.45}
-.yn-silinen-satir{display:flex;justify-content:flex-start;margin:14px 0 0}
-.yn-sil-kart{display:grid;gap:4px;margin-bottom:12px}
-.yn-sil-kart .row2{margin-top:8px}
+.yn-silinen-satir{display:flex;justify-content:flex-start;margin:16px 0 0}
+.yn-silinen-satir .btn{gap:6px}
+.yn-ok{display:inline-block;margin-left:4px;transition:transform .2s}
+.yn-ok.acik{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.yn-ok{transition:none}}
+.yn-sil-bolum{margin-top:10px;display:grid;gap:10px;scroll-margin-top:12px}
+.yn-sil-bolum .tip-txt{margin:0}
+.yn-sil-kart{cursor:default}
+.yn-sil-eylem{margin-top:6px}
+.yn-geri-dug{display:inline-flex;gap:8px;flex-wrap:wrap}
+.yn-geri-sor{display:grid;gap:8px;background:var(--accent-soft);border-radius:10px;padding:10px;font-size:14px;line-height:1.45}
+.yn-tbl-sil{min-width:900px}
+.yn-tbl-sil tbody tr{cursor:default}
+.yn-tbl-sil tbody tr:hover td,.yn-tbl-sil tbody tr:hover th{background:none}
+.yn-tbl-sil tbody th{background:var(--bg)}
+.yn-tbl-sil .yn-sil-eylem{min-width:220px;margin:0}
+.yn-tbl-sil .yn-sil-mob{display:none}
+.yn-tbl-sil tr.yn-sil-ana:nth-last-child(2) > *{border-bottom:0}
+@media (max-width:640px){
+  .yn-tbl-sil{min-width:0}
+  .yn-tbl-sil tr.yn-sil-ana > :nth-child(4),.yn-tbl-sil tr.yn-sil-ana > :nth-child(7),.yn-tbl-sil thead tr > :nth-child(4),.yn-tbl-sil thead tr > :nth-child(7){display:none}
+  .yn-tbl-sil tr > :nth-child(5){display:table-cell}
+  .yn-tbl-sil tr.yn-sil-ana > *{border-bottom:0;padding-bottom:4px}
+  .yn-tbl-sil .yn-sil-mob{display:table-row}
+  .yn-tbl-sil .yn-sil-mob > td{padding-top:0}
+  .yn-tbl-sil .yn-sil-mob .yn-sil-eylem{min-width:0;margin:0}
+}
 </style>
 </head>
 <body>
@@ -7440,6 +7464,7 @@ Object.assign(ACT_EK, {
     if (g === ynGorunum()) return;
     U.ynGor = g; LS.set(YN_GOR_KEY, g); haptic('select');
     var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml();
+    if (typeof ynSilCiz === 'function') ynSilCiz();
     document.querySelectorAll('[data-act="ynGor"]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-k') === g)); });
   },
   ynSiraTik:function(el){
@@ -7475,46 +7500,70 @@ function ynSilPencere(s, x){
     '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynMod" data-k="">Vazgeç</button>' +
       '<button class="btn dng" data-act="ynSilUygula"' + (b ? ' disabled' : '') + '>' + bekle('ynSil') + 'Arşivle ve sil</button></div></div>';
 }
-function ynSilinenSatiri(){
-  var n = (D.ozet && D.ozet.silinen) || 0;
-  return n ? '<div class="yn-silinen-satir"><button class="btn ghost sm" data-act="ynSilinenler">' + ic('cop', 'sm') + 'Silinen işletmeler (' + adet(n) + ')</button></div>' : '';
+// Silinen işletmeler: İşletme sekmesinde listenin altında açılır (pencere değil); Kart / Liste görünümüne uyar
+function ynSilinenSayi(){ return U.ynSilL ? U.ynSilL.length : ((D.ozet && D.ozet.silinen) || 0); }
+function ynSilinenSatiri(){ return '<div id="ynSilBolum">' + ynSilinenBolum() + '</div>'; }
+function ynSilinenBolum(){
+  var n = ynSilinenSayi(), acik = !!U.ynSilAcik;
+  if (!n && !acik) return '';
+  var h = '<div class="yn-silinen-satir"><button class="btn ghost sm" data-act="ynSilinenler" aria-expanded="' + acik + '" aria-controls="ynSilIc">' + ic('cop', 'sm') +
+    'Silinen işletmeler (' + adet(n) + ')<span class="yn-ok' + (acik ? ' acik' : '') + '" aria-hidden="true">▾</span></button></div>';
+  if (!acik) return h;
+  h += '<section id="ynSilIc" class="yn-sil-bolum" aria-label="Silinen işletmeler">';
+  if (U.ynSilHata) h += '<div class="err-txt" role="alert">' + esc(U.ynSilHata) + '</div>';
+  if (!U.ynSilL) return h + '<div class="yn-liste"><div class="sk" style="height:150px"></div><div class="sk" style="height:150px"></div></div></section>';
+  if (!U.ynSilL.length) return h + '<p class="muted">Silinen işletme yok.</p></section>';
+  h += '<p class="tip-txt">Arşivler Google Drive\'ınızdaki «YourPOS 360 Arşiv» klasöründe. Bakiye ve ödeme kayıtları ana tabloda saklanır.</p>';
+  return h + (ynGorunum() === 'liste' ? ynSilTablo(U.ynSilL) : ynSilKartlar(U.ynSilL)) + '</section>';
 }
 function ynBoyut(b){ return b >= 1048576 ? NF1.format(b / 1048576) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
-SHEET.ynSilinenler = function(s){
-  var h = shBas('🗑️ Silinen işletmeler') + '<div class="sh-body" data-scroll="ynSil">';
-  if (s.hata) h += '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>';
-  if (!s.l) return h + '<div class="sk" style="height:120px"></div><div class="sk" style="height:120px"></div></div>';
-  if (s.onay) {
-    var y = s.l.filter(function(z){ return z.b === s.onay; })[0];
-    if (y) {
-      var b = U.busy.ynGeri;
-      return shBas('Geri yükle') + '<div class="sh-body"><p><b>' + esc(y.ad) + '</b> <span class="pill">' + esc(y.kod) + '</span></p>' +
-        '<p>Menü, siparişler, müşteri kayıtları, ayarlar ve fotoğraflar Google Drive\'daki arşivden geri gelir. Bot anahtarı hâlâ geçerliyse bot yeniden bağlanır.</p>' +
-        '<div class="note-box ileri">İşletme <b>«Dondurulmuş»</b> olarak döner. Kontrol ettikten sonra işletmenin ayrıntısından «Yeniden aç» deyin.</div>' +
-        (s.hata2 ? '<div class="err-txt" role="alert">' + esc(s.hata2) + '</div>' : '') + '</div>' +
-        '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynGeriVazgec">Vazgeç</button><button class="btn pri" data-act="ynGeriUygula"' + (b ? ' disabled' : '') + '>' +
-        bekle('ynGeri') + 'Geri yükle</button></div></div>';
-    }
+function ynSilArsiv(y){
+  return y.geriYuklenebilir ? ynBoyut(y.boyut) + ' · ' + adet(y.foto) + ' fotoğraf' + (y.fotoAtlanan ? ' · ' + adet(y.fotoAtlanan) + ' alınamadı' : '') : '<span class="yn-uyari">arşiv kaydı yok</span>';
+}
+function ynSilEylem(y){
+  var b = U.busy['ynGeri:' + y.b], hata = (U.ynGeriHata || {})[y.b], h;
+  if (U.ynGeriSor === y.b) {
+    h = '<div class="yn-geri-sor" role="group" aria-label="Geri yükleme onayı"><span>Geri yüklensin mi? Menü, siparişler ve fotoğraflar arşivden gelir; işletme <b>dondurulmuş</b> döner.</span>' +
+      '<span class="yn-geri-dug"><button class="btn line sm" data-act="ynGeriVazgec"' + (b ? ' disabled' : '') + '>Vazgeç</button>' +
+      '<button class="btn pri sm" data-act="ynGeriUygula" data-b="' + esc(y.b) + '"' + (b ? ' disabled' : '') + '>' + bekle('ynGeri:' + y.b) + 'Evet, geri yükle</button></span></div>';
+  } else {
+    h = '<span class="yn-geri-dug">' + (y.arsivUrl ? '<button class="btn line sm" data-act="ynLink" data-k="' + esc(y.arsivUrl) + '">📁 Arşivi aç</button>' : '') +
+      (y.geriYuklenebilir ? '<button class="btn pri sm" data-act="ynGeriSor" data-b="' + esc(y.b) + '">' + ic('yenile', 'sm') + 'Geri yükle</button>' : '') + '</span>';
   }
-  if (!s.l.length) return h + bosDurum('dukkan', 'Silinen işletme yok', 'Silinen işletmeler arşiv bilgileriyle burada listelenir.') + '</div>';
-  h += '<p class="tip-txt">Silinen işletmelerin arşivi Google Drive\'ınızdaki «YourPOS 360 Arşiv» klasöründedir. Bakiye ve ödeme kayıtları ana tabloda saklanır.</p>';
-  h += s.l.map(function(y){
-    return '<section class="card pad yn-sil-kart"><div class="yn-k-bas"><span class="yn-k-ad">' + esc(y.ad) + '</span><span class="pill">' + esc(y.kod) + '</span></div>' +
-      ynKv('Silindi', (y.t ? tarihYazi(y.t) + ' · ' + onceYazi(y.t) : '—') + (y.kim ? ' · ' + esc(y.kim) : '')) +
-      (y.neden ? ynKv('Neden', esc(y.neden)) : '') + ynKv('Yetkili', esc([y.sahip, y.tel].filter(Boolean).join(' · ') || '—')) +
-      (y.bakiye ? ynKv('Bakiye', '<b>' + tl(y.bakiye) + '</b>') : '') +
-      ynKv('Arşiv', y.geriYuklenebilir ? ynBoyut(y.boyut) + ' · ' + adet(y.foto) + ' fotoğraf' + (y.fotoAtlanan ? ' · ' + adet(y.fotoAtlanan) + ' fotoğraf alınamadı' : '') : '<span class="yn-uyari">arşiv kaydı yok</span>') +
-      '<div class="row2">' + (y.arsivUrl ? '<button class="btn line" data-act="ynLink" data-k="' + esc(y.arsivUrl) + '">📁 Arşivi Drive\'da aç</button>' : '') +
-      (y.geriYuklenebilir ? '<button class="btn pri" data-act="ynGeriSor" data-b="' + esc(y.b) + '">' + ic('yenile', 'sm') + 'Geri yükle</button>' : '') + '</div></section>';
-  }).join('');
-  return h + '</div>';
-};
-function ynSilinenleriYukle(st){
+  return h + (hata ? '<div class="err-txt" role="alert">' + esc(hata) + '</div>' : '');
+}
+function ynSilKartlar(l){
+  return '<div class="yn-liste">' + l.map(function(y){
+    return '<section class="card yn-kart yn-sil-kart" aria-label="' + esc(y.ad) + '"><span class="yn-k-bas"><span class="yn-k-ad">' + esc(y.ad) + '</span><span class="pill">' + esc(y.kod) + '</span></span>' +
+      '<span class="mz-durum off"><span class="dot" aria-hidden="true"></span>Silindi · ' + (y.t ? tarihYazi(y.t) : '—') + '</span>' +
+      '<span class="yn-k-alt">' + esc([y.kim ? 'silen: ' + y.kim : '', y.neden].filter(Boolean).join(' · ') || '—') + '</span>' +
+      '<span class="yn-k-alt">' + esc([y.sahip, y.tel].filter(Boolean).join(' · ') || '—') + '</span>' +
+      '<span class="yn-k-alt">bakiye <b class="num">' + tl(y.bakiye) + '</b> · arşiv ' + ynSilArsiv(y) + '</span>' +
+      '<div class="yn-sil-eylem">' + ynSilEylem(y) + '</div></section>';
+  }).join('') + '</div>';
+}
+function ynSilTablo(l){
+  return '<div class="card yn-tbl-kart"><div class="tbl-wrap yn-tbl-wrap"><table class="tbl yn-tbl yn-tbl-sil"><caption class="sr">Silinen işletmeler · ' + adet(l.length) + '</caption><thead><tr>' +
+    '<th scope="col">İşletme</th><th scope="col">Silindi</th><th scope="col">Neden</th><th scope="col">Yetkili</th><th scope="col" class="r">Bakiye</th><th scope="col">Arşiv</th>' +
+    '<th scope="col"><span class="sr">İşlemler</span></th></tr></thead><tbody>' + l.map(function(y){
+      return '<tr class="yn-sil-ana"><th scope="row" class="yn-td-ad"><b>' + esc(y.ad) + '</b><div class="yn-td-alt"><span class="pill">' + esc(y.kod) + '</span></div></th>' +
+        '<td class="yn-td-n">' + (y.t ? tarihYazi(y.t) : '—') + ynAlt(y.kim ? 'silen: ' + esc(y.kim) : '') + '</td>' +
+        '<td>' + esc(y.neden || '—') + '</td>' +
+        '<td>' + esc(y.sahip || '—') + ynAlt(esc(y.tel || '')) + '</td>' +
+        '<td class="r num"><b>' + tl(y.bakiye) + '</b></td>' +
+        '<td class="yn-td-n">' + ynSilArsiv(y) + '</td>' +
+        '<td class="yn-sil-eylem">' + ynSilEylem(y) + '</td></tr>' +
+        '<tr class="yn-sil-mob"><td colspan="7"><div class="yn-sil-eylem">' + ynSilEylem(y) + '</div></td></tr>';
+    }).join('') + '</tbody></table></div></div>';
+}
+function ynSilCiz(){ var e = $('#ynSilBolum'); if (e) e.innerHTML = ynSilinenBolum(); }
+function ynSilYukle(){
+  U.ynSilHata = '';
   ynSilCagir('ynSilinenler', {}, 'ynSilListe').then(function(r){
     if (!r) return;
-    if (!r.ok) st.hata = r.hata || 'Liste alınamadı.';
-    else { st.l = r.silinenler || []; st.hata = ''; if (D.ozet) D.ozet.silinen = st.l.length; }
-    if (SH === st) renderSheet();
+    if (!r.ok) U.ynSilHata = r.hata || 'Liste alınamadı.';
+    else { U.ynSilL = r.silinenler || []; if (D.ozet) D.ozet.silinen = U.ynSilL.length; }
+    ynSilCiz();
   });
 }
 Object.assign(ACT_EK, {
@@ -7533,29 +7582,44 @@ Object.assign(ACT_EK, {
       if (!r.ok) { st.hata = r.hata || 'Silinemedi.'; haptic('notify', 'error'); if (SH === st) renderSheet(); return; }
       D.isletmeler = (D.isletmeler || []).filter(function(y){ return y.b !== st.b; });
       if (D.ozet) { D.ozet.silinen = (D.ozet.silinen || 0) + 1; D.ozet.isletme = D.isletmeler.length; }
+      U.ynSilL = null;
       haptic('notify', 'success');
       if (SH === st) sheetKapat();
       toast(r.mesaj || 'İşletme silindi.');
       renderMain();
+      if (U.ynSilAcik) ynSilYukle();
     });
   },
-  ynSilinenler:function(){ var st = { tip:'ynSilinenler', l:null }; sheetAc(st); ynSilinenleriYukle(st); },
-  ynGeriSor:function(el){ if (SH && SH.tip === 'ynSilinenler') { SH.onay = el.getAttribute('data-b'); SH.hata2 = ''; renderSheet(); } },
-  ynGeriVazgec:function(){ if (SH && SH.tip === 'ynSilinenler') { SH.onay = ''; SH.hata2 = ''; renderSheet(); } },
-  ynGeriUygula:function(){
-    var st = SH;
-    if (!st || st.tip !== 'ynSilinenler' || !st.onay || U.busy.ynGeri) return;
-    var b = st.onay;
-    ynSilCagir('ynGeriYukle', { sb:b }, 'ynGeri').then(function(r){
-      if (!r) { if (SH === st) renderSheet(); return; }
-      if (!r.ok) { st.hata2 = r.hata || 'Geri yüklenemedi.'; haptic('notify', 'error'); if (SH === st) renderSheet(); return; }
-      st.l = (st.l || []).filter(function(y){ return y.b !== b; }); st.onay = '';
-      if (D.ozet) D.ozet.silinen = st.l.length;
+  ynSilinenler:function(){
+    var git = U.tab !== 'ynIsl';
+    if (SH) sheetKapat();
+    U.ynSilAcik = git ? true : !U.ynSilAcik;
+    U.ynGeriSor = ''; U.ynGeriHata = {};
+    haptic('select');
+    if (git) { U.tab = 'ynIsl'; ciz(); } else ynSilCiz();
+    if (U.ynSilAcik) {
+      ynSilYukle();
+      setTimeout(function(){ var e = $('#ynSilBolum'); if (e) e.scrollIntoView({ behavior:'smooth', block:'start' }); }, 80);
+    }
+  },
+  ynGeriSor:function(el){ U.ynGeriSor = el.getAttribute('data-b'); U.ynGeriHata = {}; ynSilCiz(); },
+  ynGeriVazgec:function(){ U.ynGeriSor = ''; ynSilCiz(); },
+  ynGeriUygula:function(el){
+    var b = el.getAttribute('data-b'), anahtar = 'ynGeri:' + b;
+    if (!b || U.busy[anahtar]) return;
+    U.ynGeriHata = {};
+    var p = ynSilCagir('ynGeriYukle', { sb:b }, anahtar);
+    ynSilCiz();
+    p.then(function(r){
+      if (!r) { ynSilCiz(); return; }
+      if (!r.ok) { U.ynGeriHata[b] = r.hata || 'Geri yüklenemedi.'; haptic('notify', 'error'); ynSilCiz(); return; }
+      U.ynGeriSor = '';
+      U.ynSilL = (U.ynSilL || []).filter(function(y){ return y.b !== b; });
+      if (D.ozet) D.ozet.silinen = U.ynSilL.length;
       if (r.isletme) { D.isletmeler = (D.isletmeler || []).filter(function(y){ return y.b !== b; }).concat([r.isletme]); if (D.ozet) D.ozet.isletme = D.isletmeler.length; }
       haptic('notify', 'success');
       toast(r.mesaj || 'Geri yüklendi.');
       renderMain();
-      if (SH === st) { if (r.isletme) sheetAc({ tip:'ynIsl', b:b, d:r.isletme, mod:'', bildir:true }); else renderSheet(); }
     });
   }
 });
