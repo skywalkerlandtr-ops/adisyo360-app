@@ -880,6 +880,12 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
   .yn-tbl .mz-durum{white-space:normal;align-items:flex-start;font-size:13px}
   .yn-tbl .mz-durum .dot{margin-top:5px}
 }
+.yn-sil-uyari{background:var(--warn-soft);color:var(--text)}
+.yn-sil-l{margin:0;padding-left:20px;display:grid;gap:4px}
+.yn-sil-l li{line-height:1.45}
+.yn-silinen-satir{display:flex;justify-content:flex-start;margin:14px 0 0}
+.yn-sil-kart{display:grid;gap:4px;margin-bottom:12px}
+.yn-sil-kart .row2{margin-top:8px}
 </style>
 </head>
 <body>
@@ -5709,7 +5715,7 @@ function ynIslEkrani(){
     if (x[0] && !n && f !== x[0]) return '';
     return '<button class="chip" data-act="ynFiltre" data-k="' + x[0] + '" aria-pressed="' + (f === x[0]) + '">' + x[1] + ' <span class="n">' + n + '</span></button>';
   }).join('') + '</div>';
-  return h + '<div id="ynListe">' + ynListeHtml() + '</div>' + ynGuncelSatiri() + '</div>';
+  return h + '<div id="ynListe">' + ynListeHtml() + '</div>' + ynSilinenSatiri() + ynGuncelSatiri() + '</div>';
 }
 
 /* --- işletme ayrıntısı (alt pencere) --- */
@@ -5744,6 +5750,7 @@ SHEET.ynIsl = function(s){
   h += '<button class="btn line" data-act="ynOneri" data-k="' + (onr ? '0' : '1') + '"' + (d && !U.busy.ynIslem ? '' : ' disabled') + '>🏅 ' + (onr ? 'Öneri rozetini kaldır' : 'YourPOS 360\'ın önerisi yap') + '</button>';
   h += x.durum === 'Donduruldu' ? '<button class="btn ok" data-act="ynMod" data-k="ac"' + (d ? '' : ' disabled') + '>' + ic('oynat', 'sm') + 'Yeniden aç</button>'
     : '<button class="btn dng-line" data-act="ynMod" data-k="dondur"' + (d ? '' : ' disabled') + '>' + ic('kilit', 'sm') + 'Dondur</button>';
+  if (!x.zincir) h += '<button class="btn dng-line" data-act="ynMod" data-k="sil"' + (d ? '' : ' disabled') + '>' + ic('cop', 'sm') + 'İşletmeyi sil</button>';
   h += '</div>';
   if (!d) return h + '<div class="sk" style="height:160px"></div><div class="sk" style="height:200px"></div></div>';
   var tel = d.tel ? '<a href="' + telHref(d.tel) + '">' + esc(d.tel) + '</a>' : '—';
@@ -5780,6 +5787,7 @@ function ynGeriBas(s, baslik){
     '<button class="icon-btn" data-act="kapat" aria-label="Kapat">' + ic('x') + '</button></div>';
 }
 function ynAltPencere(s, x){
+  if (s.mod === 'sil') return ynSilPencere(s, x);
   if (s.mod === 'puan') return ynPuanPencere(s, x);
   if (s.mod === 'ozel') return ynOzelPencere(s, x);
   if (s.mod === 'kod') return ynKodPencere(s, x);
@@ -5858,6 +5866,9 @@ function ynBvKart(v){
   h += '<div class="yn-bv-bil">' + ynKv('Yetkili', esc(v.yetkili || '—')) + ynKv('Telefon', v.tel ? '<a href="' + telHref(v.tel) + '">' + esc(v.tel) + '</a>' : '—') +
     ynKv('E-posta', esc(v.eposta || '—')) + ynKv('Adres', esc(v.yer || '—')) + ynKv('Tür', esc(v.isletmeTuru || '—')) + ynKv('Paket', esc(v.paket || '—')) +
     (v.fatura ? ynKv('Fatura', esc(v.fatura)) : '') + ynKv('Telegram', esc(v.telegram || '—')) + (v.kaynak ? ynKv('Nereden', esc(v.kaynak)) : '') + '</div>';
+  if (v.silinmis && v.silinmis.length) h += '<div class="note-box yn-sil-uyari" role="note">⚠️ <b>Bu kişinin silinmiş işletmesi var:</b> ' + v.silinmis.map(function(y){
+    return esc(y.ad) + ' <span class="pill">' + esc(y.kod) + '</span>' + (y.t ? ' · ' + tarihYazi(y.t) : '');
+  }).join(', ') + '<br>Yeni işletme açmak yerine eskisini geri yükleyebilirsiniz. <button class="btn line sm" data-act="ynSilinenler">Silinen işletmeler</button></div>';
   if (v.tur === 'devam') {
     h += '<div class="row2">' + (v.b ? '<button class="btn pri" data-act="ynAc" data-b="' + esc(v.b) + '" data-k="kredi">' + ic('arti', 'sm') + 'Kredi (TL) yükle</button>' : '') +
       '<button class="btn line" data-act="ynBvKarar" data-k="gorusuldu" data-no="' + esc(v.no) + '"' + (b ? ' disabled' : '') + '>' + bekle('ynBv:' + v.no) + ic('tik', 'sm') + 'Görüşüldü, kapat</button></div>';
@@ -6625,6 +6636,35 @@ function ynDemoMock(){
     ynYedek:function(){ SIS.sunucu.yedek = { zaman:Date.now(), parca:3, mb:2.4 }; return { ok:true, mesaj:'Yedek alınıyor. Bitince size haber vereceğim (genelde 1-2 dakika).' }; }
   };
   Object.assign(islemler, whDemoIslemler());
+  (function(){
+    var SIL = [{ b:'demo-eski', ad:'Eski Pastane', kod:'R4T8KM', sahip:'Selin Ak', tel:'0532 000 00 41', t:t0 - 12 * gun, kim:'Ferhat', neden:'Üyeliği bitirdi',
+      arsivUrl:'https://drive.google.com/drive/my-drive', arsivAd:'yourpos360-arsiv-eski-pastane-2026-09-26-1412.json', boyut:1843200, foto:6, fotoAtlanan:0, bakiye:0, geriYuklenebilir:true }];
+    BV.forEach(function(v){ if (v.no === 'B-1041') v.silinmis = [{ b:'demo-eski', ad:'Eski Pastane', kod:'R4T8KM', t:t0 - 12 * gun }]; });
+    var eskiIslem = islemler.ynIslem, eskiBaslat = islemler.ynBaslat;
+    islemler.ynBaslat = function(d){ var r = eskiBaslat(d); r.ozet.silinen = SIL.length; return r; };
+    islemler.ynIslem = function(d){
+      if (d.islem !== 'sil') return eskiIslem(d);
+      var x = bul(d.sb);
+      if (!x) return { ok:false, kod:'YOK', hata:'İşletme bulunamadı.' };
+      if (x.zincir) return { ok:false, kod:'DURUM', hata:'Zincire bağlı işletmeler şimdilik silinemez. İsterseniz dondurabilirsiniz.' };
+      if (String(d.onay || '').trim().toUpperCase().replace(/\s+/g, '') !== String(x.kod).toUpperCase()) return { ok:false, kod:'ONAY', hata:'Onay için işletme kodunu doğru yazın (' + x.kod + ').' };
+      ISL.splice(ISL.indexOf(x), 1);
+      SIL.unshift({ b:x.b, ad:x.ad, kod:x.kod, sahip:x.sahip, tel:x.tel, t:Date.now(), kim:'Ferhat', neden:String(d.neden || ''), arsivUrl:'https://drive.google.com/drive/my-drive',
+        arsivAd:'yourpos360-arsiv-' + x.b + '.json', boyut:2400000, foto:8, fotoAtlanan:0, bakiye:x.bakiye, geriYuklenebilir:true, _x:x });
+      return { ok:true, silindi:x.b, mesaj:x.ad + ' (' + x.kod + ') silindi. Arşivi Google Drive\'daki «YourPOS 360 Arşiv» klasöründe.', arsiv:{ url:'https://drive.google.com/drive/my-drive', foto:8, fotoAtlanan:0 } };
+    };
+    islemler.ynSilinenler = function(){ return { ok:true, silinenler:SIL.map(function(y){ var z = Object.assign({}, y); delete z._x; return z; }) }; };
+    islemler.ynGeriYukle = function(d){
+      var i = SIL.findIndex(function(y){ return y.b === d.sb; });
+      if (i < 0) return { ok:false, kod:'YOK', hata:'Silinmiş işletme bulunamadı.' };
+      var y = SIL.splice(i, 1)[0];
+      var x = y._x || { b:y.b, kod:y.kod, ad:y.ad, tur:'pastane', durum:'Aktif', hizmet:true, paket:{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200 }, bakiye:0, bot:'eskipastane_bot',
+        sahip:y.sahip, tel:y.tel, yer:'Moda, İstanbul', kayit:t0 - 200 * gun, deneme:0, ucretsiz:'', odeme:'', cekim:t0 + 20 * gun, zincir:null, say:say(0, 0, 0, 0, null) };
+      x.eski = x.durum === 'Donduruldu' ? 'Aktif' : x.durum; x.durum = 'Donduruldu'; x.hizmet = false;
+      ISL.push(x);
+      return { ok:true, isletme:detay(x), mesaj:x.ad + ' (' + x.kod + ') geri yüklendi ve donduruldu olarak bekliyor; kontrol edip «Yeniden aç» deyin. Bot @' + String(x.bot || 'ornek_bot').replace(/^@/, '') + ' yeniden bağlandı.' };
+    };
+  })();
   return function(act, d){
     var f = islemler[act];
     return new Promise(function(ok){
@@ -7406,6 +7446,117 @@ Object.assign(ACT_EK, {
     U.ynSira = el.getAttribute('data-k'); haptic('select');
     var s = $('#ynSira'); if (s) s.value = U.ynSira;
     var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml();
+  }
+});
+
+
+/* ---------- 1.17.2 · İşletme silme (arşivle), silinen işletmeler, geri yükleme ---------- */
+function ynSilCagir(act, veri, busy){
+  U.busy[busy] = true;
+  if (SH) renderSheet();
+  return call(act, veri).then(function(r){
+    delete U.busy[busy];
+    if (r && (r.kod === 'GIRIS' || r.kod === 'YETKI')) { cikisEkrani(r); return null; }
+    return r || { ok:false, hata:'Bağlantı kurulamadı. Tekrar deneyin.' };
+  });
+}
+function ynSilListe(l){ return '<ul class="yn-sil-l">' + l.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+function ynSilPencere(s, x){
+  var b = U.busy.ynSil, hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
+  return ynGeriBas(s, '🗑️ İşletmeyi sil') + '<div class="sh-body"><p><b>' + esc(x.ad) + '</b> <span class="pill">' + esc(x.kod) + '</span></p>' +
+    '<div class="note-box yn-sil-uyari">Silmeden önce işletmenin bütün verisi Google Drive\'ınızdaki <b>«YourPOS 360 Arşiv»</b> klasörüne kaydedilir. Arşiv kaydedilemezse hiçbir şey silinmez. ' +
+      'Gerekirse «Silinen işletmeler»den geri yükleyebilirsiniz.</div>' +
+    blk('Silinecekler', ynSilListe(['Menü, ürün fotoğrafları ve logo', 'Siparişler, müşteri kayıtları ve adresler', 'Ayarlar, çalışma saatleri ve teslimat bölgeleri', 'Bot bağlantısı: bot artık sipariş almaz'])) +
+    blk('Korunanlar', ynSilListe(['Bakiye ve ödeme hareketleri (bakiye ' + tl(x.bakiye) + ')', 'Sözleşme onayları ve sözleşme PDF\'leri', 'Puan kayıtları', 'İşletme kodu: başka işletmeye verilmez'])) +
+    '<div class="field"><label for="ynSilKod">Onaylamak için işletme kodunu yazın: <b>' + esc(x.kod) + '</b></label>' +
+      '<input class="inp" id="ynSilKod" autocomplete="off" autocapitalize="characters" spellcheck="false" value="' + esc(s.onay || '') + '"></div>' +
+    '<div class="field"><label for="ynSilNeden">Neden <span class="muted">(isteğe bağlı · yalnız yöneticiler görür)</span></label><input class="inp" id="ynSilNeden" maxlength="200" value="' + esc(s.neden || '') + '"></div>' +
+    ynBildirSw(s) + hata + '</div>' +
+    '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynMod" data-k="">Vazgeç</button>' +
+      '<button class="btn dng" data-act="ynSilUygula"' + (b ? ' disabled' : '') + '>' + bekle('ynSil') + 'Arşivle ve sil</button></div></div>';
+}
+function ynSilinenSatiri(){
+  var n = (D.ozet && D.ozet.silinen) || 0;
+  return n ? '<div class="yn-silinen-satir"><button class="btn ghost sm" data-act="ynSilinenler">' + ic('cop', 'sm') + 'Silinen işletmeler (' + adet(n) + ')</button></div>' : '';
+}
+function ynBoyut(b){ return b >= 1048576 ? NF1.format(b / 1048576) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+SHEET.ynSilinenler = function(s){
+  var h = shBas('🗑️ Silinen işletmeler') + '<div class="sh-body" data-scroll="ynSil">';
+  if (s.hata) h += '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>';
+  if (!s.l) return h + '<div class="sk" style="height:120px"></div><div class="sk" style="height:120px"></div></div>';
+  if (s.onay) {
+    var y = s.l.filter(function(z){ return z.b === s.onay; })[0];
+    if (y) {
+      var b = U.busy.ynGeri;
+      return shBas('Geri yükle') + '<div class="sh-body"><p><b>' + esc(y.ad) + '</b> <span class="pill">' + esc(y.kod) + '</span></p>' +
+        '<p>Menü, siparişler, müşteri kayıtları, ayarlar ve fotoğraflar Google Drive\'daki arşivden geri gelir. Bot anahtarı hâlâ geçerliyse bot yeniden bağlanır.</p>' +
+        '<div class="note-box ileri">İşletme <b>«Dondurulmuş»</b> olarak döner. Kontrol ettikten sonra işletmenin ayrıntısından «Yeniden aç» deyin.</div>' +
+        (s.hata2 ? '<div class="err-txt" role="alert">' + esc(s.hata2) + '</div>' : '') + '</div>' +
+        '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynGeriVazgec">Vazgeç</button><button class="btn pri" data-act="ynGeriUygula"' + (b ? ' disabled' : '') + '>' +
+        bekle('ynGeri') + 'Geri yükle</button></div></div>';
+    }
+  }
+  if (!s.l.length) return h + bosDurum('dukkan', 'Silinen işletme yok', 'Silinen işletmeler arşiv bilgileriyle burada listelenir.') + '</div>';
+  h += '<p class="tip-txt">Silinen işletmelerin arşivi Google Drive\'ınızdaki «YourPOS 360 Arşiv» klasöründedir. Bakiye ve ödeme kayıtları ana tabloda saklanır.</p>';
+  h += s.l.map(function(y){
+    return '<section class="card pad yn-sil-kart"><div class="yn-k-bas"><span class="yn-k-ad">' + esc(y.ad) + '</span><span class="pill">' + esc(y.kod) + '</span></div>' +
+      ynKv('Silindi', (y.t ? tarihYazi(y.t) + ' · ' + onceYazi(y.t) : '—') + (y.kim ? ' · ' + esc(y.kim) : '')) +
+      (y.neden ? ynKv('Neden', esc(y.neden)) : '') + ynKv('Yetkili', esc([y.sahip, y.tel].filter(Boolean).join(' · ') || '—')) +
+      (y.bakiye ? ynKv('Bakiye', '<b>' + tl(y.bakiye) + '</b>') : '') +
+      ynKv('Arşiv', y.geriYuklenebilir ? ynBoyut(y.boyut) + ' · ' + adet(y.foto) + ' fotoğraf' + (y.fotoAtlanan ? ' · ' + adet(y.fotoAtlanan) + ' fotoğraf alınamadı' : '') : '<span class="yn-uyari">arşiv kaydı yok</span>') +
+      '<div class="row2">' + (y.arsivUrl ? '<button class="btn line" data-act="ynLink" data-k="' + esc(y.arsivUrl) + '">📁 Arşivi Drive\'da aç</button>' : '') +
+      (y.geriYuklenebilir ? '<button class="btn pri" data-act="ynGeriSor" data-b="' + esc(y.b) + '">' + ic('yenile', 'sm') + 'Geri yükle</button>' : '') + '</div></section>';
+  }).join('');
+  return h + '</div>';
+};
+function ynSilinenleriYukle(st){
+  ynSilCagir('ynSilinenler', {}, 'ynSilListe').then(function(r){
+    if (!r) return;
+    if (!r.ok) st.hata = r.hata || 'Liste alınamadı.';
+    else { st.l = r.silinenler || []; st.hata = ''; if (D.ozet) D.ozet.silinen = st.l.length; }
+    if (SH === st) renderSheet();
+  });
+}
+Object.assign(ACT_EK, {
+  ynSilUygula:function(){
+    var st = SH;
+    if (!st || st.tip !== 'ynIsl' || U.busy.ynSil) return;
+    var x = st.d || ynIsl(st.b), i = $('#ynSilKod'), n = $('#ynSilNeden');
+    st.onay = i ? i.value : ''; st.neden = n ? n.value : ''; st.hata = '';
+    if (String(st.onay).trim().toUpperCase().replace(/\s+/g, '') !== String(x.kod).toUpperCase()) {
+      st.hata = 'Kod eşleşmedi. Onaylamak için ' + x.kod + ' yazın.'; haptic('notify', 'error'); renderSheet();
+      var j = $('#ynSilKod'); if (j) j.focus();
+      return;
+    }
+    ynSilCagir('ynIslem', { sb:st.b, islem:'sil', onay:st.onay, neden:st.neden, bildir:st.bildir !== false }, 'ynSil').then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      if (!r.ok) { st.hata = r.hata || 'Silinemedi.'; haptic('notify', 'error'); if (SH === st) renderSheet(); return; }
+      D.isletmeler = (D.isletmeler || []).filter(function(y){ return y.b !== st.b; });
+      if (D.ozet) { D.ozet.silinen = (D.ozet.silinen || 0) + 1; D.ozet.isletme = D.isletmeler.length; }
+      haptic('notify', 'success');
+      if (SH === st) sheetKapat();
+      toast(r.mesaj || 'İşletme silindi.');
+      renderMain();
+    });
+  },
+  ynSilinenler:function(){ var st = { tip:'ynSilinenler', l:null }; sheetAc(st); ynSilinenleriYukle(st); },
+  ynGeriSor:function(el){ if (SH && SH.tip === 'ynSilinenler') { SH.onay = el.getAttribute('data-b'); SH.hata2 = ''; renderSheet(); } },
+  ynGeriVazgec:function(){ if (SH && SH.tip === 'ynSilinenler') { SH.onay = ''; SH.hata2 = ''; renderSheet(); } },
+  ynGeriUygula:function(){
+    var st = SH;
+    if (!st || st.tip !== 'ynSilinenler' || !st.onay || U.busy.ynGeri) return;
+    var b = st.onay;
+    ynSilCagir('ynGeriYukle', { sb:b }, 'ynGeri').then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      if (!r.ok) { st.hata2 = r.hata || 'Geri yüklenemedi.'; haptic('notify', 'error'); if (SH === st) renderSheet(); return; }
+      st.l = (st.l || []).filter(function(y){ return y.b !== b; }); st.onay = '';
+      if (D.ozet) D.ozet.silinen = st.l.length;
+      if (r.isletme) { D.isletmeler = (D.isletmeler || []).filter(function(y){ return y.b !== b; }).concat([r.isletme]); if (D.ozet) D.ozet.isletme = D.isletmeler.length; }
+      haptic('notify', 'success');
+      toast(r.mesaj || 'Geri yüklendi.');
+      renderMain();
+      if (SH === st) { if (r.isletme) sheetAc({ tip:'ynIsl', b:b, d:r.isletme, mod:'', bildir:true }); else renderSheet(); }
+    });
   }
 });
 
