@@ -177,6 +177,19 @@ textarea.inp{resize:vertical;min-height:76px;line-height:1.4}
 .paket ul{display:flex;flex-direction:column;gap:4px;font-size:15px}
 .paket li::before{content:"✓ ";color:var(--ok-ink);font-weight:800}
 .paket .rozet{position:absolute;top:-11px;right:14px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px}
+.paket.yeni-pk{border-style:dashed;justify-content:center;gap:6px;background:var(--bg2)}
+.paket .ypk-t{font-size:15px;color:var(--sub);line-height:1.4}
+.paket .ypk-d{font-weight:800;color:var(--link)}
+.paket .rozet.ozelr{background:var(--ok);color:var(--on-ok)}
+.ozel-pill{display:inline-block;font-size:13px;font-weight:800;padding:2px 10px;border-radius:999px;background:var(--ok-soft);color:var(--ok-ink);vertical-align:3px}
+.teklif{box-shadow:inset 0 0 0 2px var(--ok);margin-bottom:12px}
+.tk-ust{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tk-ust .ad{font-size:19px;font-weight:800}
+.tk-ust .fiyat{font-size:26px;font-weight:900;letter-spacing:-.02em}
+.tk-ust .fiyat small{font-size:15px;font-weight:600;color:var(--sub)}
+.tk-l{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.tk-l li::before{content:"✓ ";color:var(--ok-ink);font-weight:800}
+.oneri{display:flex;flex-direction:column;gap:4px;background:var(--ok-soft);color:var(--ok-ink);border-radius:12px;padding:12px 14px;font-size:15px}
 .paket .simdi{font-size:13px;font-weight:700;color:var(--ok-ink)}
 .secimler{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:380px){.secimler{grid-template-columns:1fr}}
@@ -290,6 +303,12 @@ details.ek summary{cursor:pointer;color:var(--link);font-weight:700;min-height:4
 @keyframes skp{from{opacity:.55}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
 .secim.tek{width:100%;flex-shrink:0}
+.belge-guncel{border:2px solid var(--accent, #E8590C)}
+.belge-guncel details{margin:4px 0 12px}
+.belge-guncel summary{cursor:pointer;font-weight:700}
+.belge-guncel .degisen{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.45}
+.belge-guncel .degisen li{margin:6px 0}
+.rehber-btn{margin-top:10px}
 </style>
 </head>
 <body>
@@ -556,20 +575,20 @@ function geriDugmesi(){
 }
 
 /* --- tanıtım --- */
-function paketKartlari(secili, mevcut){
+function paketKartlari(secili, mevcut, ozelKart){
   return '<div class="paketler" role="radiogroup" aria-label="Paketler">' + (D.paketler || []).map(function(p, i){
     return '<button class="paket" type="button" role="radio" aria-checked="' + (secili === p.kod) + '" data-act="paketSec" data-k="' + esc(p.kod) + '">' +
-      (i === 1 ? '<span class="rozet">En çok tercih edilen</span>' : '') +
+      (p.ozel ? '<span class="rozet ozelr">✨ Size özel</span>' : i === 1 ? '<span class="rozet">En çok tercih edilen</span>' : '') +
       '<span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span><ul>' +
       (p.sube ? '<li><b>' + adet(p.sube) + ' şube</b> · tek bot · merkez ekranı</li>' : '') +
       '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' : 'Sınırsız sipariş') + '</li>' +
       '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li></ul>' +
       (mevcut === p.kod ? '<span class="simdi">Şu anki paketiniz</span>' : '') + '</button>';
-  }).join('') + '</div>';
+  }).join('') + (ozelKart ? ozelPaketKarti() : '') + '</div>';
 }
 function tanitimEkrani(){
   var gun = D.denemeGun || 14, bv = D.basvuru;
-  return (bv && bv.durum === 'ret' ? '<div class="note bad" role="alert">' + esc(bv.ad) + ' için önceki ' + (bv.tur === 'satin' ? 'talebiniz' : 'başvurunuz') +
+  return talepKutusu() + (bv && bv.durum === 'ret' ? '<div class="note bad" role="alert">' + esc(bv.ad) + ' için önceki ' + (bv.tur === 'satin' ? 'talebiniz' : 'başvurunuz') +
       ' onaylanmadı. Bilgilerinizi güncelleyip yeniden başvurabilirsiniz' + (D.destek ? ' ya da bize yazabilirsiniz: ' + esc(D.destek) : '') + '.</div>' : '') +
     '<section class="hero"><h1>Restoranınız, kafeniz ya da bakkalınız Telegram\'dan komisyonsuz sipariş alsın</h1>' +
     '<p>Size özel sipariş botu, menü sayfası, işletme ve kurye ekranları. Sabit aylık ücret, sipariş başına kesinti yok.</p>' +
@@ -624,7 +643,7 @@ function kayitEkrani(){
       '<button class="btn pri block" data-act="ileri1">Devam et</button></section>';
   } else if (S.adim === 2) {
     h += '<section class="card"><h2>2 / 3 · Paketinizi seçin</h2><p class="tip">' + (satinMi() ? 'Aylık ücret, bakiyenize yüklediğiniz tutardan düşülür.' : 'İlk ' + (D.denemeGun || 14) + ' gün ücretsiz.') + ' Ürün sınırı dolunca paketinizi yükseltebilirsiniz. Aynı ürünün boy/çeşit seçenekleri tek ürün sayılır.</p>' +
-      paketKartlari(S.paket) + '<p class="note">Ödeme ön ödemelidir: yüklediğiniz bakiyeden her ay paket ücreti düşülür. Yüklenen bakiye yalnızca YourPOS 360 hizmet ücretlerinde kullanılır; iade edilmez ve nakde çevrilemez (sözleşme Madde 7).</p>' + '<div class="row"><button class="btn line" data-act="geri">Geri</button><button class="btn pri" data-act="ileri2"' + (S.paket ? '' : ' disabled') + '>Devam et</button></div></section>';
+      talepKutusu(true) + paketKartlari(S.paket, '', true) + '<p class="note">Ödeme ön ödemelidir: yüklediğiniz bakiyeden her ay paket ücreti düşülür. Yüklenen bakiye yalnızca YourPOS 360 hizmet ücretlerinde kullanılır; iade edilmez ve nakde çevrilemez (sözleşme Madde 7).</p>' + '<div class="row"><button class="btn line" data-act="geri">Geri</button><button class="btn pri" data-act="ileri2"' + (S.paket ? '' : ' disabled') + '>Devam et</button></div></section>';
   } else {
     var tamam = (D.belgeler || []).every(function(b){ return S.onay[b.tur]; });
     h += '<section class="card"><h2>3 / 3 · Sözleşmeler</h2><p class="tip">Her belgeyi açıp okuyun ve onaylayın. Onayladığınız belgelerin PDF kopyaları Telegram\'a gönderilir.</p>' +
@@ -710,12 +729,14 @@ function panelEkrani(){
       ' inceleniyor (<span class="num">' + esc(D.basvuru.no) + '</span>). Onaylandığında Telegram\'dan haber vereceğiz.</div>' : '') +
     (d.isKoluSecildi === false ? '<div class="note" role="alert">🏷️ <b>İş kolunuzu seçin.</b> Müşteriler «Yakınımdaki işletmeler» listesinde sizi iş kolunuza göre bulur. ' +
       '<button class="btn sm pri" data-act="bilgiDuzenle">Seç</button></div>' : '') + '</section>';
+  h += talepKutusu();
+  h += belgeGuncelKarti();
   h += '<div class="grid2"><section class="card"><h2>Kurulum <span class="tip" style="margin-left:auto">' + biten + ' / ' + adimlar.length + '</span></h2><div class="ilerleme" aria-hidden="true"><span style="width:' +
     Math.round(biten / adimlar.length * 100) + '%"></span></div><ol class="kurulum">' + adimlar.map(function(x, i){
       return '<li class="kur' + (x.ok ? ' ok' : '') + '"><span class="n" aria-hidden="true">' + (x.ok ? '✓' : i + 1) + '</span><div class="d"><b>' + esc(x.ad) + '</b><span>' + esc(x.alt) + '</span></div>' +
         (x.dugme ? '<button class="btn sm ' + (x.ok ? 'line' : 'pri') + '" data-act="' + x.dugme[0] + '" data-k="' + esc(x.dugme[1]) + '">' + x.dugme[2] + '</button>' : '') + '</li>';
     }).join('') + '</ol>' + (k.menu ? '' : '<button class="btn ghost" data-act="sablon">' + ic('gonder') + 'Excel şablonunu Telegram\'a gönder</button>') + videoDugme('menu', 'Menü nasıl eklenir? Videoyu izleyin') + '</section>';
-  h += '<section class="card" id="paket"><h2>Paketiniz: ' + esc(d.paket.ad) + '</h2><p class="tip">' + tl(d.paket.ucret) + ' / ay · sipariş başına kesinti yok' +
+  h += '<section class="card" id="paket"><h2>Paketiniz: ' + esc(d.paket.ad) + (d.paket.ozel ? ' <span class="ozel-pill">✨ Size özel</span>' : '') + '</h2><p class="tip">' + tl(d.paket.ucret) + ' / ay · sipariş başına kesinti yok' +
     (d.paket.asim ? ' · haftalık sınırı aşan her sipariş ' + tl(d.paket.asim) : '') + '</p><div class="kullanim">' +
     kullanim('Ürün', d.kullanim.urun, d.paket.urun) + kullanim('Bu hafta sipariş', d.kullanim.hafta, d.paket.hafta) + kullanim('Ekip (personel + kurye)', d.kullanim.ekip, d.paket.ekip) +
     '</div><button class="btn line block" data-act="paketDegis">Paketi değiştir</button></section></div>';
@@ -731,7 +752,8 @@ function panelEkrani(){
     return '<li><span>' + esc(x.ad) + '</span><span class="muted num">' + esc(x.tarih.slice(0, 10)) + '</span></li>';
   }).join('') + '</ul><button class="btn line sm" data-act="belgeGonder"' + (S.busy.bg ? ' disabled' : '') + '>' + bekle(S.busy.bg) + ic('gonder', 'sm') + 'PDF\'leri Telegram\'a gönder</button></section>';
   h += '<section class="card" id="destek"><h2>Yardım ve destek</h2><button class="btn pri block" data-act="destekAc">' + ic('gonder') + 'Bize yazın</button>' +
-    '<p class="tip">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a doğrudan yazabilirsiniz.</p><div class="vid">' + ((D.videolar || []).length ? D.videolar.map(function(v){
+    '<p class="tip">Bakiye, ödeme, menü, bot bağlantısı ya da her türlü konuda YourPOS 360\'a doğrudan yazabilirsiniz.</p>' +
+    (D.rehber ? '<button class="btn line block rehber-btn" data-act="rehberIndir">📘 İşletme Rehberi (PDF) · İndir</button>' : '') + '<div class="vid">' + ((D.videolar || []).length ? D.videolar.map(function(v){
     return '<button class="btn ghost" data-act="video" data-k="' + esc(v.k) + '">' + ic('oynat') + esc(v.ad) + '</button>';
   }).join('') : '<p class="tip">Eğitim videoları yakında burada olacak.</p>') + '</div>' + (D.destek ? '<p class="tip">Destek: ' + esc(D.destek) + '</p>' : '') +
     (D.isletmeler.length < (D.sinir || 5) ? '<button class="btn ghost" data-act="yeniIsletme">+ Yeni şube / işletme ekle</button>' : '') + '</section></div>';
@@ -823,9 +845,11 @@ function sheetCiz(){
     var bg = S.belge[SH.tur];
     h = shBas(bg ? esc(bg.ad) : 'Belge') + '<div class="sh-body">' + (bg ? '<div class="metin">' + bg.html + '</div>' : SH.hata ? '<div class="err">' + esc(SH.hata) + '</div>' : '<div class="sk" style="height:320px"></div>') + '</div>' +
       '<div class="sh-foot"><button class="btn pri block" data-act="belgeOnay"' + (bg ? '' : ' disabled') + '>' + ic('tik') + 'Okudum, onaylıyorum</button></div>';
+  } else if (SH.tip === 'ozel') {
+    h = ozelSheet();
   } else if (SH.tip === 'paket') {
     h = shBas('Paketi değiştir') + '<div class="sh-body"><p class="tip">Değişiklik hemen geçerli olur. Dönemin kalan günleri için fark bakiyenizden düşülür, küçük pakete geçişte bakiyenize iade edilir. Deneme süresinde fark alınmaz. Daha küçük pakete geçmek için ürün ve ekip sayınızın yeni paketin sınırları içinde olması gerekir.</p>' +
-      paketKartlari(SH.sec, durum().paket.kod) + (SH.hata ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '') + '</div>' +
+      paketKartlari(SH.sec, durum().paket.kod, true) + (SH.hata ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '') + '</div>' +
       '<div class="sh-foot"><button class="btn pri block" data-act="paketKaydet"' + (SH.sec && SH.sec !== durum().paket.kod && !S.busy.paket ? '' : ' disabled') + '>' + bekle(S.busy.paket) + 'Bu pakete geç</button></div>';
   } else if (SH.tip === 'destek') {
     var ks = D.destekKonulari || [];
@@ -865,6 +889,95 @@ function bilgiAlan(k, e, v, tip){
     (tip === 'tel' ? ' type="tel" inputmode="tel"' : tip === 'email' ? ' type="email" inputmode="email"' : tip === 'numeric' ? ' inputmode="numeric"' : '') + ' autocomplete="off"></div>';
 }
 
+/* ---------- kişiye özel paket (1.16.4) ----------
+   İhtiyaç mevcut bir pakete sığıyorsa ya da %10'dan yakınsa talep gönderilmez, o paket önerilir (sunucu da aynı kuralı uygular). */
+function genelPaketler(){ return (D.paketler || []).filter(function(p){ return !p.ozel && !(p.sube > 0); }).slice().sort(function(a, b){ return a.ucret - b.ucret; }); }
+function paketOner(ist){
+  var l = genelPaketler(), sigar = function(p, k){ return p.urun * k >= ist.urun && (!p.hafta || p.hafta * k >= ist.hafta) && (!p.ekip || p.ekip * k >= ist.ekip); };
+  var y = l.filter(function(p){ return sigar(p, 1); })[0];
+  if (y) return { paket:y, neden:'yeter' };
+  y = l.filter(function(p){ return sigar(p, 1.1); })[0];
+  return y ? { paket:y, neden:'yakin' } : null;
+}
+function ozSayi(v){ var s = String(v === undefined || v === null ? '' : v).replace(/[.\s]/g, ''); return /^\d+$/.test(s) ? Number(s) : null; }
+function ozOku(){ ['urun', 'hafta', 'ekip', 'not'].forEach(function(k){ var e = $('#oz-' + k); if (e) SH[k] = e.value; }); }
+function ozIhtiyac(){ return { urun:ozSayi(SH.urun), hafta:ozSayi(SH.hafta), ekip:ozSayi(SH.ekip) }; }
+function ozGecerli(i){ return i.urun !== null && i.urun >= 1 && i.urun <= 1000 && i.hafta !== null && i.hafta >= 1 && i.ekip !== null; }
+function pkOzellik(p){ return adet(p.urun) + ' ürün · ' + (p.hafta ? 'haftada ' + adet(p.hafta) + ' sipariş' : 'sınırsız sipariş') + ' · ' + (p.ekip ? adet(p.ekip) + ' ekip üyesi' : 'sınırsız ekip'); }
+function ozIhtiyacYazi(t){ return adet(t.urun) + ' ürün · haftada ' + adet(t.hafta) + ' sipariş · ' + adet(t.ekip) + ' ekip üyesi'; }
+function ozelPaketKarti(){
+  var t = D.paketTalebi, bek = t && t.durum === 'bekliyor';
+  return '<button class="paket yeni-pk" type="button" data-act="ozelAc"><span class="ad">✨ Kendi paketini oluştur</span>' +
+    '<span class="ypk-t">' + (bek ? 'Talebiniz inceleniyor (' + esc(t.no) + '). Teklif gelince haber vereceğiz.' : 'Bu paketler yetmiyor mu? İhtiyacınızı yazın, size özel fiyat verelim.') + '</span>' +
+    '<span class="ypk-d">' + (bek ? 'Talebimi gör' : '+ İhtiyacımı yaz') + '</span></button>';
+}
+// Talebin durumu: inceleniyor bilgisi, teklif kartı ya da ret notu. kisa: paket seçimindeyken «inceleniyor» bilgisi kartın içinde olduğundan gösterilmez
+function talepKutusu(kisa){
+  var t = D && D.paketTalebi;
+  if (!t) return '';
+  if (t.durum === 'bekliyor') return kisa ? '' : '<div class="info" style="margin-bottom:12px">✨ Özel paket talebiniz (<b>' + esc(t.no) + '</b>) inceleniyor: ' + ozIhtiyacYazi(t) + '. Teklif gelince Telegram\'dan haber vereceğiz.</div>';
+  if (t.durum === 'ret') return '<div class="note" style="margin-bottom:12px">Özel paket talebiniz (' + esc(t.no) + ') için şu an size özel bir paket sunamıyoruz.' + (t.karar ? ' ' + esc(t.karar) : '') +
+    ' Mevcut paketlerden birini seçebilir ya da bize yazabilirsiniz.</div>';
+  if (t.durum !== 'teklif' || !t.paket) return '';
+  var p = t.paket, b = S.busy.teklif ? ' disabled' : '';
+  return '<section class="card teklif" id="teklif"><h2>✨ Size özel paket teklifi</h2><p class="tip">Talep ' + esc(t.no) + ' · ' + esc(String(t.tarih || '').slice(0, 10)) + ' · istediğiniz: ' + ozIhtiyacYazi(t) + '</p>' +
+    '<div class="tk-ust"><span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span></div>' +
+    '<ul class="tk-l"><li>' + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' + (p.asim ? ' (aşan her sipariş ' + tl(p.asim) + ')' : '') : 'Sınırsız sipariş') + '</li>' +
+    '<li>' + (p.ekip ? adet(p.ekip) + ' ekip üyesi (personel + kurye)' : 'Sınırsız ekip') + '</li><li>Sipariş başına kesinti yok</li></ul>' + (p.aciklama ? '<p class="tip">' + esc(p.aciklama) + '</p>' : '') +
+    '<div class="row"><button class="btn line" data-act="teklifRet"' + b + '>İstemiyorum</button><button class="btn pri" data-act="teklifKabul"' + b + '>' + bekle(S.busy.teklif) +
+    (durum() ? 'Onayla, paketim olsun' : 'Bu paketle üye ol') + '</button></div>' +
+    (durum() ? '<p class="tip">Onaylayınca paketiniz hemen değişir; dönemin kalan günleri için ücret farkı bakiyenize yansıtılır.</p>' : '') + '</section>';
+}
+function ozAlan(k, etiket, ph, not){
+  var hata = SH.alan === k && SH.hata;
+  return '<div class="field"><label for="oz-' + k + '">' + etiket + '</label><input class="inp" id="oz-' + k + '" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="' + ph +
+    '" value="' + esc(SH[k] || '') + '"' + (hata ? ' aria-invalid="true"' : '') + '>' + (hata ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '') + '<div class="tip">' + not + '</div></div>';
+}
+function ozOneriHtml(){
+  var i = ozIhtiyac();
+  if (i.urun !== null && i.urun > 1000) return '<div class="note">Ürün sayısı en fazla 1.000 olabilir.</div>';
+  if (!ozGecerli(i)) return '';
+  var o = paketOner(i) || (SH.sunucuOneri ? { paket:SH.sunucuOneri.paket, neden:SH.sunucuOneri.neden } : null);
+  if (!o) return '<div class="info">Bu ihtiyaç mevcut paketlerimizin üstünde. Talebinizi gönderin; YourPOS 360 size özel bir fiyat versin.</div>' +
+    (SH.hata && !SH.alan ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '');
+  var p = o.paket, mevcut = durum() && durum().paket.kod === p.kod;
+  return '<div class="oneri"><b>👍 ' + (mevcut ? 'Şu anki paketiniz (' + esc(p.ad) + ') bu ihtiyaca yetiyor' : o.neden === 'yeter' ? 'Bu ihtiyaç için ' + esc(p.ad) + ' paketi yeterli' : 'İhtiyacınız ' + esc(p.ad) + ' paketine çok yakın') +
+    '</b><span>' + pkOzellik(p) + ' · ' + tl(p.ucret) + ' / ay</span>' +
+    (i.hafta > p.hafta && p.hafta ? '<span>Haftalık sınır aşılırsa sipariş alımı durmaz; yalnız aşan siparişler için ' + tl(p.asim || 0) + ' alınır.</span>' : '') + '</div>';
+}
+function ozFootHtml(){
+  var i = ozIhtiyac(), o = ozGecerli(i) ? (paketOner(i) || SH.sunucuOneri) : null;
+  if (o) {
+    var mevcut = durum() && durum().paket.kod === o.paket.kod;
+    return '<div class="row"><button class="btn line" data-act="ozelKapat">Kapat</button>' + (mevcut ? '' : '<button class="btn pri" data-act="ozelOneriSec" data-k="' + esc(o.paket.kod) + '">' + esc(o.paket.ad) + ' paketini seç</button>') + '</div>';
+  }
+  return '<button class="btn pri block" data-act="ozelGonder"' + (ozGecerli(i) && !S.busy.oz ? '' : ' disabled') + '>' + bekle(S.busy.oz) + (S.busy.oz ? 'Gönderiliyor…' : 'Onaya gönder') + '</button>' +
+    '<p class="tip" style="text-align:center">Talebiniz YourPOS 360\'a gider; fiyatlandırılınca Telegram\'dan haber veririz.</p>';
+}
+function ozelCanli(sadeceAlt){
+  if (!sadeceAlt) { ozOku(); SH.sunucuOneri = null; if (!SH.alan) SH.hata = ''; }
+  var a = $('#ozOneri'), f = $('#ozFoot');
+  if (a) a.innerHTML = ozOneriHtml();
+  if (f) f.innerHTML = ozFootHtml();
+}
+function ozelSheet(){
+  var t = D.paketTalebi, x = SH.gonderildi || (t && t.durum === 'bekliyor' ? t : null);
+  if (x) {
+    return shBas('Kendi paketiniz') + '<div class="sh-body"><div class="okbox">✅ Talebiniz YourPOS 360\'a gönderildi (' + esc(x.no) + ').</div><p><b>İstediğiniz:</b> ' + ozIhtiyacYazi(x) + '</p>' +
+      (x.not ? '<p class="tip">' + esc(x.not) + '</p>' : '') + '<p class="tip">Fiyatlandırıp teklifimizi Telegram\'dan göndereceğiz. Teklif bu sayfada «Size özel paket teklifi» olarak da görünür; onaylarsanız paketiniz o olur.' +
+      (durum() ? '' : ' Beklemek istemezseniz şimdilik bir paketle üyeliğinize devam edebilirsiniz; teklif gelince geçersiniz.') + '</p></div>' +
+      '<div class="sh-foot"><button class="btn pri block" data-act="ozelKapat">Tamam</button></div>';
+  }
+  var h = shBas('Kendi paketini oluştur') + '<div class="sh-body"><p class="tip">İhtiyacınızı yazın. Mevcut paketlerden biri yetiyorsa hemen önerelim; yetmiyorsa talebiniz YourPOS 360\'a gider ve size özel fiyat verilir.</p>';
+  h += ozAlan('urun', hzm() ? 'Kaç hizmet listeleyeceksiniz?' : market() ? 'Kaç ürün satacaksınız?' : 'Menünüzde kaç ürün olacak?', 'ör. 400', 'Aynı ürünün boy/çeşit seçenekleri tek ürün sayılır. En fazla 1.000.') +
+    ozAlan('hafta', 'Haftada kaç sipariş bekliyorsunuz?', 'ör. 8000', 'En yoğun haftanızı düşünün.') +
+    ozAlan('ekip', 'Kaç ekip üyesi olacak? (personel + kurye)', 'ör. 25', 'Siz hariç, ekranları kullanacak kişi sayısı. Yoksa 0 yazın.') +
+    '<div class="field"><label for="oz-not">Eklemek istedikleriniz <span class="opt-l">(isteğe bağlı)</span></label><textarea class="inp" id="oz-not" rows="2" maxlength="300" placeholder="ör. Hafta sonu çok yoğunuz">' +
+    esc(SH.not || '') + '</textarea></div>';
+  h += '<div id="ozOneri" aria-live="polite">' + ozOneriHtml() + '</div></div>';
+  return h + '<div class="sh-foot" id="ozFoot">' + ozFootHtml() + '</div>';
+}
+
 /* ---------- olaylar ---------- */
 function durumAl(r){
   if (r.durum) D.durum = r.durum;
@@ -876,7 +989,64 @@ function ekranAc(ek){
   location.href = u;   // aynı site: Telegram oturumu (initData) yeni sayfada da geçerli
 }
 var ACT = {
+  rehberIndir:function(){ if (D && D.rehber) disaAc(D.rehber); },
+  belgeGuncelOnay:function(){
+    if (S.busy.bgo || !D.belgeGuncel) return;
+    S.busy.bgo = true; ciz();
+    call('uyBelgeOnay', { onay:S.onay }).then(function(r){
+      S.busy.bgo = false;
+      if (!r || !r.ok) { toast((r && r.hata) || 'Onay kaydedilemedi. Tekrar deneyin.', true); if (r && r.kod === 'BELGE') S.onay = {}; ciz(); return; }
+      D.belgeGuncel = null; haptic('notify', 'success'); toast(r.mesaj || 'Onayınız kaydedildi.'); ciz();
+    });
+  },
   kapat:function(){ sheetKapat(); },
+  ozelAc:function(){
+    var geri = SH && SH.tip === 'paket' ? { tip:'paket', sec:SH.sec } : null;
+    sheetAc({ tip:'ozel', geri:geri, urun:'', hafta:'', ekip:'', not:'' });
+  },
+  ozelKapat:function(){ var g = SH && SH.geri; if (g) sheetAc(g); else sheetKapat(); ciz(); },
+  ozelOneriSec:function(el){
+    var k = el.getAttribute('data-k'), g = SH && SH.geri;
+    if (g) { g.sec = k; sheetAc(g); return; }
+    S.paket = k; taslakKaydet(); sheetKapat(); ciz(); haptic('select'); toast(paketAd(k) + ' paketi seçildi');
+  },
+  ozelGonder:function(){
+    ozOku();
+    var i = ozIhtiyac(), st = SH;
+    if (!ozGecerli(i) || S.busy.oz) return;
+    S.busy.oz = true; st.hata = ''; st.alan = ''; ozelCanli(true);
+    call('uyOzelTalep', { urun:i.urun, hafta:i.hafta, ekip:i.ekip, not:st.not || '', b:durum() ? durum().id : '', form:durum() ? null : S.form }).then(function(r){
+      S.busy.oz = false;
+      if (SH !== st) return;
+      if (r && r.ok) { D.paketTalebi = r.talep; st.gonderildi = r.talep; haptic('notify', 'success'); sheetCiz(); ciz(); return; }
+      if (r && r.kod === 'BEKLIYOR' && r.talep) { D.paketTalebi = r.talep; sheetCiz(); ciz(); toast(r.hata, true); return; }
+      if (r && r.kod === 'YAKIN' && r.paket) { st.sunucuOneri = r; }
+      st.alan = (r && r.alan) || ''; st.hata = (r && r.kod !== 'YAKIN' && r.hata) || ''; if (!r) st.hata = 'Gönderilemedi. İnternet bağlantınızı kontrol edin.';
+      sheetCiz();
+    });
+  },
+  teklifKabul:function(){
+    var t = D.paketTalebi;
+    if (!t || !t.paket) return;
+    if (!durum()) { S.paket = t.paket.kod; taslakKaydet(); ACT.kayitBasla(); toast('Size özel paketiniz seçildi. Bilgilerinizi doldurup üyeliğinizi tamamlayın.'); return; }
+    if (S.busy.teklif) return;
+    S.busy.teklif = true; ciz();
+    call('uyTeklif', { no:t.no, karar:'kabul', b:durum().id }).then(function(r){
+      S.busy.teklif = false;
+      if (r && r.ok) { durumAl(r); D.paketTalebi = r.paketTalebi; if (r.paketler) D.paketler = r.paketler; ciz(); haptic('notify', 'success'); toast(r.mesaj || 'Paketiniz değişti'); return; }
+      ciz(); toast((r && r.hata) || 'Onaylanamadı.', true);
+    });
+  },
+  teklifRet:function(){
+    var t = D.paketTalebi;
+    if (!t || S.busy.teklif) return;
+    S.busy.teklif = true; ciz();
+    call('uyTeklif', { no:t.no, karar:'ret' }).then(function(r){
+      S.busy.teklif = false;
+      if (r && r.ok) { D.paketTalebi = r.paketTalebi; if (r.paketler) D.paketler = r.paketler; if (t.paket && S.paket === t.paket.kod) S.paket = (D.paketler[1] || D.paketler[0] || {}).kod; ciz(); toast('Teklif kapatıldı'); return; }
+      ciz(); toast((r && r.hata) || 'İşlem yapılamadı.', true);
+    });
+  },
   kayitBasla:function(el){
     var k = el && el.getAttribute && el.getAttribute('data-k'); if (k === 'deneme' || k === 'satin') S.basvuruTur = k;
     S.ekran = 'kayit'; S.adim = 1; if (!S.paket) S.paket = (D.paketler[1] || D.paketler[0] || {}).kod; ciz(); window.scrollTo(0, 0);
@@ -922,6 +1092,7 @@ var ACT = {
     var form = Object.assign({}, S.form);
     call('uyKayit', { form:form, paket:S.paket, onay:S.onay, basvuru:S.basvuruTur }).then(function(r){
       S.busy.kayit = false;
+      if (r && r.ok && D.paketTalebi && D.paketTalebi.paket && D.paketTalebi.paket.kod === S.paket) D.paketTalebi = null;
       if (r && r.kod === 'BEKLIYOR' && r.basvuru) { D.basvuru = r.basvuru; S.ekran = 'basvuru'; S.onay = {}; ciz(); window.scrollTo(0, 0); return; }
       if (!r || !r.ok) {
         if (r && r.kod === 'FORM' && r.alan) { S.hata = {}; S.hata[r.alan] = r.hata; S.adim = 1; ciz(); return; }
@@ -1074,6 +1245,7 @@ document.addEventListener('change', function(e){
 });
 document.addEventListener('input', function(e){
   if (/^f-/.test(e.target.id)) { var k = e.target.id.slice(2); S.form[k] = e.target.value; if (S.hata[k]) { delete S.hata[k]; e.target.removeAttribute('aria-invalid'); var er = $('#e-' + k); if (er) er.remove(); } taslakKaydet(); }
+  else if (SH && SH.tip === 'ozel' && /^oz-/.test(e.target.id)) ozelCanli();
   else if (e.target.id === 'tokenInp') S.token = e.target.value;
   else if (SH && SH.tip === 'destek' && (e.target.id === 'd-baslik' || e.target.id === 'd-mesaj')) {
     destekOku(); var sy = $('#d-say'); if (sy) sy.textContent = adet(SH.mesaj.length) + ' / 3.000';
@@ -1109,6 +1281,8 @@ function yukle(){
     ciz();
     if (D.durum && hash === 'paket') { setTimeout(function(){ var p = $('#paket'); if (p) p.scrollIntoView({ block:'start' }); ACT.paketDegis(); }, 60); }
     if (D.durum && hash === 'bilgi') ACT.bilgiDuzenle();
+    if (hash === 'teklif') setTimeout(function(){ var t = $('#teklif'); if (t) t.scrollIntoView({ block:'start' }); }, 80);
+    if (D.durum && hash === 'belgeler') setTimeout(function(){ var t = $('#belgeler'); if (t) t.scrollIntoView({ block:'start' }); }, 80);
     if (D.durum && hash === 'destek') setTimeout(function(){ ACT.destekAc(); }, 60);
     if (D.durum && hash === 'odeme') setTimeout(function(){ var o = $('#odeme'); if (o) o.scrollIntoView({ block:'start' }); }, 60);
   });
@@ -1123,6 +1297,25 @@ function basla(){
 }
 if (DEMO) MOCK = uyeDemo(params.get('durum') || 'kurulum');
 basla();
+
+/* --- sözleşme güncellemesi (1.16.4): yeni sürüm onay kartı --- */
+function belgeGuncelKarti(){
+  var bg = D && D.belgeGuncel;
+  if (!bg) return '';
+  var tamam = (D.belgeler || []).every(function(b){ return S.onay[b.tur]; });
+  var adlar = (bg.isletmeler || []).map(function(x){ return x.ad; });
+  return '<section class="card belge-guncel" id="belgeler"><h2>📄 Sözleşmeler güncellendi · sürüm ' + esc(bg.surum) + '</h2>' +
+    '<p class="tip">' + (adlar.length ? '<b>' + esc(adlar.join(', ')) + '</b> için y' : 'Y') + 'eni sürümü okuyup onaylayın.' +
+    (bg.yururluk ? ' Yeni sürüm <b>' + esc(bg.yururluk) + '</b> tarihinde yürürlüğe girer.' : '') + '</p>' +
+    '<details open><summary>Neler değişti?</summary><ul class="degisen">' + (bg.degisiklik || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>' +
+    (D.belgeler || []).map(function(b){
+      return '<button class="belge" data-act="belgeAc" data-k="' + b.tur + '" data-onay="' + (S.onay[b.tur] ? 1 : 0) + '">' + ic('belge') + '<span class="d"><b>' + esc(b.ad) + '</b><span>' +
+        (S.onay[b.tur] ? 'Okundu ve onaylandı' : 'Okumak için dokunun') + '</span></span><span class="tik" aria-hidden="true">' + (S.onay[b.tur] ? ic('tik', 'sm') : '') + '</span></button>';
+    }).join('') +
+    '<button class="btn pri block" data-act="belgeGuncelOnay"' + (tamam && !S.busy.bgo ? '' : ' disabled') + '>' + bekle(S.busy.bgo) + 'Yeni sürümü onaylıyorum</button>' +
+    '<p class="tip">' + (tamam ? 'Onaylayınca belgelerin PDF kopyaları Telegram\'a gelir.' : 'Önce üç belgeyi de açıp «Okudum, onaylıyorum» deyin.') +
+    ' Kabul etmezseniz yürürlük tarihine kadar üyeliğinizi bedelsiz sonlandırabilirsiniz (Hizmet Sözleşmesi Madde 15); bunun için «Bize yazın».</p></section>';
+}
 /* ---------- önizleme (?demo=1): örnek verilerle, sunucuya gitmeden ---------- */
 function uyeDemo(hal){
   var Q0 = new URLSearchParams(location.search);
@@ -1134,15 +1327,19 @@ function uyeDemo(hal){
   var BELGE = { hizmet:'Hizmet (Üyelik) Sözleşmesi', kvkk:'KVKK Aydınlatma Metni', veri:'Veri İşleme Sözleşmesi' };
   var taban = location.pathname.replace(/uye\.html$/, '');
   function durumYap(ad, tur, hazir){
-    return { id:'ornek', kod:'YP360-D3M0', ad:ad, durum:'Aktif', tur:tur, isKolu:Q0.get('kol') || (tur === 'hizmet' ? 'tesisat' : 'kebap'), isKoluSecildi:Q0.get('kol') !== '0', rehberGizli:false, paket:PAKET[0], kullanim:{ urun:hazir ? 23 : 0, hafta:hazir ? 41 : 0, ekip:hazir ? 2 : 0 },
+    return { id:'ornek', kod:'K7M2QX', ad:ad, durum:'Aktif', tur:tur, isKolu:Q0.get('kol') || (tur === 'hizmet' ? 'tesisat' : 'kebap'), isKoluSecildi:Q0.get('kol') !== '0', rehberGizli:false, paket:PAKET[0], kullanim:{ urun:hazir ? 23 : 0, hafta:hazir ? 41 : 0, ekip:hazir ? 2 : 0 },
       deneme:{ bitis:'20.10.2026 10:00', kalanGun:14 }, ucretsiz:'', bot:hazir ? { bagli:true, kullanici:'lezzet_durum_bot', link:'https://t.me/lezzet_durum_bot' } : { bagli:false, kullanici:'', link:'' },
       kurulum:{ menu:hazir, konum:hazir, bot:hazir, acik:true }, ekranUrl:taban + 'isletme.html?b=ornek&demo=1&rol=sahip&ana=1' + (hazir ? '' : '&kurulum=1'),
       bilgi:{ yetkili:'Hasan Kaya', telefon:'0532 111 22 33', eposta:'hasan@lezzet.com', il:'Ankara', ilce:'Çankaya', adres:'Kızılay Mah. Atatürk Blv. No: 5', faturaUnvani:'', vergiDairesi:'', vergiNo:'' },
-      odeme:{ kod:'YP360-D3M0', iban:'TR00 0000 0000 0000 0000 0000 00', alici:'YourPOS 360' }, hesap:hesapYap(), satinTalep:null,
+      odeme:{ kod:'K7M2QX', iban:'TR00 0000 0000 0000 0000 0000 00', alici:'YourPOS 360' }, hesap:hesapYap(), satinTalep:null,
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t], tarih:'06.10.2026 21:14', surum:'1.0', ozet:'a1b2c3d4e5f6' }; }) };
   }
   // ?odeme=durdu | bekle | tamam | ilk : bakiye kartının hallerini göstermek için · ?onay=0 : başvuru onayı kapalı (eski hemen üyelik)
-  var Q = new URLSearchParams(location.search), OD = Q.get('odeme') || '', ONAY = Q.get('onay') !== '0';
+  var Q = new URLSearchParams(location.search), OD = Q.get('odeme') || '', ONAY = Q.get('onay') !== '0', BG_ONAY = false;
+  var TAL = Q.get('talep') || '', OZP = { kod:'OZEL_1002', ad:'Mega Paket', ucret:850, urun:1000, hafta:8000, ekip:40, asim:1, aciklama:'Yoğun döner salonları için', sube:0, ozel:true };
+  var TALEP = TAL ? { no:'P-1002', durum:TAL, tarih:'08.10.2026 10:12', urun:1000, hafta:8000, ekip:40, not:'Hafta sonu çok yoğunuz', paket:TAL === 'teklif' ? OZP : null,
+    karar:TAL === 'ret' ? 'Bu hacimde önce bir görüşme yapalım.' : '' } : null;
+  var PKL = PAKET.concat(TAL === 'teklif' ? [OZP] : []);
   var BV = hal === 'basvuru' ? { no:'B-1001', tur:'deneme', durum:'bekliyor', ad:'Lezzet Dürüm', tarih:'06.10.2026 21:14', telefon:'0532 111 22 33' } : null;
   function hesapYap(){
     var b = OD === 'tamam' ? 600 : OD === 'durdu' || OD === 'bekle' ? 120 : 0;
@@ -1155,14 +1352,20 @@ function uyeDemo(hal){
   function kopya(x){ return JSON.parse(JSON.stringify(x)); }
   function hata(k, m, alan){ return { ok:false, kod:k, hata:m, alan:alan }; }
   var islem = {
-    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PAKET), turler:TUR, isKollari:IS_KOLLARI, denemeGun:14,
+    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PKL), paketTalebi:TALEP ? kopya(TALEP) : null, turler:TUR, isKollari:IS_KOLLARI, denemeGun:14,
       videolar:[{ k:'uyelik', ad:'YourPOS 360\'a nasıl üye olunur?', url:'https://www.instagram.com/' }, { k:'bot', ad:'Telegram\'da kendi botunuzu oluşturma', url:'https://www.instagram.com/' },
         { k:'menu', ad:'Menü ve ürünleri ekleme', url:'https://www.instagram.com/' }], anaBot:'yourpos360_bot',
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t] }; }), destek:'destek@yourpos360.com',
       destekKonulari:[{ k:'bakiye', ad:'💳 Bakiye ve ödeme' }, { k:'iade', ad:'↩️ Bakiye iadesi' }, { k:'fatura', ad:'🧾 Fatura' }, { k:'paket', ad:'📦 Paket ve ücretler' },
         { k:'menu', ad:'🍽️ Menü ve ürünler' }, { k:'bot', ad:'🤖 Bot bağlantısı' }, { k:'siparis', ad:'🛵 Siparişler' }, { k:'teknik', ad:'🛠️ Teknik sorun' },
         { k:'oneri', ad:'💡 Öneri' }, { k:'diger', ad:'✉️ Diğer' }], sinir:5, admin:false, onayGerekli:ONAY, basvuru:BV ? kopya(BV) : undefined,
-      durum:DUR ? kopya(DUR) : undefined }; },
+      durum:DUR ? kopya(DUR) : undefined, rehber:taban + 'rehber/isletme-rehberi.pdf',
+      belgeGuncel:DUR && Q.get('belge') === '1' && !BG_ONAY ? { surum:'1.5', tarih:'08.10.2026', yururluk:'07.11.2026', isletmeler:[{ id:'ornek', ad:DUR.ad }],
+        degisiklik:['YourPOS 360 yöneticileri; destek, sahte sipariş ve kötüye kullanımın önlenmesi ve istatistik amacıyla tüm işletmelerin müşteri kayıtlarını görüntüleyebilir ve dışa aktarabilir.',
+          'Her görüntüleme ve dışa aktarma kaydedilir; veriler satılmaz, reklam amacıyla kullanılmaz, hiçbir işletmeye başka bir işletmenin müşteri bilgisi gösterilmez.',
+          'Müşteri aydınlatma metnine bu işleme ve YourPOS 360\'a başvuru yolu eklendi.',
+          'Kurye, kasa, muhasebe ve çalışan özellikleri için çalışan ve kurye verileri işlenen veriler arasına eklendi; bu bilgileri yalnızca işletme sahibi görür.'] } : null }; },
+    uyBelgeOnay:function(){ BG_ONAY = true; return { ok:true, mesaj:'Teşekkürler, onayınız kaydedildi. Onaylı belgeler Telegram sohbetinize gönderildi.', belgeGuncel:null }; },
     uyBelge:function(d){
       if (!BELGE[d.tur]) return hata('ISTEK', 'Belge bulunamadı.');
       return { ok:true, tur:d.tur, ad:BELGE[d.tur], surum:'1.0', ozet:'ozet-' + d.tur,
@@ -1181,7 +1384,7 @@ function uyeDemo(hal){
       if (!f.isKolu) return hata('FORM', 'İş kolunuzu listeden seçin.', 'isKolu');
       DUR = durumYap(f.isletmeAdi || 'Yeni işletme', f.tur || 'restoran', false);
       DUR.isKolu = f.isKolu; DUR.isKoluSecildi = true;
-      DUR.paket = kopya(PAKET.filter(function(p){ return p.kod === d.paket; })[0] || PAKET[0]);
+      DUR.paket = kopya(PKL.filter(function(p){ return p.kod === d.paket; })[0] || PAKET[0]);
       DUR.bilgi = { yetkili:f.yetkili, telefon:f.telefon, eposta:f.eposta, il:f.il, ilce:f.ilce, adres:f.adres, faturaUnvani:f.faturaUnvani || '', vergiDairesi:f.vergiDairesi || '', vergiNo:f.vergiNo || '' };
       ISL = [{ id:'ornek', kod:DUR.kod, ad:DUR.ad, bot:'' }];
       return { ok:true, isletme:{ id:'ornek', kod:DUR.kod, ad:DUR.ad }, durum:kopya(DUR) };
@@ -1192,7 +1395,7 @@ function uyeDemo(hal){
       return { ok:true, bot:'lezzet_durum_bot', durum:kopya(DUR) };
     },
     uyPaket:function(d){
-      var p = PAKET.filter(function(x){ return x.kod === d.paket; })[0];
+      var p = PKL.filter(function(x){ return x.kod === d.paket; })[0];
       if (!p) return hata('PAKET', 'Paket bulunamadı.');
       if (p.urun < DUR.kullanim.urun) return hata('SINIR', p.ad + ' paketinde en fazla ' + p.urun + ' ürün olabilir.');
       DUR.paket = kopya(p); return { ok:true, durum:kopya(DUR) };
@@ -1213,6 +1416,18 @@ function uyeDemo(hal){
       return { ok:true, sonuc:'yetersiz', metin:'Ödemeniz henüz hesabımıza yansımadı. Havale/EFT genelde birkaç dakika içinde görünür; ödemeniz işlenince size hemen haber vereceğiz.', durum:kopya(DUR) };
     },
     uySablon:function(){ return { ok:true }; },
+    uyOzelTalep:function(d){
+      var o = paketOner({ urun:Number(d.urun), hafta:Number(d.hafta), ekip:Number(d.ekip) });
+      if (o) return { ok:false, kod:'YAKIN', hata:'İhtiyacınız ' + o.paket.ad + ' paketiyle karşılanıyor.', paket:kopya(o.paket), neden:o.neden };
+      TALEP = { no:'P-1002', durum:'bekliyor', tarih:'08.10.2026 10:12', urun:Number(d.urun), hafta:Number(d.hafta), ekip:Number(d.ekip), not:d.not || '', paket:null, karar:'' };
+      return { ok:true, talep:kopya(TALEP) };
+    },
+    uyTeklif:function(d){
+      if (!TALEP || TALEP.durum !== 'teklif') return hata('DURUM', 'Bu teklif artık geçerli değil.');
+      if (d.karar === 'ret') { TALEP = null; PKL = PAKET.slice(); return { ok:true, paketTalebi:null, paketler:kopya(PKL) }; }
+      DUR.paket = kopya(OZP); TALEP = null;
+      return { ok:true, durum:kopya(DUR), paketTalebi:null, paketler:kopya(PKL), mesaj:'Paketiniz ' + OZP.ad + ' oldu.' };
+    },
     uySatinAl:function(){
       if (DUR.satinTalep) return { ok:true, zaten:true, metin:'Talebiniz zaten alındı.', durum:kopya(DUR) };
       DUR.satinTalep = { no:'B-1002', tarih:'06.10.2026 21:20' }; return { ok:true, no:'B-1002', metin:'Talebiniz alındı.', durum:kopya(DUR) };

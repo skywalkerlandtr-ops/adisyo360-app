@@ -317,6 +317,40 @@ a{color:var(--link)}
 .mz-durum.ok{color:var(--ok-ink)}
 .mz-durum.warn{color:var(--warn-ink)}
 .mz-durum.off{color:var(--danger)}
+.mz-durum.ileri{color:var(--accent-ink)}
+.bz-giris{margin-bottom:8px}
+.bz-liste{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.bz-liste .mz-durum{margin-top:4px;font-size:13px}
+.bz-adres{background:var(--bg);border-radius:10px;padding:10px 12px;margin:6px 0 8px;overflow-wrap:anywhere;font-size:13px}
+.bz-rehber{margin-top:12px;font-size:15px;line-height:1.5}
+.bz-rehber h3{font-size:16px;margin:16px 0 4px}
+.bz-rehber ol{padding-left:22px;margin:8px 0;list-style:decimal}
+.bz-rehber li{margin:8px 0}
+.bz-rehber code{font-size:13px;background:var(--bg);padding:1px 5px;border-radius:5px}
+.mu-oz{display:flex;flex-wrap:wrap;gap:8px 18px;margin:4px 0 12px}
+.mu-oz span{display:flex;flex-direction:column;font-size:13px;color:var(--sub)}
+.mu-oz b{font-size:20px;color:var(--text)}
+.yn-mk{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.yn-mk-bas{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.yn-mk-bas .pill{flex:none}
+.yn-mk-alt{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:14px;color:var(--sub)}
+.yn-mk-alt a{color:var(--link)}
+.yn-mk-isl{list-style:none;margin:4px 0 0;padding:0;border-top:1px solid var(--sep)}
+.yn-mk-isl li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--sep)}
+.yn-mk-isl li:last-child{border-bottom:0}
+.yn-mk-isl .o-main{display:flex;flex-direction:column;min-width:0}
+.yn-mk-n{text-align:right;font-size:14px;white-space:nowrap}
+.yn-mk-arac{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.yn-mk-arac>span:first-child{flex:1 1 100%}
+.yn-mk-sayfa{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.yn-mk-not{font-weight:500;font-size:14px}
+.yn-belge-l{margin:6px 0 4px;padding-left:20px;font-size:14px;color:var(--sub)}
+.yn-belge-l li{margin:4px 0}
+.tab.yn-tab{font-size:13px;padding-left:2px;padding-right:2px;min-width:0}
+.tab.yn-tab>span:not(.cnt){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.yn-kod{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em}
+.yn-kod-inp{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;letter-spacing:.2em;text-transform:uppercase}
+.yn-tl-eski summary{cursor:pointer;list-style-position:inside}
 .mz-s-say{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--sub)}
 .mz-s-say b{color:var(--text)}
 .mz-s-act{margin-top:0}
@@ -1869,6 +1903,15 @@ function raporIcerik(r){
   h += '<section class="chart"><h3 class="ch-title">Gün sonu kasa<span class="ch-sub">Teslim edilen siparişlerde kim ne tahsil etti</span></h3>' +
     (r.kasa.length ? '<ul class="kasa">' + r.kasa.map(function(k){ return kasaSatir(esc(k.ad), k); }).join('') +
       (r.kasa.length > 1 ? kasaSatir('Toplam', top, 'tot') : '') + '</ul>' : '<p class="tip-txt">Bu dönemde teslim edilen sipariş yok.</p>') + '</section>';
+  if (r.musteri && r.musteri.toplam) {
+    var mu = r.musteri;
+    h += '<section class="chart"><h3 class="ch-title">Müşteriler<span class="ch-sub">Bu dönemde sipariş veren · gizlilik için isim ve telefon kısaltıldı</span></h3>' +
+      '<div class="mu-oz"><span><b class="num">' + adet(mu.toplam) + '</b>müşteri</span><span><b class="num">' + adet(mu.yeni) + '</b>yeni</span><span><b class="num">%' + mu.tekrarOran + '</b>tekrar sipariş verdi</span>' +
+      '<span><b class="num">' + NF1.format(mu.ortSiparis) + '</b>sipariş / müşteri</span><span><b class="num">' + tl(mu.ortTutar) + '</b>müşteri başına</span></div>' +
+      (mu.enIyi.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>En çok sipariş veren</th><th>Telefon</th><th class="r">Sipariş</th><th class="r">Tutar</th></tr></thead><tbody>' +
+        mu.enIyi.map(function(x){ return '<tr><td>' + esc(x.ad) + '</td><td class="num" style="white-space:nowrap">' + esc(x.tel || '—') + '</td><td class="r">' + adet(x.adet) + '</td><td class="r">' + tl(x.tutar) + '</td></tr>'; }).join('') +
+        '</tbody></table></div>' : '') + '</section>';
+  }
   if (r.iptal.adet) {
     var liste = function(l){ return '<ul class="cnt-list">' + l.map(function(x){ return '<li><span>' + esc(x.ad) + '</span><b>' + adet(x.adet) + '</b></li>'; }).join('') + '</ul>'; };
     h += '<section class="chart"><h3 class="ch-title">İptaller<span class="ch-sub">' + adet(r.iptal.adet) + ' sipariş · ' + tl(r.iptal.tutar) + '</span></h3>' +
@@ -2267,8 +2310,10 @@ SHEET.yazici = function(){
   var h = shBas('🖨 Fiş yazıcısı') + '<div class="sh-body">';
   h += '<button class="opt" role="switch" aria-checked="' + YZ.acik + '" data-act="yzAcik"><span class="o-main">Onaylanan siparişi otomatik yazdır' +
     '<span class="o-sub">«Onayla, hazırla»ya basıldığı an fiş bu cihazın yazıcısından çıkar</span></span><span class="sw" aria-hidden="true" aria-checked="' + YZ.acik + '" style="pointer-events:none"><span class="knob"></span></span></button>';
-  if (inTelegram) h += '<div class="note-box">Telegram içinden yazıcıya bağlanılamaz. Yazıcıyı kullanmak için bu ekranı yazıcının bağlı olduğu tablette ya da bilgisayarda Chrome ile açın (Ekip → Tablet bağla).</div>';
-  h += '<div class="blk"><h3 class="blk-h">Yazıcı nasıl bağlı?</h3><div class="opt-list" role="radiogroup">' +
+  h += bzOzet();
+  if (IOS) h += '<div class="note-box">📱 iPhone ve iPad\'de tarayıcı Bluetooth ya da USB yazıcıya bağlanamaz (Apple izin vermiyor). Telefonunuzu sipariş ekranı gibi kullanacaksanız <b>bulut yazıcı</b> kurun: fişler telefon kapalıyken de çıkar.</div>';
+  else if (inTelegram) h += '<div class="note-box">Telegram içinden yazıcıya bağlanılamaz. Yazıcıyı kullanmak için bu ekranı yazıcının bağlı olduğu tablette ya da bilgisayarda Chrome ile açın (Ekip → Tablet bağla) ya da bulut yazıcı kurun.</div>';
+  h += '<div class="blk"><h3 class="blk-h">Bu cihaza bağlı yazıcı</h3><div class="opt-list" role="radiogroup">' +
     r('bt', 'Bluetooth yazıcı', 'Taşınabilir ve kablosuz fiş yazıcıları (Chrome, Android tablet)', d.bt) +
     r('usb', 'USB kablolu yazıcı', 'Tablete ya da bilgisayara kabloyla takılı yazıcı (Chrome)', d.usb) +
     r('tarayici', 'Bilgisayarın yazıcısı', 'Windows\'a kurulu yazıcı; fiş tarayıcının yazdırma penceresiyle çıkar', d.tarayici) + '</div></div>';
@@ -2281,6 +2326,7 @@ SHEET.yazici = function(){
   h += '<div class="blk"><h3 class="blk-h">Türkçe karakterler</h3>' + seg('yzTr', YZ.tr ? 1 : 0, [[1, 'Türkçe (ç ğ ı ö ş ü)'], [0, 'Sadeleştir (c g i o s u)']]) +
     '<p class="tip-txt">Fişte bozuk harfler çıkarsa «Sadeleştir»i seçin.</p></div>';
   h += '<p class="tip-txt">Yazıcı yalnızca bu cihaza bağlıdır: siparişi kim onaylarsa onaylasın (Telegram, başka tablet), fiş bu ekranın açık olduğu cihazdan çıkar. Yazıcı kapalıysa ya da bağlantı koparsa siparişler sistemde normal devam eder; yazdırılamayan fiş siparişin üzerinde görünür ve tekrar basılabilir.</p>';
+  h += '<button class="btn ghost block" data-act="yzRehber">📘 Kurulum rehberi: iPhone, Android, bilgisayar, bulut yazıcı</button>';
   h += '</div><div class="sh-foot"><button class="btn line block" data-act="yzDeneme">' + ic('yazici', 'sm') + 'Deneme fişi yazdır</button></div>';
   return h;
 };
@@ -2305,6 +2351,151 @@ var ACT_EK = {
   },
   fisYaz:function(el){ var o = siparis(Number(el.getAttribute('data-no'))); if (o) yzKuyruk(o, true); }
 };
+
+/* ---------- bulut yazıcı (1.16.4) ----------
+   İnternete bağlı Star (CloudPRNT) ya da Epson (Server Direct Print) fiş yazıcısı birkaç saniyede bir sunucuya «iş var mı?» diye sorar.
+   Sipariş onaylanınca fiş sunucuda sıraya girer; telefon / tablet kapalı olsa da yazıcıdan çıkar. iPhone kullanan işletmeler için önerilen yol. */
+var IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+var BZ = { l:null, yuk:false, sinir:5, sunucu:true };
+function bzYukle(){
+  if (BZ.yuk || kurye()) return;
+  BZ.yuk = true;
+  call('ekYazicilar').then(function(r){
+    BZ.yuk = false;
+    if (r && r.ok) { BZ.l = r.yazicilar; BZ.sinir = r.sinir; BZ.sunucu = r.sunucu; }
+    else if (!BZ.l) BZ.l = [];
+    if (SH && (SH.tip === 'yazici' || SH.tip === 'bulutYz')) renderSheet();
+  });
+}
+function bzSon(y){
+  if (!y.son) return '<span class="mz-durum warn"><span class="dot" aria-hidden="true"></span>Henüz bağlanmadı</span>';
+  var dk = (simdi() - y.son) / 60000, hata = y.hata && dk < 30;
+  return '<span class="mz-durum ' + (hata ? 'off' : dk <= 3 ? 'ok' : 'warn') + '"><span class="dot" aria-hidden="true"></span>' +
+    (hata ? esc(y.hata) : dk <= 3 ? 'Bağlı' : 'Son bağlantı ' + onceYazi(y.son)) + '</span>';
+}
+function bzOzet(){
+  if (BZ.l === null) { bzYukle(); return '<div class="sk" style="height:64px"></div>'; }
+  var l = BZ.l || [], uyari = l.length && YZ.acik;
+  return '<button class="opt bz-giris" data-act="bulutYz"><span class="o-main">☁️ Bulut yazıcı' + (l.length ? ' <span class="pill">' + l.length + '</span>' : '') +
+    '<span class="o-sub">' + (l.length ? l.map(function(y){ return esc(y.ad); }).join(', ') + ' · telefon kapalıyken de basar' : 'İnternete bağlı yazıcı · telefon / tablet kapalıyken de basar · iPhone için önerilen') + '</span></span>' + ic('sag', 'sm') + '</button>' +
+    (uyari ? '<p class="tip-txt">⚠️ Bulut yazıcı da tanımlı: bu cihazın yazıcısı da aynı yerdeyse fişler iki kez çıkar. Gerekmiyorsa yukarıdaki otomatik yazdırmayı kapatın.</p>' : '');
+}
+SHEET.bulutYz = function(s){
+  var l = BZ.l || [], sh = sahip(), b = U.busy;
+  var h = '<div class="sh-head"><button class="icon-btn" data-act="yazici" aria-label="Geri">' + ic('geri') + '</button><h2 id="shTitle">☁️ Bulut yazıcı</h2>' +
+    '<button class="icon-btn" data-act="kapat" aria-label="Kapat">' + ic('x') + '</button></div><div class="sh-body">';
+  if (s.ekle) {
+    var t = s.tur || '';
+    return h + '<p class="tip-txt">Yazıcınızın markasını seçin. Yazıcı «Star CloudPRNT» ya da «Epson Server Direct Print» desteklemeli (kutusunda ya da satıcıda yazar).</p>' +
+      '<div class="opt-list" role="radiogroup">' + [['star', 'Star', 'CloudPRNT · ör. mC-Print3, TSP143IV'], ['epson', 'Epson', 'Server Direct Print · ör. TM-m30III, TM-T88VII']].map(function(x){
+        return '<button class="opt" role="radio" aria-checked="' + (t === x[0]) + '" data-act="bzTur" data-k="' + x[0] + '"><span class="radio" aria-hidden="true"></span><span class="o-main">' + x[1] + '<span class="o-sub">' + x[2] + '</span></span></button>';
+      }).join('') + '</div><div class="field"><label for="bzAd">Ad <span class="muted">(isteğe bağlı)</span></label><input class="inp" id="bzAd" maxlength="30" placeholder="ör. Mutfak yazıcısı" value="' + esc(s.ad || '') + '"></div>' +
+      '<div class="blk"><h3 class="blk-h">Kâğıt genişliği</h3><div class="seg" role="group">' + [[80, '80 mm'], [58, '58 mm']].map(function(g){
+        return '<button data-act="bzGen" data-k="' + g[0] + '" aria-pressed="' + ((s.genislik || 80) === g[0]) + '">' + g[1] + '</button>'; }).join('') + '</div></div>' +
+      (s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '') + '</div>' +
+      '<div class="sh-foot"><div class="row"><button class="btn line" data-act="bzVazgec">Vazgeç</button><button class="btn pri" data-act="bzEkle"' + (t && !b.bzEkle ? '' : ' disabled') + '>' + bekle('bzEkle') + 'Ekle</button></div></div>';
+  }
+  if (s.ayar) {
+    var y = l.filter(function(x){ return x.anahtar === s.ayar; })[0];
+    if (!y) { s.ayar = ''; return SHEET.bulutYz(s); }
+    var seg = function(act, deger, secenek){ return '<div class="seg" role="group">' + secenek.map(function(x){ return '<button data-act="' + act + '" data-k="' + x[0] + '" aria-pressed="' + (String(deger) === String(x[0])) + '">' + x[1] + '</button>'; }).join('') + '</div>'; };
+    return h + '<p><b>' + esc(y.ad) + '</b> · ' + esc(y.turAd) + '</p>' + bzSon(y) +
+      '<div class="blk"><h3 class="blk-h">Sunucu adresi</h3><p class="tip-txt">Bu adresi yazıcının ayar sayfasında ' + (y.tur === 'star' ? '«CloudPRNT → Server URL»' : '«Server Direct Print → URL»') + ' alanına yapıştırın. Adres size özeldir, paylaşmayın.</p>' +
+      '<div class="bz-adres"><code>' + esc(y.adres) + '</code></div><button class="btn line sm" data-act="bzKopya" data-k="' + esc(y.adres) + '">' + ic('kopya', 'sm') + 'Adresi kopyala</button></div>' +
+      (sh ? '<div class="blk"><h3 class="blk-h">Kâğıt genişliği</h3>' + seg('bzAyar', 'g' + y.genislik, [['g80', '80 mm'], ['g58', '58 mm']]) + '</div>' +
+        '<div class="blk"><h3 class="blk-h">Kopya sayısı</h3>' + seg('bzAyar', 'k' + y.kopya, [['k1', '1 fiş'], ['k2', '2 fiş'], ['k3', '3 fiş']]) + '</div>' +
+        '<div class="blk"><h3 class="blk-h">Türkçe karakterler</h3>' + seg('bzAyar', y.tr ? 't1' : 't0', [['t1', 'Türkçe'], ['t0', 'Sadeleştir']]) +
+        '<p class="tip-txt">Fişte bozuk harf çıkarsa «Sadeleştir»i seçin. Star yazıcılar çoğu zaman sadeleştirilmiş fişle daha temiz basar.</p></div>' : '') +
+      (y.bekleyen ? '<p class="tip-txt">Sırada ' + y.bekleyen + ' fiş bekliyor. Yazıcı bağlanınca basılır; 2 saatte basılmayan fiş atılır.</p>' : '') + '</div>' +
+      '<div class="sh-foot"><button class="btn pri block" data-act="bzDeneme" data-k="' + esc(y.anahtar) + '"' + (b['bzD:' + y.anahtar] ? ' disabled' : '') + '>' + bekle('bzD:' + y.anahtar) + ic('yazici', 'sm') + 'Deneme fişi gönder</button>' +
+      (sh ? '<button class="btn dng-line block" data-act="bzSil" data-k="' + esc(y.anahtar) + '"' + (b['bzS:' + y.anahtar] ? ' disabled' : '') + '>' + bekle('bzS:' + y.anahtar) + 'Yazıcıyı kaldır</button>' : '') + '</div>';
+  }
+  h += '<p class="tip-txt">İnternete bağlı fiş yazıcısı onaylanan siparişleri doğrudan sunucudan alır. Bu ekranın, telefonun ya da tabletin açık olması gerekmez.</p>';
+  if (BZ.l === null) h += '<div class="sk" style="height:120px"></div>';
+  else if (!l.length) h += bosDurum('yazici', 'Henüz bulut yazıcı yok', 'Star ya da Epson internet yazıcınızı ekleyin; size özel adresi yazıcıya girin, fişler kendiliğinden çıksın.');
+  else h += '<ul class="bz-liste">' + l.map(function(y){
+    return '<li><button class="opt" data-act="bzAc" data-k="' + esc(y.anahtar) + '"><span class="o-main">' + esc(y.ad) + '<span class="o-sub">' + esc(y.turAd) + ' · ' + y.genislik + ' mm' + (y.kopya > 1 ? ' · ' + y.kopya + ' kopya' : '') + '</span>' + bzSon(y) + '</span>' + ic('sag', 'sm') + '</button></li>';
+  }).join('') + '</ul>';
+  if (!BZ.sunucu) h += '<div class="note-box">Sunucu adresi tanımlı değil; bulut yazıcı şu an eklenemez. YourPOS 360 destekle iletişime geçin.</div>';
+  h += '<button class="btn ghost block" data-act="yzRehber" data-k="bulut">📘 Bulut yazıcı nasıl kurulur?</button></div>';
+  if (sh) h += '<div class="sh-foot"><button class="btn pri block" data-act="bzYeni"' + (l.length >= BZ.sinir || !BZ.sunucu ? ' disabled' : '') + '>' + ic('arti', 'sm') + 'Bulut yazıcı ekle</button></div>';
+  return h;
+};
+function bzSonuc(r, st){
+  if (!r) { if (SH === st) renderSheet(); return; }
+  if (r.yazicilar) { BZ.l = r.yazicilar; BZ.sinir = r.sinir || BZ.sinir; BZ.sunucu = r.sunucu !== false; }
+  if (r.mesaj) toast(r.mesaj);
+  if (SH === st) renderSheet();
+}
+SHEET.yzRehber = function(s){
+  var k = s.k || (IOS ? 'iphone' : 'android');
+  var sek = [['iphone', 'iPhone / iPad'], ['android', 'Android'], ['pc', 'Bilgisayar'], ['bulut', 'Bulut yazıcı']];
+  var h = '<div class="sh-head"><button class="icon-btn" data-act="yazici" aria-label="Geri">' + ic('geri') + '</button><h2 id="shTitle">📘 Yazıcı kurulum rehberi</h2>' +
+    '<button class="icon-btn" data-act="kapat" aria-label="Kapat">' + ic('x') + '</button></div><div class="sh-body"><div class="kat-chips" role="tablist">' + sek.map(function(x){
+      return '<button class="chip sm" role="tab" data-act="yzRehber" data-k="' + x[0] + '" aria-pressed="' + (k === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div><div class="bz-rehber">';
+  var ol = function(l){ return '<ol>' + l.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ol>'; };
+  if (k === 'iphone') {
+    h += '<p>iPhone ve iPad\'de tarayıcı Bluetooth ya da USB fiş yazıcısına <b>bağlanamaz</b> (Apple izin vermiyor). Telefonu sipariş ekranı gibi kullanıp fişlerin kendiliğinden çıkması için iki yol var:</p>' +
+      '<h3>✅ Önerilen: bulut yazıcı</h3><p>İnternete bağlı bir Star ya da Epson fiş yazıcısı, onaylanan siparişleri doğrudan sunucudan alır. Telefon kilitli ya da kapalı olsa bile fiş çıkar.</p>' +
+      '<button class="btn line sm" data-act="yzRehber" data-k="bulut">Bulut yazıcı adımları →</button>' +
+      '<h3>Diğer yol: Android tablet ya da bilgisayar</h3><p>Siparişleri iPhone\'dan yönetin; yazıcıyı mutfaktaki bir Android tablete ya da bilgisayara bağlayın ve o cihazda bu ekranı açık tutun (Ekip → Tablet bağla). Siparişi kim onaylarsa onaylasın fiş o cihazdan çıkar.</p>' +
+      '<p class="tip-txt">AirPrint yazıcılar her fişte iPhone\'un yazdırma penceresini açar; otomatik basmaz. Yoğun saatler için uygun değildir.</p>';
+  } else if (k === 'android') {
+    h += ol(['Yazıcıyı açın. Bluetooth yazıcıysa telefonun <b>Ayarlar → Bluetooth</b> bölümünden eşleştirin (şifre sorarsa çoğunlukla <b>0000</b> ya da <b>1234</b>).',
+      'Bu ekranı <b>Chrome</b> ile açın: Ekip → «Tablet bağla» bağlantısını tablete gönderin. (Telegram içinden yazıcıya bağlanılamaz.)',
+      '🖨 Yazıcı → «Bluetooth yazıcı» ya da «USB kablolu yazıcı»yı seçin, <b>Yazıcı seç</b> deyin ve listeden yazıcınızı seçin.',
+      '«Onaylanan siparişi otomatik yazdır»ı açın ve <b>Deneme fişi yazdır</b> deyin.',
+      'Tableti şarja takılı ve ekranı açık tutun: ekran kapanırsa fiş çıkmaz. (Ayarlar → Ekran → Ekran zaman aşımı: en uzun.)']) +
+      '<p class="tip-txt">Fişte bozuk harf çıkarsa «Türkçe karakterler → Sadeleştir»i seçin. 58 mm yazıcılarda kâğıt genişliğini 58 mm yapın.</p>';
+  } else if (k === 'pc') {
+    h += ol(['Yazıcının sürücüsünü bilgisayara kurun; Windows\'ta bir deneme sayfası basın.',
+      'Bu ekranı bilgisayarda <b>Chrome</b> ile açın (Ekip → «Tablet bağla» bağlantısı).',
+      '🖨 Yazıcı → «Bilgisayarın yazıcısı»nı seçin, otomatik yazdırmayı açın.',
+      'Her siparişte yazdırma penceresi açılır; fiş yazıcısını seçip «Yazdır» deyin.']) +
+      '<p class="tip-txt">💡 Pencere açılmadan basması için: Chrome kısayoluna sağ tıklayın → Özellikler → Hedef satırının sonuna boşluk bırakıp <code>--kiosk-printing</code> ekleyin. Chrome\'u bu kısayolla açın; varsayılan yazıcı fiş yazıcısı olmalı.</p>' +
+      '<p class="tip-txt">USB kablolu fiş yazıcısını «USB kablolu yazıcı» seçeneğiyle doğrudan da kullanabilirsiniz (Chrome).</p>';
+  } else {
+    h += '<p><b>Ne gerekir?</b> İnternete bağlanabilen ve <b>Star CloudPRNT</b> ya da <b>Epson Server Direct Print</b> destekleyen bir fiş yazıcısı. Örnek: Star mC-Print3, TSP143IV · Epson TM-m30III, TM-T88VII. Satın almadan önce satıcıya bu özelliği sorun.</p>' +
+      ol(['Yazıcıyı Wi-Fi\'a ya da kabloyla modeme bağlayın. Yazıcının <b>ayar fişini</b> basın (çoğu modelde kapağı açıp FEED düğmesine basılı tutarak açınca çıkar); fişte yazıcının <b>IP adresi</b> yazar.',
+        'Bu ekranda ☁️ Bulut yazıcı → <b>Bulut yazıcı ekle</b> → markayı seçin. Size özel <b>sunucu adresi</b> çıkar; «Adresi kopyala» deyin.',
+        'Aynı Wi-Fi\'a bağlı telefon ya da bilgisayarın tarayıcısına yazıcının IP adresini yazın; yazıcının ayar sayfası açılır.',
+        '<b>Star:</b> «CloudPRNT» bölümünde CloudPRNT\'yi <b>Enable</b> yapın, «Server URL»ye adresi yapıştırın, sorgu aralığını (Polling) <b>5 saniye</b> yapın, kaydedip yazıcıyı yeniden başlatın.',
+        '<b>Epson:</b> «Server Direct Print» bölümünü açın, <b>Enable</b> yapın, «URL» alanına adresi yapıştırın, aralığı (Interval) <b>5 saniye</b> yapın, kaydedin.',
+        'Bu ekrana dönüp <b>Deneme fişi gönder</b> deyin. Birkaç saniye içinde fiş çıkar ve yazıcı «Bağlı» görünür.']) +
+      '<p class="tip-txt">Sipariş «Onayla, hazırla» ile onaylandığı an fiş sıraya girer. Yazıcı kapalıysa açılınca basar; 2 saatte basılmayan fiş atılır (geç gelen fiş mutfağı yanıltmasın). Aynı yazıcıyı bu cihazdan da bağladıysanız fiş iki kez çıkar; birini kapatın.</p>';
+  }
+  return h + '</div></div>';
+};
+Object.assign(ACT_EK, {
+  bulutYz:function(){ sheetAc({ tip:'bulutYz' }); bzYukle(); },
+  yzRehber:function(el){ var k = el.getAttribute('data-k') || ''; if (SH && SH.tip === 'yzRehber') { SH.k = k; renderSheet(); try { sheetEl.querySelector('.sh-body').scrollTop = 0; } catch(e){} } else sheetAc({ tip:'yzRehber', k:k }); },
+  bzYeni:function(){ if (SH) { SH.ekle = true; SH.tur = ''; SH.ad = ''; SH.genislik = 80; SH.hata = ''; renderSheet(); } },
+  bzVazgec:function(){ if (SH) { SH.ekle = false; SH.hata = ''; renderSheet(); } },
+  bzTur:function(el){ if (SH) { var i = $('#bzAd'); if (i) SH.ad = i.value; SH.tur = el.getAttribute('data-k'); haptic('select'); renderSheet(); } },
+  bzGen:function(el){ if (SH) { var i = $('#bzAd'); if (i) SH.ad = i.value; SH.genislik = Number(el.getAttribute('data-k')); renderSheet(); } },
+  bzEkle:function(){
+    var st = SH; if (!st) return;
+    var i = $('#bzAd'); if (i) st.ad = i.value;
+    islem('ekYaziciEkle', { tur:st.tur, ad:st.ad, genislik:st.genislik || 80, tr:st.tur === 'epson' }, { busy:'bzEkle' }).then(function(r){
+      if (r) { st.ekle = false; st.ayar = r.yeni; }
+      bzSonuc(r, st);
+    });
+  },
+  bzAc:function(el){ if (SH) { SH.ayar = el.getAttribute('data-k'); renderSheet(); } },
+  bzKopya:function(el){ kopyala(el.getAttribute('data-k')).then(function(ok){ toast(ok ? 'Adres kopyalandı' : 'Kopyalanamadı; adresi basılı tutup kopyalayın.', !ok); }); },
+  bzAyar:function(el){
+    var st = SH; if (!st || !st.ayar) return;
+    var k = el.getAttribute('data-k'), v = { anahtar:st.ayar };
+    if (k.charAt(0) === 'g') v.genislik = Number(k.slice(1)); else if (k.charAt(0) === 'k') v.kopya = Number(k.slice(1)); else v.tr = k === 't1';
+    islem('ekYaziciGuncelle', v, { busy:'bzA' }).then(function(r){ bzSonuc(r, st); });
+  },
+  bzDeneme:function(el){ var st = SH, k = el.getAttribute('data-k'); islem('ekYaziciDeneme', { anahtar:k }, { busy:'bzD:' + k }).then(function(r){ bzSonuc(r, st); }); },
+  bzSil:function(el){
+    var st = SH, k = el.getAttribute('data-k');
+    if (st.silOnay !== k) { st.silOnay = k; toast('Kaldırmak için bir kez daha dokunun.'); return; }
+    islem('ekYaziciSil', { anahtar:k }, { busy:'bzS:' + k }).then(function(r){ if (r) st.ayar = ''; bzSonuc(r, st); });
+  }
+});
 
 /* ---------- menü / ürünler: düzenleme, seçenekler (boy/çeşit), görsel galerisi, Excel ile toplu yükleme ----------
    Aynı kategori + aynı ürün adı = bir ürün; her seçenek (Küçük/Orta/Büyük, 33 cl/1 L ...) ayrı satırdır.
@@ -5037,9 +5228,12 @@ function ynGeriDugmesi(){ return YD ? '<button class="icon-btn" data-act="ynDon"
 /* --- açılış, yenileme, çıkış --- */
 function ynVeriAl(r){
   D.ozet = r.ozet; D.isletmeler = r.isletmeler; D.basvurular = r.basvurular;
+  if (r.paketTalepleri) D.paketTalepleri = r.paketTalepleri;
   if (r.paketler) D.paketler = r.paketler;
   if (r.sistem) D.sistem = r.sistem;
   if (r.zaman) D.zaman = r.zaman;
+  if (r.belge !== undefined) D.belge = r.belge;
+  if (r.kodlar) D.kodlar = r.kodlar;
 }
 function ynBasla(){
   if (!DEMO && !inTelegram) {
@@ -5051,12 +5245,13 @@ function ynBasla(){
     if (!r || !r.ok) return cikisEkrani(r);
     D = { rol:'Yonetim', ben:r.ben, anaBot:r.anaBot, siparisler:[], isletme:{ ad:'YourPOS 360', acik:true, hizmet:true, lat:1 } };
     ynVeriAl(r);
-    U.tab = { ozet:'ynOzet', isletmeler:'ynIsl', basvurular:'ynBv', paketler:'ynPk', sistem:'ynSis' }[SEKME] || (D.ozet && D.ozet.basvuru ? 'ynBv' : 'ynOzet');
+    U.tab = YN_TALEP ? 'ynBv' : { ozet:'ynOzet', isletmeler:'ynIsl', musteriler:'ynMus', basvurular:'ynBv', paketler:'ynPk', sistem:'ynSis' }[SEKME] || (D.ozet && (D.ozet.basvuru || D.ozet.paketTalep) ? 'ynBv' : 'ynOzet');
     U.net = true; U.sonOk = Date.now(); pollHata = 0;
     $('#full').hidden = true;
     $('#app').hidden = false;
     document.title = 'YourPOS 360 Yönetim';
     ciz();
+    if (YN_TALEP) { var tt = ynTalep(YN_TALEP); if (tt && (tt.durum === 'bekliyor' || tt.durum === 'teklif')) sheetAc({ tip:'ynTalep', no:YN_TALEP, mod:'fiyat' }); }
     pollT = setTimeout(poll, 60000);
   });
 }
@@ -5113,14 +5308,15 @@ function ynBannerlar(){
 }
 function ynSekmeler(){
   var o = D.ozet || {};
-  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletmeler', 'dukkan', 0], ['ynBv', 'Başvurular', 'not', o.basvuru || 0], ['ynPk', 'Paketler', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', 0]];
+  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletme', 'dukkan', 0], ['ynMus', 'Müşteri', 'ekip', 0], ['ynBv', 'Başvuru', 'not', (o.basvuru || 0) + (o.paketTalep || 0)], ['ynPk', 'Paket', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', 0]];
   koruyarakYaz($('#tabs'), t.map(function(x){
-    return '<button class="tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
+    return '<button class="tab yn-tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
       '<span>' + x[1] + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' bekliyor">' + x[3] + '</span>' : '') + '</button>';
   }).join(''));
 }
 function ynEkran(){
   if (U.tab === 'ynIsl') return ynIslEkrani();
+  if (U.tab === 'ynMus') return ynMusEkrani();
   if (U.tab === 'ynBv') return ynBvEkrani();
   if (U.tab === 'ynPk') return ynPkEkrani();
   if (U.tab === 'ynSis') return ynSisEkrani();
@@ -5194,7 +5390,7 @@ function ynListeHtml(){
   if (!l.length) return bosDurum('dukkan', U.ynQ ? 'Aramaya uyan işletme yok' : 'Bu grupta işletme yok', U.ynQ ? 'Başka bir kelimeyle arayın ya da filtreyi kaldırın.' : '');
   return '<div class="yn-liste">' + l.map(function(x){
     var d = ynDurum(x);
-    return '<button class="card yn-kart" data-act="ynAc" data-b="' + esc(x.b) + '"><span class="yn-k-bas"><span class="yn-k-ad">' + esc(x.ad) + '</span><span class="pill">' + esc(x.kod) + '</span></span>' +
+    return '<button class="card yn-kart" data-act="ynAc" data-b="' + esc(x.b) + '"><span class="yn-k-bas"><span class="yn-k-ad">' + esc(x.ad) + (x.oneri ? ' <span title="YourPOS 360\'ın önerisi">🏅</span>' : '') + '</span><span class="pill">' + esc(x.kod) + '</span></span>' +
       '<span class="mz-durum ' + d.cls + '"><span class="dot" aria-hidden="true"></span>' + esc(d.txt) + '</span>' +
       '<span class="yn-k-alt">' + esc(x.paket.ad) + (x.paket.ucret && !ynSube(x) ? ' · ' + tl(x.paket.ucret) + '/ay' : '') + ' · bakiye <b class="num">' + tl(x.bakiye) + '</b></span>' +
       '<span class="yn-k-alt">' + esc([x.sahip, x.yer].filter(Boolean).join(' · ') || '—') + '</span>' +
@@ -5229,6 +5425,7 @@ SHEET.ynIsl = function(s){
   if (s.mod) return ynAltPencere(s, x);
   var d = s.d, dr = ynDurum(x);
   var h = shBas(esc(x.ad) + ' <span class="pill">' + esc(x.kod) + '</span>') + '<div class="sh-body">';
+  if (d && (d.eskiKodlar || []).length) h += '<p class="tip-txt">Eski kod' + (d.eskiKodlar.length > 1 ? 'lar' : '') + ': ' + d.eskiKodlar.map(esc).join(', ') + ' · bunlarla gelen ödemeler de eşleşir</p>';
   h += '<p class="mz-durum ' + dr.cls + '"><span class="dot" aria-hidden="true"></span>' + esc(dr.txt) + '</p>';
   if (x.zincir) h += '<div class="note-box ileri">' + ic('bina', 'sm') + ' ' + esc(x.zincir.ad) + ' zinciri · ' + (x.zincir.merkez ? 'merkez' : esc(x.zincir.sube) + ' şubesi') + '</div>';
   h += '<div class="kpis">' + kpi('Bugün', adet(x.say.bugun) + ' sipariş', tl(x.say.bugunCiro)) + kpi('Bu hafta', adet(x.say.hafta) + ' sipariş', tl(x.say.haftaCiro)) +
@@ -5242,6 +5439,10 @@ SHEET.ynIsl = function(s){
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="paket"' + (d ? '' : ' disabled') + '>' + ic('kutu', 'sm') + 'Paket değiştir</button>';
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="ucretsiz"' + (d ? '' : ' disabled') + '>🎁 Ücretsiz kullanım</button>';
   h += '<button class="btn line" data-act="ynMod" data-k="puan"' + (d ? '' : ' disabled') + '>⭐ Müşteri puanları</button>';
+  h += '<button class="btn line" data-act="ynMod" data-k="kod"' + (d ? '' : ' disabled') + '>🔑 Kodu değiştir</button>';
+  if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="ozel"' + (d ? '' : ' disabled') + '>✨ Özel paket teklif et</button>';
+  var onr = d ? d.oneri : x.oneri;
+  h += '<button class="btn line" data-act="ynOneri" data-k="' + (onr ? '0' : '1') + '"' + (d && !U.busy.ynIslem ? '' : ' disabled') + '>🏅 ' + (onr ? 'Öneri rozetini kaldır' : 'YourPOS 360\'ın önerisi yap') + '</button>';
   h += x.durum === 'Donduruldu' ? '<button class="btn ok" data-act="ynMod" data-k="ac"' + (d ? '' : ' disabled') + '>' + ic('oynat', 'sm') + 'Yeniden aç</button>'
     : '<button class="btn dng-line" data-act="ynMod" data-k="dondur"' + (d ? '' : ' disabled') + '>' + ic('kilit', 'sm') + 'Dondur</button>';
   h += '</div>';
@@ -5252,6 +5453,8 @@ SHEET.ynIsl = function(s){
     (d.gizli ? ynKv('Yakındakiler listesi', 'gizli (işletme kendisi gizledi)') : '') +
     ynKv('Bot', d.bot ? '<a href="https://t.me/' + esc(String(d.bot).replace(/^@/, '')) + '" data-act="ynLink" data-k="https://t.me/' + esc(String(d.bot).replace(/^@/, '')) + '">@' + esc(String(d.bot).replace(/^@/, '')) + '</a>' : '<span class="yn-uyari">bağlı değil</span>') +
     ynKv('Kayıt', ynTarih(d.kayit) + (d.kaynak ? ' · ' + esc(d.kaynak) : '')) + (d.fatura ? ynKv('Fatura', esc(d.fatura)) : ''));
+  if (d.paketTeklif) h += '<div class="note-box ileri">✨ ' + (d.paketTeklif.durum === 'teklif' ? 'Özel paket teklifi onay bekliyor: <b>' + esc(d.paketTeklif.paket ? d.paketTeklif.paket.ad + ' · ' + tl(d.paketTeklif.paket.ucret) + '/ay' : '') + '</b>'
+    : 'Özel paket talebi fiyat bekliyor (' + esc(d.paketTeklif.no) + ')') + ' <button class="btn line sm" data-act="ynTlAc" data-k="' + esc(d.paketTeklif.no) + '">Aç</button></div>';
   var lm = d.limit || {};
   h += blk('Paket ve kullanım', ynKv('Paket', esc(d.paket.ad) + (d.paket.ucret && !sube ? ' · ' + tl(d.paket.ucret) + '/ay' : '')) +
     ynKv('Ürün', adet(lm.urun) + ' / ' + adet(lm.urunSinir)) + ynKv('Ekip', adet(lm.ekip) + (lm.ekipSinir ? ' / ' + adet(lm.ekipSinir) : ' · sınırsız')) +
@@ -5279,6 +5482,8 @@ function ynGeriBas(s, baslik){
 }
 function ynAltPencere(s, x){
   if (s.mod === 'puan') return ynPuanPencere(s, x);
+  if (s.mod === 'ozel') return ynOzelPencere(s, x);
+  if (s.mod === 'kod') return ynKodPencere(s, x);
   var b = U.busy.ynIslem, ad = '<span class="muted">' + esc(x.ad) + '</span>';
   var hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
   if (s.mod === 'kredi') {
@@ -5296,7 +5501,7 @@ function ynAltPencere(s, x){
       '<div class="sh-foot"><button class="btn pri block" type="submit" form="ynKrediForm">Devam</button></div>';
   }
   if (s.mod === 'paket') {
-    var pl = (D.paketler || []).filter(function(p){ return p.kod !== 'SUBE'; });
+    var pl = (D.paketler || []).filter(function(p){ return p.kod !== 'SUBE' && (!p.ozel || (s.d && (s.d.ozelPaketler || []).some(function(o){ return o.kod === p.kod; }))); });
     var sec = s.paket || x.paket.kod;
     return ynGeriBas(s, 'Paket değiştir') + '<div class="sh-body"><p>' + ad + ' · şu an <b>' + esc(x.paket.ad) + '</b></p><div class="opt-list" role="radiogroup" aria-label="Paket">' + pl.map(function(p){
       return '<button class="opt" type="button" role="radio" aria-checked="' + (sec === p.kod) + '" data-act="ynPaketSec" data-k="' + esc(p.kod) + '"><span class="radio" aria-hidden="true"></span><span class="o-main">' +
@@ -5367,7 +5572,7 @@ function ynBvKart(v){
 }
 function ynBvEkrani(){
   var l = D.basvurular || [], bek = l.filter(function(v){ return v.bekliyor; }), eski = l.filter(function(v){ return !v.bekliyor; });
-  var h = '<div class="scr">';
+  var h = '<div class="scr">' + ynTalepBolumu();
   h += bek.length ? '<h2 class="donem">' + bek.length + ' kayıt onay bekliyor</h2><div class="yn-bv-l">' + bek.map(ynBvKart).join('') + '</div>'
     : bosDurum('tikDaire', 'Onay bekleyen başvuru yok', 'Yeni başvuru gelince burada görünür; Telegram\'dan da haber verilir.');
   if (eski.length) {
@@ -5384,7 +5589,7 @@ function ynBvEkrani(){
 
 /* --- paketler --- */
 function ynPkEkrani(){
-  var l = D.paketler || [];
+  var l = (D.paketler || []).filter(function(p){ return !p.ozel; }), oz = (D.paketler || []).filter(function(p){ return p.ozel; });
   var h = '<div class="scr"><p class="tip-txt">Fiyat ve sınırları buradan değiştirin; e-tabloya gerek yok. Yeni fiyat, o paketi kullanan işletmelere <b>bir sonraki aylık çekimde</b> uygulanır. ' +
     '«Satışta» kapalı paketi yeni üyeler göremez; siz yine de bir işletmeye atayabilirsiniz.</p><div class="yn-liste">';
   h += l.map(function(p){
@@ -5397,7 +5602,16 @@ function ynPkEkrani(){
       '<div class="yn-bas"><span class="tip-txt">' + (p.kullanan ? '<b>' + p.kullanan + '</b> işletme kullanıyor' : 'Kullanan yok') + '</span>' +
       '<button class="btn line sm" data-act="ynPkDuzenle" data-k="' + esc(p.kod) + '">' + ic('kalem', 'sm') + 'Düzenle</button></div></section>';
   }).join('');
-  return h + '</div><button class="btn line" data-act="ynPkDuzenle" data-k="">' + ic('arti', 'sm') + 'Yeni paket</button></div>';
+  h += '</div><button class="btn line" data-act="ynPkDuzenle" data-k="">' + ic('arti', 'sm') + 'Yeni paket</button>';
+  if (oz.length) h += '<h2 class="donem">✨ Kişiye özel paketler</h2><p class="tip-txt">Yalnız teklif edildiği işletme görür; satışa açılamaz. Fiyatını değiştirirseniz bir sonraki aylık çekimde uygulanır.</p><div class="yn-liste">' +
+    oz.map(function(p){
+      return '<section class="card pad yn-pk"><div class="yn-bas"><div><h2 class="yn-bv-ad">' + esc(p.ad) + ' <span class="muted">· ' + esc(p.kod) + '</span></h2>' +
+        '<p class="tip-txt">' + (p.talep ? 'Talep ' + esc(p.talep) : '') + '</p></div><div class="yn-pk-f"><b class="num">' + tl(p.ucret) + '</b><span class="muted">/ay</span></div></div>' +
+        '<ul class="yn-pk-oz"><li>' + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'haftada ' + adet(p.hafta) + ' sipariş' : 'sınırsız sipariş') + '</li><li>' + (p.ekip ? adet(p.ekip) + ' ekip üyesi' : 'sınırsız ekip') + '</li></ul>' +
+        '<div class="yn-bas"><span class="tip-txt">' + (p.kullanan ? '<b>' + p.kullanan + '</b> işletme kullanıyor' : 'Henüz kullanılmıyor') + '</span>' +
+        '<button class="btn line sm" data-act="ynPkDuzenle" data-k="' + esc(p.kod) + '">' + ic('kalem', 'sm') + 'Düzenle</button></div></section>';
+    }).join('') + '</div>';
+  return h + '</div>';
 }
 SHEET.ynPk = function(s){
   var p = s.p || {}, yeni = !s.kod, b = U.busy.ynPaket;
@@ -5431,7 +5645,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">';
+  var h = '<div class="scr ayar">' + ynBelgeKarti() + ynKodKarti();
   if (k) {
     var saat = Math.floor(k.calismaSn / 3600), by = U.busy.ynYedek;
     h += '<section class="card pad yn-sunucu"><h2 class="frm-h">Sunucu ve kullanım</h2>' +
@@ -5480,10 +5694,95 @@ function ynSisEkrani(){
   });
   return h + '</div>';
 }
-function ynAlanAdi(a){ return { BASVURU_ONAYI:'Başvurular onayımla açılsın', KAMPANYA_DAVETI:'Fırsat bildirimlerine davet' }[a.k] || a.k; }
+function ynAlanAdi(a){ return { BASVURU_ONAYI:'Başvurular onayımla açılsın', KAMPANYA_DAVETI:'Fırsat bildirimlerine davet', REHBER_MUSTERI:'Müşteri Rehberi gönderilsin',
+  REHBER_ISLETME:'İşletme Rehberi gönderilsin' }[a.k] || a.k; }
 
 /* --- olaylar --- */
 var ACT_YN = {
+  ynMkAra:function(){ var i = $('#ynMkAra'); ynMkAraYap(i ? i.value : ''); },
+  ynMkTemizle:function(){ ynMkAraYap(''); },
+  ynMkSayfa:function(el){ U.mk.sayfa = Math.max(0, Number(el.getAttribute('data-k')) || 0); ynMkYukle(false); main.scrollTop = 0; },
+  ynMkAc:function(el){ var k = el.getAttribute('data-k'); U.mk.acik[k] = !U.mk.acik[k]; renderMain(); },
+  ynMkYenile:function(){ ynMkYukle(false, true); },
+  ynMkExcel:function(){
+    islem('ynMusteriExcel', { ara:U.mk.ara || '' }, { busy:'ynMkX' }).then(function(r){ if (r) toast(r.mesaj || 'Gönderildi'); renderMain(); });
+  },
+  ynMkKilit:function(el){ sheetAc({ tip:'ynMkKilit', kilit:el.getAttribute('data-k') === '1' }); },
+  ynMkKilitOnay:function(){
+    var st = SH; if (!st) return;
+    islem('ynMusteriKilit', { kilit:st.kilit }, { busy:'ynMkK' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      if (U.mk.veri) U.mk.veri.kilit = r.kilit;
+      sheetKapat(); toast(r.mesaj); renderMain();
+    });
+  },
+  ynMkErisim:function(){
+    var st = { tip:'ynMkErisim', yuk:true };
+    sheetAc(st);
+    call('ynMusteriErisim').then(function(r){ st.yuk = false; if (r && r.ok) st.l = r.erisim; else st.hata = (r && r.hata) || 'Kayıtlar alınamadı.'; if (SH === st) renderSheet(); });
+  },
+  ynBelgeDuyur:function(el){ sheetAc({ tip:'ynBelge', tekrar:el.getAttribute('data-k') === '1' }); },
+  ynBelgeGonder:function(){
+    var st = SH; if (!st) return;
+    islem('ynBelgeDuyur', { tekrar:!!st.tekrar }, { busy:'ynBd' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      D.belge = r.belge; sheetKapat(); toast(r.mesaj); renderMain();
+    });
+  },
+  ynKodCevir:function(){ sheetAc({ tip:'ynKodCevir', bildir:true }); },
+  ynKodCevirOnay:function(){
+    var st = SH; if (!st) return;
+    islem('ynKodlariCevir', { onay:true, bildir:st.bildir !== false }, { busy:'ynKc' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      D.kodlar = r.kodlar; sheetKapat(); toast(r.mesaj); ynYoklama(true);
+    });
+  },
+  ynKodBildir:function(){ if (SH) { var i = $('#ynKodInp'); if (i) SH.kod = i.value; SH.bildir = SH.bildir === false; renderSheet(); } },
+  ynKodKaydet:function(el){
+    var st = SH; if (!st) return;
+    var i = $('#ynKodInp'), uret = el.getAttribute('data-k') === 'uret', k = uret ? '' : String(i ? i.value : '').toUpperCase().replace(/\s+/g, '');
+    st.kod = uret ? '' : k; st.hata = '';
+    if (!uret && !/^[A-Z0-9]{6}$/.test(k)) { st.hata = 'Kod 6 karakter olmalı: harf (A–Z) ve rakam.'; renderSheet(); return; }
+    if (!uret && (!/[A-Z]/.test(k) || !/[0-9]/.test(k))) { st.hata = 'Kodda en az bir harf ve bir rakam olmalı (ör. K7M2QX).'; renderSheet(); return; }
+    islem('ynKodDegistir', { sb:st.b, kod:k, bildir:st.bildir !== false }, { busy:'ynKod' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      var j = (D.isletmeler || []).findIndex(function(y){ return y.b === r.isletme.b; });
+      if (j >= 0) D.isletmeler[j] = Object.assign({}, D.isletmeler[j], r.isletme);
+      if (r.kodlar) D.kodlar = r.kodlar;
+      if (SH === st) { st.d = r.isletme; st.mod = ''; st.kod = ''; renderSheet(); }
+      toast(r.mesaj); renderMain();
+    });
+  },
+  ynOneri:function(el){ if (SH && SH.tip === 'ynIsl') ynIslemYap({ islem:'oneri', deger:el.getAttribute('data-k') === '1' }); },
+  ynTlAc:function(el){ var no = el.getAttribute('data-k'); sheetAc({ tip:'ynTalep', no:no, mod:'fiyat' }); },
+  ynTlFiyat:function(el){ sheetAc({ tip:'ynTalep', no:el.getAttribute('data-k'), mod:'fiyat' }); },
+  ynTlRet:function(el){ sheetAc({ tip:'ynTalep', no:el.getAttribute('data-k'), mod:'ret' }); },
+  ynTlMod:function(el){ if (SH) { SH.mod = el.getAttribute('data-k'); SH.hata = ''; renderSheet(); } },
+  ynTlGonder:function(){
+    var st = SH; if (!st) return;
+    var f = ynOzelFormOku(); if (f.hata) { st.hata = f.hata; renderSheet(); return; }
+    st.hata = ''; st.f = f;
+    islem('ynTalepFiyat', { no:st.no, paket:f }, { busy:'ynTl' }).then(function(r){ if (r) ynTalepSonuc(r); else if (SH === st) renderSheet(); });
+  },
+  ynTlRetGonder:function(){
+    var st = SH; if (!st) return;
+    var n = $('#ynTlNeden'); st.neden = n ? n.value : '';
+    islem('ynTalepRet', { no:st.no, neden:st.neden }, { busy:'ynTl' }).then(function(r){ if (r) ynTalepSonuc(r); else if (SH === st) renderSheet(); });
+  },
+  ynOzGonder:function(){
+    var st = SH; if (!st) return;
+    var f = ynOzelFormOku(); if (f.hata) { st.hata = f.hata; renderSheet(); return; }
+    st.hata = ''; st.f = f;
+    islem('ynOzelTeklif', { sb:st.b, paket:f }, { busy:'ynTl' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      if (r.paketTalepleri) D.paketTalepleri = r.paketTalepleri;
+      if (r.paketler) D.paketler = r.paketler;
+      var i = (D.isletmeler || []).findIndex(function(y){ return y.b === r.isletme.b; });
+      if (i >= 0) D.isletmeler[i] = Object.assign({}, D.isletmeler[i], r.isletme);
+      if (SH === st) { st.d = r.isletme; st.mod = ''; st.f = null; renderSheet(); }
+      toast(r.mesaj || 'Teklif gönderildi'); renderTabs(); renderMain();
+    });
+  },
   ynPzFiltre:function(el){ if (SH) { SH.pzF = el.getAttribute('data-k'); haptic('select'); renderSheet(); } },
   ynPzGizle:function(el){ if (SH) { SH.gz = el.getAttribute('data-k'); SH.gzNeden = ''; SH.gzNot = ''; SH.gzBildir = true; SH.hata = ''; renderSheet(); try { sheetEl.querySelector('.sh-body').scrollTop = 0; } catch(e){} } },
   ynPzVazgec:function(){ if (SH) { SH.gz = ''; SH.hata = ''; renderSheet(); } },
@@ -5609,6 +5908,8 @@ function ynTutarOku(s){
 }
 document.addEventListener('input', function(e){
   if (e.target.id === 'ynAra' && yonetim()) { U.ynQ = e.target.value; var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml(); }
+  if (e.target.id === 'ynKodInp') { var p = e.target.selectionStart; e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); try { e.target.setSelectionRange(p, p); } catch(x){} }
+  if (e.target.id === 'ynMkAra' && yonetim()) { clearTimeout(U.mkT); var q = e.target.value; U.mkT = setTimeout(function(){ ynMkAraYap(q); }, 600); }
 });
 document.addEventListener('change', function(e){
   if (e.target && e.target.id === 'ynSira' && yonetim()) { U.ynSira = e.target.value; var l = $('#ynListe'); if (l) l.innerHTML = ynListeHtml(); }
@@ -5617,6 +5918,7 @@ document.addEventListener('submit', function(e){
   var f = e.target.getAttribute && e.target.getAttribute('data-form');
   if (!f || f.indexOf('yn') !== 0) return;
   e.preventDefault();
+  if (f === 'ynMkAra') { var mi = $('#ynMkAra'); clearTimeout(U.mkT); ynMkAraYap(mi ? mi.value : ''); return; }
   if (f === 'ynKredi') {
     var st = SH;
     st.tutar = $('#ynTutar').value; st.aciklama = String($('#ynAciklama').value || '').trim();
@@ -5660,19 +5962,19 @@ function ynDemoMock(){
   var t0 = Date.now(), gun = GUN, kopya = function(x){ return JSON.parse(JSON.stringify(x)); };
   var say = function(b, bc, h, hc, sonDk){ return { bugun:b, bugunCiro:bc, hafta:h, haftaCiro:hc, son:sonDk === null ? 0 : t0 - sonDk * 60000 }; };
   var ISL = [
-    { b:'d1', kod:'YP360-K7M2', ad:'Örnek Dönerci', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'ZINCIR', ad:'Zincir', ucret:1500 }, bakiye:2350, bot:'ornekdoner_bot',
+    { b:'d1', kod:'K7M2QX', ad:'Örnek Dönerci', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'ZINCIR', ad:'Zincir', ucret:1500 }, bakiye:2350, bot:'ornekdoner_bot',
       sahip:'Ahmet Usta', tel:'0532 000 00 01', yer:'Kadıköy, İstanbul', kayit:t0 - 120 * gun, deneme:0, ucretsiz:'', odeme:'', cekim:t0 + 12 * gun,
       zincir:{ id:'Z-1', ad:'Örnek Dönerci', merkez:true, sube:'Moda', kapali:false }, say:say(23, 5240, 151, 33870, 4) },
-    { b:'d2', kod:'YP360-K7M3', ad:'Örnek Dönerci Beşiktaş', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'SUBE', ad:'Zincir · şube', ucret:0 }, bakiye:0, bot:'ornekdoner_bot',
+    { b:'d2', kod:'K7M3RA', ad:'Örnek Dönerci Beşiktaş', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'SUBE', ad:'Zincir · şube', ucret:0 }, bakiye:0, bot:'ornekdoner_bot',
       sahip:'Hakan Bey', tel:'', yer:'Beşiktaş, İstanbul', kayit:t0 - 40 * gun, deneme:0, ucretsiz:'', odeme:'', cekim:0,
       zincir:{ id:'Z-1', ad:'Örnek Dönerci', merkez:false, sube:'Beşiktaş', kapali:false }, say:say(14, 3110, 92, 20450, 11) },
-    { b:'d3', kod:'YP360-P4R8', ad:'Lezzet Pide Salonu', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'STANDART', ad:'Standart', ucret:300 }, bakiye:120, bot:'lezzetpide_bot',
+    { b:'d3', kod:'P4R8NE', ad:'Lezzet Pide Salonu', tur:'restoran', durum:'Aktif', hizmet:true, paket:{ kod:'STANDART', ad:'Standart', ucret:300 }, bakiye:120, bot:'lezzetpide_bot',
       sahip:'Mehmet Yılmaz', tel:'0533 000 00 02', yer:'Çankaya, Ankara', kayit:t0 - 75 * gun, deneme:0, ucretsiz:'', odeme:'bekleme', cekim:t0 - 2 * gun, zincir:null, say:say(9, 1720, 58, 11260, 25) },
     { b:'d4', kod:'YP360-Z9T1', ad:'Köşe Kafe', tur:'kafe', durum:'Aktif', hizmet:true, paket:{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200 }, bakiye:0, bot:'',
       sahip:'Elif Kara', tel:'0534 000 00 03', yer:'Konak, İzmir', kayit:t0 - 6 * gun, deneme:t0 + 8 * gun, ucretsiz:'', odeme:'', cekim:t0 + 8 * gun, zincir:null, say:say(0, 0, 0, 0, null) },
-    { b:'d5', kod:'YP360-M2N6', ad:'Mahalle Bakkalı', tur:'market', durum:'Ödeme bekliyor', hizmet:false, paket:{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200 }, bakiye:50, bot:'mahallebakkal_bot',
+    { b:'d5', kod:'M2N6BT', ad:'Mahalle Bakkalı', tur:'market', durum:'Ödeme bekliyor', hizmet:false, paket:{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200 }, bakiye:50, bot:'mahallebakkal_bot',
       sahip:'Ali Demir', tel:'0535 000 00 04', yer:'Nilüfer, Bursa', kayit:t0 - 50 * gun, deneme:0, ucretsiz:'', odeme:'durdu', cekim:t0 - 9 * gun, zincir:null, say:say(0, 0, 0, 0, 9 * 1440) },
-    { b:'d6', kod:'YP360-T3Y5', ad:'Tatlı Köşe Pastanesi', tur:'pastane', durum:'Aktif', hizmet:true, paket:{ kod:'PROFESYONEL', ad:'Profesyonel', ucret:400 }, bakiye:0, bot:'tatlikose_bot',
+    { b:'d6', kod:'T3Y5HC', ad:'Tatlı Köşe Pastanesi', tur:'pastane', durum:'Aktif', hizmet:true, paket:{ kod:'PROFESYONEL', ad:'Profesyonel', ucret:400 }, bakiye:0, bot:'tatlikose_bot',
       sahip:'Zeynep Ak', tel:'0536 000 00 05', yer:'Muratpaşa, Antalya', kayit:t0 - 200 * gun, deneme:0, ucretsiz:'süresiz ücretsiz', odeme:'', cekim:0, zincir:null, say:say(5, 960, 31, 6120, 48) },
     { b:'d7', kod:'YP360-B8C4', ad:'Gece Burger', tur:'restoran', durum:'Donduruldu', hizmet:false, paket:{ kod:'STANDART', ad:'Standart', ucret:300 }, bakiye:0, bot:'geceburger_bot',
       sahip:'Can Öz', tel:'0537 000 00 06', yer:'Odunpazarı, Eskişehir', kayit:t0 - 160 * gun, deneme:0, ucretsiz:'', odeme:'', cekim:0, zincir:null, say:say(0, 0, 0, 0, 30 * 1440) }
@@ -5699,7 +6001,11 @@ function ynDemoMock(){
       { k:'KAMPANYA_DAVETI', ad:'Sipariş sonrası müşteriye fırsat bildirimlerine katılma daveti gösterilsin mi?', deger:'Evet', tip:'evet' }] },
     { ad:'İletişim', alanlar:[{ k:'INSTAGRAM_URL', ad:'Instagram hesabınızın linki', deger:'', tip:'url' }] },
     { ad:'Eğitim videoları', alanlar:[{ k:'VIDEO_UYELIK', ad:'Eğitim videosu: üyelik', deger:'', tip:'url' }] },
-    { ad:'Sunucu', alanlar:[{ k:'DB_SINIR_MB', ad:'Veritabanı sınırı (MB)', deger:'500', tip:'sayi' }, { k:'TRAFIK_SINIR_GB', ad:'Aylık veri trafiği sınırı (GB)', deger:'5', tip:'sayi' }] }
+    { ad:'Sunucu', alanlar:[{ k:'DB_SINIR_MB', ad:'Veritabanı sınırı (MB)', deger:'500', tip:'sayi' }, { k:'TRAFIK_SINIR_GB', ad:'Aylık veri trafiği sınırı (GB)', deger:'5', tip:'sayi' }] },
+    { ad:'Puanlar', alanlar:[{ k:'PUAN_EN_AZ', ad:'Puan ortalaması müşterilere kaç değerlendirmeden sonra gösterilsin', deger:'10', tip:'sayi' },
+      { k:'PUAN_AY', ad:'Puan ortalaması son kaç ayın değerlendirmelerinden hesaplansın (0 = hepsi)', deger:'6', tip:'sayi' }] },
+    { ad:'Rehber PDF dosyaları', alanlar:[{ k:'REHBER_MUSTERI', ad:'Müşteri bir işletmenin botunu ilk kez başlatınca Müşteri Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' },
+      { k:'REHBER_ISLETME', ad:'Üyelik açılınca İşletme Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' }] }
   ], sunucu:{ dbMB:41.6, dbSinir:500, dbYuzde:8, okGB:0.31, trSinir:5, trYuzde:6, tahminGB:1.4, tahminYuzde:28, olcumGun:7,
     yedek:{ zaman:t0 - 5 * 3600000, parca:3, mb:2.4 }, yedekHata:null, yedekCalisiyor:false, yedekGun:1, bellekMB:212, calismaSn:3 * 86400, onbellek:{ tablo:46, mb:7.2, isabet:96 } } };
   var ozet = function(){
@@ -5726,6 +6032,7 @@ function ynDemoMock(){
       durduruldu:x.odeme === 'durdu', ilkOdeme:x.odeme === 'ilk', kalanGun:x.odeme === 'bekleme' ? 5 : 0, hareketler:x.bakiye || x.odeme ? kopya(HAREKET) : [] };
     d.limit = { urun:x.tur === 'market' ? 42 : 28, urunSinir:pk.urun, ekip:2, ekipSinir:pk.ekip, haftaSinir:pk.hafta };
     d.kurulum = { konum:x.b !== 'd4', alim:true }; var pv = pzVeri(x.b); d.puan = pv.ozet.adet ? { ort:pv.ozet.ort, adet:pv.ozet.adet } : null;
+    d.ozelPaketler = []; d.paketTeklif = (function(){ var t = PT.filter(function(y){ return y.b === x.b && (y.durum === 'bekliyor' || y.durum === 'teklif'); })[0]; return t ? kopya(t) : null; })();
     d.ekranUrl = '?b=demo&demo=1&rol=sahip&yd=1'; d.donmus = x.durum === 'Donduruldu';
     if (x.zincir && x.zincir.merkez) {
       d.merkezUrl = '?b=demo&demo=1&rol=merkez&yd=1';
@@ -5735,6 +6042,34 @@ function ynDemoMock(){
     return d;
   };
   var bul = function(b){ return ISL.filter(function(x){ return x.b === b; })[0]; };
+  var BELGE = { surum:'1.5', tarih:'08.10.2026', toplam:6, onayli:4, bekleyenAdet:2, bekleyen:[{ b:'d5', ad:'Mahalle Bakkalı', sahip:true }, { b:'d7', ad:'Gece Burger', sahip:true }], duyuru:null,
+    degisiklik:['YourPOS 360 yöneticileri; destek, sahte sipariş ve kötüye kullanımın önlenmesi ve istatistik amacıyla tüm işletmelerin müşteri kayıtlarını görüntüleyebilir ve dışa aktarabilir (Veri İşleme Sözleşmesi Madde 1, 3.4; Hizmet Sözleşmesi Madde 12).',
+      'Her görüntüleme ve dışa aktarma kaydedilir; veriler satılmaz, reklam amacıyla kullanılmaz, hiçbir işletmeye başka bir işletmenin müşteri bilgisi gösterilmez.',
+      'Müşteri aydınlatma metnine bu işleme ve YourPOS 360\'a başvuru yolu eklendi.',
+      'Kurye, kasa, muhasebe ve çalışan özellikleri için çalışan ve kurye verileri işlenen veriler arasına eklendi; bu bilgileri yalnızca işletme sahibi görür.'] };
+  var MKK = { var:false, ben:false };
+  var MKE = [{ t:t0 - 26 * 3600000, id:'2002', ad:'Ayşe Destek', kullanici:'@aysedestek', islem:'Arama', adet:'1' }, { t:t0 - 27 * 3600000, id:'2002', ad:'Ayşe Destek', kullanici:'@aysedestek', islem:'Ekran açıldı', adet:'412' }];
+  var mkIsl = function(b, ad, a, ip, tt, ilk, son){ return { b:b, ad:ad, adet:a, iptal:ip, tutar:tt, ilk:t0 - ilk * gun, son:t0 - son * gun, kayit:t0 - ilk * gun }; };
+  var MK = [
+    { tg:'500100201', ad:'Ayşe Demir', kullanici:'aysedemir', tel:['05321234567'], adet:14, iptal:0, tutar:3120, ilk:t0 - 80 * gun, son:t0 - 0.2 * gun,
+      isletmeler:[mkIsl('d1', 'Örnek Dönerci', 9, 0, 1980, 80, 0.2), mkIsl('d3', 'Lezzet Pide Salonu', 5, 0, 1140, 40, 3)] },
+    { tg:'500100202', ad:'Mehmet Can', kullanici:'', tel:['05559876543'], adet:3, iptal:1, tutar:540, ilk:t0 - 20 * gun, son:t0 - 1 * gun, isletmeler:[mkIsl('d2', 'Örnek Dönerci Beşiktaş', 3, 1, 540, 20, 1)] },
+    { tg:'500100203', ad:'Zeynep Ak', kullanici:'zeynepak', tel:['05441112233', '02122223344'], adet:22, iptal:0, tutar:6480, ilk:t0 - 150 * gun, son:t0 - 2 * gun,
+      isletmeler:[mkIsl('d6', 'Tatlı Köşe Pastanesi', 12, 0, 3900, 150, 2), mkIsl('d1', 'Örnek Dönerci', 6, 0, 1460, 60, 9), mkIsl('d3', 'Lezzet Pide Salonu', 4, 0, 1120, 30, 12)] },
+    { tg:'500100204', ad:'Can Yıldız', kullanici:'canyildiz', tel:['05337778899'], adet:0, iptal:4, tutar:0, ilk:0, son:0,
+      isletmeler:[{ b:'d1', ad:'Örnek Dönerci', adet:0, iptal:3, tutar:0, ilk:0, son:0, kayit:t0 - 5 * gun }, { b:'d3', ad:'Lezzet Pide Salonu', adet:0, iptal:1, tutar:0, ilk:0, son:0, kayit:t0 - 4 * gun }] },
+    { tg:'500100205', ad:'Elif Şahin', kullanici:'', tel:['05301239876'], adet:6, iptal:0, tutar:1290, ilk:t0 - 45 * gun, son:t0 - 34 * gun, isletmeler:[mkIsl('d3', 'Lezzet Pide Salonu', 6, 0, 1290, 45, 34)] }
+  ];
+  var PT = [
+    { no:'P-1003', durum:'bekliyor', durumAd:'Bekliyor', tarih:t0 - 50 * 60000, kaynak:'Yeni üyelik', ad:'Mega Döner Salonu', b:'', yetkili:'Ali Yılmaz', tel:'0532 000 00 11', eposta:'ali@ornek.com',
+      yer:'Kadıköy, İstanbul', isKolu:{ k:'kebap', ad:'Kebap / Döner / Izgara', e:'🌯' }, telegram:'Ali Yılmaz (@aliyilmaz)', urun:1000, hafta:8000, ekip:40, not:'Hafta sonu çok yoğunuz', paket:null },
+    { no:'P-1002', durum:'teklif', durumAd:'Teklif verildi', tarih:t0 - 26 * 3600000, kaynak:'Üye', ad:'Lezzet Pide Salonu', b:'d3', yetkili:'Mehmet Yılmaz', tel:'0533 000 00 02', eposta:'mehmet@ornek.com',
+      yer:'Çankaya, Ankara', isKolu:{ k:'pide', ad:'Pide / Lahmacun', e:'🫓' }, telegram:'Mehmet', urun:400, hafta:9000, ekip:30, not:'', teklifVeren:'Ferhat', teklifTarih:t0 - 20 * 3600000,
+      paket:{ kod:'OZEL_1002', ad:'Lezzet Özel', ucret:750, urun:400, hafta:9000, ekip:30, asim:1, aciklama:'', sube:0, ozel:true } },
+    { no:'P-1001', durum:'kabul', durumAd:'Kabul edildi', tarih:t0 - 9 * gun, kaynak:'Yönetici', ad:'Örnek Dönerci', b:'d1', yetkili:'Ahmet Usta', tel:'', eposta:'', yer:'', isKolu:null, telegram:'',
+      urun:1000, hafta:0, ekip:30, not:'', kararTarih:t0 - 8 * gun, paket:{ kod:'OZEL_1001', ad:'Örnek Özel', ucret:1400, urun:1000, hafta:0, ekip:30, asim:0, aciklama:'', sube:0, ozel:true } }
+  ];
+  var ptNo = 1004;
   // örnek müşteri puanları (müşteri adı yok: yalnız sipariş no, zaman, yıldızlar)
   var PZ = {};
   var pzListe = function(b){
@@ -5751,12 +6086,15 @@ function ynDemoMock(){
   var pzVeri = function(b){
     var l = pzListe(b), g = l.filter(function(y){ return y.durum === 'Geçerli'; });
     var ort = g.length ? Math.round(g.reduce(function(s, y){ return s + y.isletme; }, 0) / g.length * 10) / 10 : 0;
-    return { b:b, ozet:{ ort:ort, adet:g.length, gizli:l.filter(function(y){ return y.durum === 'Gizli'; }).length, ekip:l.filter(function(y){ return y.durum === 'Yönetici'; }).length, toplam:l.length },
+    return { b:b, ozet:{ ort:ort, adet:g.length, gizli:l.filter(function(y){ return y.durum === 'Gizli'; }).length, ekip:l.filter(function(y){ return y.durum === 'Yönetici'; }).length, toplam:l.length,
+      gorunur:g.length >= 10, min:10, ay:6 },
       puanlar:kopya(l), fazla:0, nedenler:{ test:'Test siparişi', sahte:'Sahte ya da kötü niyetli', istek:'Müşterinin isteği', diger:'Diğer' } };
   };
   var islemler = {
     ynBaslat:function(d){
-      var r = { ok:true, rol:'Yonetim', ben:{ id:'1001', ad:'Ferhat' }, ozet:ozet(), isletmeler:kopya(ISL), basvurular:kopya(BV), anaBot:'yourpos360_bot', zaman:Date.now() };
+      var r = { ok:true, rol:'Yonetim', ben:{ id:'1001', ad:'Ferhat' }, ozet:ozet(), isletmeler:kopya(ISL), basvurular:kopya(BV), anaBot:'yourpos360_bot', zaman:Date.now(), paketTalepleri:kopya(PT) };
+      r.ozet.paketTalep = PT.filter(function(t){ return t.durum === 'bekliyor'; }).length;
+      if (!d || !d.hafif) { r.belge = kopya(BELGE); r.kodlar = { eski:ISL.filter(function(x){ return /^YP360-/.test(x.kod); }).length }; }
       if (!d.hafif) { r.paketler = kopya(PK); r.sistem = kopya(SIS); }
       return r;
     },
@@ -5769,6 +6107,7 @@ function ynDemoMock(){
       else if (d.islem === 'ucretsiz') { x.ucretsiz = d.deger === 'kapat' ? '' : d.deger === 'suresiz' ? 'süresiz ücretsiz' : gunYaz(gunEkle(gunKey(t0), Number(d.deger)), true) + ' tarihine kadar ücretsiz'; m = d.deger === 'kapat' ? 'Ücretsiz kullanım hakkı kaldırıldı.' : 'Ücretsiz kullanım hakkı tanımlandı.'; }
       else if (d.islem === 'dondur') { x.eski = x.durum; x.durum = 'Donduruldu'; x.hizmet = false; m = x.ad + ' donduruldu; sipariş almıyor.'; }
       else if (d.islem === 'ac') { x.durum = x.eski || 'Aktif'; x.hizmet = x.durum === 'Aktif'; m = x.ad + ' yeniden açıldı.'; }
+      else if (d.islem === 'oneri') { x.oneri = !!d.deger; m = x.ad + (x.oneri ? ' artık «YourPOS 360\'ın önerisi».' : ' öneri rozeti kaldırıldı.'); }
       return { ok:true, mesaj:m, isletme:detay(x) };
     },
     ynBasvuru:function(d){
@@ -5778,7 +6117,7 @@ function ynDemoMock(){
       var m;
       if (d.karar === 'ret') { v.durum = 'Reddedildi'; v.karar = 'Ret'; m = v.ad + ': reddedildi, başvurana bilgi verildi.'; }
       else {
-        v.durum = 'Onaylandı'; v.karar = d.karar === 'deneme' ? 'Denemeli' : 'Denemesiz'; v.b = 'd' + (ISL.length + 1); v.kod = 'YP360-N' + ISL.length + 'W' + ISL.length;
+        v.durum = 'Onaylandı'; v.karar = d.karar === 'deneme' ? 'Denemeli' : 'Denemesiz'; v.b = 'd' + (ISL.length + 1); v.kod = 'N' + ISL.length + 'W' + ISL.length + 'KD';
         ISL.push({ b:v.b, kod:v.kod, ad:v.ad, tur:'restoran', durum:d.karar === 'deneme' ? 'Aktif' : 'Ödeme bekliyor', hizmet:d.karar === 'deneme', paket:{ kod:'STANDART', ad:'Standart', ucret:300 }, bakiye:0, bot:'',
           sahip:v.yetkili, tel:v.tel, yer:v.yer.split(', ').slice(-2).join(', '), kayit:Date.now(), deneme:d.karar === 'deneme' ? Date.now() + 14 * gun : 0, ucretsiz:'', odeme:d.karar === 'deneme' ? '' : 'ilk', cekim:0, zincir:null, say:say(0, 0, 0, 0, null) });
         m = 'Üyelik açıldı: ' + v.ad + ' (' + v.kod + ').';
@@ -5804,6 +6143,74 @@ function ynDemoMock(){
       return { ok:true, mesaj:'Yönetici çıkarıldı.', sistem:kopya(SIS) };
     },
     ynResim:function(d){ return d.sil ? { ok:true, url:'' } : { ok:true, url:'data:' + d.mime + ';base64,' + d.veri }; },
+    ynMusteriler:function(d){
+      var q = String(d.ara || '').toLocaleLowerCase('tr'), qd = String(d.ara || '').replace(/\D/g, '');
+      var l = MK.filter(function(m){
+        if (!q) return true;
+        return m.ad.toLocaleLowerCase('tr').indexOf(q) >= 0 || (m.kullanici && ('@' + m.kullanici).indexOf(q.replace(/^@?/, '@')) >= 0) ||
+          (qd.length >= 3 && (m.tg === qd || m.tel.some(function(t){ return t.indexOf(qd) >= 0; }))) || m.isletmeler.some(function(e){ return e.ad.toLocaleLowerCase('tr').indexOf(q) >= 0; });
+      });
+      if (d.ac) MKE.unshift({ t:Date.now(), id:'1001', ad:'Ferhat', kullanici:'@ferhat', islem:'Ekran açıldı', adet:String(MK.length) });
+      else if (q) MKE.unshift({ t:Date.now(), id:'1001', ad:'Ferhat', kullanici:'@ferhat', islem:'Arama', adet:String(l.length) });
+      var s = Number(d.sayfa) || 0, ay = Date.now() - 30 * gun;
+      return { ok:true, toplam:MK.length, bulunan:l.length, ara:d.ara || '', sayfa:s, sayfaBoyu:50, musteriler:kopya(l.slice(s * 50, s * 50 + 50)),
+        ozet:{ musteri:MK.length, cokIsletmeli:MK.filter(function(m){ return m.isletmeler.length >= 2; }).length, siparis:MK.reduce(function(t, m){ return t + m.adet; }, 0),
+          son30:MK.filter(function(m){ return m.son >= ay; }).length, iptalCok:MK.filter(function(m){ return m.iptal >= 3 && m.iptal >= m.adet; }).length },
+        kapsam:{ icinde:5, disinda:['Gece Burger', 'Mahalle Bakkalı'], disindaAdet:2, yururluk:BELGE.duyuru ? BELGE.duyuru.yururluk : '' }, kilit:kopya(MKK), yoneticiSayisi:2 };
+    },
+    ynMusteriExcel:function(d){
+      MKE.unshift({ t:Date.now(), id:'1001', ad:'Ferhat', kullanici:'@ferhat', islem:'Excel dışa aktarıldı', adet:String(MK.length) });
+      return { ok:true, mesaj:(d.ara ? 'Arama sonuçları' : MK.length + ' müşteri') + ' Excel dosyası olarak Telegram sohbetinize gönderildi (önizleme: dosya gönderilmez).' };
+    },
+    ynMusteriKilit:function(d){
+      MKK = { var:!!d.kilit, ben:!!d.kilit };
+      MKE.unshift({ t:Date.now(), id:'1001', ad:'Ferhat', kullanici:'@ferhat', islem:d.kilit ? 'Ekran yalnızca bu yöneticiye kilitlendi' : 'Kilit kaldırıldı', adet:'' });
+      return { ok:true, mesaj:d.kilit ? 'Müşteri kayıtları artık yalnızca size açık. Diğer yöneticilere haber verildi.' : 'Kilit kaldırıldı; tüm yöneticiler bu ekranı görebilir.', kilit:kopya(MKK) };
+    },
+    ynMusteriErisim:function(){ return { ok:true, erisim:kopya(MKE.slice(0, 40)) }; },
+    ynBelgeDuyur:function(d){
+      if (!BELGE.duyuru) BELGE.duyuru = { t:Date.now(), adet:BELGE.bekleyenAdet, kim:'Ferhat', yururluk:gunYaz(gunKey(Date.now() + 30 * gun), true), hatirlatma:0 };
+      else BELGE.duyuru.hatirlatma = Date.now();
+      return { ok:true, mesaj:(d.tekrar ? 'Hatırlatma ' : 'Duyuru ') + BELGE.bekleyenAdet + ' işletme sahibine gönderildi. Yürürlük: ' + BELGE.duyuru.yururluk + '.', belge:kopya(BELGE) };
+    },
+    ynKodDegistir:function(d){
+      var x = bul(d.sb); if (!x) return { ok:false, kod:'YOK', hata:'İşletme bulunamadı.' };
+      var k = d.kod || ('ABCDEFGHJKMNPQRSTUVWXYZ'.charAt(Math.floor(Math.random() * 23)) + Math.floor(2 + Math.random() * 8) + 'Q' + Math.floor(2 + Math.random() * 8) + 'MX');
+      if (ISL.some(function(y){ return y !== x && y.kod === k; })) return { ok:false, kod:'KOD', hata:'Bu kod başka bir işletmede kullanılıyor ya da daha önce kullanıldı. Başka bir kod yazın.' };
+      x.eskiKodlar = (x.eskiKodlar || []).concat([x.kod]); x.kod = k;
+      var dt = detay(x); dt.eskiKodlar = x.eskiKodlar;
+      return { ok:true, mesaj:x.ad + ' kodu ' + k + ' oldu.' + (d.bildir !== false ? ' İşletmeye Telegram\'dan bildirildi.' : '') + ' Eski kodla gelen ödemeler de eşleşir.', kod:k, isletme:dt,
+        kodlar:{ eski:ISL.filter(function(y){ return /^YP360-/.test(y.kod); }).length } };
+    },
+    ynKodlariCevir:function(){
+      var n = 0;
+      ISL.forEach(function(x){ if (/^YP360-/.test(x.kod)) { x.eskiKodlar = (x.eskiKodlar || []).concat([x.kod]); x.kod = 'Z' + (n + 3) + 'T' + (n + 4) + 'RK'; n++; } });
+      return { ok:true, mesaj:n + ' işletmenin kodu yeni biçime çevrildi; ' + n + ' işletme sahibine bildirildi.', adet:n, kodlar:{ eski:0 } };
+    },
+    ynTalepFiyat:function(d){
+      var t = PT.filter(function(y){ return y.no === d.no; })[0], f = d.paket || {};
+      if (!t) return { ok:false, kod:'YOK', hata:'Talep bulunamadı.' };
+      var g = !!t.paket;
+      t.paket = { kod:'OZEL_' + t.no.slice(2), ad:f.ad, ucret:Number(f.ucret), urun:Number(f.urun), hafta:Number(f.hafta), ekip:Number(f.ekip), asim:Number(f.asim), aciklama:f.aciklama || '', sube:0, ozel:true };
+      t.durum = 'teklif'; t.durumAd = 'Teklif verildi'; t.teklifVeren = 'Ferhat'; t.teklifTarih = Date.now();
+      return { ok:true, mesaj:(g ? 'Teklif güncellendi' : 'Teklif gönderildi') + ': ' + f.ad + ' · ' + tl(Number(f.ucret)) + '/ay. İşletmeye Telegram\'dan haber verildi.', paketTalepleri:kopya(PT) };
+    },
+    ynTalepRet:function(d){
+      var t = PT.filter(function(y){ return y.no === d.no; })[0];
+      if (!t) return { ok:false, kod:'YOK', hata:'Talep bulunamadı.' };
+      t.durum = 'ret'; t.durumAd = 'Reddedildi'; t.karar = d.neden || ''; t.kararTarih = Date.now();
+      return { ok:true, mesaj:t.no + ' reddedildi; işletmeye bilgi verildi.', paketTalepleri:kopya(PT) };
+    },
+    ynOzelTeklif:function(d){
+      var x = bul(d.sb), f = d.paket || {};
+      if (!x) return { ok:false, kod:'YOK', hata:'İşletme bulunamadı.' };
+      var no = 'P-' + (ptNo++);
+      PT.unshift({ no:no, durum:'teklif', durumAd:'Teklif verildi', tarih:Date.now(), kaynak:'Yönetici', ad:x.ad, b:x.b, yetkili:x.sahip, tel:x.tel, eposta:'', yer:x.yer, isKolu:null, telegram:'',
+        urun:Number(f.urun), hafta:Number(f.hafta), ekip:Number(f.ekip), not:'', teklifVeren:'Ferhat', teklifTarih:Date.now(),
+        paket:{ kod:'OZEL_' + no.slice(2), ad:f.ad, ucret:Number(f.ucret), urun:Number(f.urun), hafta:Number(f.hafta), ekip:Number(f.ekip), asim:Number(f.asim), aciklama:f.aciklama || '', sube:0, ozel:true } });
+      var dt = detay(x); dt.paketTeklif = kopya(PT[0]);
+      return { ok:true, mesaj:'Özel paket teklifi gönderildi: ' + f.ad + ' · ' + tl(Number(f.ucret)) + '/ay. İşletme onaylayınca paketi bu olur.', isletme:dt, paketTalepleri:kopya(PT) };
+    },
     ynPuanlar:function(d){ var x = bul(d.sb); return x ? { ok:true, puan:pzVeri(d.sb) } : { ok:false, kod:'YOK', hata:'İşletme bulunamadı.' }; },
     ynPuanDurum:function(d){
       var x = bul(d.sb), l = pzListe(d.sb), k = l.filter(function(y){ return y.no === d.no && y.t === d.t; })[0];
@@ -5911,6 +6318,8 @@ function ynPuanPencere(s, x){
   var o = s.pz.ozet, f = s.pzF || '';
   h2 += '<div class="kpis">' + kpi('Ortalama', o.adet ? '★ ' + NF1.format(o.ort) : '—', adet(o.adet) + ' geçerli puan') + kpi('Gizli', adet(o.gizli), o.gizli ? 'ortalamaya katılmıyor' : '') +
     (o.ekip ? kpi('İşletme ekibi', adet(o.ekip), 'ortalamaya katılmaz') : '') + '</div>';
+  if (!o.gorunur && o.min) h2 += '<div class="note-box">👁️ Müşterilere henüz görünmüyor: ortalama, ' + (o.ay ? 'son ' + o.ay + ' ayda ' : '') + 'en az <b>' + o.min + '</b> geçerli puan olunca gösterilir (şu an ' + adet(o.adet) + '). Ayar: Sistem → Puanlar.</div>';
+  else if (o.ay) h2 += '<p class="tip-txt">Müşterilere son ' + o.ay + ' ayın puanları gösterilir (en az ' + o.min + ' puan).</p>';
   h2 += '<p class="tip-txt">Yıldızlar değiştirilemez: müşterinin verdiği puan olduğu gibi kalır. Uygunsuz bir puanı nedeniyle <b>gizleyebilir</b>, sonra yeniden yayınlayabilirsiniz. Her işlem adınızla kaydedilir. Müşteri adları bu ekranda görünmez.</p>';
   var l = s.pz.puanlar || [];
   var say = { '':l.length, dusuk:l.filter(function(y){ return y.durum === 'Geçerli' && y.isletme <= 2; }).length, gizli:l.filter(function(y){ return y.durum === 'Gizli'; }).length };
@@ -5933,6 +6342,259 @@ function ynPuanPencere(s, x){
   }).join('') + '</ul>';
   if (s.pz.fazla) h2 += '<p class="tip-txt">En yeni ' + adet(l.length) + ' puan gösteriliyor (' + adet(s.pz.fazla) + ' eski puan daha var).</p>';
   return h2 + '</div>';
+}
+
+/* --- kişiye özel paket (1.16.4): talepler (fiyat ver / reddet), işletmeye özel paket teklifi --- */
+var YN_TALEP = String(params.get('talep') || '');
+var YN_TL_DURUM = { bekliyor:['Fiyat bekliyor', 'warn'], teklif:['Teklif verildi · onay bekleniyor', 'ileri'], kabul:['Kabul edildi', 'ok'], ret:['Reddedildi', 'off'], istemedi:['İşletme istemedi', 'off'] };
+function ynTalep(no){ return (D.paketTalepleri || []).filter(function(t){ return t.no === no; })[0] || null; }
+function ynTlIhtiyac(t){ return adet(t.urun) + ' ürün · haftada ' + adet(t.hafta) + ' sipariş · ' + adet(t.ekip) + ' ekip üyesi'; }
+function ynTlPaketYazi(p){ return esc(p.ad) + ' · ' + tl(p.ucret) + '/ay · ' + adet(p.urun) + ' ürün · ' + (p.hafta ? 'haftada ' + adet(p.hafta) + ' sipariş' : 'sınırsız sipariş') + ' · ' + (p.ekip ? adet(p.ekip) + ' ekip' : 'sınırsız ekip'); }
+function ynTalepKart(t){
+  var dr = YN_TL_DURUM[t.durum] || YN_TL_DURUM.bekliyor, yon = t.kaynak === 'Yönetici', b = U.busy.ynTl;
+  var h = '<section class="card pad yn-bv"><div class="yn-bas"><div><div class="blk-h">✨ ' + (yon ? 'Yönetici teklifi' : 'Özel paket talebi · ' + esc(t.kaynak || 'Yeni üyelik')) + '</div>' +
+    '<h2 class="yn-bv-ad">' + esc(t.ad || t.telegram || '—') + '</h2><p class="tip-txt">' + esc(t.no) + ' · ' + tarihYazi(t.tarih) + ' · ' + onceYazi(t.tarih) + '</p></div>' +
+    '<p class="mz-durum ' + dr[1] + '"><span class="dot" aria-hidden="true"></span>' + dr[0] + '</p></div>';
+  h += '<div class="note-box">' + (yon ? '<b>Teklif edilen:</b> ' : '<b>İstenen:</b> ') + ynTlIhtiyac(t) + (t.not && !yon ? '<br>📝 ' + esc(t.not) : '') + '</div>';
+  h += '<div class="yn-bv-bil">' + ynKv('Yetkili', esc(t.yetkili || '—')) + ynKv('Telefon', t.tel ? '<a href="' + telHref(t.tel) + '">' + esc(t.tel) + '</a>' : '—') +
+    ynKv('E-posta', esc(t.eposta || '—')) + (t.yer ? ynKv('Yer', esc(t.yer)) : '') + (t.isKolu ? ynKv('İş kolu', esc(t.isKolu.e + ' ' + t.isKolu.ad)) : '') + ynKv('Telegram', esc(t.telegram || '—')) + '</div>';
+  if (t.paket) h += '<div class="note-box ileri">📦 ' + ynTlPaketYazi(t.paket) + (t.teklifVeren ? '<br><span class="muted">' + esc(t.teklifVeren) + ' · ' + tarihYazi(t.teklifTarih) + '</span>' : '') + '</div>';
+  if (t.durum === 'ret' && t.karar) h += '<p class="tip-txt">Ret nedeni: ' + esc(t.karar) + '</p>';
+  if (t.durum === 'bekliyor') h += '<div class="row2"><button class="btn pri" data-act="ynTlFiyat" data-k="' + esc(t.no) + '"' + (b ? ' disabled' : '') + '>💰 Fiyat ver</button>' +
+    '<button class="btn dng-line" data-act="ynTlRet" data-k="' + esc(t.no) + '"' + (b ? ' disabled' : '') + '>' + ic('x', 'sm') + 'Reddet</button></div>';
+  else if (t.durum === 'teklif') h += '<div class="row2"><button class="btn line" data-act="ynTlFiyat" data-k="' + esc(t.no) + '"' + (b ? ' disabled' : '') + '>' + ic('kalem', 'sm') + 'Teklifi düzenle</button>' +
+    '<button class="btn dng-line" data-act="ynTlRet" data-k="' + esc(t.no) + '"' + (b ? ' disabled' : '') + '>Teklifi geri çek</button></div>';
+  if (t.b && t.durum !== 'bekliyor') h += '<button class="btn ghost" data-act="ynAc" data-b="' + esc(t.b) + '">İşletmeyi aç ' + ic('sag', 'sm') + '</button>';
+  return h + '</section>';
+}
+function ynTalepBolumu(){
+  var l = D.paketTalepleri || [], acik = l.filter(function(t){ return t.durum === 'bekliyor' || t.durum === 'teklif'; }), eski = l.filter(function(t){ return t.durum !== 'bekliyor' && t.durum !== 'teklif'; });
+  if (!l.length) return '';
+  var h = acik.length ? '<h2 class="donem">✨ Özel paket talepleri · ' + acik.length + ' açık</h2><div class="yn-bv-l">' + acik.map(ynTalepKart).join('') + '</div>' : '';
+  if (eski.length) h += '<details class="card pad yn-tl-eski"><summary class="frm-h">Kapanan paket talepleri (' + eski.length + ')</summary><ul class="yn-rows">' + eski.slice(0, 30).map(function(t){
+    var dr = YN_TL_DURUM[t.durum] || YN_TL_DURUM.bekliyor;
+    return '<li>' + (t.b ? '<button class="yn-row" data-act="ynAc" data-b="' + esc(t.b) + '">' : '<div class="yn-row">') + '<span class="o-main">' + esc(t.ad || t.telegram) + ' <span class="muted">· ' + esc(t.no) + '</span>' +
+      '<span class="mz-durum ' + dr[1] + '"><span class="dot" aria-hidden="true"></span>' + dr[0] + (t.paket ? ' · ' + esc(t.paket.ad) + ' ' + tl(t.paket.ucret) + '/ay' : '') + '</span>' +
+      '<span class="o-sub">' + ynTlIhtiyac(t) + (t.kararTarih ? ' · ' + tarihYazi(t.kararTarih) : '') + '</span></span>' + (t.b ? ic('sag', 'sm') + '</button>' : '</div>') + '</li>';
+  }).join('') + '</ul></details>';
+  return h;
+}
+// Fiyat / özel paket formu (talep fiyatı ve işletmeye teklif aynı form)
+function ynOzelForm(f, ipucu){
+  var al = function(id, ad, v, not, sayi){
+    return '<div class="field"><label for="' + id + '">' + ad + (not ? ' <span class="muted">(' + not + ')</span>' : '') + '</label><input class="inp' + (sayi ? ' num' : '') + '" id="' + id + '"' +
+      (sayi ? ' inputmode="decimal"' : '') + ' autocomplete="off" value="' + esc(v === undefined || v === null ? '' : v) + '"></div>';
+  };
+  var gen = (D.paketler || []).filter(function(p){ return !p.ozel && !p.sube && p.aktif; });
+  return (ipucu ? '<div class="note-box">' + ipucu + '</div>' : '') +
+    '<form class="frm" data-form="ynOz" id="ynOzForm">' + al('ynTfAd', 'Paketin adı', f.ad, 'işletme bu adı görür') + al('ynTfUcret', 'Aylık ücret (TL)', f.ucret, '', 1) +
+    al('ynTfUrun', 'Ürün sınırı', f.urun, 'en fazla 1.000', 1) + al('ynTfHafta', 'Haftalık sipariş', f.hafta, '0 = sınırsız', 1) +
+    al('ynTfEkip', 'Ekip üyesi', f.ekip, '0 = sınırsız', 1) + al('ynTfAsim', 'Aşım ücreti (TL)', f.asim, 'sınırı aşan sipariş başı', 1) +
+    al('ynTfAciklama', 'Açıklama', f.aciklama, 'isteğe bağlı') + '</form>' +
+    (gen.length ? '<details class="ek"><summary class="tip-txt">Satıştaki paketler (karşılaştırma için)</summary><ul class="yn-pk-oz" style="flex-direction:column">' + gen.map(function(p){ return '<li>' + ynTlPaketYazi(p) + '</li>'; }).join('') + '</ul></details>' : '');
+}
+function ynOzelFormOku(){
+  var v = function(id){ var e = $('#' + id); return e ? e.value.trim() : ''; };
+  var f = { ad:v('ynTfAd'), ucret:v('ynTfUcret').replace(',', '.'), urun:v('ynTfUrun').replace(/\./g, ''), hafta:v('ynTfHafta').replace(/\./g, ''), ekip:v('ynTfEkip').replace(/\./g, ''),
+    asim:v('ynTfAsim').replace(',', '.'), aciklama:v('ynTfAciklama') };
+  if (f.ad.length < 2) return { hata:'Paketin adını yazın.' };
+  if (!(Number(f.ucret) > 0)) return { hata:'Aylık ücreti yazın.' };
+  if (!(Number(f.urun) >= 1 && Number(f.urun) <= 1000)) return { hata:'Ürün sınırı 1-1.000 arasında olmalı.' };
+  if (f.hafta === '' || isNaN(Number(f.hafta))) return { hata:'Haftalık sipariş sayısını yazın (0 = sınırsız).' };
+  if (f.ekip === '' || isNaN(Number(f.ekip))) return { hata:'Ekip sınırını yazın (0 = sınırsız).' };
+  if (f.asim === '') f.asim = '0';
+  return f;
+}
+function ynTalepSonuc(r){
+  if (r.paketTalepleri) D.paketTalepleri = r.paketTalepleri;
+  if (r.paketler) D.paketler = r.paketler;
+  if (D.ozet) D.ozet.paketTalep = (D.paketTalepleri || []).filter(function(t){ return t.durum === 'bekliyor'; }).length;
+  sheetKapat(); toast(r.mesaj || 'Kaydedildi'); renderTabs(); renderMain();
+}
+SHEET.ynTalep = function(s){
+  var t = ynTalep(s.no), b = U.busy.ynTl, hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
+  if (!t) return shBas('Paket talebi') + '<div class="sh-body">' + bosDurum('kutu', 'Talep bulunamadı', 'Liste yenilenmiş olabilir.') + '</div>';
+  var ust = '<p><b>' + esc(t.ad || t.telegram) + '</b> <span class="muted">· ' + esc(t.no) + '</span></p><p class="tip-txt">' + (t.kaynak === 'Yönetici' ? 'Teklif edilen: ' : 'İstenen: ') + ynTlIhtiyac(t) + (t.not && t.kaynak !== 'Yönetici' ? ' · 📝 ' + esc(t.not) : '') + '</p>';
+  if (s.mod === 'ret') {
+    return shBas(t.durum === 'teklif' ? 'Teklifi geri çek' : 'Talebi reddet') + '<div class="sh-body">' + ust +
+      '<div class="field"><label for="ynTlNeden">İşletmeye yazılacak not <span class="muted">(isteğe bağlı)</span></label><textarea class="inp" id="ynTlNeden" rows="3" maxlength="200" placeholder="ör. Bu hacimde önce bir görüşme yapalım.">' + esc(s.neden || '') + '</textarea></div>' +
+      '<p class="tip-txt">İşletmeye «şu an size özel paket sunamıyoruz» mesajı gider; mevcut paketlerden birini seçebilir.</p>' + hata + '</div>' +
+      '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynTlMod" data-k="fiyat">Vazgeç</button><button class="btn dng" data-act="ynTlRetGonder"' + (b ? ' disabled' : '') + '>' + bekle('ynTl') + 'Reddet ve bildir</button></div></div>';
+  }
+  var p = t.paket, f = s.f || { ad:p ? p.ad : (t.ad ? t.ad + ' özel' : 'Size özel'), ucret:p ? p.ucret : '', urun:p ? p.urun : Math.min(1000, t.urun), hafta:p ? p.hafta : t.hafta,
+    ekip:p ? p.ekip : t.ekip, asim:p ? p.asim : 1, aciklama:p ? p.aciklama : '' };
+  return shBas(p ? 'Teklifi düzenle' : 'Fiyat ver') + '<div class="sh-body">' + ust + ynOzelForm(f, p ? 'İşletmeye güncellenmiş teklif gider; onaylayınca paketi bu olur.' : 'Sınırları gerekirse değiştirin. Teklif işletmeye Telegram\'dan gider; onaylarsa paketi bu olur.') + hata + '</div>' +
+    '<div class="sh-foot"><button class="btn pri block" data-act="ynTlGonder"' + (b ? ' disabled' : '') + '>' + bekle('ynTl') + (p ? 'Teklifi güncelle' : 'Teklifi gönder') + '</button>' +
+    (t.durum === 'bekliyor' ? '<button class="btn dng-line block" data-act="ynTlMod" data-k="ret">Reddet</button>' : '') + '</div>';
+};
+function ynOzelPencere(s, x){
+  var d = s.d || {}, b = U.busy.ynTl, hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
+  if (d.paketTeklif) {
+    return ynGeriBas(s, 'Özel paket teklif et') + '<div class="sh-body"><p><span class="muted">' + esc(x.ad) + '</span></p><div class="note-box ileri">Bu işletmenin açık bir ' +
+      (d.paketTeklif.durum === 'teklif' ? 'teklifi' : 'paket talebi') + ' var (' + esc(d.paketTeklif.no) + '). Yeni teklif yerine onu düzenleyin.</div></div>' +
+      '<div class="sh-foot"><button class="btn pri block" data-act="ynTlAc" data-k="' + esc(d.paketTeklif.no) + '">Talebi aç</button></div>';
+  }
+  var pk = x.paket || {}, lm = d.limit || {};
+  var f = s.f || { ad:(x.ad || '') + ' özel', ucret:'', urun:lm.urunSinir || 150, hafta:lm.haftaSinir || 1500, ekip:lm.ekipSinir || 8, asim:1, aciklama:'' };
+  return ynGeriBas(s, 'Özel paket teklif et') + '<div class="sh-body"><p><span class="muted">' + esc(x.ad) + ' · şu an ' + esc(pk.ad || '') + '</span></p>' +
+    ynOzelForm(f, 'Bu işletmeye özel bir paket hazırlayın. Teklif işletmeye Telegram\'dan gider; onaylarsa paketi bu olur. Paket başkasına görünmez.') + hata + '</div>' +
+    '<div class="sh-foot"><button class="btn pri block" data-act="ynOzGonder"' + (b ? ' disabled' : '') + '>' + bekle('ynTl') + 'Teklifi gönder</button></div>';
+}
+
+/* --- Müşteriler (1.16.4): bütün işletmelerin müşteri kayıtları · yalnız yöneticiler · her açılış ve Excel kayda geçer --- */
+U.mk = { veri:null, yuk:false, hata:'', kod:'', ara:'', sayfa:0, acik:{} };
+function ynMkYukle(ac, taze){
+  if (U.mk.yuk) return;
+  U.mk.yuk = true; U.mk.hata = '';
+  renderMain();
+  call('ynMusteriler', { ara:U.mk.ara, sayfa:U.mk.sayfa, ac:!!ac, taze:!!taze }).then(function(r){
+    U.mk.yuk = false;
+    if (!r || !r.ok) { U.mk.hata = (r && r.hata) || 'Müşteri kayıtları alınamadı.'; U.mk.kod = (r && r.kod) || ''; if (r && (r.kod === 'GIRIS' || r.kod === 'YETKI')) return cikisEkrani(r); }
+    else { U.mk.veri = r; U.mk.kod = ''; }
+    if (U.tab === 'ynMus') renderMain();
+  });
+}
+function ynMkAraYap(q){
+  q = String(q || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (q === (U.mk.ara || '') && U.mk.veri) return;
+  U.mk.ara = q; U.mk.sayfa = 0; U.mk.acik = {};
+  ynMkYukle(false);
+}
+function ynMkTarih(ms){ return ms ? gunYaz(gunKey(ms), true) : '—'; }
+function ynMkKart(m){
+  var acik = !!U.mk.acik[m.tg], iptalUyari = m.iptal >= 3 && m.iptal >= m.adet;
+  var tel = (m.tel || []).map(function(t){ var g = t.replace(/^0(\d{3})(\d{3})(\d{2})(\d{2})$/, '0$1 $2 $3 $4'); return '<a href="' + telHref(t) + '">' + esc(g) + '</a>'; }).join(' · ');
+  var h = '<section class="card yn-mk"><button class="yn-mk-bas" data-act="ynMkAc" data-k="' + esc(m.tg) + '" aria-expanded="' + acik + '">' +
+    '<span class="yn-k-ad">' + esc(m.ad) + '</span><span class="pill">' + m.isletmeler.length + ' işletme</span></button>' +
+    '<div class="yn-mk-alt">' + (m.kullanici ? '<span>@' + esc(m.kullanici) + '</span>' : '') + '<span>ID ' + esc(m.tg) + '</span>' + (tel ? '<span>' + tel + '</span>' : '') + '</div>' +
+    '<div class="yn-k-say"><span><b>' + adet(m.adet) + '</b> sipariş</span><span><b>' + tl(m.tutar) + '</b></span>' +
+    (m.iptal ? '<span' + (iptalUyari ? ' class="yn-uyari"' : '') + '>' + (iptalUyari ? '⚠️ ' : '') + '<b>' + adet(m.iptal) + '</b> iptal</span>' : '') +
+    '<span>ilk ' + ynMkTarih(m.ilk) + '</span><span>son ' + ynMkTarih(m.son) + '</span></div>';
+  if (acik) {
+    h += '<ul class="yn-mk-isl">' + m.isletmeler.map(function(e){
+      return '<li><span class="o-main"><b>' + esc(e.ad) + '</b><span class="o-sub">' + (e.adet ? ynMkTarih(e.ilk) + ' – ' + ynMkTarih(e.son) : 'sipariş yok · kayıt ' + ynMkTarih(e.kayit)) + '</span></span>' +
+        '<span class="yn-mk-n"><b class="num">' + adet(e.adet) + '</b> sipariş' + (e.iptal ? ' · ' + adet(e.iptal) + ' iptal' : '') + '<br><span class="muted num">' + tl(e.tutar) + '</span></span></li>';
+    }).join('') + '</ul>';
+  }
+  return h + '</section>';
+}
+function ynMusEkrani(){
+  var mk = U.mk, v = mk.veri;
+  if (!v && !mk.yuk && !mk.hata) setTimeout(function(){ ynMkYukle(true); }, 0);
+  var h = '<div class="scr">';
+  if (mk.kod === 'MK_KILIT') {
+    return h + bosDurum('kilit', 'Bu ekran başka bir yöneticiye kilitli', 'Müşteri kayıtlarını şu an yalnızca kilidi açan yönetici görebilir.') + '</div>';
+  }
+  h += '<div class="note-box ileri yn-mk-not">🔐 Yalnızca YourPOS 360 yöneticileri görür. Her açılış ve her Excel kaydedilir, diğer yöneticilere Telegram\'dan bildirilir. ' +
+    'Yalnızca destek, sahte sipariş önleme ve istatistik için kullanın.</div>';
+  h += '<form class="yn-ara" data-form="ynMkAra" onsubmit="return false"><label class="sr" for="ynMkAra">Müşteri ara</label><input class="inp" id="ynMkAra" type="search" autocomplete="off" ' +
+    'placeholder="Ara: ad, telefon, @kullanıcı, Telegram ID, işletme" value="' + esc(mk.ara || '') + '"><button class="btn line" type="button" data-act="ynMkAra">' + ic('ara', 'sm') + 'Ara</button></form>';
+  if (!v) {
+    if (mk.hata) return h + '<div class="err-txt" role="alert">' + esc(mk.hata) + '</div><button class="btn line" data-act="ynMkYenile">' + ic('yenile', 'sm') + 'Tekrar dene</button></div>';
+    return h + '<div class="sk" style="height:90px"></div><div class="sk" style="height:140px"></div><div class="sk" style="height:140px"></div></div>';
+  }
+  var o = v.ozet || {}, kp = v.kapsam || {};
+  if (kp.disindaAdet) {
+    h += '<div class="note-box">⏳ ' + adet(kp.disindaAdet) + ' işletme yeni sözleşmeyi (1.5) henüz onaylamadı; müşterileri ' +
+      (kp.yururluk ? '<b>' + esc(kp.yururluk) + '</b> tarihinde ya da onayladıklarında' : 'onayladıklarında ya da duyurudan 30 gün sonra') + ' listeye girer.' +
+      (kp.yururluk ? '' : ' <button class="btn line sm" data-act="sekme" data-k="ynSis">Sistem → Sözleşmeler</button>') + '</div>';
+  }
+  if (!mk.ara) {
+    h += '<div class="kpis">' + kpi('Müşteri', adet(o.musteri), adet(kp.icinde) + ' işletmeden') + kpi('Birden çok işletmede', adet(o.cokIsletmeli), 'en az 2 işletmeden sipariş') +
+      kpi('Son 30 gün', adet(o.son30), 'sipariş veren müşteri') + kpi('Sipariş', adet(o.siparis), o.iptalCok ? '⚠️ ' + o.iptalCok + ' müşteride iptal çok' : 'iptaller hariç') + '</div>';
+  }
+  var kb = U.busy.ynMkX, kl = v.kilit || {};
+  h += '<div class="yn-mk-arac"><span class="muted">' + (mk.ara ? '«' + esc(mk.ara) + '» · ' + adet(v.bulunan) + ' sonuç <button class="btn ghost sm" data-act="ynMkTemizle">Temizle</button>' : adet(v.toplam) + ' müşteri') +
+    (mk.yuk ? ' <span class="spin" aria-hidden="true"></span>' : '') + '</span>' +
+    '<button class="btn line sm" data-act="ynMkExcel"' + (kb || !v.bulunan ? ' disabled' : '') + '>' + (kb ? bekle('ynMkX') : ic('indir', 'sm')) + (mk.ara ? 'Sonuçları Excel\'e aktar' : 'Excel\'e aktar') + '</button>' +
+    (kl.ben ? '<button class="btn line sm" data-act="ynMkKilit" data-k="0">🔓 Kilidi kaldır</button>'
+      : v.yoneticiSayisi > 1 ? '<button class="btn line sm" data-act="ynMkKilit" data-k="1">🔒 Yalnızca bana aç</button>' : '') +
+    '<button class="btn ghost sm" data-act="ynMkErisim">Erişim kaydı</button></div>';
+  if (kl.ben) h += '<p class="tip-txt">🔒 Bu ekran yalnızca size açık; diğer yöneticiler göremez.</p>';
+  if (!v.musteriler.length) {
+    h += bosDurum('ekip', mk.ara ? 'Aramaya uyan müşteri yok' : 'Henüz müşteri kaydı yok', mk.ara ? 'Başka bir ad, telefon ya da işletme adıyla arayın.' : 'Kapsamdaki işletmelerden sipariş geldikçe müşteriler burada görünür.');
+  } else {
+    h += '<div class="yn-liste">' + v.musteriler.map(ynMkKart).join('') + '</div>';
+    var bas = v.sayfa * v.sayfaBoyu, son = Math.min(v.bulunan, bas + v.musteriler.length);
+    if (v.bulunan > v.sayfaBoyu) {
+      h += '<div class="yn-mk-sayfa"><button class="btn line sm" data-act="ynMkSayfa" data-k="' + (v.sayfa - 1) + '"' + (v.sayfa ? '' : ' disabled') + '>' + ic('geri', 'sm') + 'Önceki</button>' +
+        '<span class="muted num">' + adet(bas + 1) + '–' + adet(son) + ' / ' + adet(v.bulunan) + '</span>' +
+        '<button class="btn line sm" data-act="ynMkSayfa" data-k="' + (v.sayfa + 1) + '"' + (son < v.bulunan ? '' : ' disabled') + '>Sonraki' + ic('sag', 'sm') + '</button></div>';
+    }
+  }
+  return h + '<p class="tip-txt">İşletmeler bu ekranı göremez; kendi müşterilerini raporlarında yalnızca yıldızlı (ör. A** Y****) istatistik olarak görür.</p></div>';
+}
+SHEET.ynMkKilit = function(s){
+  var b = U.busy.ynMkK;
+  return shBas(s.kilit ? '🔒 Yalnızca bana aç' : '🔓 Kilidi kaldır') + '<div class="sh-body"><p>' +
+    (s.kilit ? 'Müşteri kayıtları ekranını <b>yalnızca siz</b> görebilirsiniz. Diğer yöneticiler bu sekmeyi açtığında «kilitli» yazar ve Excel alamaz.' :
+      'Kilit kalkınca <b>bütün yöneticiler</b> müşteri kayıtlarını yeniden görebilir.') + '</p>' +
+    '<p class="tip-txt">Bu işlem erişim kaydına yazılır ve diğer yöneticilere Telegram\'dan bildirilir. Kilidi yalnızca kilitleyen yönetici kaldırabilir.</p></div>' +
+    '<div class="sh-foot"><div class="row"><button class="btn line" data-act="kapat">Vazgeç</button><button class="btn pri" data-act="ynMkKilitOnay"' + (b ? ' disabled' : '') + '>' + bekle('ynMkK') +
+    (s.kilit ? 'Kilitle' : 'Kilidi kaldır') + '</button></div></div>';
+};
+SHEET.ynMkErisim = function(s){
+  var h = shBas('Erişim kaydı') + '<div class="sh-body"><p class="tip-txt">Müşteri kayıtlarını kim, ne zaman açtı, aradı ya da dışa aktardı (son 40 kayıt).</p>';
+  if (s.yuk) return h + '<div class="sk" style="height:200px"></div></div>';
+  if (s.hata) return h + '<div class="err-txt" role="alert">' + esc(s.hata) + '</div></div>';
+  if (!(s.l || []).length) return h + '<p class="muted">Henüz kayıt yok.</p></div>';
+  return h + '<ul class="yn-hareket">' + s.l.map(function(x){
+    return '<li><span class="muted">' + esc(tarihYazi(x.t)) + '</span><span class="yn-h-ad"><b>' + esc(x.ad || x.id) + '</b>' + (x.kullanici ? ' ' + esc(x.kullanici) : '') + ' · ' + esc(x.islem) + '</span>' +
+      '<span class="num">' + (x.adet ? esc(x.adet) : '') + '</span></li>';
+  }).join('') + '</ul></div>';
+};
+
+/* --- Sistem: sözleşme sürümü (duyuru / hatırlatma) ve işletme kodları --- */
+function ynBelgeKarti(){
+  var b = D.belge;
+  if (!b) return '';
+  var dy = b.duyuru, bek = b.bekleyen || [];
+  var h = '<section class="card pad yn-belge"><h2 class="frm-h">📄 Sözleşmeler · sürüm ' + esc(b.surum) + ' <span class="muted" style="font-weight:500">· ' + esc(b.tarih) + '</span></h2>' +
+    '<details class="yn-tl-eski"><summary>Bu sürümde değişenler</summary><ul class="yn-belge-l">' + (b.degisiklik || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>' +
+    ynKv('Onaylayan', '<b>' + adet(b.onayli) + '</b> / ' + adet(b.toplam) + ' işletme');
+  if (b.bekleyenAdet) h += ynKv('Onay bekleyen', esc(bek.slice(0, 6).map(function(x){ return x.ad; }).join(', ')) + (b.bekleyenAdet > 6 ? ' +' + (b.bekleyenAdet - 6) : ''));
+  if (dy) {
+    h += ynKv('Duyuru', ynTarih(dy.t) + ' · ' + adet(dy.adet) + ' işletmeye') + ynKv('Yürürlük', '<b>' + esc(dy.yururluk) + '</b>') +
+      (dy.hatirlatma ? ynKv('Son hatırlatma', ynTarih(dy.hatirlatma)) : '');
+    if (b.bekleyenAdet) h += '<button class="btn line" data-act="ynBelgeDuyur" data-k="1">🔔 Onaylamayanlara hatırlat</button>';
+  } else if (b.bekleyenAdet) {
+    h += '<p class="tip-txt">Mevcut işletmeler yeni sürümü henüz görmedi. Sözleşme gereği değişiklik <b>en az 30 gün önce</b> bildirilir; duyurduğunuzda yürürlük tarihi 30 gün sonrası olur. ' +
+      'Onaylayan işletmeler hemen, diğerleri 30 gün sonra müşteri kayıtları ekranına girer.</p><button class="btn pri" data-act="ynBelgeDuyur" data-k="0">📣 İşletmelere duyur</button>';
+  } else {
+    h += '<p class="tip-txt">✅ Bütün işletmeler güncel sürümü onayladı.</p>';
+  }
+  return h + '</section>';
+}
+SHEET.ynBelge = function(s){
+  var b = D.belge || {}, by = U.busy.ynBd, n = (b.bekleyen || []).filter(function(x){ return x.sahip; }).length;
+  return shBas(s.tekrar ? 'Onaylamayanlara hatırlat' : 'Yeni sürümü duyur') + '<div class="sh-body"><p>Yeni sürümü onaylamamış <b>' + adet(b.bekleyenAdet) + '</b> işletmenin sahibine ' +
+    '@' + esc(D.anaBot || 'yourpos360_bot') + ' üzerinden mesaj gider' + (n < b.bekleyenAdet ? ' (Telegram hesabı bağlı ' + n + ' işletme)' : '') + '.</p>' +
+    '<div class="note-box ileri">Mesajda: değişikliklerin özeti, yürürlük tarihi' + (s.tekrar && b.duyuru ? ' (<b>' + esc(b.duyuru.yururluk) + '</b>)' : ' (bugünden 30 gün sonra)') +
+    ', «📄 İncele ve onayla» düğmesi ve kabul etmezse üyeliğini bedelsiz sonlandırabileceği bilgisi.</div></div>' +
+    '<div class="sh-foot"><div class="row"><button class="btn line" data-act="kapat">Vazgeç</button><button class="btn pri" data-act="ynBelgeGonder"' + (by ? ' disabled' : '') + '>' + bekle('ynBd') +
+    (s.tekrar ? 'Hatırlat' : 'Duyur') + '</button></div></div>';
+};
+function ynKodKarti(){
+  var k = D.kodlar;
+  if (!k || !k.eski) return '';
+  return '<section class="card pad"><h2 class="frm-h">🔑 İşletme kodları</h2><p><b>' + adet(k.eski) + '</b> işletmede eski biçimli kod var (YP360-XXXX). Yeni kodlar 6 haneli, harf ve rakam karışık (ör. K7M2QX).</p>' +
+    '<p class="tip-txt">Çevirince işletmelere yeni kodları Telegram\'dan bildirilir. Eski kodla yapılan havaleler de eşleşmeye devam eder. Tek bir işletmenin kodunu işletme detayından da değiştirebilirsiniz.</p>' +
+    '<button class="btn line" data-act="ynKodCevir">Yeni biçime çevir</button></section>';
+}
+SHEET.ynKodCevir = function(s){
+  var b = U.busy.ynKc, k = D.kodlar || {};
+  return shBas('Kodları yeni biçime çevir') + '<div class="sh-body"><p><b>' + adet(k.eski) + '</b> işletmenin kodu yeni 6 haneli biçime çevrilecek. Eski kodlar silinmez; onlarla gelen ödemeler de doğru işletmeye işlenir.</p>' +
+    ynBildirSw(s) + '</div><div class="sh-foot"><div class="row"><button class="btn line" data-act="kapat">Vazgeç</button><button class="btn pri" data-act="ynKodCevirOnay"' + (b ? ' disabled' : '') + '>' + bekle('ynKc') + 'Çevir</button></div></div>';
+};
+function ynKodPencere(s, x){
+  var d = s.d || {}, b = U.busy.ynKod, hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
+  return ynGeriBas(s, 'İşletme kodunu değiştir') + '<div class="sh-body"><p><span class="muted">' + esc(x.ad) + '</span> · şu an <b class="yn-kod">' + esc(x.kod) + '</b></p>' +
+    ((d.eskiKodlar || []).length ? '<p class="tip-txt">Eski kodlar: ' + d.eskiKodlar.map(esc).join(', ') + '</p>' : '') +
+    '<div class="field"><label for="ynKodInp">Yeni kod <span class="muted">(6 karakter: harf ve rakam)</span></label><input class="inp yn-kod-inp" id="ynKodInp" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" ' +
+    'placeholder="ör. K7M2QX" value="' + esc(s.kod || '') + '"></div>' + ynBildirSw(s) +
+    '<p class="tip-txt">İşletme havale/EFT açıklamasına bundan sonra yeni kodu yazar. Eski kod saklanır; onunla gelen ödemeler de eşleşir. Başka bir işletmenin kullandığı ya da kullanmış olduğu kod verilemez.</p>' + hata + '</div>' +
+    '<div class="sh-foot"><button class="btn pri block" data-act="ynKodKaydet" data-k="yaz"' + (b ? ' disabled' : '') + '>' + bekle('ynKod') + 'Bu kodu kaydet</button>' +
+    '<button class="btn line block" data-act="ynKodKaydet" data-k="uret"' + (b ? ' disabled' : '') + '>🎲 Sistem yeni kod üretsin</button></div>';
 }
 
 /* ---------- yardımcı işlemler ---------- */
@@ -6557,10 +7219,35 @@ function demoMock(rol){
     r.urunler = liste(r.urunler, function(k, v){ return { ad:k, adet:v.adet, tutar:yuv(v.tutar) }; }).sort(function(a, b){ return (b.adet - a.adet) || (b.tutar - a.tutar); });
     r.iptal.kim = liste(r.iptal.kim, function(k, v){ return { ad:k, adet:v }; }).sort(function(a, b){ return b.adet - a.adet; });
     r.iptal.neden = liste(r.iptal.neden, function(k, v){ return { ad:k, adet:v }; }).sort(function(a, b){ return b.adet - a.adet; });
+    if (r.siparis) {
+      var mt = Math.max(1, Math.round(r.siparis * 0.62)), ADL = ['A*** D****', 'M***** C**', 'Z***** A*', 'E*** Ş****', 'C** Y*****', 'H***** K***', 'S**** T**', 'B**** Ö***'];
+      var en = ADL.slice(0, Math.min(8, mt)).map(function(ad, i){ var a = Math.max(1, Math.min(r.siparis, Math.round(r.siparis / mt * (3 - i * 0.3)))); return { ad:ad, tel:'05' + (32 + i) + ' *** ** ' + (10 + i * 7), adet:a, tutar:yuv(a * r.ortalama) }; });
+      r.musteri = { toplam:mt, yeni:Math.round(mt * 0.3), eski:mt - Math.round(mt * 0.3), tekrar:Math.round(mt * 0.41), tekrarOran:41, ortSiparis:Math.round(r.siparis / mt * 10) / 10,
+        ortTutar:yuv(r.ciro / mt), enIyi:en };
+    }
     return r;
   }
 
+  var BZY = [{ anahtar:'demo1' + 'a'.repeat(35), tur:'star', turAd:'Star CloudPRNT', ad:'Mutfak yazıcısı', genislik:80, tr:false, kopya:1,
+    adres:'https://yourpos360.onrender.com/yazici/demo1' + 'a'.repeat(35), son:Date.now() - 40000, durum:'Basıldı', hata:'', bekleyen:0, olustur:Date.now() - 9 * 86400000 }];
   var islemler = {
+    ekYazicilar:function(){ return { ok:true, yazicilar:kopya(BZY), sinir:5, sunucu:true }; },
+    ekYaziciEkle:function(d){
+      var k = 'demo' + Date.now().toString(16) + 'a'.repeat(20);
+      BZY.push({ anahtar:k, tur:d.tur, turAd:d.tur === 'star' ? 'Star CloudPRNT' : 'Epson Server Direct Print', ad:d.ad || (d.tur === 'star' ? 'Star yazıcı' : 'Epson yazıcı'), genislik:d.genislik || 80,
+        tr:!!d.tr, kopya:1, adres:'https://yourpos360.onrender.com/yazici/' + k, son:0, durum:'', hata:'', bekleyen:0, olustur:Date.now() });
+      return { ok:true, mesaj:'Eklendi. Şimdi yazıcıya sunucu adresini girin.', yeni:k, yazicilar:kopya(BZY), sinir:5, sunucu:true };
+    },
+    ekYaziciGuncelle:function(d){
+      var y = BZY.filter(function(x){ return x.anahtar === d.anahtar; })[0]; if (!y) return { ok:false, kod:'YOK', hata:'Yazıcı bulunamadı.' };
+      if (d.genislik !== undefined) y.genislik = d.genislik; if (d.kopya !== undefined) y.kopya = d.kopya; if (d.tr !== undefined) y.tr = !!d.tr;
+      return { ok:true, yazicilar:kopya(BZY), sinir:5, sunucu:true };
+    },
+    ekYaziciSil:function(d){ BZY = BZY.filter(function(x){ return x.anahtar !== d.anahtar; }); return { ok:true, mesaj:'Yazıcı kaldırıldı.', yazicilar:kopya(BZY), sinir:5, sunucu:true }; },
+    ekYaziciDeneme:function(d){
+      var y = BZY.filter(function(x){ return x.anahtar === d.anahtar; })[0]; if (y) { y.son = Date.now(); y.durum = 'Basıldı'; }
+      return { ok:true, mesaj:'Deneme fişi sıraya alındı. Yazıcı açık ve internete bağlıysa birkaç saniye içinde çıkar.', yazicilar:kopya(BZY), sinir:5, sunucu:true };
+    },
     ekBaslat:function(){
       var r = { ok:true, rol:rol, ben:kopya(BEN), cihaz:false, rev:String(rev), isletme:kopya(ISL), siparisler:listele(),
         iptalNedenleri:['Ürün kalmadı', 'Çok yoğunuz', 'Adres teslimat alanı dışında', 'Müşteriye ulaşılamadı', 'Müşteri vazgeçti', 'Diğer'] };

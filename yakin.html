@@ -107,6 +107,7 @@ main{padding:4px 16px calc(24px + var(--safe-b))}
 .rz.puan{background:var(--bg2);color:var(--text)}
 .rz.puan i{color:var(--star);font-style:normal}
 .rz.uzak{background:var(--warn-soft);color:var(--warn-ink)}
+.rz.oneri{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
 .k-alt{display:flex;gap:8px}
 .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 .btn.pri{background:var(--accent);color:var(--on-accent);flex:1}
@@ -273,7 +274,7 @@ function yukle(){
       if (r && r.kod === 'KONUM') { S.durum = 'il'; ciz(); return; }
       S.durum = 'hata'; S.hata = (r && r.hata) || 'Liste alınamadı.'; ciz(); return;
     }
-    S.liste = r.liste || []; S.kollar = r.kollar || [];
+    S.liste = r.liste || []; S.kollar = r.kollar || []; S.puanKural = r.puanKural || null;
     if (S.kol && !S.liste.some(function(x){ return x.kol === S.kol; })) S.kol = '';
     // seçili mesafede hiç yoksa sonuç olan ilk mesafeye geç
     if (S.konum && !kmIcinde(suzgec(S.liste)).length) {
@@ -326,6 +327,7 @@ function kartHtml(x, i){
   var k = kolBul(x.kol);
   var rz = [];
   rz.push(x.acik ? '<span class="rz acik">● Açık</span>' : x.ileri ? '<span class="rz ileri">🕒 ' + (k.grup === 'hizmet' ? 'Randevu alınır' : 'İleri saate sipariş') + '</span>' : '<span class="rz kapali">● Şu an kapalı</span>');
+  if (x.oneri) rz.push('<span class="rz oneri"><span aria-hidden="true">🏅</span> YourPOS 360\'ın önerisi</span>');
   if (x.puan && x.puan.n) rz.push('<span class="rz puan"><i aria-hidden="true">★</i>' + NF1.format(x.puan.o) + ' <span class="num">(' + NF.format(x.puan.n) + ')</span></span>');
   if (S.konum && x.maks && x.km > x.maks) rz.push('<span class="rz uzak">' + (k.grup === 'hizmet' ? 'Hizmet alanı ' : 'Teslimat alanı ') + NF.format(x.maks) + ' km</span>');
   return '<li class="kart"><div class="k-ust">' + logoHtml(x, k, i) + '<div class="k-bilgi"><span class="k-ad">' + esc(x.ad) + (x.sube ? ' <span class="sube">· ' + esc(x.sube) + '</span>' : '') + '</span>' +
@@ -358,6 +360,8 @@ function anaHtml(){
     return bosHtml('🔍', 'Bu seçimle eşleşen işletme yok', 'Filtreleri değiştirin.', '<button class="link" data-act="temizle">Filtreleri temizle</button>');
   }
   return '<p class="ozet num">' + NF.format(l.length) + ' işletme' + (S.konum ? ' · en yakından uzağa' : ' · A\'dan Z\'ye') + '</p><ul class="liste">' + l.map(kartHtml).join('') + '</ul>' +
+    (S.puanKural ? '<p class="not">⭐ Puanlar ' + (S.puanKural.ay ? 'son ' + S.puanKural.ay + ' ayın değerlendirmelerinden hesaplanır ve ' : '') + 'bir işletmenin değerlendirme sayısı en az ' + S.puanKural.min + ' olunca gösterilir. ' +
+      '🏅 «YourPOS 360\'ın önerisi» rozeti, YourPOS 360 ekibinin önerdiği işletmeleri gösterir.</p>' : '') +
     '<p class="not">🔒 Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.</p>';
 }
 function ciz(){
@@ -459,7 +463,7 @@ function demoMock(){
   function mesafe(a1, o1, a2, o2){ var r = Math.PI / 180, dA = (a2 - a1) * r, dO = (o2 - o1) * r; var x = Math.sin(dA / 2) * Math.sin(dA / 2) + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin(dO / 2) * Math.sin(dO / 2); return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
   var LISTE = I.map(function(x, i){
     return { b:'d' + i, ad:x[0], sube:'', kol:x[1], lat:x[2], lng:x[3], il:x[7] === 'İzmit' ? 'Kocaeli' : 'İstanbul', ilce:x[7], bot:'ornek' + i + '_bot', logo:'', acik:x[4], ileri:!x[4] && i % 2 === 0,
-      puan:x[5] ? { o:x[5], n:x[6] } : null, maks:x[1] === 'tesisat' || x[1] === 'elektrikci' ? 15 : 5 };
+      puan:x[5] ? { o:x[5], n:x[6] } : null, oneri:i === 1 || i === 4 ? 1 : 0, maks:x[1] === 'tesisat' || x[1] === 'elektrikci' ? 15 : 5 };
   });
   if (params.get('konum') !== '0' && !navigator.__gercekKonum) {
     try {
@@ -475,7 +479,7 @@ function demoMock(){
         var l = LISTE.map(function(x){ var y = JSON.parse(JSON.stringify(x)); if (konum) y.km = Math.round(mesafe(d.lat, d.lng, x.lat, x.lng) * 10) / 10; y.link = 'https://t.me/' + x.bot; return y; })
           .filter(function(x){ return konum ? x.km <= (d.km || 25) : x.il.toLocaleLowerCase('tr') === String(d.il).toLocaleLowerCase('tr'); })
           .sort(function(a, b){ return konum ? a.km - b.km : a.ad.localeCompare(b.ad, 'tr'); });
-        ok({ ok:true, liste:l, kollar:KOLLAR, km:konum ? d.km : null, il:konum ? '' : d.il });
+        ok({ ok:true, liste:l, kollar:KOLLAR, km:konum ? d.km : null, il:konum ? '' : d.il, puanKural:{ min:10, ay:6 } });
       }, 450);
     });
   };
