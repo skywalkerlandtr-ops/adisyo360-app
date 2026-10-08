@@ -775,7 +775,7 @@ function odemeKarti(d){
   h += '<div class="havale"><b>Havale / EFT ile yükleyin</b><dl class="kv"><dt>Açıklama</dt><dd class="num">' + esc(o.kod) +
     ' <button class="mini" data-act="kopyala" data-k="' + esc(o.kod) + '">Kopyala</button></dd>' +
     (o.iban ? '<dt>IBAN</dt><dd class="num">' + esc(o.iban) + ' <button class="mini" data-act="kopyala" data-k="' + esc(String(o.iban).replace(/\s+/g, '')) + '">Kopyala</button></dd><dt>Alıcı</dt><dd>' + esc(o.alici || '') + '</dd>' : '') + '</dl>' +
-    '<p class="tip">' + (o.iban ? 'Açıklamaya yalnızca işletme kodunuzu yazın; ödemeniz bu kodla eşleşir. Dilediğiniz tutarı, örneğin birkaç aylık ücreti, peşin yükleyebilirsiniz.</p><p class="tip"><b>Yüklenen bakiye yalnızca YourPOS 360 hizmet ücretlerinde kullanılır; iade edilmez ve nakde çevrilemez.</b> Yanlış ya da mükerrer ödeme yaptıysanız «Bize yazın»dan bildirin.' : 'Banka bilgileri deneme süreniz bitmeden Telegram\'dan size iletilecek.') + '</p></div>' +
+    '<p class="tip">' + (o.iban ? 'Açıklamaya yalnızca işletme kodunuzu yazın; ödemeniz bu kodla eşleşir. Dilediğiniz tutarı, örneğin birkaç aylık ücreti, peşin yükleyebilirsiniz.' + (hs.yuklemeSiniri ? ' Tek seferde en fazla <b class="num">' + tl(hs.yuklemeSiniri) + '</b> yükleyebilirsiniz; daha fazlası için birden çok ödeme yapın.' : '') + '</p><p class="tip"><b>Yüklenen bakiye yalnızca YourPOS 360 hizmet ücretlerinde kullanılır; iade edilmez ve nakde çevrilemez.</b> Yanlış ya da mükerrer ödeme yaptıysanız «Bize yazın»dan bildirin.' : 'Banka bilgileri deneme süreniz bitmeden Telegram\'dan size iletilecek.') + '</p></div>' +
     (o.iban ? '<button class="btn pri block" data-act="odemeKontrol"' + (S.busy.ok ? ' disabled' : '') + '>' + (S.busy.ok ? bekle(1) + 'Kontrol ediliyor…' : ic('tik') + 'Yükledim, kontrol et') + '</button>' : '');
   if (hs.satinAlinabilir) h += d.satinTalep ? '<div class="okbox"><span>🛒 Satın alma talebiniz alındı (' + esc(d.satinTalep.no) + '). Ekibimiz sizinle iletişime geçecek.</span></div>'
     : '<button class="btn line block" data-act="satinAl"' + (S.busy.sa ? ' disabled' : '') + '>' + (S.busy.sa ? bekle(1) + 'Gönderiliyor…' : '🛒 Satın almak istiyorum') + '</button>';
@@ -1343,7 +1343,7 @@ function uyeDemo(hal){
   var BV = hal === 'basvuru' ? { no:'B-1001', tur:'deneme', durum:'bekliyor', ad:'Lezzet Dürüm', tarih:'06.10.2026 21:14', telefon:'0532 111 22 33' } : null;
   function hesapYap(){
     var b = OD === 'tamam' ? 600 : OD === 'durdu' || OD === 'bekle' ? 120 : 0;
-    return { bakiye:b, sonrakiCekim:'20.10.2026', tutar:200, asim:0, asimTL:0, yeterli:b >= 200, eksik:Math.max(0, 200 - b), ucretsiz:false,
+    return { bakiye:b, sonrakiCekim:'20.10.2026', tutar:200, yuklemeSiniri:9999, asim:0, asimTL:0, yeterli:b >= 200, eksik:Math.max(0, 200 - b), ucretsiz:false,
       bekleme:OD === 'bekle' ? { kalanGun:2 } : null, durduruldu:OD === 'durdu' || OD === 'ilk', ilkOdeme:OD === 'ilk', satinAlinabilir:OD !== 'ilk' && OD !== 'tamam',
       hareketler:b ? [{ tarih:'06.10.2026 21:30', tur:'Yükleme', tutar:b, bakiye:b, aciklama:'Havale/EFT' }] : [] };
   }
