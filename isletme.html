@@ -536,6 +536,8 @@ button.m-fiyat{color:var(--link);font-weight:600;min-height:32px}
   .fis .b{font-weight:700;font-size:14px}
   .fis .ks{padding-left:12px;font-size:13px}
   .fis .ks.b{font-size:14px}
+  .fis .sira{font-size:64px;font-weight:800;line-height:1;text-align:center;margin:2px 0 4px}
+  .fis .sira-l{font-size:13px;font-weight:700;text-align:center;letter-spacing:.12em}
 }
 
 /* ---------- menü düzenleme, görsel galerisi ---------- */
@@ -910,6 +912,122 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
   .yn-tbl-sil .yn-sil-mob > td{padding-top:0}
   .yn-tbl-sil .yn-sil-mob .yn-sil-eylem{min-width:0;margin:0}
 }
+/* ---------- kasa (1.17.5) ---------- */
+.tab > span:not(.cnt){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:400px){ .tab{font-size:12px} }
+.tabs:empty{display:none}
+.kz-sno{font-variant-numeric:tabular-nums}
+.kz-ust{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.kz-ust .seg{flex:none}
+.kz-gun{margin-left:auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:var(--bg);box-shadow:var(--shadow),inset 0 0 0 1px var(--sep);color:var(--text);font:inherit;font-size:15px}
+.kz-gun span{color:var(--sub)}
+.kz-gun b{font-variant-numeric:tabular-nums}
+.kz-ipucu{margin:-6px 4px 0}
+.kz-son{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:var(--ok-soft);color:var(--ok-ink);font-weight:600}
+.kz-son .b-txt{flex:1;min-width:0}
+.kz-son button{min-height:36px;padding:0 14px;border:0;border-radius:18px;font-weight:700;font-size:14px;background:var(--bg);color:var(--text)}
+.kz-govde{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.kz-kat{display:flex;flex-direction:column;gap:8px}
+.kz-kat h3{margin:4px 4px 0;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
+.kz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:10px}
+.kz-u{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:96px;padding:12px;border:0;border-radius:14px;
+  background:var(--bg);box-shadow:var(--shadow),inset 0 0 0 1px var(--sep);text-align:left;font:inherit;color:var(--text);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.kz-u:active{transform:scale(.97)}
+.kz-u.sec{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent)}
+.kz-u .kz-ad{font-weight:700;font-size:16px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-right:22px}
+.kz-u .kz-adk{display:block;min-width:0}
+.kz-u .kz-sec{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kz-u .kz-f{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent-ink)}
+.kz-u .kz-n{position:absolute;top:8px;right:8px;min-width:26px;height:26px;padding:0 7px;border-radius:13px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:14px;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.kz-u .kz-st{font-size:12px;font-weight:700;color:var(--warn-ink)}
+.kz-u .kz-st.yok{color:var(--danger)}
+.kz-u.kz-tutar{align-items:center;justify-content:center;text-align:center;background:transparent;box-shadow:inset 0 0 0 2px var(--field-line);color:var(--link);font-weight:700}
+.kz-u.kz-tutar .ico{width:26px;height:26px}
+.kz-tepsi{display:flex;flex-direction:column;gap:12px;padding:14px}
+.kz-th{display:flex;align-items:center;gap:8px}
+.kz-th h2{margin:0;font-size:18px}
+.kz-th .muted{flex:1}
+.kz-bos{padding:18px 6px;text-align:center;color:var(--hint);font-size:15px}
+.kz-lst{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-height:42vh;overflow-y:auto}
+.kz-lst li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--sep)}
+.kz-lst li:first-child{border-top:0}
+.kz-la{font-weight:700;line-height:1.25}
+.kz-lb{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+.kz-lt{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.kz-adet{display:inline-flex;align-items:center;gap:2px;grid-column:2;grid-row:1 / span 2;flex-direction:column}
+.kz-ar{display:inline-flex;align-items:center;gap:6px}
+.kz-ar button{width:40px;height:40px;border:0;border-radius:10px;background:var(--bg2);color:var(--text);font-size:22px;font-weight:700;display:grid;place-items:center}
+.kz-ar b{min-width:26px;text-align:center;font-variant-numeric:tabular-nums;font-size:17px}
+.kz-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:10px;border-top:2px solid var(--text)}
+.kz-top span{font-weight:700;font-size:16px}
+.kz-top b{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kz-ode{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kz-ode .btn{min-height:64px;font-size:19px;border-radius:14px}
+.kz-ode2{display:flex;gap:8px;flex-wrap:wrap}
+.kz-ode2 .btn{flex:1 1 auto}
+.kz-not{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--warn-ink);font-weight:600}
+.kz-not span{flex:1;min-width:0}
+.kz-bar{position:sticky;bottom:0;z-index:2;margin:0 -16px -24px;padding:10px 16px calc(10px + var(--safe-b));background:var(--bg);border-top:1px solid var(--sep);
+  display:flex;align-items:center;gap:12px;box-shadow:0 -4px 14px rgb(16 24 40 / .08)}
+.kz-bar .kz-bar-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.kz-bar .kz-bar-t small{color:var(--sub);font-size:13px}
+.kz-bar .kz-bar-t b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.kz-bar .btn{min-height:52px;padding:0 22px}
+.scr.kz{min-height:100%}
+.kz-bar{margin-top:auto}
+.kz-sol .chips{margin:0 0 10px;padding:2px 0}
+.kz-ar button,.kz-pad button,.kz-ode .btn{touch-action:manipulation}
+.kz-bos{flex:1}
+@media (min-width:760px){
+  .main.fill .scr.kz{min-height:0}
+  .scr.kz .kz-govde{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 340px;align-items:stretch}
+  .kz-sol{min-height:0;overflow-y:auto;padding:2px 4px 12px;margin:-2px -4px 0}
+  .kz-yan{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .kz-yan .kz-lst{flex:1 1 auto;min-height:60px;max-height:none}
+  .kz-bar{display:none}
+}
+@media (max-width:759px){ .kz-yan{display:none} }
+@media (min-width:1200px){ .kz-govde{grid-template-columns:minmax(0,1fr) 400px} .kz-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))} .kz-u{min-height:108px} .kz-u .kz-ad{font-size:18px} .kz-u .kz-f{font-size:20px} }
+.kz-sira-kutu{display:flex;flex-direction:column;align-items:center;gap:2px;padding:18px 10px;border-radius:16px;background:var(--accent-soft);color:var(--accent-ink)}
+.kz-sira-l{font-size:14px;font-weight:800;letter-spacing:.14em}
+.kz-sira-n{font-size:84px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kz-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kz-pad button{min-height:58px;border:0;border-radius:12px;background:var(--bg2);color:var(--text);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.kz-pad button.sil{font-size:18px}
+.kz-ekran{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;min-height:64px;padding:8px 14px;border-radius:12px;background:var(--field-bg);box-shadow:inset 0 0 0 1.5px var(--field-line);
+  font-size:36px;font-weight:800;font-variant-numeric:tabular-nums}
+.kz-ekran small{font-size:18px;color:var(--sub)}
+.kz-hizli{display:flex;gap:8px;flex-wrap:wrap}
+.kz-ustu{display:flex;align-items:baseline;justify-content:space-between;padding:12px 14px;border-radius:12px;background:var(--ok-soft);color:var(--ok-ink);font-weight:700}
+.kz-ustu b{font-size:28px;font-variant-numeric:tabular-nums}
+.kz-ustu.eksik{background:var(--danger-soft);color:var(--danger)}
+.kz-sat{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.kz-sat li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--sep)}
+.kz-sat li:first-child{border-top:0}
+.kz-sat .kz-s1{font-weight:700}
+.kz-sat .kz-s2{font-size:14px;color:var(--sub)}
+.kz-sat .kz-s3{grid-column:2;grid-row:1;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.kz-sat .kz-s4{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.kz-sat li.ipt .kz-s1,.kz-sat li.ipt .kz-s3{text-decoration:line-through;color:var(--hint)}
+.kz-oz{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.kz-oz div{padding:10px 12px;border-radius:12px;background:var(--bg2);display:flex;flex-direction:column}
+.kz-oz small{color:var(--sub);font-size:13px}
+.kz-oz b{font-size:18px;font-variant-numeric:tabular-nums}
+/* numaratör */
+.nmr{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:16px;padding:16px}
+.nmr-k{display:flex;flex-direction:column;min-height:0;border-radius:20px;background:var(--bg);box-shadow:var(--shadow);overflow:hidden}
+.nmr-k h2{margin:0;padding:16px 22px;font-size:clamp(20px,2.6vw,40px);font-weight:800}
+.nmr-h h2{background:var(--warn-soft);color:var(--warn-ink)}
+.nmr-r h2{background:var(--ok);color:var(--on-ok)}
+.nmr-l{flex:1;min-height:0;overflow:hidden;display:flex;flex-wrap:wrap;align-content:flex-start;gap:clamp(8px,1.4vw,20px);padding:clamp(12px,2vw,28px)}
+.nmr-n{min-width:2.2em;padding:.08em .3em;border-radius:.22em;text-align:center;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;font-size:clamp(34px,6vw,96px);background:var(--bg2);color:var(--text)}
+.nmr-r .nmr-n{font-size:clamp(44px,8vw,140px);background:var(--ok-soft);color:var(--ok-ink)}
+.nmr-r .nmr-n.taze{background:var(--ok);color:var(--on-ok)}
+@media (prefers-reduced-motion:no-preference){ .nmr-r .nmr-n.taze{animation:nmrnab 1s ease-in-out 6} }
+@keyframes nmrnab{50%{transform:scale(1.08)}}
+.nmr-bos{color:var(--hint);font-size:clamp(18px,2vw,28px);font-weight:600;padding:8px 4px}
+.nmr-saat{font-size:clamp(18px,2vw,30px);font-weight:800;font-variant-numeric:tabular-nums}
+@media (max-width:640px){ .nmr{grid-template-columns:1fr;grid-template-rows:minmax(0,2fr) minmax(0,3fr)} }
 </style>
 </head>
 <body>
@@ -995,7 +1113,9 @@ var IC = {
   gunes:circ(12, 12, 4) + ' M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
   ay:'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z',
   bina:'M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-4h6v4 M9 9h1 M14 9h1 M9 13h1 M14 13h1',
-  qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z'
+  qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M20 14v.01 M14 20h.01 M17 20h4v-3 M6 6h1v1H6z M17 6h1v1h-1z M6 17h1v1H6z',
+  kasa:'M4 21h16 M5 21l1-9h12l1 9 M8 12V8h8v4 M10 5h4v3h-4z M9 15h1 M12 15h1 M15 15h1 M9 18h6',
+  tv:'M3 5h18v12H3z M8 21h8 M12 17v4'
 };
 function ic(n, cls){ return '<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + IC[n] + '"/></svg>'; }
 
@@ -1054,7 +1174,7 @@ function gunHafta(k){ return GUNLER[gunDate(k).getUTCDay()]; }
 var params = new URLSearchParams(location.search);
 var B = params.get('b') || '';
 var DEMO = params.get('demo') === '1';
-var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye', merkez:'Merkez', yonetim:'Yonetim' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
+var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye', merkez:'Merkez', yonetim:'Yonetim', numarator:'Numaratör' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
 var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
 var ACILACAK_NO = Number(params.get('no')) || 0;
 var ANA = params.get('ana') === '1';
@@ -1274,9 +1394,10 @@ function toast(msg, hata){
 
 // Yeni gelenleri yakalar: restoranda yeni sipariş, kuryede yeni «hazır» sipariş
 function degisiklikleriIsle(){
+  if (numarator()) return nmrDegisiklik();
   var izlenen = kurye()
     ? D.siparisler.filter(function(o){ return o.kod === 'R' && (!o.kuryeId || benim(o)); })
-    : D.siparisler.filter(function(o){ return o.kod === 'Y'; });
+    : D.siparisler.filter(function(o){ return o.kod === 'Y' || (o.kanal === 'Tezgah' && o.kod === 'H'); });
   var anahtar = function(o){ return (o.b ? o.b + '/' : '') + o.no + ':' + o.kod; };
   if (GORULEN) {
     var yeniler = izlenen.filter(function(o){ return !GORULEN[anahtar(o)]; });
@@ -1305,7 +1426,7 @@ setInterval(function(){
 var pollT = null, pollHata = 0, nesil = 0, sonTam = 0;
 function pollPlanla(ms){
   clearTimeout(pollT);
-  pollT = setTimeout(poll, ms !== undefined ? ms : (document.hidden ? 30000 : Math.min(30000, 10000 + pollHata * 10000)));
+  pollT = setTimeout(poll, ms !== undefined ? ms : (document.hidden ? 30000 : Math.min(30000, (numarator() ? 4000 : 10000) + pollHata * 10000)));
 }
 function poll(){
   clearTimeout(pollT);
@@ -1427,12 +1548,13 @@ function ciz(yoklama){
   if (yoklama && !siparisGorunumu()) return;
   renderMain();
 }
-function siparisGorunumu(){ return kurye() || U.tab === 'siparis'; }
+function siparisGorunumu(){ return kurye() || numarator() || U.tab === 'siparis'; }
 
 function renderTop(){
   if (!D) return;
   if (merkez()) return mzTopCiz();
   if (yonetim()) return ynTopCiz();
+  if (numarator()) return nmrTopCiz();
   var i = D.isletme;
   var rolAd = D.cihaz ? D.ben.ad + ' · ' + (kurye() ? (hzm() ? 'usta cihazı' : 'kurye cihazı') : 'tablet') : D.ben.ad + ' · ' + (D.rol === 'Kurye' && hzm() ? 'Usta' : D.rol);
   var canli = U.net
@@ -1466,6 +1588,7 @@ function renderTop(){
 function renderBanners(){
   if (!D) return;
   if (yonetim()) return ynBannerlar();
+  if (numarator()) return nmrBannerlar();
   var h = '';
   if (DEMO) {
     var r = function(k, ad){
@@ -1473,7 +1596,7 @@ function renderBanners(){
       return '<a href="?' + esc(q.toString()) + '"' + (DEMO_ROL.toLowerCase() === k ? ' aria-current="page"' : '') + '>' + ad + '</a>';
     };
     h += '<div class="demo-bar"><span>Önizleme · örnek verilerle</span><span class="d-roles" role="group" aria-label="Görünüm">' +
-      r('sahip', 'Sahip') + r('personel', 'Personel') + r('kurye', 'Kurye') + r('merkez', 'Merkez') + r('yonetim', 'Yönetim') + '</span></div>';
+      r('sahip', 'Sahip') + r('personel', 'Personel') + r('kurye', 'Kurye') + r('merkez', 'Merkez') + r('yonetim', 'Yönetim') + r('numarator', 'Numaratör') + '</span></div>';
   }
   if (!U.net) {
     h += '<div class="banner err" role="alert">' + ic('uyari') + '<span class="b-txt">Bağlantı kurulamıyor' +
@@ -1517,13 +1640,14 @@ function renderTabs(){
   if (!D) return;
   if (merkez()) return mzSekmeler();
   if (yonetim()) return ynSekmeler();
+  if (numarator()) { koruyarakYaz($('#tabs'), ''); return; }
   var t;
   if (kurye()) {
     var hazir = D.siparisler.filter(function(o){ return o.kod === 'R' && (!o.kuryeId || benim(o)); }).length;
     var bende = D.siparisler.filter(function(o){ return o.kod === 'O' && benim(o); }).length;
     t = [['hazir', hzm() ? 'Planlı' : 'Hazır', 'kutu', hazir], ['bende', 'Bende', 'kurye', bende], ['bugun', 'Bugün', 'tikDaire', 0]];
   } else {
-    t = [['siparis', 'Siparişler', 'fis', sayac('Y')], ['menu', menuAdi(), 'menu', 0]];
+    t = [['siparis', 'Siparişler', 'fis', sayac('Y')]].concat(kasaAcik() ? [['kasa', 'Kasa', 'kasa', 0]] : []).concat([['menu', menuAdi(), 'menu', 0]]);
     if (sahip()) t.push(['rapor', 'Raporlar', 'rapor', 0], ['ekip', 'Ekip', 'ekip', 0], ['ayar', 'Ayarlar', 'ayar', 0]);
   }
   var aktif = kurye() ? U.ktab : U.tab;
@@ -1538,7 +1662,9 @@ function renderMain(){
   main.classList.remove('fill');
   if (merkez()) { koruyarakYaz(main, mzEkran()); mzBagla(); return; }
   if (yonetim()) { koruyarakYaz(main, ynEkran()); return; }
+  if (numarator()) { main.classList.add('fill'); koruyarakYaz(main, nmrEkran()); return; }
   if (kurye()) h = kuryeEkrani();
+  else if (U.tab === 'kasa' && kasaAcik()) h = kasaEkrani();
   else if (U.tab === 'menu') h = menuEkrani();
   else if (U.tab === 'rapor') h = raporEkrani();
   else if (U.tab === 'ekip') h = ekipEkrani();
@@ -1561,6 +1687,8 @@ function sonrakiKod(kod){
   return null;
 }
 function ileri(o){
+  if (o.kanal) return o.kod === 'Y' ? { ad:'Hazırla', cls:'pri', ic:'tik', kod:'H' } : o.kod === 'H' ? { ad:'Hazır', cls:'ok', ic:'kutu', kod:'R' }
+    : o.kod === 'R' ? { ad:'Müşteriye verildi', cls:'ok', ic:'tikDaire', kod:'T' } : null;
   var n = ACIK.indexOf(o.kod) >= 0 ? sonrakiKod(o.kod) : null;
   if (!n) return null;
   var kuryeVar = D.kuryeler && D.kuryeler.length;
@@ -1609,9 +1737,9 @@ function siparisKarti(o, rozetli){
   var busy = U.busy['ileri:' + o.no];
   return '<article class="ord k-' + o.kod + (gec ? ' late' : '') + (taze ? ' fresh' : '') + (acik ? '' : ' closed') + '" aria-label="Sipariş ' + o.no + '">' +
     '<button class="ord-main" data-act="ac" data-no="' + o.no + '">' +
-      '<span class="ord-top"><span class="ord-no">#' + o.no + '</span>' + (rozetli ? rozet(o.kod) : '') +
+      '<span class="ord-top"><span class="ord-no">' + (o.sira ? '<span class="kz-sno">Sıra ' + o.sira + '</span>' : '#' + o.no) + '</span>' + (rozetli ? rozet(o.kod) : '') +
         '<span class="ord-ago" data-ago="' + o.tarihMs + '">' + once(o.tarihMs) + '</span></span>' +
-      '<span class="ord-who"><span class="nm">' + esc(o.ad || 'Müşteri') + (o.web ? ' <span class="web-rozet" title="Tarayıcıdan (Telegram\'sız) verilen sipariş">🌐 Web</span>' : '') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
+      '<span class="ord-who"><span class="nm">' + (o.kanal ? '🧾 ' + esc(KANAL_AD[o.kanal] || o.kanal) + ' · #' + o.no + ' · ödendi' : esc(o.ad || 'Müşteri')) + (o.web ? ' <span class="web-rozet" title="Tarayıcıdan (Telegram\'sız) verilen sipariş">🌐 Web</span>' : '') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
       '<span class="ord-items">' + kalemOzet(o.kalemler) + '</span>' +
       (bayrak ? '<span class="ord-flags">' + bayrak + '</span>' : '') +
       '<span class="ord-foot"><span class="ord-total">' + tl(o.toplam) + '</span><span class="ord-pay">' + esc(o.odeme) + '</span></span>' +
@@ -1756,19 +1884,22 @@ SHEET.siparis = function(s){
   h += '<div class="muted">' + tarihYazi(o.tarihMs) + ' · ' + onceYazi(o.tarihMs) + '</div>';
   if (o.teslimMs) h += hzm() ? '<div class="note-box ileri">📅 Randevu: <b>' + teslimYazi(o.teslimMs) + '</b></div>'
     : '<div class="note-box ileri">⏰ İleri saatli sipariş: <b>' + teslimYazi(o.teslimMs) + '</b>\'de teslim edilecek.</div>';
-  if (o.not) h += '<div class="note-box">Müşteri notu: ' + esc(o.not) + '</div>';
+  if (o.not) h += '<div class="note-box">' + (o.kanal ? 'Not: ' : 'Müşteri notu: ') + esc(o.not) + '</div>';
   if (o.kod === 'I') h += '<div class="note-box" style="background:var(--danger-soft);color:var(--danger)">İptal eden: ' + esc(o.iptalEden || '—') +
     (o.iptalNedeni ? ' · ' + esc(o.iptalNedeni) : '') + '</div>';
+  if (o.kanal) h += kasaSiparisBlok(o);
+  else {
   h += blk('Müşteri', '<div class="big">' + esc(o.ad || 'Müşteri') + '</div>' + (o.web ? '<p class="tip-txt">🌐 Tarayıcıdan (Telegram\'sız) verilen sipariş · numara doğrulanmadı, telefonla arayın.</p>' : '') + telefonlar(o));
   h += blk((hzm() ? 'Hizmet adresi' : 'Teslimat adresi') + (o.km ? ' · ' + kmYaz(o.km) : ''), '<div>' + esc(o.adres || '—') + '</div>' +
     (o.tarif ? '<div class="muted">Tarif: ' + esc(o.tarif) + '</div>' : '') +
     '<div class="links"><button class="btn line sm" data-act="harita" data-no="' + o.no + '">' + ic('harita', 'sm') + 'Haritada aç</button></div>');
+  }
   h += blk('Sipariş', '<ul class="items">' + (o.kalemler || []).map(function(k){
     return '<li><span class="q">' + adet(k.adet) + '×</span><span class="a">' + esc(k.ad) + kalemSecimHtml(k) + '</span><span class="p">' + tl(k.tutar) + '</span></li>';
   }).join('') + '</ul>' +
     '<div class="kv"><span>' + (hzm() ? 'Hizmetler' : 'Ürünler') + '</span><span>' + tl(o.ara) + '</span></div>' +
     (o.indirim ? '<div class="kv ind"><span>🏷️ ' + esc(o.kampanya || 'Kampanya indirimi') + '</span><span>−' + tl(o.indirim) + '</span></div>' : '') +
-    '<div class="kv"><span>' + (hzm() ? 'Servis ücreti' : 'Teslimat') + '</span><span>' + (o.ucret ? tl(o.ucret) : 'Ücretsiz') + '</span></div>' +
+    (o.kanal ? '' : '<div class="kv"><span>' + (hzm() ? 'Servis ücreti' : 'Teslimat') + '</span><span>' + (o.ucret ? tl(o.ucret) : 'Ücretsiz') + '</span></div>') +
     '<div class="kv tot"><span>Toplam</span><span>' + tl(o.toplam) + '</span></div>' +
     '<div class="kv"><span>Ödeme</span><span>' + esc(o.odeme) + '</span></div>' +
     (o.kod === 'T' && o.tahsilat ? '<div class="kv"><span>Tahsil edilen</span><span>' + esc(o.tahsilat) + '</span></div>' : ''));
@@ -1790,7 +1921,7 @@ SHEET.siparis = function(s){
   }
   var ikinci = [];
   // ⏭ Sevk et: aradaki adımları atlayıp doğrudan «Yolda»
-  if (['Y', 'H', 'R'].indexOf(o.kod) >= 0 && adimAcik('O') && a && a.kod !== 'O' && !kurye()) ikinci.push('<button class="btn line" data-act="sevkEt" data-no="' + o.no + '"' + (U.busy['ileri:' + o.no] ? ' disabled' : '') + '>⏭ ' + (hzm() ? 'Yola çık' : 'Sevk et') + '</button>');
+  if (['Y', 'H', 'R'].indexOf(o.kod) >= 0 && adimAcik('O') && a && a.kod !== 'O' && !kurye() && !o.kanal) ikinci.push('<button class="btn line" data-act="sevkEt" data-no="' + o.no + '"' + (U.busy['ileri:' + o.no] ? ' disabled' : '') + '>⏭ ' + (hzm() ? 'Yola çık' : 'Sevk et') + '</button>');
   if (o.kod === 'O' && D.kuryeler && D.kuryeler.length) ikinci.push('<button class="btn line" data-act="kuryeDegis" data-no="' + o.no + '">' + ic('kurye', 'sm') + (hzm() ? 'Ustayı değiştir' : 'Kuryeyi değiştir') + '</button>');
   if (acik) ikinci.push('<button class="btn dng-line" data-act="iptalAc" data-no="' + o.no + '">' + ic('x', 'sm') + 'İptal et</button>');
   if (!inTelegram) ikinci.push('<button class="btn line" data-act="fisYaz" data-no="' + o.no + '">' + ic('yazici', 'sm') + (U.yzHata[o.no] ? 'Tekrar yazdır' : 'Fiş yazdır') + '</button>');
@@ -1971,10 +2102,11 @@ SHEET.cihaz = function(s){
   };
   return shBas('Tablet bağla') + '<div class="sh-body">' +
     '<p>Mutfakta ya da kasada duran bir tablet için tek cihazlık bağlantı oluşturun. Tablette Telegram gerekmez.</p>' +
-    '<div class="field"><label for="cihazAd">Tabletin adı</label><input class="inp" id="cihazAd" maxlength="40" placeholder="' + (s.rol === 'Kurye' ? 'Kurye telefonu' : 'Mutfak tableti') + '" value="' + esc(s.ad || '') + '" autocomplete="off"></div>' +
+    '<div class="field"><label for="cihazAd">Tabletin adı</label><input class="inp" id="cihazAd" maxlength="40" placeholder="' + (s.rol === 'Kurye' ? 'Kurye telefonu' : s.rol === 'Numaratör' ? 'Salon ekranı' : 'Mutfak tableti') + '" value="' + esc(s.ad || '') + '" autocomplete="off"></div>' +
     '<div class="blk"><h3 class="blk-h" id="czH">Ne için kullanılacak?</h3><div class="opt-list" role="radiogroup" aria-labelledby="czH">' +
     r('Personel', personelEkrani(), 'Siparişleri görür, durumunu değiştirir, ' + urunSoz() + (hzm() ? 'i' : 'ü') + ' tükendi yapar') +
-    (hzm() ? r('Kurye', 'Usta ekranı', 'Planlanan işi alır, tamamlar, tahsilatı işaretler') : r('Kurye', 'Kurye ekranı', 'Hazır siparişi alır, teslim eder, tahsilatı işaretler')) + '</div></div></div>' +
+    (hzm() ? r('Kurye', 'Usta ekranı', 'Planlanan işi alır, tamamlar, tahsilatı işaretler') : r('Kurye', 'Kurye ekranı', 'Hazır siparişi alır, teslim eder, tahsilatı işaretler')) +
+    (kasaAcik() ? r('Numaratör', 'Numaratör ekranı', 'Salondaki TV ya da tablette tezgâh siparişlerinin sıra numaralarını gösterir («Hazırlanıyor» / «Hazır»)') : '') + '</div></div></div>' +
     '<div class="sh-foot"><button class="btn pri block" data-act="cihazOlustur"' + (b ? ' disabled' : '') + '>' + (b ? bekle('cihaz') : ic('tablet')) + 'Bağlantı oluştur</button></div>';
 };
 SHEET.onay = function(s){
@@ -2115,6 +2247,7 @@ function raporIcerik(r){
     (r.urunler.length > 10 ? '<details class="ch-table"><summary>Tüm ürünler</summary><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ürün</th><th class="r">Adet</th><th class="r">Tutar</th></tr></thead><tbody>' +
       r.urunler.map(function(u){ return '<tr><td>' + esc(u.ad) + '</td><td class="r">' + adet(u.adet) + '</td><td class="r">' + tl(u.tutar) + '</td></tr>'; }).join('') + '</tbody></table></div></details>' : '') +
     '</figure>';
+  h += kanalKarti(r);
   var topOd = r.odeme.reduce(function(a, x){ return a + x.tutar; }, 0) || 1;
   h += '<section class="chart"><h3 class="ch-title">Ödeme yöntemleri<span class="ch-sub">İptaller hariç</span></h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Yöntem</th><th class="r">Sipariş</th><th class="r">Tutar</th><th class="r">Pay</th></tr></thead><tbody>' +
     r.odeme.map(function(x){ return '<tr><td>' + esc(x.ad) + '</td><td class="r">' + adet(x.adet) + '</td><td class="r">' + tl(x.tutar) + '</td><td class="r">%' + Math.round(x.tutar / topOd * 100) + '</td></tr>'; }).join('') +
@@ -2122,7 +2255,7 @@ function raporIcerik(r){
   var top = { adet:0, nakit:0, kart:0, diger:0 };
   r.kasa.forEach(function(k){ top.adet += k.adet; top.nakit += k.nakit; top.kart += k.kart; top.diger += k.diger; });
   var kasaSatir = function(ad, k, sinif){
-    return '<li' + (sinif ? ' class="' + sinif + '"' : '') + '><div class="ks-h"><b>' + ad + '</b><span class="muted">' + adet(k.adet) + ' teslimat</span></div><div class="ks-v">' +
+    return '<li' + (sinif ? ' class="' + sinif + '"' : '') + '><div class="ks-h"><b>' + ad + '</b><span class="muted">' + adet(k.adet) + (/^Kasa/.test(ad) ? ' satış' : ' teslimat') + '</span></div><div class="ks-v">' +
       '<span><small>Nakit</small><b>' + tl(k.nakit) + '</b></span><span><small>Kart</small><b>' + tl(k.kart) + '</b></span>' +
       (top.diger ? '<span><small>Diğer</small><b>' + tl(k.diger) + '</b></span>' : '') + '</div></li>';
   };
@@ -2198,8 +2331,8 @@ function ekipEkrani(){
   h += '<h2 class="sec-h">Tabletler<span class="r">' + cz.length + ' cihaz</span></h2>';
   if (cz.length) {
     h += '<div class="plist">' + cz.map(function(c){
-      return '<div class="prow"><span class="av" aria-hidden="true">' + ic(c.rol === 'Kurye' ? 'kurye' : 'tablet') + '</span><div class="p-txt"><div class="p-ad">' + esc(c.ad) + '</div>' +
-        '<div class="p-sub"><span class="badge r-' + esc(c.rol) + '">' + (c.rol === 'Kurye' ? (hzm() ? 'Usta ekranı' : 'Kurye ekranı') : personelEkrani()) + '</span><span>' +
+      return '<div class="prow"><span class="av" aria-hidden="true">' + ic(c.rol === 'Kurye' ? 'kurye' : c.rol === 'Numaratör' ? 'tv' : 'tablet') + '</span><div class="p-txt"><div class="p-ad">' + esc(c.ad) + '</div>' +
+        '<div class="p-sub"><span class="badge r-' + esc(c.rol) + '">' + (c.rol === 'Kurye' ? (hzm() ? 'Usta ekranı' : 'Kurye ekranı') : c.rol === 'Numaratör' ? 'Numaratör ekranı' : personelEkrani()) + '</span><span>' +
         (c.sonMs ? 'Son görülme: ' + onceYazi(c.sonMs) : 'Henüz açılmadı') + '</span></div></div>' +
         '<button class="icon-btn" data-act="cihazSil" data-id="' + esc(c.id) + '" aria-label="' + esc(c.ad) + ' bağlantısını kaldır">' + ic('cop') + '</button></div>';
     }).join('') + '</div>';
@@ -2300,7 +2433,7 @@ function yzHazir(){ return YZ.acik && (YZ.yontem === 'tarayici' || YZ.yontem ===
 
 // Her veri yenilemesinde: yeni onaylanan siparişleri bul, yazıcı açıksa sıraya koy
 function yzKontrol(){
-  if (!D || kurye()) return;
+  if (!D || kurye() || numarator()) return;
   var kabul = D.siparisler.filter(function(o){ return ['H', 'R', 'O'].indexOf(o.kod) >= 0 && !yazdi[o.no]; });
   if (!kabul.length) { yzIlk = false; return; }
   // Ekran ilk açıldığında zaten onaylanmış siparişler tekrar basılmaz
@@ -2343,6 +2476,7 @@ function tarayiciYazdir(o){
   });
 }
 function fisHtml(o){
+  if (o.kanal) return kasaFisHtml(o);
   var r = function(a, b, cls){ return '<div class="r' + (cls ? ' ' + cls : '') + '"><span>' + a + '</span><span>' + b + '</span></div>'; };
   var bir = '<h1>' + esc(D.isletme.ad) + '</h1><div class="c b">SİPARİŞ #' + o.no + '</div><div class="c">' + gunYaz(gunKey(o.tarihMs), true) + ' ' + saatYaz(o.tarihMs) + '</div><hr>' +
     (o.teslimMs ? '<div class="c b">' + (hzm() ? 'RANDEVU: ' : 'TESLİM SAATİ: ') + teslimYazi(o.teslimMs) + '</div><hr>' : '') +
@@ -2389,6 +2523,7 @@ function satirBol(s, n){
   return l.length ? l : [''];
 }
 function fisBayt(o){
+  if (o.kanal) return kasaFisBayt(o);
   var n = YZ.genislik === 58 ? 32 : 48, b = [];
   var ESC = 27, GS = 29;
   var yaz = function(s){ b.push.apply(b, escKod(s)); };
@@ -2733,7 +2868,7 @@ function market(){ return !!(D && D.isletme && D.isletme.tur === 'market'); }
 // hizmet işletmesi: tesisatçı, elektrikçi, marangoz... (sipariş = iş / randevu, kurye = usta)
 function hzm(){ return !!(D && D.isletme && D.isletme.tur === 'hizmet'); }
 function menuAdi(){ return market() ? 'Ürünler' : hzm() ? 'Hizmetler' : 'Menü'; }
-function ekranAdi(){ return yonetim() ? 'YourPOS 360 Yönetim' : kurye() ? (hzm() ? 'Usta ekranı' : 'Kurye ekranı') : market() ? 'Mağaza ekranı' : hzm() ? 'İşletme ekranı' : 'Restoran ekranı'; }
+function ekranAdi(){ return yonetim() ? 'YourPOS 360 Yönetim' : numarator() ? 'Numaratör' : kurye() ? (hzm() ? 'Usta ekranı' : 'Kurye ekranı') : market() ? 'Mağaza ekranı' : hzm() ? 'İşletme ekranı' : 'Restoran ekranı'; }
 function personelEkrani(){ return market() ? 'Mağaza ekranı' : hzm() ? 'İşletme ekranı' : 'Restoran ekranı'; }
 function urunSoz(buyuk){ var s = hzm() ? 'hizmet' : 'ürün'; return buyuk ? s.charAt(0).toLocaleUpperCase('tr') + s.slice(1) : s; }
 // teslim / randevu zamanı: bugünse saat, başka günse «9 Eki 14:30»
@@ -3504,6 +3639,7 @@ function ayarEkrani(){
     '<button class="btn pri" type="submit"' + (bb ? ' disabled' : '') + '>' + (bb ? bekle('ayBilgi') : ic('tik')) + 'Bilgileri kaydet</button></form>';
   h += ayarSaatHtml();
   h += ayarAdimHtml();
+  h += kasaAyarHtml();
   // konum
   var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
   h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
@@ -7634,6 +7770,563 @@ Object.assign(ACT_EK, {
   }
 });
 
+/* ============================================================
+   KASA (1.17.5): tabldot kasası, tezgâh siparişi (sıra numaralı fiş), numaratör ekranı
+   • Tabldot: tepsideki her ürünün düğmesine dokunulur, toplam söylenir, Nakit / Kart → satış kapanır.
+   • Tezgâh: sipariş girilir, ödeme alınır → sipariş «Hazırlanıyor» olarak mutfak ekranına düşer, sıra numaralı fiş çıkar.
+   • Numaratör (rol «Numaratör», tablet bağlantısı): bugünün tezgâh siparişlerinin numaraları «Hazırlanıyor» / «Hazır».
+   ============================================================ */
+var KANAL_AD = { Tabldot:'Tabldot', Tezgah:'Tezgâh' };
+function numarator(){ return !!(D && D.rol === 'Numaratör'); }
+function kasaAcik(){ return !!(D && D.isletme && D.isletme.kasa && !hzm() && !kurye() && !numarator() && !merkez() && !yonetim()); }
+var KZ_MOD = 'yourpos360-kasa-mod-' + B, KZ_FIS = 'yourpos360-kasa-fis-' + B;
+var KZ = { mod:LS.get(KZ_MOD) === 'tezgah' ? 'tezgah' : 'tabldot', kat:'', sepet:[], not:'', fis:LS.get(KZ_FIS) === '1',
+  veri:null, vMs:0, yuk:false, hata:'', hataMs:0, son:null, sonMs:0, istek:'', sonEk:'' };
+function kzIstek(){ var c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', s = ''; for (var i = 0; i < 18; i++) s += c.charAt(Math.floor(Math.random() * c.length)); return s; }
+function kzYuv(n){ return Math.round(n * 100) / 100; }
+function kzToplam(){ return kzYuv(KZ.sepet.reduce(function(t, x){ return t + x.fiyat * x.adet; }, 0)); }
+function kzAdet(){ return KZ.sepet.reduce(function(t, x){ return t + x.adet; }, 0); }
+function kzBugunGun(){ var d = gunDate(gunKey(simdi())).getUTCDay(); return d === 0 ? 7 : d; }
+function kzUrunler(){
+  var g = kzBugunGun();
+  return (D.menu || []).filter(function(u){ return u.aktif && u.fiyat > 0 && (!u.gun || !u.gun.length || u.gun.indexOf(g) >= 0); });
+}
+function kzUrunAd(u){ return u.sec ? u.ad + ' (' + u.sec + ')' : u.ad; }
+function kzOdemeler(){ return (KZ.veri && KZ.veri.odemeler) || ['Nakit', 'Kredi kartı']; }
+function kzCiz(){ if (U.tab === 'kasa') renderMain(); if (SH && /^kz/.test(SH.tip)) renderSheet(); }
+function kzYukle(){
+  if (KZ.yuk) return;
+  KZ.yuk = true; KZ.hata = '';
+  call('ekKasa').then(function(r){
+    KZ.yuk = false;
+    if (!r || !r.ok) {
+      KZ.hata = (r && r.hata) || 'Kasa bilgileri alınamadı.'; KZ.hataMs = Date.now();
+      if (r && r.kod === 'KASA') { D.isletme.kasa = false; if (U.tab === 'kasa') U.tab = 'siparis'; ciz(); return; }
+    } else { KZ.veri = r; KZ.vMs = Date.now(); }
+    kzCiz();
+  });
+}
+function kzOzetEkle(s){
+  var v = KZ.veri;
+  if (!v) return;
+  v.ozet.adet++; v.ozet.toplam = kzYuv(v.ozet.toplam + s.toplam);
+  v.satislar.unshift(s);
+  if (s.sira) v.siradaki = s.sira >= 999 ? 1 : s.sira + 1;
+}
+
+/* --- Kasa sekmesi --- */
+var KZ_GENIS = window.matchMedia ? matchMedia('(min-width: 760px)') : { matches:false };
+if (KZ_GENIS.addEventListener) KZ_GENIS.addEventListener('change', function(){ if (D && U.tab === 'kasa') renderMain(); });
+function kasaEkrani(){
+  if (KZ_GENIS.matches) main.classList.add('fill');
+  if ((!KZ.veri || Date.now() - KZ.vMs > 300000) && !KZ.yuk && !(KZ.hata && Date.now() - KZ.hataMs < 30000)) setTimeout(kzYukle, 0);
+  var v = KZ.veri, tz = KZ.mod === 'tezgah';
+  var h = '<div class="scr kz">';
+  h += '<div class="kz-ust"><div class="seg" role="group" aria-label="Kasa türü">' +
+    '<button data-act="kzMod" data-k="tabldot" aria-pressed="' + !tz + '">🍽️ Tabldot</button>' +
+    '<button data-act="kzMod" data-k="tezgah" aria-pressed="' + tz + '">🧾 Tezgâh siparişi</button></div>' +
+    '<button class="kz-gun" data-act="kzSatislar"><span>Bugün</span><b>' + (v ? adet(v.ozet.adet) + ' satış · ' + tl(v.ozet.toplam) : KZ.yuk ? '…' : '—') + '</b>' + ic('sag', 'sm') + '</button></div>';
+  h += '<p class="tip-txt kz-ipucu">' + (tz
+    ? 'Siparişi girin, ödemeyi alın: sipariş mutfağa gider, sıra numaralı fiş çıkar.' + (v ? ' Sıradaki numara: <b>' + v.siradaki + '</b>' : '')
+    : 'Tepsideki her ürüne bir kez dokunun, toplamı müşteriye söyleyip ödemeyi seçin.') + '</p>';
+  if (KZ.son && Date.now() - KZ.sonMs < 120000 && KZ.son.kod !== 'I') {
+    var s = KZ.son;
+    h += '<div class="kz-son" role="status">' + ic('tik') + '<span class="b-txt">Son satış' + (s.sira ? ' · Sıra ' + s.sira : '') + ' · #' + s.no + ' · <b class="num">' + tl(s.toplam) + '</b> · ' + esc(s.tahsilat || s.odeme) + '</span>' +
+      '<button data-act="kzIptalAc" data-no="' + s.no + '">Geri al</button></div>';
+  }
+  if (KZ.hata && !v) h += '<div class="note-box">' + esc(KZ.hata) + ' <button class="btn ghost sm" data-act="kzTekrar">Tekrar dene</button></div>';
+  var ur = kzUrunler();
+  var katlar = [];
+  ur.forEach(function(u){ if (katlar.indexOf(u.kat) < 0) katlar.push(u.kat); });
+  if (KZ.kat && katlar.indexOf(KZ.kat) < 0) KZ.kat = '';
+  h += '<div class="kz-govde"><section class="kz-sol" aria-label="Ürünler" data-scroll="kzSol">';
+  if (!ur.length) {
+    h += bosDurum('menu', 'Kasada gösterilecek ürün yok', 'Menüde fiyatı olan ve satışta olan ürünler burada düğme olarak görünür. «Tutar gir» ile elle tutar da ekleyebilirsiniz.') +
+      '<div class="kz-grid">' + kzTutarDugme() + '</div>';
+  } else {
+    if (katlar.length > 1) {
+      h += '<div class="chips" role="group" aria-label="Kategori" style="margin-bottom:10px"><button class="chip" data-act="kzKat" data-k="" aria-pressed="' + !KZ.kat + '">Tümü</button>' +
+        katlar.map(function(k){ return '<button class="chip" data-act="kzKat" data-k="' + esc(k) + '" aria-pressed="' + (KZ.kat === k) + '">' + esc(k) + '</button>'; }).join('') + '</div>';
+    }
+    var gos = KZ.kat ? [KZ.kat] : katlar;
+    h += gos.map(function(k, i){
+      var l = ur.filter(function(u){ return u.kat === k; });
+      return '<div class="kz-kat">' + (gos.length > 1 ? '<h3>' + esc(k) + '</h3>' : '') + '<div class="kz-grid">' + l.map(kzUrunDugme).join('') +
+        (i === gos.length - 1 ? kzTutarDugme() : '') + '</div></div>';
+    }).join('');
+  }
+  h += '</section><aside class="kz-yan kz-tepsi card" aria-label="Tepsi">' + kzTepsiHtml() + '</aside></div>';
+  var n = kzAdet();
+  h += '<div class="kz-bar"><div class="kz-bar-t"><small>' + (n ? adet(n) + ' ürün' : (tz ? 'Sipariş boş' : 'Tepsi boş')) + '</small><b>' + tl(kzToplam()) + '</b></div>' +
+    '<button class="btn pri" data-act="kzTepsiAc"' + (n ? '' : ' disabled') + '>' + (tz ? 'Siparişi tamamla' : 'Öde') + ic('sag', 'sm') + '</button></div>';
+  return h + '</div>';
+}
+function kzUrunDugme(u){
+  var x = KZ.sepet.filter(function(s){ return s.id === u.id; })[0];
+  var st = u.stok && u.stok.kalan !== null && u.stok.kalan !== undefined ? u.stok.kalan : null;
+  return '<button class="kz-u' + (x ? ' sec' : '') + '" data-act="kzEkle" data-id="' + esc(u.id) + '" aria-label="' + esc(kzUrunAd(u)) + ', ' + tl(u.fiyat) + (x ? ', tepside ' + x.adet : '') + '">' +
+    '<span class="kz-adk"><span class="kz-ad">' + esc(u.ad) + '</span>' + (u.sec ? '<span class="kz-sec">' + esc(u.sec) + '</span>' : '') + '</span>' +
+    (st !== null ? '<span class="kz-st' + (st <= 0 ? ' yok' : '') + '">' + (st <= 0 ? 'Tükendi' : 'Kalan ' + st) + '</span>' : '') +
+    '<span class="kz-f">' + tl(u.fiyat) + '</span>' + (x ? '<span class="kz-n" aria-hidden="true">' + x.adet + '</span>' : '') + '</button>';
+}
+function kzTutarDugme(){ return '<button class="kz-u kz-tutar" data-act="kzTutar">' + ic('arti') + '<span>Tutar gir</span></button>'; }
+function kzTepsiHtml(){
+  var tz = KZ.mod === 'tezgah', n = kzAdet(), b = U.busy.kzOde, yzH = yzHazir(), bulut = KZ.veri && KZ.veri.yazici;
+  var h = '<div class="kz-th"><h2>' + (tz ? 'Sipariş' : 'Tepsi') + '</h2><span class="muted">' + (n ? adet(n) + ' ürün' : '') + '</span>' +
+    (n ? '<button class="btn ghost sm" data-act="kzTemizle">Temizle</button>' : '') + '</div>';
+  if (!KZ.sepet.length) h += '<div class="kz-bos">' + (tz ? 'Müşterinin söylediği ürünlere dokunun.' : 'Tepsideki ürünlere dokunun.') + '</div>';
+  else h += '<ul class="kz-lst" data-scroll="kzLst">' + KZ.sepet.map(function(x, i){
+    return '<li><span><span class="kz-la">' + esc(x.ad) + '</span><br><span class="kz-lb">' + tl(x.fiyat) + (x.adet > 1 ? ' × ' + x.adet + ' = <b>' + tl(x.fiyat * x.adet) + '</b>' : '') + '</span></span>' +
+      '<span class="kz-ar"><button data-act="kzAzalt" data-k="' + i + '" aria-label="' + esc(x.ad) + ' bir azalt">−</button><b aria-label="adet">' + x.adet + '</b>' +
+      '<button data-act="kzArtir" data-k="' + i + '" aria-label="' + esc(x.ad) + ' bir artır">+</button></span></li>';
+  }).join('') + '</ul>';
+  if (tz) h += KZ.not ? '<div class="kz-not">📝<span>' + esc(KZ.not) + '</span><button class="btn ghost sm" data-act="kzNot">Değiştir</button></div>'
+    : '<button class="btn line sm" data-act="kzNot">📝 Not ekle (soğansız, paket…)</button>';
+  h += '<div class="kz-top"><span>Toplam</span><b>' + tl(kzToplam()) + '</b></div>';
+  if (!tz) {
+    h += '<button class="opt" type="button" role="switch" aria-checked="' + KZ.fis + '" data-act="kzFis"><span class="o-main">🧾 Fiş yazdır' +
+      '<span class="o-sub">' + (yzH ? 'Bu cihazın yazıcısı hazır' : bulut ? 'Bulut yazıcıya gider' : inTelegram ? 'Telegram içinde yazıcı yok; tarayıcıdan açın' : 'Yazıcı bağlı değil: üstteki 🖨 düğmesinden bağlayın') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  } else {
+    h += '<p class="tip-txt">' + (yzH ? '🖨 Sıra numaralı fiş bu cihazın yazıcısından çıkar.' : bulut ? '🖨 Sıra numaralı fiş bulut yazıcıdan çıkar.' : 'Yazıcı bağlı değil: sıra numarasını müşteriye söyleyin.') + '</p>';
+  }
+  var od = function(k, sinif, yazi){ return '<button class="btn ' + sinif + '" data-act="kzOde" data-k="' + esc(k) + '"' + (n && !b ? '' : ' disabled') + '>' + (b ? '<span class="spin" aria-hidden="true"></span>' : '') + yazi + '</button>'; };
+  h += '<div class="kz-ode">' + od('Nakit', 'ok', '💵 Nakit') + od('Kredi kartı', 'pri', '💳 Kart') + '</div>';
+  h += '<div class="kz-ode2"><button class="btn line sm" data-act="kzDiger"' + (n && !b ? '' : ' disabled') + '>Diğer ödeme</button>' +
+    '<button class="btn line sm" data-act="kzPara"' + (n && !b ? '' : ' disabled') + '>Para üstü</button></div>';
+  return h;
+}
+function kzEkle(id){
+  if (U.busy.kzOde) return;
+  var u = (D.menu || []).filter(function(x){ return x.id === id; })[0];
+  if (!u) return;
+  var x = KZ.sepet.filter(function(s){ return s.id === id; })[0];
+  if (x) x.adet++; else KZ.sepet.push({ id:u.id, ad:kzUrunAd(u), fiyat:u.fiyat, adet:1 });
+  KZ.istek = '';
+  haptic('select');
+  kzCiz();
+}
+// Ödeme: istek kimliği aynı satış için sabit kalır (bağlantı kopup tekrar denenirse ikinci kayıt açılmaz)
+function kzOde(odeme, alinan){
+  if (!KZ.sepet.length || U.busy.kzOde) return;
+  if (!KZ.istek) KZ.istek = kzIstek();
+  var tz = KZ.mod === 'tezgah';
+  var veri = { tur:KZ.mod, odeme:odeme, istek:KZ.istek, kalemler:KZ.sepet.map(function(x){ return x.id ? { id:x.id, adet:x.adet } : { serbest:x.fiyat, ad:x.ad, adet:x.adet }; }) };
+  if (tz && KZ.not) veri.not = KZ.not;
+  if (!tz && KZ.fis) veri.fis = true;
+  islem('ekKasaSatis', veri, { busy:'kzOde' }).then(function(r){
+    if (!r) { kzCiz(); return; }
+    var s = r.satis;
+    KZ.istek = ''; KZ.sepet = []; KZ.not = ''; KZ.son = s; KZ.sonMs = Date.now();
+    if (!r.tekrar) kzOzetEkle(s);
+    if (SH && /^kz/.test(SH.tip)) sheetKapat();
+    if (s.kanal === 'Tezgah') {
+      if (r.siparis && GORULEN) GORULEN[r.siparis.no + ':' + r.siparis.kod] = 1;
+      sheetAc({ tip:'kzSira', satis:s, yz:yzHazir(), bulut:!!(KZ.veri && KZ.veri.yazici), alinan:alinan || 0 });
+    } else {
+      if (KZ.fis && yzHazir()) yzKuyruk(s, false);
+      toast((r.tekrar ? 'Bu satış zaten kaydedilmişti: ' : '✅ ') + tl(s.toplam) + ' · ' + s.odeme + (alinan > s.toplam ? ' · para üstü ' + tl(alinan - s.toplam) : ''));
+    }
+    kzCiz();
+  });
+}
+// Mutfak ekranında tezgâh siparişi: Hazır → Müşteriye verildi (ödeme kasada alındı)
+function kzIleri(o, a){
+  if (!a) return;
+  var no = o.no, ad = o.sira ? 'Sıra ' + o.sira : '#' + no;
+  var bitti = function(r, m){ if (r) { toast(ad + ' · ' + m); if (SH && SH.tip === 'siparis') renderSheet(); } };
+  if (a.kod === 'T') return islem('ekTeslim', { no:no, tahsilat:o.tahsilat || o.odeme }, { busy:'ileri:' + no }).then(function(r){ bitti(r, 'müşteriye verildi'); });
+  return islem('ekDurum', { no:no, kod:a.kod }, { busy:'ileri:' + no }).then(function(r){ bitti(r, a.kod === 'R' ? 'hazır · numaratörde görünüyor' : 'hazırlanıyor'); });
+}
+function kasaSiparisBlok(o){
+  return blk(KANAL_AD[o.kanal] || o.kanal, (o.sira ? '<div class="kz-sira-kutu" style="padding:10px"><span class="kz-sira-l">SIRA NO</span><span class="kz-sira-n" style="font-size:56px">' + o.sira + '</span></div>' : '') +
+    '<p class="tip-txt">Kasada girildi; ödeme alındı (' + esc(o.tahsilat || o.odeme) + '). Müşteri numarası ekranda görünce teslim alır.</p>');
+}
+function kanalKarti(r){
+  if (!r.kanal || !r.kanal.some(function(x){ return x.ad !== 'Paket servis'; })) return '';
+  var top = r.kanal.reduce(function(a, x){ return a + x.tutar; }, 0) || 1;
+  return '<section class="chart"><h3 class="ch-title">Satış kanalları<span class="ch-sub">Paket servis ve kasa · iptaller hariç</span></h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kanal</th><th class="r">Satış</th><th class="r">Tutar</th><th class="r">Pay</th></tr></thead><tbody>' +
+    r.kanal.map(function(x){ return '<tr><td>' + esc(x.ad) + '</td><td class="r">' + adet(x.adet) + '</td><td class="r">' + tl(x.tutar) + '</td><td class="r">%' + Math.round(x.tutar / top * 100) + '</td></tr>'; }).join('') +
+    '</tbody></table></div></section>';
+}
+function kasaAyarHtml(){
+  if (hzm() || !D.isletme) return '';
+  var acik = !!D.isletme.kasa, b = U.busy.kzAyar;
+  return '<section class="card pad frm"><h2 class="frm-h">Kasa (tabldot ve tezgâh)</h2>' +
+    '<button class="opt" type="button" role="switch" aria-checked="' + acik + '" data-act="kzAyarSw"' + (b ? ' disabled' : '') + '><span class="o-main">Kasa sekmesi' +
+    '<span class="o-sub">Tabldot: tepsideki ürünlere dokunup ödemeyi alırsınız. Tezgâh: siparişi girersiniz, mutfağa gider, sıra numaralı fiş çıkar.</span></span><span class="tgl" aria-hidden="true"></span></button>' +
+    '<p class="tip-txt">Salona numaratör ekranı (TV ya da tablet) için: Ekip › Tablet bağla › «Numaratör ekranı». Mutfak «Hazır» deyince numara ekranda görünür.</p>' +
+    '<p class="tip-txt">Kasa satışları raporlarınıza «Tabldot» ve «Tezgâh» olarak işlenir; paketinizin haftalık sipariş sınırına sayılmaz. Basılan fiş bilgi fişidir, mali değeri yoktur: yasal fiş için yazar kasanızı (ÖKC) kullanmaya devam edin.</p>' +
+    (b ? '<p class="muted">' + bekle('kzAyar') + ' Kaydediliyor…</p>' : '') + '</section>';
+}
+
+/* --- Kasa pencereleri --- */
+SHEET.kzTepsi = function(){ return shBas(KZ.mod === 'tezgah' ? 'Tezgâh siparişi' : 'Tabldot') + '<div class="sh-body kz-tepsi">' + kzTepsiHtml() + '</div>'; };
+SHEET.kzSira = function(s){
+  var x = s.satis;
+  return shBas('Sipariş mutfağa gitti') + '<div class="sh-body">' +
+    '<div class="kz-sira-kutu"><span class="kz-sira-l">SIRA NO</span><span class="kz-sira-n">' + x.sira + '</span></div>' +
+    '<p style="text-align:center"><b class="num">#' + x.no + '</b> · ' + adet(x.kalemler.reduce(function(t, k){ return t + k.adet; }, 0)) + ' ürün · <b class="num">' + tl(x.toplam) + '</b> · ' + esc(x.odeme) + '</p>' +
+    (s.alinan > x.toplam ? '<div class="kz-ustu"><span>Para üstü</span><b>' + tl(s.alinan - x.toplam) + '</b></div>' : '') +
+    '<div class="note-box' + (s.yz || s.bulut ? ' ok' : '') + '">' + (s.yz ? '🖨 Fiş yazıcıya gönderildi; müşteriye verin.' : s.bulut ? '🖨 Fiş bulut yazıcıya gönderildi; müşteriye verin.' : 'Yazıcı bağlı değil: numarayı müşteriye söyleyin.') + '</div>' +
+    '<p class="tip-txt">Mutfak «Hazır» deyince numara numaratör ekranında görünür.</p></div>' +
+    '<div class="sh-foot"><button class="btn pri block" data-act="kapat">Yeni sipariş</button></div>';
+};
+SHEET.kzPara = function(s){
+  var t = kzToplam(), al = Number(String(s.deger || '').replace(',', '.')) || 0, b = U.busy.kzOde;
+  var hizli = [t];
+  [50, 100, 200, 500, 1000].forEach(function(n){ if (n > t && hizli.length < 5) hizli.push(n); });
+  return shBas('Para üstü') + '<div class="sh-body">' +
+    '<div class="kv tot"><span>Toplam</span><span>' + tl(t) + '</span></div>' +
+    '<div class="blk-h">Müşteriden alınan</div><div class="kz-ekran" aria-live="polite">' + esc(s.deger || '0') + '<small>TL</small></div>' +
+    '<div class="kz-hizli">' + hizli.map(function(n, i){ return '<button class="chip" data-act="kzParaHizli" data-k="' + n + '">' + (i === 0 ? 'Tam ' : '') + tl(n) + '</button>'; }).join('') + '</div>' +
+    kzTusTakimi('kzParaTus') +
+    (al ? '<div class="kz-ustu' + (al < t ? ' eksik' : '') + '"><span>' + (al < t ? 'Eksik' : 'Para üstü') + '</span><b>' + tl(Math.abs(al - t)) + '</b></div>' : '') + '</div>' +
+    '<div class="sh-foot"><button class="btn ok block" data-act="kzParaOde"' + (b || (al && al < t) ? ' disabled' : '') + '>' + bekle('kzOde') + '💵 Nakit al, ' + (KZ.mod === 'tezgah' ? 'siparişi gönder' : 'satışı tamamla') + '</button></div>';
+};
+SHEET.kzOdeme = function(){
+  var l = kzOdemeler().slice(2), b = U.busy.kzOde;
+  return shBas('Diğer ödeme') + '<div class="sh-body">' +
+    (l.length ? '<div class="opt-list">' + l.map(function(o){ return '<button class="opt" data-act="kzOde" data-k="' + esc(o) + '"' + (b ? ' disabled' : '') + '><span class="o-main">' + esc(o) + '<span class="o-sub">' + tl(kzToplam()) + '</span></span>' + ic('sag', 'sm') + '</button>'; }).join('') + '</div>'
+      : '<p>İşletmenizde nakit ve kart dışında açık ödeme yöntemi yok. Yemek kartlarını Ayarlar › Ödeme yöntemleri bölümünden ekleyebilirsiniz.</p>') + '</div>';
+};
+function kzTusTakimi(act){
+  return '<div class="kz-pad">' + ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫'].map(function(k){
+    return '<button type="button" data-act="' + act + '" data-k="' + k + '"' + (k === '⌫' ? ' class="sil" aria-label="Sil"' : '') + '>' + k + '</button>';
+  }).join('') + '</div>';
+}
+function kzTusIsle(deger, k){
+  deger = String(deger || '');
+  if (k === '⌫') return deger.slice(0, -1);
+  if (k === ',') return deger.indexOf(',') >= 0 ? deger : (deger || '0') + ',';
+  if (/,\d\d$/.test(deger) || deger.replace(',', '').length >= 7) return deger;
+  return deger === '0' ? k : deger + k;
+}
+SHEET.kzTutar = function(s){
+  var v = Number(String(s.deger || '').replace(',', '.')) || 0;
+  return shBas('Tutar gir') + '<div class="sh-body">' +
+    '<div class="kz-ekran" aria-live="polite">' + esc(s.deger || '0') + '<small>TL</small></div>' + kzTusTakimi('kzTus') +
+    '<div class="field"><label for="kzTutarAd">Ne için? (isteğe bağlı)</label><input class="inp" id="kzTutarAd" maxlength="40" placeholder="ör. Ekmek, Salata" value="' + esc(s.ad || '') + '" autocomplete="off"></div></div>' +
+    '<div class="sh-foot"><button class="btn pri block" data-act="kzTutarEkle"' + (v > 0 && v <= 100000 ? '' : ' disabled') + '>' + ic('arti', 'sm') + 'Tepsiye ekle' + (v > 0 ? ' · ' + tl(v) : '') + '</button></div>';
+};
+var KZ_NOTLAR = ['Soğansız', 'Acılı', 'Acısız', 'Paket (götürecek)', 'Burada yiyecek'];
+SHEET.kzNot = function(s){
+  return shBas('Sipariş notu') + '<div class="sh-body"><div class="kz-hizli">' + KZ_NOTLAR.map(function(n){ return '<button class="chip" data-act="kzNotHizli" data-k="' + esc(n) + '">' + esc(n) + '</button>'; }).join('') + '</div>' +
+    '<div class="field"><label for="kzNotInp">Not (mutfak ekranında ve fişte görünür)</label><textarea class="inp" id="kzNotInp" maxlength="200" rows="3">' + esc(s.not || '') + '</textarea></div></div>' +
+    '<div class="sh-foot"><div class="row"><button class="btn line" data-act="kzNotSil">Notu kaldır</button><button class="btn pri" data-act="kzNotKaydet">' + ic('tik', 'sm') + 'Kaydet</button></div></div>';
+};
+SHEET.kzSatislar = function(){
+  var v = KZ.veri;
+  var h = shBas('Bugünkü kasa satışları') + '<div class="sh-body" data-scroll="kzSat">';
+  if (!v) return h + (KZ.yuk ? '<div class="sk" style="height:120px"></div>' : bosDurum('uyari', 'Açılamadı', esc(KZ.hata || ''))) + '</div>';
+  var oz = v.ozet;
+  h += '<div class="kz-oz"><div><small>Satış</small><b>' + adet(oz.adet) + '</b></div><div><small>Toplam</small><b>' + tl(oz.toplam) + '</b></div>' +
+    oz.odeme.map(function(x){ return '<div><small>' + esc(x.ad) + '</small><b>' + tl(x.tutar) + '</b></div>'; }).join('') +
+    (oz.iptal ? '<div><small>İptal</small><b>' + adet(oz.iptal) + '</b></div>' : '') + '</div>';
+  if (KZ.yuk) h += '<p class="muted">' + bekle('x') + ' Güncelleniyor…</p>';
+  if (!v.satislar.length) h += bosDurum('kasa', 'Bugün kasa satışı yok', '');
+  else h += '<ul class="kz-sat">' + v.satislar.map(function(s){
+    var ipt = s.kod === 'I';
+    return '<li class="' + (ipt ? 'ipt' : '') + '"><span class="kz-s1">' + saatYaz(s.tarihMs) + ' · ' + (s.kanal === 'Tezgah' ? '🧾 Sıra ' + s.sira : '🍽️ Tabldot') + ' <span class="muted num">#' + s.no + '</span></span>' +
+      '<span class="kz-s3">' + tl(s.toplam) + '</span>' +
+      '<span class="kz-s2">' + kalemOzet(s.kalemler) + ' · ' + esc(s.tahsilat || s.odeme) + (ipt ? ' · <b>İptal</b>' + (s.iptalNedeni ? ': ' + esc(s.iptalNedeni) : '') : '') + '</span>' +
+      (ipt ? '' : '<span class="kz-s4">' + (!inTelegram || yzHazir() ? '<button class="btn line sm" data-act="kzFisYaz" data-no="' + s.no + '">' + ic('yazici', 'sm') + 'Fiş</button>' : '') +
+        '<button class="btn dng-line sm" data-act="kzIptalAc" data-no="' + s.no + '">İptal et</button></span>') + '</li>';
+  }).join('') + '</ul>';
+  return h + '</div>';
+};
+SHEET.kzIptal = function(s){
+  var x = kzSatisBul(s.no), b = U.busy.kzIptal, l = (KZ.veri && KZ.veri.iptalNedenleri) || ['Yanlış giriş', 'Müşteri vazgeçti', 'Ürün kalmadı', 'Diğer'];
+  return shBas('Satış iptal edilsin mi?') + '<div class="sh-body">' +
+    (x ? '<p><b>' + (x.sira ? 'Sıra ' + x.sira + ' · ' : '') + '#' + x.no + '</b> · ' + tl(x.toplam) + ' · ' + esc(x.tahsilat || x.odeme) + '<br><span class="muted">' + kalemOzet(x.kalemler) + '</span></p>' : '') +
+    '<p class="tip-txt">Ödeme geri verildiyse iptal edin. Rapora «iptal» olarak işlenir; porsiyonlar geri eklenir.</p>' +
+    '<div class="opt-list" role="radiogroup" aria-label="İptal nedeni">' + l.map(function(n){
+      return '<button class="opt" role="radio" aria-checked="' + (s.neden === n) + '" data-act="kzIptalNeden" data-k="' + esc(n) + '"><span class="radio" aria-hidden="true"></span><span class="o-main">' + esc(n) + '</span></button>';
+    }).join('') + '</div></div>' +
+    '<div class="sh-foot"><div class="row"><button class="btn line" data-act="' + (s.geri ? 'kzSatislar' : 'kapat') + '">Vazgeç</button><button class="btn dng" data-act="kzIptalYap"' + (s.neden && !b ? '' : ' disabled') + '>' + bekle('kzIptal') + 'İptal et</button></div></div>';
+};
+function kzSatisBul(no){
+  no = Number(no);
+  var l = (KZ.veri && KZ.veri.satislar) || [];
+  for (var i = 0; i < l.length; i++) if (l[i].no === no) return l[i];
+  return KZ.son && KZ.son.no === no ? KZ.son : null;
+}
+
+/* --- Kasa fişi: bu cihazın yazıcısı (ESC/POS) ve tarayıcı yazdırma --- */
+function kasaFisBayt(o){
+  var n = YZ.genislik === 58 ? 32 : 48, b = [], ESC = 27, GS = 29;
+  var yaz = function(s){ b.push.apply(b, escKod(s)); };
+  var sat = function(s){ yaz(s); b.push(10); };
+  var cizgi = function(){ sat(new Array(n + 1).join('-')); };
+  var hiza = function(x){ b.push(ESC, 97, x); };
+  var kalin = function(x){ b.push(ESC, 69, x ? 1 : 0); };
+  var boy = function(x){ b.push(GS, 33, x); };
+  var ikiyana = function(a, c){ var bos = n - a.length - c.length; if (bos < 1) { satirBol(a, n).forEach(sat); hiza(2); sat(c); hiza(0); } else sat(a + new Array(bos + 1).join(' ') + c); };
+  var para = function(x){ return tl(x).replace(/ /g, ' '); };
+  b.push(ESC, 64);
+  if (YZ.tr) b.push(ESC, 116, 13);
+  hiza(1); kalin(1); sat(D.isletme.ad); kalin(0);
+  if (o.sira) { cizgi(); sat('SIRA NO'); boy(0x33); kalin(1); sat(String(o.sira)); kalin(0); boy(0); cizgi(); }
+  else sat('SATIŞ FİŞİ');
+  sat(gunYaz(gunKey(o.tarihMs), true) + ' ' + saatYaz(o.tarihMs) + '  #' + o.no);
+  hiza(0); cizgi();
+  (o.kalemler || []).forEach(function(k){ ikiyana(adet(k.adet) + 'x ' + k.ad, para(k.tutar)); });
+  cizgi();
+  boy(1); kalin(1); ikiyana('TOPLAM', para(o.toplam)); kalin(0); boy(0);
+  ikiyana('Ödeme', o.tahsilat || o.odeme || '');
+  if (o.not) { cizgi(); boy(1); kalin(1); satirBol('NOT: ' + o.not, n).forEach(sat); kalin(0); boy(0); }
+  cizgi(); hiza(1);
+  if (o.sira) sat('Numaranız ekranda görününce teslim alın.');
+  sat('Bilgi fişidir - mali değeri yoktur'); sat('YourPOS 360'); hiza(0);
+  b.push(10, 10, 10, 10, GS, 86, 66, 0);
+  return new Uint8Array(b);
+}
+function kasaFisHtml(o){
+  var r = function(a, b2, cls){ return '<div class="r' + (cls ? ' ' + cls : '') + '"><span>' + a + '</span><span>' + b2 + '</span></div>'; };
+  var bir = '<h1>' + esc(D.isletme.ad) + '</h1>' + (o.sira ? '<hr><div class="sira-l">SIRA NO</div><div class="sira">' + o.sira + '</div><hr>' : '<div class="c b">SATIŞ FİŞİ</div>') +
+    '<div class="c">' + gunYaz(gunKey(o.tarihMs), true) + ' ' + saatYaz(o.tarihMs) + ' · #' + o.no + '</div><hr>' +
+    (o.kalemler || []).map(function(k){ return r('<b>' + adet(k.adet) + '×</b> ' + esc(k.ad), tl(k.tutar), 'k'); }).join('') + '<hr>' +
+    r('TOPLAM', tl(o.toplam), 'b') + r('Ödeme', esc(o.tahsilat || o.odeme)) + (o.not ? '<hr><div class="b">NOT: ' + esc(o.not) + '</div>' : '') +
+    '<hr>' + (o.sira ? '<div class="c">Numaranız ekranda görününce teslim alın.</div>' : '') + '<div class="c">Bilgi fişidir · mali değeri yoktur</div><div class="c">YourPOS 360</div>';
+  var f = $('#fis');
+  f.style.setProperty('--fis-g', (YZ.genislik === 58 ? 54 : 72) + 'mm');
+  var kopya = [];
+  for (var i = 0; i < (YZ.kopya || 1); i++) kopya.push('<section class="fis-k">' + bir + '</section>');
+  f.innerHTML = kopya.join('');
+}
+
+/* --- Numaratör ekranı --- */
+var NMR = { gorulen:null, taze:{} };
+function nmrListe(){
+  var bugun = gunKey(simdi());
+  return (D.siparisler || []).filter(function(o){ return o.kanal === 'Tezgah' && ['Y', 'H', 'R'].indexOf(o.kod) >= 0 && gunKey(o.tarihMs) === bugun && o.sira; });
+}
+function nmrEkran(){
+  var l = nmrListe();
+  var haz = l.filter(function(o){ return o.kod !== 'R'; }).sort(function(a, b){ return a.tarihMs - b.tarihMs; });
+  var hazir = l.filter(function(o){ return o.kod === 'R'; }).sort(function(a, b){ return (b.guncelMs || 0) - (a.guncelMs || 0); });
+  var sim = Date.now();
+  var num = function(o, taze){ return '<span class="nmr-n' + (taze ? ' taze' : '') + '">' + o.sira + '</span>'; };
+  return '<div class="nmr" aria-live="polite"><section class="nmr-k nmr-h" aria-label="Hazırlanıyor"><h2>Hazırlanıyor</h2><div class="nmr-l">' +
+    (haz.length ? haz.map(function(o){ return num(o, false); }).join('') : '<span class="nmr-bos">—</span>') + '</div></section>' +
+    '<section class="nmr-k nmr-r" aria-label="Hazır"><h2>Hazır · teslim alabilirsiniz</h2><div class="nmr-l">' +
+    (hazir.length ? hazir.map(function(o){ return num(o, NMR.taze[o.no] && sim - NMR.taze[o.no] < 15000); }).join('') : '<span class="nmr-bos">Hazır sipariş yok</span>') + '</div></section></div>';
+}
+function nmrTopCiz(){
+  var i = D.isletme, tam = !!document.fullscreenElement;
+  var canli = U.net ? '<span class="live" aria-hidden="true"></span>' : '<span class="live off" aria-hidden="true"></span>';
+  var h = (i.logo ? '<div class="logo img" aria-hidden="true"><img src="' + esc(i.logo) + '" alt=""></div>' : '<div class="logo" aria-hidden="true">' + esc(basHarf(i.ad)) + '</div>') +
+    '<div class="top-txt"><div class="top-name">' + esc(i.ad) + '</div><div class="top-sub">' + canli + '<span class="who">Sipariş numaraları</span></div></div><div class="top-acts">' +
+    '<span class="nmr-saat">' + saatYaz(simdi()) + '</span>' +
+    (document.documentElement.requestFullscreen ? '<button class="icon-btn" data-act="nmrTam" aria-label="' + (tam ? 'Tam ekrandan çık' : 'Tam ekran') + '">' + ic(tam ? 'kucult' : 'buyut') + '</button>' : '') +
+    '<button class="icon-btn" data-act="tema" aria-label="Tema">' + ic(root.getAttribute('data-theme') === 'dark' ? 'gunes' : 'ay') + '</button>' +
+    '<button class="icon-btn' + (SES.acik ? ' on' : '') + '" data-act="nmrSes" aria-label="Hazır sesi ' + (SES.acik ? 'açık' : 'kapalı') + '">' + ic(SES.acik ? 'zil' : 'zilYok') + '</button></div>';
+  koruyarakYaz($('#top'), h);
+}
+function nmrBannerlar(){
+  var h = '';
+  if (DEMO) h += '<div class="demo-bar"><span>Önizleme · numaratör ekranı (örnek numaralar birkaç saniyede bir değişir)</span><span class="d-roles"><a href="?demo=1&rol=sahip&sekme=kasa">Kasaya dön</a></span></div>';
+  if (!U.net) h += '<div class="banner err" role="alert">' + ic('uyari') + '<span class="b-txt">Bağlantı kurulamıyor. Tekrar deneniyor…</span></div>';
+  if (SES.acik && !sesHazir()) h += '<div class="banner info">' + ic('zil') + '<span class="b-txt">Numara hazır olunca ses çalması için ekrana bir kez dokunun.</span><button data-act="sesDene">Sesi aç</button></div>';
+  koruyarakYaz($('#banners'), h);
+}
+function nmrDegisiklik(){
+  var hazir = nmrListe().filter(function(o){ return o.kod === 'R'; });
+  if (NMR.gorulen) {
+    var yeni = hazir.filter(function(o){ return !NMR.gorulen[o.no]; });
+    if (yeni.length) {
+      yeni.forEach(function(o){ NMR.taze[o.no] = Date.now(); });
+      if (SES.acik) bip('yeni', 1);
+    }
+  }
+  NMR.gorulen = {};
+  hazir.forEach(function(o){ NMR.gorulen[o.no] = 1; });
+  ekranAcikKalsin();
+}
+setInterval(function(){
+  if (!numarator()) return;
+  renderTop();
+  var k = Object.keys(NMR.taze);
+  k.forEach(function(n){ if (Date.now() - NMR.taze[n] > 20000) delete NMR.taze[n]; });
+  if (k.length) renderMain();
+}, 15000);
+
+/* --- olaylar --- */
+document.addEventListener('input', function(e){
+  if (e.target.id === 'kzTutarAd' && SH && SH.tip === 'kzTutar') SH.ad = e.target.value;
+  if (e.target.id === 'kzNotInp' && SH && SH.tip === 'kzNot') SH.not = e.target.value;
+});
+document.addEventListener('keydown', function(e){
+  if (!SH || (SH.tip !== 'kzTutar' && SH.tip !== 'kzPara') || (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName))) return;
+  var k = e.key === 'Backspace' ? '⌫' : e.key === '.' ? ',' : e.key;
+  if (/^[0-9,⌫]$/.test(k)) { e.preventDefault(); SH.deger = kzTusIsle(SH.deger, k); renderSheet(); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (SH.tip === 'kzTutar') ACT_KZ.kzTutarEkle(); else ACT_KZ.kzParaOde(); }
+});
+var ACT_KZ = {
+  kzMod:function(el){ KZ.mod = el.getAttribute('data-k') === 'tezgah' ? 'tezgah' : 'tabldot'; LS.set(KZ_MOD, KZ.mod); KZ.istek = ''; haptic('select'); kzCiz(); },
+  kzKat:function(el){ KZ.kat = el.getAttribute('data-k') || ''; haptic('select'); main.scrollTop = 0; kzCiz(); },
+  kzEkle:function(el){ kzEkle(el.getAttribute('data-id')); },
+  kzArtir:function(el){ if (U.busy.kzOde) return; var x = KZ.sepet[Number(el.getAttribute('data-k'))]; if (x && x.adet < 999) { x.adet++; KZ.istek = ''; kzCiz(); } },
+  kzAzalt:function(el){ if (U.busy.kzOde) return; var i = Number(el.getAttribute('data-k')), x = KZ.sepet[i]; if (!x) return; x.adet--; if (x.adet <= 0) KZ.sepet.splice(i, 1); KZ.istek = ''; if (!KZ.sepet.length && SH && SH.tip === 'kzTepsi') sheetKapat(); kzCiz(); },
+  kzTemizle:function(){ if (U.busy.kzOde) return; KZ.sepet = []; KZ.not = ''; KZ.istek = ''; if (SH && SH.tip === 'kzTepsi') sheetKapat(); kzCiz(); },
+  kzTepsiAc:function(){ if (KZ.sepet.length) sheetAc({ tip:'kzTepsi' }); },
+  kzFis:function(){ KZ.fis = !KZ.fis; LS.set(KZ_FIS, KZ.fis ? '1' : '0'); if (KZ.fis && !yzHazir() && !(KZ.veri && KZ.veri.yazici)) toast('Fiş için önce yazıcıyı bağlayın: üstteki 🖨 düğmesi.'); kzCiz(); },
+  kzOde:function(el){ kzOde(el.getAttribute('data-k')); },
+  kzDiger:function(){ if (KZ.sepet.length) sheetAc({ tip:'kzOdeme' }); },
+  kzPara:function(){ if (KZ.sepet.length) sheetAc({ tip:'kzPara', deger:'' }); },
+  kzParaTus:function(el){ if (SH) { SH.deger = kzTusIsle(SH.deger, el.getAttribute('data-k')); renderSheet(); } },
+  kzParaHizli:function(el){ if (SH) { SH.deger = String(el.getAttribute('data-k')).replace('.', ','); renderSheet(); } },
+  kzParaOde:function(){
+    if (!SH || SH.tip !== 'kzPara') return;
+    var al = Number(String(SH.deger || '').replace(',', '.')) || 0;
+    if (al && al < kzToplam()) return toast('Alınan tutar toplamdan az.', true);
+    kzOde('Nakit', al);
+  },
+  kzTutar:function(){ sheetAc({ tip:'kzTutar', deger:'', ad:'' }); },
+  kzTus:function(el){ if (SH) { SH.deger = kzTusIsle(SH.deger, el.getAttribute('data-k')); renderSheet(); } },
+  kzTutarEkle:function(){
+    if (!SH || SH.tip !== 'kzTutar' || U.busy.kzOde) return;
+    var v = kzYuv(Number(String(SH.deger || '').replace(',', '.')) || 0), i = $('#kzTutarAd');
+    if (!(v > 0) || v > 100000) return;
+    var ad = String((i ? i.value : SH.ad) || '').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Diğer';
+    KZ.sepet.push({ id:'', ad:ad, fiyat:v, adet:1 });
+    KZ.istek = '';
+    sheetKapat(); haptic('select'); kzCiz();
+  },
+  kzNot:function(){ sheetAc({ tip:'kzNot', not:KZ.not, odak:'#kzNotInp' }); },
+  kzNotHizli:function(el){
+    var i = $('#kzNotInp'), v = i ? i.value.trim() : String(SH.not || '');
+    var n = el.getAttribute('data-k');
+    SH.not = (v ? v + ', ' : '') + n;
+    renderSheet();
+  },
+  kzNotKaydet:function(){ var i = $('#kzNotInp'); KZ.not = String(i ? i.value : SH.not || '').replace(/\s+/g, ' ').trim().slice(0, 200); KZ.istek = ''; sheetKapat(); kzCiz(); },
+  kzNotSil:function(){ KZ.not = ''; KZ.istek = ''; sheetKapat(); kzCiz(); },
+  kzSatislar:function(){ sheetAc({ tip:'kzSatislar' }); kzYukle(); },
+  kzTekrar:function(){ kzYukle(); kzCiz(); },
+  kzFisYaz:function(el){
+    var s = kzSatisBul(el.getAttribute('data-no'));
+    if (!s) return;
+    if (!yzHazir() && inTelegram) return toast('Telegram içinde yazdırılamaz; ekranı tarayıcıdan açın ya da yazıcı bağlayın.', true);
+    yzKuyruk(s, true);
+  },
+  kzIptalAc:function(el){ sheetAc({ tip:'kzIptal', no:Number(el.getAttribute('data-no')), neden:'', geri:!!(SH && SH.tip === 'kzSatislar') }); },
+  kzIptalNeden:function(el){ if (SH) { SH.neden = el.getAttribute('data-k'); renderSheet(); } },
+  kzIptalYap:function(){
+    if (!SH || SH.tip !== 'kzIptal' || !SH.neden) return;
+    var st = SH;
+    islem('ekKasaIptal', { no:st.no, neden:st.neden }, { busy:'kzIptal' }).then(function(r){
+      if (!r) { if (SH === st) renderSheet(); return; }
+      var s = r.satis, v = KZ.veri;
+      if (v) {
+        var eski = kzSatisBul(s.no);
+        v.satislar = v.satislar.map(function(x){ return x.no === s.no ? s : x; });
+        if (eski && eski.kod !== 'I') { v.ozet.adet = Math.max(0, v.ozet.adet - 1); v.ozet.toplam = kzYuv(v.ozet.toplam - s.toplam); v.ozet.iptal++; }
+      }
+      if (KZ.son && KZ.son.no === s.no) KZ.son = s;
+      toast((s.sira ? 'Sıra ' + s.sira : '#' + s.no) + ' iptal edildi');
+      if (st.geri) { sheetAc({ tip:'kzSatislar' }); kzYukle(); } else sheetKapat();
+      kzCiz();
+    });
+  },
+  kzAyarSw:function(){
+    var yeni = !D.isletme.kasa;
+    islem('ekKasaAyar', { acik:yeni }, { busy:'kzAyar' }).then(function(r){
+      if (!r) return;
+      D.isletme.kasa = r.kasa;
+      if (!r.kasa && U.tab === 'kasa') U.tab = 'siparis';
+      toast(r.kasa ? 'Kasa sekmesi açıldı' : 'Kasa sekmesi kapatıldı');
+      ciz();
+    });
+  },
+  nmrTam:function(){
+    try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch(e){}
+    setTimeout(renderTop, 300);
+  },
+  nmrSes:function(){
+    SES.acik = !SES.acik;
+    LS.set('yourpos360-ses', SES.acik ? '1' : '0');
+    if (SES.acik) { sesAc(); setTimeout(function(){ bip('yeni', 1); renderBanners(); }, 150); }
+    toast(SES.acik ? 'Hazır numara sesi açık' : 'Ses kapalı');
+    renderTop(); renderBanners();
+  }
+};
+Object.assign(ACT_EK, ACT_KZ);
+document.addEventListener('fullscreenchange', function(){ if (numarator()) renderTop(); });
+
+/* --- Önizleme (?demo=1): kasa satışları, tezgâh siparişleri ve numaratör --- */
+function kasaDemoIslemler(x){
+  var SAT = [], sira = 0, tezgah = [];
+  var kalem = function(id, n){ var u = x.MENU.filter(function(m){ return m.id === id; })[0] || x.MENU[0]; return { ad:u.sec ? u.ad + ' (' + u.sec + ')' : u.ad, adet:n, tutar:u.fiyat * n, id:u.id }; };
+  var satisYap = function(kanal, kal, odeme, dk, not){
+    var no = x.yeniNo(), t = Date.now() - (dk || 0) * 60000, top = kal.reduce(function(a, k){ return a + k.tutar; }, 0);
+    var o = { no:no, tarihMs:t, guncelMs:t, kanal:kanal, sira:kanal === 'Tezgah' ? ++sira : 0, kod:kanal === 'Tezgah' ? 'H' : 'T', durum:kanal === 'Tezgah' ? x.DN.H : x.DN.T,
+      ad:kanal === 'Tezgah' ? 'Tezgâh · Sıra ' + (sira) : 'Tabldot', kalemler:kal, ara:top, ucret:0, toplam:top, odeme:odeme, tahsilat:odeme, not:not || '',
+      gecmis:saatYaz(t) + ' ' + (kanal === 'Tezgah' ? x.DN.H : x.DN.T) + ' (Kasa: ' + x.BEN.ad + ')', adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'', iptalEden:'', iptalNedeni:'' };
+    if (kanal === 'Tezgah') { x.S.push(o); tezgah.push(o); x.degisti(); }
+    SAT.push(o);
+    return o;
+  };
+  if (!x.kurulum && x.MENU.length) {
+    var m = x.MENU.filter(function(u){ return u.aktif && u.fiyat > 0; }).map(function(u){ return u.id; });
+    var al = function(i){ return m[i % m.length]; };
+    satisYap('Tabldot', [kalem(al(4), 1), kalem(al(9), 1)], 'Nakit', 95);
+    satisYap('Tabldot', [kalem(al(5), 1)], 'Kredi kartı', 70);
+    satisYap('Tezgah', [kalem(al(0), 2), kalem(al(10), 2)], 'Kredi kartı', 41).kod = 'T';
+    satisYap('Tabldot', [kalem(al(3), 1), kalem(al(10), 1)], 'Multinet', 33);
+    var r1 = satisYap('Tezgah', [kalem(al(1), 1), kalem(al(8), 1)], 'Nakit', 9); r1.kod = 'R'; r1.durum = x.DN.R; r1.guncelMs = Date.now() - 60000;
+    satisYap('Tezgah', [kalem(al(0), 1)], 'Kredi kartı', 4, 'Soğansız');
+    if (x.rol === 'Numaratör') { satisYap('Tezgah', [kalem(al(2), 1)], 'Nakit', 2); satisYap('Tezgah', [kalem(al(6), 1)], 'Nakit', 1); }
+    tezgah.filter(function(o){ return o.kod === 'T'; }).forEach(function(o){ o.durum = x.DN.T; });
+    if (x.rol === 'Numaratör') setInterval(function(){
+      var h = tezgah.filter(function(o){ return o.kod === 'H'; }), r = tezgah.filter(function(o){ return o.kod === 'R'; });
+      if (r.length > 3) { r[0].kod = 'T'; r[0].durum = x.DN.T; }
+      if (h.length) { h[0].kod = 'R'; h[0].durum = x.DN.R; h[0].guncelMs = Date.now(); }
+      if (h.length < 3) satisYap('Tezgah', [kalem(al(sira), 1)], 'Nakit', 0);
+      x.degisti();
+    }, 7000);
+  }
+  var ozet = function(){
+    var oz = { adet:0, toplam:0, iptal:0, odeme:{}, kanal:{} };
+    SAT.forEach(function(s){
+      if (s.kod === 'I') { oz.iptal++; return; }
+      oz.adet++; oz.toplam += s.toplam;
+      var od = s.tahsilat || s.odeme;
+      oz.odeme[od] = oz.odeme[od] || { adet:0, tutar:0 }; oz.odeme[od].adet++; oz.odeme[od].tutar += s.toplam;
+    });
+    return { adet:oz.adet, toplam:kzYuv(oz.toplam), iptal:oz.iptal, odeme:Object.keys(oz.odeme).map(function(k){ return { ad:k, adet:oz.odeme[k].adet, tutar:kzYuv(oz.odeme[k].tutar) }; }), kanal:[] };
+  };
+  var satisJson = function(o){ return x.kopya({ no:o.no, tarihMs:o.tarihMs, kod:o.kod, kanal:o.kanal, sira:o.sira, toplam:o.toplam, odeme:o.odeme, tahsilat:o.tahsilat, kalemler:o.kalemler, not:o.not, iptalNedeni:o.iptalNedeni, ad:o.ad }); };
+  var istekler = {};
+  return {
+    ekKasa:function(){
+      return { ok:true, ozet:ozet(), satislar:SAT.slice().reverse().map(satisJson), odemeler:['Nakit', 'Kredi kartı'].concat(x.ODEME.filter(function(o){ return o.aktif && !/nakit|kart/i.test(o.ad); }).map(function(o){ return o.ad; })),
+        iptalNedenleri:['Yanlış giriş', 'Müşteri vazgeçti', 'Ürün kalmadı', 'Diğer'], siradaki:sira + 1, yazici:0 };
+    },
+    ekKasaSatis:function(d){
+      if (!x.ISL.kasa) return x.hata('KASA', 'Kasa bu işletmede kapalı.');
+      if (d.istek && istekler[d.istek]) { var oo = SAT.filter(function(s){ return s.no === istekler[d.istek]; })[0]; return { ok:true, tekrar:true, satis:satisJson(oo) }; }
+      if (!d.kalemler || !d.kalemler.length) return x.hata('FORM', 'Önce ürün ekleyin.');
+      var kal = d.kalemler.map(function(k){ if (k.id) return kalem(k.id, k.adet); var f = Number(k.serbest) || 0; return { ad:k.ad || 'Diğer', adet:k.adet, tutar:kzYuv(f * k.adet) }; });
+      var o = satisYap(d.tur === 'tezgah' ? 'Tezgah' : 'Tabldot', kal, d.odeme, 0, d.not);
+      if (d.istek) istekler[d.istek] = o.no;
+      var r = { ok:true, satis:satisJson(o), rev:'x' };
+      if (o.kanal === 'Tezgah') r.siparis = x.kopya(o);
+      return r;
+    },
+    ekKasaIptal:function(d){
+      var o = SAT.filter(function(s){ return s.no === Number(d.no); })[0];
+      if (!o) return x.hata('YOK', 'Kasa satışı bulunamadı.');
+      if (o.kod === 'I') return x.hata('DURUM', 'Bu satış zaten iptal edilmiş.');
+      if (!d.neden) return x.hata('NEDEN', 'İptal nedenini seçin.');
+      o.kod = 'I'; o.durum = x.DN.I; o.iptalEden = 'İşletme'; o.iptalNedeni = d.neden; o.guncelMs = Date.now(); x.degisti();
+      var r = { ok:true, satis:satisJson(o) };
+      if (o.kanal === 'Tezgah') r.siparis = x.kopya(o);
+      return r;
+    },
+    ekKasaAyar:function(d){ x.ISL.kasa = d.acik !== false; return { ok:true, kasa:x.ISL.kasa }; }
+  };
+}
+
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
   var k = o.lat && o.lng ? o.lat + ',' + o.lng : '', q = encodeURIComponent(o.adres || '');
@@ -7694,6 +8387,7 @@ var ACT = {
     if (!o) return;
     var bitti = function(r, metin){ if (r) { toast('#' + no + ' · ' + metin); if (SH && SH.tip === 'siparis') renderSheet(); } };
     var a = ileri(o);
+    if (o.kanal) return kzIleri(o, a);
     if (a && a.kod && !(o.kod === 'Y' && a.kod === 'H') && !(o.kod === 'H' && a.kod === 'R') && !(o.kod === 'R' && a.kod === 'O') && !(o.kod === 'O' && a.kod === 'T')) {
       // kapalı adımlar atlanır
       if (a.kod === 'O' && D.kuryeler && D.kuryeler.length) return sheetAc({ tip:'kurye', no:no });
@@ -8054,6 +8748,7 @@ function basla(){
     D = r;
     sonTam = Date.now(); U.net = true; U.sonOk = Date.now(); pollHata = 0;
     if (kurye()) U.ktab = D.siparisler.some(function(o){ return o.kod === 'O' && benim(o); }) ? 'bende' : 'hazir';
+    else if (SEKME === 'kasa' && kasaAcik()) U.tab = 'kasa';
     else if (SEKME && ['menu', 'rapor', 'ekip', 'ayar'].indexOf(SEKME) >= 0 && (SEKME === 'menu' || sahip())) U.tab = SEKME;
     GORULEN = null;
     degisiklikleriIsle();
@@ -8161,7 +8856,7 @@ function demoMock(rol){
   var BEN = rol === 'Kurye' ? { id:'7001', ad:DEMO_HIZMET ? 'Hasan Usta' : 'Ali Kurye' } : rol === 'Personel' ? { id:'7002', ad:'Mehmet' } : { id:'7000', ad:'Ahmet Usta' };
   BEN.bildirim = 'sesli';
   var ISL = { ad:DEMO_MARKET ? 'Örnek Bakkal' : DEMO_HIZMET ? 'Usta Tesisat' : 'Örnek Dönerci', acik:true, hizmet:true, hazirlikDk:DEMO_HIZMET ? 60 : 20, telefon:'02161234567', lat:40.9871, lng:29.0285,
-    tur:DEMO_MARKET ? 'market' : DEMO_HIZMET ? 'hizmet' : 'restoran', logo:PRM.get('logo') === '1' ? demoLogoVeri() : '' };
+    tur:DEMO_MARKET ? 'market' : DEMO_HIZMET ? 'hizmet' : 'restoran', kasa:!DEMO_HIZMET, logo:PRM.get('logo') === '1' ? demoLogoVeri() : '' };
   if (PRM.get('kurulum') === '1') { MENU = []; ISL.lat = 0; ISL.lng = 0; AYAR.Enlem = ''; AYAR.Boylam = ''; }
   var LIMIT = Number(PRM.get('limit')) || 50;
   var KAMP = DEMO_MARKET ? [{ id:'K1', ad:'Su: 2. ürün %50 indirimli', hedefler:['u:içecekler|su'], kademeler:[{ n:2, tip:'yuzde', deger:50 }], tekrar:true, aktif:true, bas:'', bit:'', sira:1 }]
@@ -8486,7 +9181,7 @@ function demoMock(rol){
     },
     ekUyeSil:function(d){ EKIP = EKIP.filter(function(x){ return x.uyeId !== d.uyeId; }); return { ok:true, ekip:kopya(EKIP) }; },
     ekCihaz:function(d){
-      var ad = String(d.ad || '').trim() || (d.rol === 'Kurye' ? 'Kurye cihazı' : 'Mutfak tableti');
+      var ad = String(d.ad || '').trim() || (d.rol === 'Kurye' ? 'Kurye cihazı' : d.rol === 'Numaratör' ? 'Numaratör ekranı' : 'Mutfak tableti');
       CIHAZ.push({ id:'C' + Date.now(), ad:ad, rol:d.rol, sonMs:0 });
       var u = location.origin + location.pathname + '?b=' + encodeURIComponent(B || 'ornek') + '&demo=1&rol=' + (d.rol === 'Kurye' ? 'kurye' : 'personel');
       return { ok:true, link:u, ad:ad, rol:d.rol, cihazlar:kopya(CIHAZ) };
@@ -8563,6 +9258,8 @@ function demoMock(rol){
     ekKampanyaSil:function(d){ KAMP = KAMP.filter(function(x){ return x.id !== d.id; }); return { ok:true, kampanyalar:kopya(KAMP) }; }
   };
   Object.assign(islemler, whDemoIslemler());
+  if (!DEMO_HIZMET) Object.assign(islemler, kasaDemoIslemler({ S:S, MENU:MENU, ODEME:ODEME, BEN:BEN, ISL:ISL, rol:rol, DN:DN, bul:bul, kopya:kopya, degisti:degisti, gecmisEkle:gecmisEkle, hata:hata,
+    yeniNo:function(){ return ++no; }, kurulum:PRM.get('kurulum') === '1' }));
   return function(act, d){
     var f = islemler[act];
     var gecikme = act === 'ekYenile' ? 120 : act === 'ekRaporGonder' || act === 'ekAfisGonder' ? 1100 : 380 + Math.random() * 320;
