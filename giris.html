@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="format-detection" content="telephone=no">
+<title>YourPOS 360 · Giriş</title>
+<script>
+(function(){
+  try {
+    var q = new URLSearchParams(location.search), t = null;
+    try { t = localStorage.getItem('yourpos360-tema'); } catch (e) {}
+    var dark = t === 'dark' || t === 'light' ? t === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    if (q.get('tema') === 'dark' || q.get('tema') === 'light') dark = q.get('tema') === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  } catch (e) {}
+})();
+</script>
+<style>
+/* YourPOS 360 · Web girişi (Telegram'sız). İşletme sahipleri ve yöneticiler e-posta + şifre (+ Google Authenticator) ile girer. */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --bg2:#f1f2f6; --bg:#ffffff; --text:#0f0f0f; --sub:#5d5d63; --hint:#8a8a8f; --link:#2481cc; --sep:#e2e3e8;
+  --field-bg:#f6f7f9; --field-line:#d5d8de; --focus:#2481cc; --focus-ring:rgb(36 129 204 / .28);
+  --accent:#e8590c; --on-accent:#ffffff; --accent-soft:#fdebdf; --accent-ink:#b0420a;
+  --danger:#cf3a30; --danger-soft:#fdeceb; --ok-ink:#1d7536; --ok-soft:#e1f3e6; --info-soft:#e3effa; --info-ink:#1c5f97;
+  --shadow:0 1px 2px rgb(16 24 40 / .06),0 8px 24px rgb(16 24 40 / .08);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg2:#0e1621; --bg:#17212b; --text:#f5f5f5; --sub:#97a8ba; --hint:#708499; --link:#6ab3f3; --sep:#25313d;
+  --field-bg:#0e1621; --field-line:#2c3a48; --focus:#6ab3f3; --focus-ring:rgb(106 179 243 / .3);
+  --accent:#ff7a33; --on-accent:#1b0c03; --accent-soft:#3a2518; --accent-ink:#ffa477;
+  --danger:#ff6b61; --danger-soft:#3a1c1e; --ok-ink:#72d891; --ok-soft:#163125; --info-soft:#17304a; --info-ink:#8cc4f5;
+  --shadow:none;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg2);color:var(--text);font:16px/1.45 var(--font);-webkit-text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+a{color:var(--link)}
+.wrap{width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 2px}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:800;font-size:17px;letter-spacing:-.02em;flex:none}
+.brand b{font-size:19px;display:block;line-height:1.2}
+.brand span{color:var(--sub);font-size:14px}
+.tema{margin-left:auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sep);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer}
+.card{background:var(--bg);border-radius:18px;padding:22px 18px;box-shadow:var(--shadow)}
+h1{font-size:22px;line-height:1.25;margin:0 0 6px}
+.lead{color:var(--sub);margin:0 0 18px;font-size:15px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+label{font-size:14px;font-weight:600;color:var(--sub)}
+.inp{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--field-line);background:var(--field-bg);color:var(--text);font:inherit;font-size:17px;padding:12px 14px}
+.inp:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+.kod{font-size:26px;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
+.sifre-kutu{position:relative}
+.sifre-kutu .inp{padding-right:64px}
+.goster{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--link);font:inherit;font-size:14px;font-weight:600;padding:10px;cursor:pointer}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:14px;border:0;font:inherit;font-weight:700;font-size:17px;cursor:pointer;text-decoration:none}
+.btn.pri{background:var(--accent);color:var(--on-accent)}
+.btn.line{background:none;color:var(--text);border:1px solid var(--field-line)}
+.btn[disabled]{opacity:.55;cursor:default}
+.link-btn{border:0;background:none;color:var(--link);font:inherit;font-size:15px;font-weight:600;padding:10px 0;cursor:pointer;text-align:left}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.err{background:var(--danger-soft);color:var(--danger);border-radius:12px;padding:10px 12px;font-size:15px;margin:0 0 14px}
+.ok{background:var(--ok-soft);color:var(--ok-ink);border-radius:12px;padding:10px 12px;font-size:15px;margin:0 0 14px}
+.note{background:var(--info-soft);color:var(--info-ink);border-radius:12px;padding:12px 14px;font-size:14px}
+.liste{display:flex;flex-direction:column;gap:10px;margin:4px 0 14px}
+.kart{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--sep);background:var(--bg);color:var(--text);text-decoration:none}
+.kart:hover{border-color:var(--accent)}
+.kart .ik{width:40px;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:20px;flex:none}
+.kart b{display:block}
+.kart span{color:var(--sub);font-size:14px}
+.kart .ok-ok{margin-left:auto;color:var(--hint);font-size:20px}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:d .7s linear infinite;display:inline-block}
+@keyframes d{to{transform:rotate(360deg)}}
+.alt{color:var(--sub);font-size:13px;text-align:center;margin:4px 0 0}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="brand"><div class="logo" aria-hidden="true">YP</div><div><b>YourPOS 360</b><span>İşletme ve yönetim girişi</span></div>
+    <button class="tema" type="button" id="tema" aria-label="Gece / gündüz modu">🌙</button></div>
+  <section class="card" id="ekran" aria-live="polite"></section>
+  <p class="alt">Telegram'dan da girebilirsiniz: işletmenizin botunda «Restoran» ya da <b>@yourpos360_bot</b> içinde «Panelim».</p>
+</main>
+<script>
+(function(){
+'use strict';
+var q = new URLSearchParams(location.search);
+var API = q.get('api') || 'https://yourpos360.onrender.com/exec';
+var DEMO = q.get('demo') === '1';
+var KEY = 'yourpos360-web';
+var GERI = (function(g){ return g && /^(isletme|uye)\.html(\?[^#<>"']*)?$/.test(g) ? g : ''; })(q.get('geri') || '');
+var LS = {
+  get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set:function(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+  del:function(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+var $ = function(s){ return document.querySelector(s); };
+function esc(s){ return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function(c){ return '&#' + c.charCodeAt(0) + ';'; }); }
+var S = { adim:'giris', ep:'', gecis:'', hata:'', bilgi:'', mesgul:false, hesap:null };
+
+/* --- sunucu --- */
+function cagir(act, veri){
+  var govde = Object.assign({ act:act }, veri || {});
+  if (DEMO) return demo(act, govde);
+  return fetch(API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1', { method:'POST', body:JSON.stringify(govde) })
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return { ok:false, kod:'AG', hata:'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.' }; });
+}
+function demo(act, d){
+  var r = { ok:false, hata:'Bilinmeyen işlem.' };
+  var H = { eposta:'ahmet@ornek.com', admin:false, totp:true, isletmeler:[{ b:'demo', ad:'Örnek Dönerci', durum:'Aktif' }, { b:'demo2', ad:'Örnek Pide Salonu', durum:'Aktif' }] };
+  if (act === 'whGiris') r = /\d/.test(d.sifre || '') && String(d.sifre).length >= 8 ? { ok:true, adim:'kod', gecis:'demo', mesaj:'Google Authenticator\'daki 6 haneli kodu ya da bir yedek kodu yazın.' } : { ok:false, kod:'GIRIS', hata:'E-posta ya da şifre yanlış.' };
+  if (act === 'whGirisKod') r = /^(\d{6}|[A-Za-z0-9]{4}-?[A-Za-z0-9]{4})$/.test(String(d.kod || '').trim()) ? { ok:true, token:'web:h.' + new Array(65).join('a'), hesap:H } : { ok:false, kod:'KOD', hata:'Kod tutmadı.' };
+  if (act === 'whHesabim') r = { ok:true, hesap:H };
+  if (act === 'whCikis') r = { ok:true };
+  if (act === 'whSifreUnuttum') r = { ok:true, mesaj:'Bu e-postaya kayıtlı bir hesap varsa 6 haneli sıfırlama kodu gönderildi.' };
+  if (act === 'whSifreYenile') r = { ok:true, mesaj:'Şifreniz değiştirildi. Yeni şifrenizle giriş yapın.' };
+  return new Promise(function(ok){ setTimeout(function(){ ok(r); }, 450); });
+}
+
+/* --- ekranlar --- */
+function hataHtml(){ return (S.hata ? '<div class="err" role="alert">' + esc(S.hata) + '</div>' : '') + (S.bilgi ? '<div class="ok" role="status">' + esc(S.bilgi) + '</div>' : ''); }
+function dugme(metin, act, tur){ return '<button class="btn ' + (tur || 'pri') + '" type="submit" data-act="' + act + '"' + (S.mesgul ? ' disabled' : '') + '>' + (S.mesgul ? '<span class="spin" aria-hidden="true"></span>' : '') + metin + '</button>'; }
+function sifreAlan(id, etiket, oto){
+  return '<div class="field"><label for="' + id + '">' + etiket + '</label><div class="sifre-kutu"><input class="inp" id="' + id + '" type="password" autocomplete="' + oto + '" maxlength="200" required>' +
+    '<button class="goster" type="button" data-goster="' + id + '">Göster</button></div></div>';
+}
+function ciz(){
+  var h = '';
+  if (S.adim === 'yukleniyor') h = '<h1>Giriş yapılıyor…</h1><p class="lead"><span class="spin" aria-hidden="true"></span></p>';
+  else if (S.adim === 'giris') {
+    h = '<h1>Giriş yap</h1><p class="lead">Telegram\'dan Ayarlar › «🔐 Web girişi» bölümünde belirlediğiniz e-posta ve şifreyle girin.</p>' + hataHtml() +
+      '<form data-form="giris" novalidate><div class="field"><label for="ep">E-posta</label><input class="inp" id="ep" type="email" inputmode="email" autocomplete="username" maxlength="120" required value="' + esc(S.ep) + '"></div>' +
+      sifreAlan('sifre', 'Şifre', 'current-password') + dugme('Giriş yap', 'giris') + '</form>' +
+      '<div class="row"><button class="link-btn" type="button" data-act="unuttum">Şifremi unuttum</button></div>' +
+      '<div class="note">Hesabınız yok mu? İşletme sahipleri ve YourPOS 360 yöneticileri web girişini <b>Telegram\'dan</b> açtıkları ekranda bir kez kurar: işletme ekranında Ayarlar, yönetim ekranında Sistem › «🔐 Web girişi».</div>';
+  } else if (S.adim === 'kod') {
+    h = '<h1>Doğrulama kodu</h1><p class="lead">Telefonunuzdaki <b>Google Authenticator</b> uygulamasının gösterdiği 6 haneli kodu yazın. Telefonunuz yanınızda değilse yedek kodlarınızdan birini (ör. ABCD-EFGH) yazın.</p>' + hataHtml() +
+      '<form data-form="kod" novalidate><div class="field"><label for="kod">Kod</label><input class="inp kod" id="kod" inputmode="text" autocomplete="one-time-code" maxlength="9" required placeholder="123456"></div>' +
+      dugme('Doğrula', 'kod') + '</form><div class="row"><button class="link-btn" type="button" data-act="basa">← E-posta ve şifreye dön</button></div>';
+  } else if (S.adim === 'unuttum') {
+    h = '<h1>Şifremi unuttum</h1><p class="lead">E-posta adresinize 6 haneli bir sıfırlama kodu gönderelim.</p>' + hataHtml() +
+      '<form data-form="unuttum" novalidate><div class="field"><label for="ep2">E-posta</label><input class="inp" id="ep2" type="email" inputmode="email" autocomplete="username" maxlength="120" required value="' + esc(S.ep) + '"></div>' +
+      dugme('Kod gönder', 'unuttum') + '</form><div class="row"><button class="link-btn" type="button" data-act="basa">← Girişe dön</button><button class="link-btn" type="button" data-act="kodumVar">Kodum var</button></div>';
+  } else if (S.adim === 'yenile') {
+    h = '<h1>Yeni şifre</h1><p class="lead">E-postanıza gelen kodu ve yeni şifrenizi yazın. Google Authenticator açıksa onun kodu (ya da bir yedek kod) da gerekir.</p>' + hataHtml() +
+      '<form data-form="yenile" novalidate><div class="field"><label for="ep3">E-posta</label><input class="inp" id="ep3" type="email" inputmode="email" autocomplete="username" maxlength="120" required value="' + esc(S.ep) + '"></div>' +
+      '<div class="field"><label for="ekod">E-postadaki kod</label><input class="inp kod" id="ekod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></div>' +
+      '<div class="field"><label for="ikinci">Authenticator kodu ya da yedek kod <span style="font-weight:400">(açıksa)</span></label><input class="inp" id="ikinci" autocomplete="one-time-code" maxlength="9"></div>' +
+      sifreAlan('y1', 'Yeni şifre', 'new-password') + sifreAlan('y2', 'Yeni şifre (tekrar)', 'new-password') +
+      '<p class="lead" style="margin-top:-6px;font-size:14px">En az 8 karakter; en az bir harf ve bir rakam.</p>' + dugme('Şifreyi değiştir', 'yenile') + '</form>' +
+      '<div class="row"><button class="link-btn" type="button" data-act="basa">← Girişe dön</button></div>';
+  } else if (S.adim === 'hesap') {
+    var hs = S.hesap || {}, l = hs.isletmeler || [];
+    h = '<h1>Hoş geldiniz</h1><p class="lead">' + esc(hs.eposta || '') + ' olarak giriş yaptınız. Açmak istediğiniz ekranı seçin.</p>' + hataHtml() + '<div class="liste">' +
+      (hs.admin ? '<a class="kart" href="isletme.html?yonetim=1"><span class="ik">🛠️</span><span><b>Yönetim ekranı</b><span>YourPOS 360 yönetimi</span></span><span class="ok-ok">›</span></a>' : '') +
+      l.map(function(x){ return '<a class="kart" href="isletme.html?b=' + encodeURIComponent(x.b) + '"><span class="ik">🏪</span><span><b>' + esc(x.ad || x.b) + '</b><span>İşletme ekranı' + (x.durum && x.durum !== 'Aktif' ? ' · ' + esc(x.durum) : '') + '</span></span><span class="ok-ok">›</span></a>'; }).join('') +
+      (!hs.admin && !l.length ? '<div class="note">Bu hesaba bağlı bir işletme bulunamadı. İşletme ekranını bir kez Telegram\'dan açıp Ayarlar › «🔐 Web girişi» bölümüne girin; işletmeniz hesabınıza eklenir.</div>' : '') +
+      '</div>' + '<button class="btn line" type="button" data-act="cikis"' + (S.mesgul ? ' disabled' : '') + '>Çıkış yap</button>';
+  }
+  $('#ekran').innerHTML = h;
+  var ilk = $('#ekran input:not([value]), #ekran input[value=""]') || $('#ekran input');
+  if (ilk && S.odak !== false) try { ilk.focus({ preventScroll:true }); } catch(e){}
+}
+function sonra(r){
+  if (r && r.ok && r.token) {
+    LS.set(KEY, r.token);
+    S.hesap = r.hesap; S.hata = ''; S.bilgi = r.mesaj || '';
+    if (GERI) { location.href = GERI; return; }
+    var l = (r.hesap && r.hesap.isletmeler) || [];
+    if (!r.mesaj && r.hesap && !r.hesap.admin && l.length === 1) { location.href = 'isletme.html?b=' + encodeURIComponent(l[0].b); return; }
+    S.adim = 'hesap'; ciz(); return;
+  }
+}
+function gonder(form){
+  if (S.mesgul) return;
+  var deger = function(id){ var e = $('#' + id); return e ? e.value : ''; };
+  S.hata = ''; S.bilgi = '';
+  var adim = form.getAttribute('data-form'), is;
+  if (adim === 'giris') {
+    S.ep = deger('ep').trim();
+    if (!S.ep || !deger('sifre')) { S.hata = 'E-posta ve şifrenizi yazın.'; ciz(); return; }
+    is = cagir('whGiris', { eposta:S.ep, sifre:deger('sifre') }).then(function(r){
+      if (r && r.ok && r.adim === 'kod') { S.gecis = r.gecis; S.adim = 'kod'; S.bilgi = ''; return; }
+      if (r && r.ok) return sonra(r);
+      S.hata = (r && r.hata) || 'Giriş yapılamadı.';
+    });
+  } else if (adim === 'kod') {
+    var k = deger('kod').trim();
+    if (!k) { S.hata = 'Kodu yazın.'; ciz(); return; }
+    is = cagir('whGirisKod', { gecis:S.gecis, kod:k }).then(function(r){
+      if (r && r.ok) return sonra(r);
+      S.hata = (r && r.hata) || 'Kod tutmadı.';
+      if (r && r.kod === 'SURE') { S.adim = 'giris'; }
+    });
+  } else if (adim === 'unuttum') {
+    S.ep = deger('ep2').trim();
+    if (!S.ep) { S.hata = 'E-posta adresinizi yazın.'; ciz(); return; }
+    is = cagir('whSifreUnuttum', { eposta:S.ep }).then(function(r){
+      if (r && r.ok) { S.adim = 'yenile'; S.bilgi = r.mesaj || ''; return; }
+      S.hata = (r && r.hata) || 'Gönderilemedi.';
+    });
+  } else if (adim === 'yenile') {
+    S.ep = deger('ep3').trim();
+    if (deger('y1') !== deger('y2')) { S.hata = 'İki şifre aynı değil.'; ciz(); return; }
+    is = cagir('whSifreYenile', { eposta:S.ep, kod:deger('ekod'), ikinci:deger('ikinci'), sifre:deger('y1') }).then(function(r){
+      if (r && r.ok) { S.adim = 'giris'; S.bilgi = r.mesaj || 'Şifreniz değiştirildi.'; return; }
+      S.hata = (r && r.hata) || 'Şifre değiştirilemedi.';
+    });
+  }
+  if (!is) return;
+  S.mesgul = true; S.odak = false; ciz();
+  is.then(function(){ S.mesgul = false; S.odak = true; if (document.contains(form) || true) ciz(); });
+}
+document.addEventListener('submit', function(e){
+  var f = e.target.closest('form[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  gonder(f);
+});
+document.addEventListener('click', function(e){
+  var g = e.target.closest('[data-goster]');
+  if (g) { var i = $('#' + g.getAttribute('data-goster')); if (i) { var ac = i.type === 'password'; i.type = ac ? 'text' : 'password'; g.textContent = ac ? 'Gizle' : 'Göster'; } return; }
+  var a = e.target.closest('[data-act]');
+  if (!a || a.tagName === 'BUTTON' && a.type === 'submit') return;
+  var act = a.getAttribute('data-act');
+  if (act === 'unuttum') { S.adim = 'unuttum'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'kodumVar') { S.adim = 'yenile'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'basa') { S.adim = 'giris'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'cikis') {
+    var t = LS.get(KEY);
+    S.mesgul = true; ciz();
+    cagir('whCikis', { initData:t || '' }).then(function(){ LS.del(KEY); S.mesgul = false; S.hesap = null; S.adim = 'giris'; S.bilgi = 'Çıkış yapıldı.'; ciz(); });
+  }
+});
+$('#tema').addEventListener('click', function(){
+  var koyu = document.documentElement.getAttribute('data-theme') !== 'dark';
+  document.documentElement.setAttribute('data-theme', koyu ? 'dark' : 'light');
+  LS.set('yourpos360-tema', koyu ? 'dark' : 'light');
+  this.textContent = koyu ? '☀️' : '🌙';
+});
+$('#tema').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+
+// Açılış: kayıtlı oturum varsa hesabı göster
+var var_ = LS.get(KEY);
+if (q.get('cikis') === '1' && var_) { cagir('whCikis', { initData:var_ }); LS.del(KEY); var_ = null; S.bilgi = 'Çıkış yapıldı.'; }
+if (var_ && /^web:h\.[0-9a-f]{64}$/.test(var_)) {
+  S.adim = 'yukleniyor'; ciz();
+  cagir('whHesabim', { initData:var_ }).then(function(r){
+    if (r && r.ok) { S.hesap = r.hesap; if (GERI) { location.href = GERI; return; } S.adim = 'hesap'; }
+    else { if (r && r.kod === 'GIRIS') LS.del(KEY); S.adim = 'giris'; if (r && r.kod !== 'GIRIS') S.hata = r.hata || ''; }
+    ciz();
+  });
+} else ciz();
+})();
+</script>
+</body>
+</html>

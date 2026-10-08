@@ -834,6 +834,17 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .ayar .frm .opt{margin:2px 0}
 @media (max-width:420px){ .yn-aks{grid-template-columns:1fr} .yn-liste,.yn-bv-l{grid-template-columns:1fr} }
 @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+.web-rozet{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:8px;background:var(--info-soft);color:var(--info-ink);vertical-align:1px}
+.wg-durum{display:flex;flex-direction:column;gap:6px;margin:4px 0 10px}
+.wg-durum .kv span:first-child{color:var(--sub)}
+.wg-web{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--sep)}
+.wg-adim{margin:0 0 12px;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.wg-qr{width:210px;max-width:70%;margin:6px auto 12px;background:#fff;padding:8px;border-radius:12px}
+.wg-qr svg{display:block;width:100%;height:auto}
+.wg-anahtar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:12px;background:var(--field-bg);border:1px solid var(--field-line);font-size:15px;letter-spacing:.04em;word-break:break-all}
+.wg-kod{font-size:24px;letter-spacing:.3em;text-align:center}
+.wg-yedek{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.wg-yedek span{padding:10px;border-radius:10px;background:var(--field-bg);border:1px solid var(--field-line);text-align:center;font-size:16px;font-weight:700;letter-spacing:.06em}
 </style>
 </head>
 <body>
@@ -1002,6 +1013,10 @@ var CIHAZ = null;
 var realTg = window.Telegram && window.Telegram.WebApp;
 var inTelegram = !!(realTg && realTg.initData);
 var tg = inTelegram ? realTg : null;
+// 1.17 · Web oturumu: Telegram dışında (tarayıcıda) e-posta + şifreyle girilince giris.html bu anahtarı saklar
+var WEB_KEY = 'yourpos360-web', GIRIS_URL = 'giris.html';
+var WEB = (!inTelegram && !DEMO && !CIHAZ) ? (function(){ var t = LS.get(WEB_KEY); return t && /^web:h\.[0-9a-f]{64}$/.test(t) ? t : null; })() : null;
+function webGirisLink(){ return GIRIS_URL + '?geri=' + encodeURIComponent(location.pathname.split('/').pop() + location.search); }
 if (DEMO) CIHAZ = null;
 
 function ver(v){ try { return !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v)); } catch(e){ return false; } }
@@ -1054,7 +1069,7 @@ function telegramAc(url){
 
 /* ---------- sunucu ---------- */
 var MOCK = null;   // önizlemede 5_demo.js doldurur
-function auth(){ return inTelegram ? (ANA ? { initData:realTg.initData, ana:1 } : { initData:realTg.initData }) : (CIHAZ ? { cihaz:CIHAZ } : {}); }
+function auth(){ return inTelegram ? (ANA ? { initData:realTg.initData, ana:1 } : { initData:realTg.initData }) : (CIHAZ ? { cihaz:CIHAZ } : (WEB ? { initData:WEB } : {})); }
 function call(act, data){
   var payload = Object.assign({ act:act, b:B }, auth(), MERKEZ ? { merkez:1 } : {}, data || {});
   if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
@@ -1531,7 +1546,7 @@ function siparisKarti(o, rozetli){
     '<button class="ord-main" data-act="ac" data-no="' + o.no + '">' +
       '<span class="ord-top"><span class="ord-no">#' + o.no + '</span>' + (rozetli ? rozet(o.kod) : '') +
         '<span class="ord-ago" data-ago="' + o.tarihMs + '">' + once(o.tarihMs) + '</span></span>' +
-      '<span class="ord-who"><span class="nm">' + esc(o.ad || 'Müşteri') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
+      '<span class="ord-who"><span class="nm">' + esc(o.ad || 'Müşteri') + (o.web ? ' <span class="web-rozet" title="Tarayıcıdan (Telegram\'sız) verilen sipariş">🌐 Web</span>' : '') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
       '<span class="ord-items">' + kalemOzet(o.kalemler) + '</span>' +
       (bayrak ? '<span class="ord-flags">' + bayrak + '</span>' : '') +
       '<span class="ord-foot"><span class="ord-total">' + tl(o.toplam) + '</span><span class="ord-pay">' + esc(o.odeme) + '</span></span>' +
@@ -1679,7 +1694,7 @@ SHEET.siparis = function(s){
   if (o.not) h += '<div class="note-box">Müşteri notu: ' + esc(o.not) + '</div>';
   if (o.kod === 'I') h += '<div class="note-box" style="background:var(--danger-soft);color:var(--danger)">İptal eden: ' + esc(o.iptalEden || '—') +
     (o.iptalNedeni ? ' · ' + esc(o.iptalNedeni) : '') + '</div>';
-  h += blk('Müşteri', '<div class="big">' + esc(o.ad || 'Müşteri') + '</div>' + telefonlar(o));
+  h += blk('Müşteri', '<div class="big">' + esc(o.ad || 'Müşteri') + '</div>' + (o.web ? '<p class="tip-txt">🌐 Tarayıcıdan (Telegram\'sız) verilen sipariş · numara doğrulanmadı, telefonla arayın.</p>' : '') + telefonlar(o));
   h += blk((hzm() ? 'Hizmet adresi' : 'Teslimat adresi') + (o.km ? ' · ' + kmYaz(o.km) : ''), '<div>' + esc(o.adres || '—') + '</div>' +
     (o.tarif ? '<div class="muted">Tarif: ' + esc(o.tarif) + '</div>' : '') +
     '<div class="links"><button class="btn line sm" data-act="harita" data-no="' + o.no + '">' + ic('harita', 'sm') + 'Haritada aç</button></div>');
@@ -2139,7 +2154,7 @@ function kuryeKarti(o, mod){
   var h = '<article class="kcard' + (mod === 'bende' ? ' mine' : '') + (mod === 'bekle' ? ' k-wait' : '') + '" aria-label="Sipariş ' + o.no + '">' +
     '<div class="k-top"><span class="ord-no">#' + o.no + '</span>' + rozet(o.kod) + '<span class="k-km">' + kmYaz(o.km) + '</span></div>' +
     '<div><div class="k-adr">' + esc(o.adres || '—') + '</div>' + (o.tarif ? '<div class="k-tarif">Tarif: ' + esc(o.tarif) + '</div>' : '') + '</div>' +
-    '<div class="muted">' + esc(o.ad || 'Müşteri') + ' · ' + saatYaz(o.tarihMs) + (mod === 'bugun' && o.tahsilat ? ' · ' + esc(o.tahsilat) : '') + (mod === 'bugun' && o.tyon === 'Kodlu' ? ' · 🔐' : '') + '</div>' +
+    '<div class="muted">' + esc(o.ad || 'Müşteri') + (o.web ? ' · 🌐 Web' : '') + ' · ' + saatYaz(o.tarihMs) + (mod === 'bugun' && o.tahsilat ? ' · ' + esc(o.tahsilat) : '') + (mod === 'bugun' && o.tyon === 'Kodlu' ? ' · 🔐' : '') + '</div>' +
     (mod === 'bugun' && o.kod === 'T' ? '<div class="links"><button class="btn ghost sm" data-act="tNotAc" data-no="' + o.no + '">📝 Not ekle' + ((o.tnot || []).length ? ' (' + o.tnot.length + ')' : '') + '</button></div>' : '') +
     (o.teslimMs && mod !== 'bugun' ? '<div class="note-box ileri">' + (hzm() ? '📅 Randevu: <b>' : '⏰ Teslim: <b>') + teslimYazi(o.teslimMs) + '</b></div>' : '');
   if (mod === 'hazir' || mod === 'bende') {
@@ -3401,6 +3416,7 @@ function ayarEkrani(){
       (D.kod ? '<div class="kod"><div class="blk-h">İşletme kodu</div><div class="big num">' + esc(D.kod) + '</div><div class="tip-txt">Ödemelerde açıklamaya yazın</div></div>' : '') + '</div>' +
       (D.uyeUrl ? '<div class="row2"><button class="btn line sm" data-act="uyeGit" data-k="#paket">Paketi değiştir</button><button class="btn line sm" data-act="uyeGit" data-k="">Panelim</button></div>' : '') + '</section>';
   }
+  if (!merkez() && !D.cihaz) h += webGirisKarti();
   // logo / profil resmi
   if (!merkez()) {
     var lgb = U.busy.ayLogo;
@@ -4083,7 +4099,10 @@ var LOGO_SINIR = 45000;   // Ayarlar hücresine sığsın diye (karakter)
 
 function afisOlcu(k){ return AFIS_OLCU.filter(function(o){ return o.k === k; })[0] || AFIS_OLCU[0]; }
 function afisTur(){ var t = D && D.isletme && D.isletme.tur; return AFIS_RENK[t] ? t : 'diger'; }
-function afisLink(){ return D && D.botAdi ? 'https://t.me/' + D.botAdi + '?start=qr' : ''; }
+// 1.17: QR artık YourPOS 360 adresini açar; sayfa müşteriye «Telegram'dan» ve «Tarayıcıdan» seçeneklerini sunar.
+// Telegram kapanırsa (Telegram'sız mod) aynı QR doğrudan web siparişini açar — basılı afiş değişmeden çalışır.
+var QR_TABAN = 'https://yourpos360.com/q/?b=';
+function afisLink(){ return D && B && !DEMO ? QR_TABAN + encodeURIComponent(B) : (DEMO ? QR_TABAN + 'ornek' : ''); }
 function afisMetin(){
   var m = afisTur() === 'market';
   return { bas:m ? 'Telegram\'dan alışveriş yapın' : 'Telegram\'dan sipariş verin', en:m ? 'Scan to shop on Telegram' : 'Scan to order on Telegram',
@@ -4410,11 +4429,12 @@ SHEET.afis = function(s){
   var a = afisAyar(), link = afisLink(), b = U.busy.afis || s.uretiyor, lb = U.busy.logo;
   var h = shBas('QR afişi') + '<div class="sh-body" data-scroll="afis">';
   if (!link) {
-    h += '<div class="note-box">QR afişi için önce işletmenizin Telegram botunu bağlayın. Afişteki QR kod müşterileri doğrudan botunuza götürür.</div>';
-    if (D.uyeUrl) h += '<button class="btn line" data-act="uyeGit" data-k="#bot">Botumu bağla</button>';
+    h += '<div class="note-box">QR afişi hazırlanamadı. Ekranı yeniden açın.</div>';
     return h + '</div>';
   }
-  h += '<p class="tip-txt">Müşteri QR\'ı telefon kamerasıyla okutunca Telegram\'da <b>@' + esc(D.botAdi) + '</b> açılır ve sipariş verebilir.</p>';
+  h += '<p class="tip-txt">Müşteri QR\'ı telefon kamerasıyla okutunca sipariş sayfanız açılır; ' + (D.botAdi ? '<b>Telegram\'dan</b> (@' + esc(D.botAdi) + ') ya da ' : '') +
+    '<b>tarayıcıdan</b> sipariş verebilir. Telegram çalışmazsa aynı QR doğrudan web siparişini açar; afişi yeniden bastırmanız gerekmez.</p>' +
+    '<p class="tip-txt num">' + esc(link) + '</p>';
   h += '<div class="afis-on" aria-label="Afiş önizlemesi"><canvas id="afisCv" role="img" aria-label="' + esc(afisOlcu(s.olcu).ad) + ' önizlemesi"></canvas></div>';
   h += '<div class="blk"><h3 class="blk-h">Görünüm</h3><div class="seg" role="group" aria-label="Afiş görünümü">' + AFIS_STIL.map(function(x){
     return '<button type="button" data-act="afisStil" data-k="' + x.k + '" aria-pressed="' + (s.stil === x.k) + '">' + x.ad + '</button>';
@@ -5478,10 +5498,10 @@ function ynVeriAl(r){
   if (r.rehber !== undefined) D.rehber = r.rehber;
 }
 function ynBasla(){
-  if (!DEMO && !inTelegram) {
+  if (!DEMO && !inTelegram && !WEB) {
     return tamEkran('kilit', 'Bu ekran YourPOS 360 yöneticileri içindir',
-      'Telegram\'da <b>@yourpos360_bot</b> sohbetinde <b>/yonetim</b> yazın ve «🛠️ Yönetim ekranı» düğmesine dokunun.',
-      '<a class="btn line block" href="?yonetim=1&demo=1&rol=yonetim">Örnek ekranı gör</a>');
+      'Telegram\'da <b>@yourpos360_bot</b> sohbetinde <b>/yonetim</b> yazın ve «🛠️ Yönetim ekranı» düğmesine dokunun. Telegram çalışmıyorsa e-posta, şifre ve Google Authenticator koduyla tarayıcıdan girin.',
+      '<a class="btn pri block" href="' + esc(webGirisLink()) + '">🔐 E-posta ve şifreyle giriş yap</a><a class="btn line block" href="?yonetim=1&demo=1&rol=yonetim">Örnek ekranı gör</a>');
   }
   call('ynBaslat').then(function(r){
     if (!r || !r.ok) return cikisEkrani(r);
@@ -5522,6 +5542,7 @@ function ynCikis(r){
   r = r || {};
   var kapat = inTelegram ? '<button class="btn pri block" id="kapatBtn">Ekranı kapat</button>' : '';
   if (r.kod === 'YETKI') return tamEkran('kilit', 'Bu ekran yalnızca YourPOS 360 yöneticileri içindir', esc(r.hata || ''), kapat);
+  if (r.kod === 'GIRIS' && WEB) { LS.del(WEB_KEY); WEB = null; return tamEkran('kilit', 'Oturumunuzun süresi doldu', esc(r.hata || 'Yeniden giriş yapın.'), '<a class="btn pri block" href="' + esc(webGirisLink()) + '">🔐 Yeniden giriş yap</a>'); }
   if (r.kod === 'GIRIS') return tamEkran('kilit', 'Oturum doğrulanamadı', esc(r.hata || ''), kapat);
   tamEkran('uyari', 'Ekran açılamadı', esc(r.hata || 'Beklenmeyen bir sorun oluştu.'), '<button class="btn pri block" id="tekrarBtn">' + ic('yenile', 'sm') + 'Tekrar dene</button>');
 }
@@ -5889,7 +5910,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">' + ynBelgeKarti() + ynKodKarti();
+  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti();
   if (k) {
     var saat = Math.floor(k.calismaSn / 3600), by = U.busy.ynYedek;
     h += '<section class="card pad yn-sunucu"><h2 class="frm-h">Sunucu ve kullanım</h2>' +
@@ -5939,7 +5960,7 @@ function ynSisEkrani(){
   return h + '</div>';
 }
 function ynAlanAdi(a){ return { BASVURU_ONAYI:'Başvurular onayımla açılsın', KAMPANYA_DAVETI:'Fırsat bildirimlerine davet', REHBER_MUSTERI:'Müşteri Rehberi gönderilsin',
-  REHBER_ISLETME:'İşletme Rehberi gönderilsin' }[a.k] || a.k; }
+  REHBER_ISLETME:'İşletme Rehberi gönderilsin', WEB_SIPARIS:'🌐 Web\'den (Telegram\'sız) sipariş açık', TELEGRAMSIZ_MOD:'🛟 Telegram\'sız mod' }[a.k] || a.k; }
 
 /* --- olaylar --- */
 var ACT_YN = {
@@ -6295,7 +6316,9 @@ function ynDemoMock(){
       { k:'PUAN_AY', ad:'Puan ortalaması son kaç ayın değerlendirmelerinden hesaplansın (0 = hepsi)', deger:'6', tip:'sayi' }] },
     { ad:'Rehber PDF dosyaları', alanlar:[{ k:'REHBER_MUSTERI', ad:'Müşteri bir işletmenin botunu ilk kez başlatınca Müşteri Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' },
       { k:'REHBER_ISLETME', ad:'Üyelik açılınca İşletme Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' }] },
-    { ad:'Bakiye yükleme', alanlar:[{ k:'BAKIYE_HANE', ad:'Bakiye yüklemede tek seferde tutar en fazla kaç haneli olabilsin (4 = en fazla 9.999 TL · 0 = sınır yok)', deger:'4', tip:'sayi' }] }
+    { ad:'Bakiye yükleme', alanlar:[{ k:'BAKIYE_HANE', ad:'Bakiye yüklemede tek seferde tutar en fazla kaç haneli olabilsin (4 = en fazla 9.999 TL · 0 = sınır yok)', deger:'4', tip:'sayi' }] },
+    { ad:'Telegram\'sız mod', alanlar:[{ k:'WEB_SIPARIS', ad:'Müşteriler Telegram\'ı olmadan tarayıcıdan da sipariş verebilsin (QR\'da ve web sitesinde iki seçenek)', deger:'Evet', tip:'evet' },
+      { k:'TELEGRAMSIZ_MOD', ad:'Telegram\'sız mod: QR\'lar ve bağlantılar doğrudan web siparişini açsın (Telegram kapanır ya da erişilemezse açın)', deger:'Hayır', tip:'evet' }] }
   ], sunucu:{ dbMB:41.6, dbSinir:500, dbYuzde:8, okGB:0.31, trSinir:5, trYuzde:6, tahminGB:1.4, tahminYuzde:28, olcumGun:7,
     yedek:{ zaman:t0 - 5 * 3600000, parca:3, mb:2.4 }, yedekHata:null, yedekCalisiyor:false, yedekGun:1, bellekMB:212, calismaSn:3 * 86400, onbellek:{ tablo:46, mb:7.2, isabet:96 } } };
   var ozet = function(){
@@ -6565,6 +6588,7 @@ function ynDemoMock(){
     },
     ynYedek:function(){ SIS.sunucu.yedek = { zaman:Date.now(), parca:3, mb:2.4 }; return { ok:true, mesaj:'Yedek alınıyor. Bitince size haber vereceğim (genelde 1-2 dakika).' }; }
   };
+  Object.assign(islemler, whDemoIslemler());
   return function(act, d){
     var f = islemler[act];
     return new Promise(function(ok){
@@ -7084,6 +7108,219 @@ document.addEventListener('change', function(e){
   rd.readAsDataURL(f);
 });
 
+
+/* ============================================================
+ *  1.17 · WEB GİRİŞİ (Telegram'sız)
+ *  Sahip (Ayarlar) ve yönetici (Sistem) kendi web hesabını kurar: e-posta + şifre, Google Authenticator, 10 yedek kod.
+ *  Kurulum Telegram'dan açılan ekranda yapılır (kimlik Telegram imzasıyla doğrulanır); tarayıcıda giriş: giris.html.
+ * ============================================================ */
+function wgKv(k, v){ return '<div class="kv"><span>' + k + '</span><span>' + v + '</span></div>'; }
+function qrSvg(metin){
+  try { var q = window.qrcode(0, 'M'); q.addData(metin); q.make(); return q.createSvgTag({ cellSize:4, margin:2, scalable:true }); } catch(e){ return ''; }
+}
+function whYukle(){
+  U.whYuk = true;
+  call('whDurum').then(function(r){
+    U.whYuk = false;
+    U.wh = r && r.ok ? r.hesap : { hata:(r && r.hata) || 'Web girişi bilgisi alınamadı.' };
+    ciz();
+    if (SH && SH.tip === 'webHesap') renderSheet();
+  });
+}
+function whCagir(act, data){
+  if (U.busy.wh) return Promise.resolve(null);
+  U.busy.wh = true;
+  if (SH) renderSheet();
+  return call(act, data || {}).then(function(r){
+    delete U.busy.wh;
+    if (r && r.ok && r.hesap) U.wh = r.hesap;
+    if (r && !r.ok && r.kod === 'GIRIS' && WEB) { cikisEkrani(r); return null; }
+    if (SH) renderSheet();
+    return r || { ok:false, hata:'Bağlantı kurulamadı.' };
+  });
+}
+function webGirisKarti(){
+  if (U.wh === undefined && !U.whYuk) setTimeout(whYukle, 0);
+  var w = U.wh;
+  var h = '<section class="card pad frm wg-kart"><h2 class="frm-h">🔐 Web girişi <span class="muted">· Telegram\'sız</span></h2>' +
+    '<p class="tip-txt">Telegram çalışmazsa bu ekrana tarayıcıdan <b>yourpos360.com/giris</b> adresinden e-posta adresiniz ve şifrenizle girersiniz.</p>';
+  if (!w) h += '<div class="sk" style="height:56px"></div>';
+  else if (w.hata) h += '<div class="err-txt">' + esc(w.hata) + '</div><button class="btn line sm" data-act="whTekrar">' + ic('yenile', 'sm') + 'Tekrar dene</button>';
+  else {
+    h += '<div class="wg-durum">' + wgKv('E-posta', w.var ? esc(w.eposta) : '<span class="yn-uyari">kurulmadı</span>') +
+      wgKv('Google Authenticator', w.totp ? '✅ açık' : (w.totpZorunlu ? '<span class="yn-uyari">kurulmadı · zorunlu</span>' : 'kapalı')) + '</div>' +
+      '<button class="btn ' + (w.var && (w.totp || !w.totpZorunlu) ? 'line' : 'pri') + '" data-act="whAc">' + (w.var ? 'Web girişini yönet' : 'Web girişini kur') + '</button>';
+  }
+  if (WEB) h += '<div class="wg-web"><span class="tip-txt">Bu tarayıcıda e-postanızla giriş yaptınız.</span><button class="btn ghost sm" data-act="whCikisYap"' + (U.busy.whCikis ? ' disabled' : '') + '>' + bekle('whCikis') + 'Çıkış yap</button></div>';
+  return h + '</section>';
+}
+SHEET.webHesap = function(s){
+  var w = U.wh || {}, a = s.adim || 'ana', b = !!U.busy.wh;
+  var hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
+  if (a === 'sifre') {
+    return shBas(w.var ? 'E-posta ve şifre' : 'Web girişini kur') + '<div class="sh-body">' +
+      '<p class="tip-txt">Kullanıcı adınız e-posta adresinizdir. Şifreyi siz belirlersiniz; kimse göremez, YourPOS 360 da. Şifre sunucuda şifrelenmiş olarak saklanır.</p>' +
+      '<div class="field"><label for="wgEp">E-posta</label><input class="inp" id="wgEp" type="email" inputmode="email" autocomplete="username" maxlength="120" value="' + esc(s.ep !== undefined ? s.ep : (w.eposta || '')) + '"></div>' +
+      (WEB && w.var ? '<div class="field"><label for="wgMev">Mevcut şifre</label><input class="inp" id="wgMev" type="password" autocomplete="current-password"></div>' : '') +
+      '<div class="field"><label for="wgS1">' + (w.var ? 'Yeni şifre' : 'Şifre') + '</label><input class="inp" id="wgS1" type="password" autocomplete="new-password" maxlength="200"></div>' +
+      '<div class="field"><label for="wgS2">Şifre (tekrar)</label><input class="inp" id="wgS2" type="password" autocomplete="new-password" maxlength="200"></div>' +
+      '<p class="tip-txt">En az 8 karakter; en az bir harf ve bir rakam.' + (w.var ? ' Yalnız e-postayı değiştirecekseniz şifre alanlarını boş bırakın.' : '') + '</p>' + hata +
+      '</div><div class="sh-foot"><div class="row"><button class="btn line" data-act="whGeri">Vazgeç</button><button class="btn pri" data-act="whKaydet"' + (b ? ' disabled' : '') + '>' + bekle('wh') + 'Kaydet</button></div></div>';
+  }
+  if (a === 'totp') {
+    return shBas('Google Authenticator') + '<div class="sh-body">' +
+      '<ol class="wg-adim"><li>Telefonunuza ücretsiz <b>Google Authenticator</b> uygulamasını kurun (App Store ya da Google Play).</li>' +
+      '<li>Uygulamada <b>+</b> → <b>QR kodu tara</b>ya dokunup aşağıdaki kodu okutun.</li>' +
+      '<li>Uygulamanın gösterdiği <b>6 haneli kodu</b> aşağıya yazın.</li></ol>' +
+      '<div class="wg-qr" role="img" aria-label="Google Authenticator için QR kod">' + qrSvg(s.uri || '') + '</div>' +
+      '<p class="tip-txt">Kod bu telefonda açıksa QR okutamazsınız: <a href="' + esc(s.uri || '#') + '">Authenticator\'da aç</a> ya da uygulamada «Kurulum anahtarı gir»i seçip şu anahtarı yazın:</p>' +
+      '<div class="wg-anahtar"><span class="num">' + esc(s.gizli || '') + '</span><button class="btn ghost sm" data-act="whKopyala" data-k="' + esc(String(s.gizli || '').replace(/\s/g, '')) + '">Kopyala</button></div>' +
+      '<div class="field"><label for="wgKod">6 haneli kod</label><input class="inp num wg-kod" id="wgKod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>' + hata +
+      '</div><div class="sh-foot"><div class="row"><button class="btn line" data-act="whGeri">Vazgeç</button><button class="btn pri" data-act="whTotpOnay"' + (b ? ' disabled' : '') + '>' + bekle('wh') + 'Onayla</button></div></div>';
+  }
+  if (a === 'yedek') {
+    var kodlar = s.yedek || [];
+    return shBas('Yedek kodlar') + '<div class="sh-body"><div class="note-box">⚠️ Bu 10 kodu <b>şimdi bir kâğıda yazın</b> ya da güvenli bir yere kaydedin; bir daha gösterilmez. ' +
+      'Telefonunuzu kaybederseniz Authenticator kodu yerine bunlarla girersiniz. Her kod bir kez geçer.</div>' +
+      '<div class="wg-yedek num">' + kodlar.map(function(k){ return '<span>' + esc(k) + '</span>'; }).join('') + '</div>' +
+      '<div class="row2"><button class="btn line sm" data-act="whYedekKopya">Kopyala</button><button class="btn line sm" data-act="whYedekIndir">Dosya olarak indir</button></div>' +
+      '<button class="opt" type="button" role="switch" aria-checked="' + (s.yazdim ? 'true' : 'false') + '" data-act="whYazdim"><span class="o-main">Kodları güvenli bir yere yazdım</span><span class="tgl" aria-hidden="true"></span></button>' +
+      '</div><div class="sh-foot"><button class="btn pri block" data-act="whBitir"' + (s.yazdim ? '' : ' disabled') + '>Tamam</button></div>';
+  }
+  if (a === 'kod') {
+    var kapat = s.tur === 'kapat';
+    return shBas(kapat ? 'Authenticator\'ı kapat' : 'Yedek kodları yenile') + '<div class="sh-body">' +
+      '<p class="tip-txt">' + (kapat ? 'Kapatınca web girişinde yalnız şifre sorulur. ' : 'Yeni kodlar oluşturulunca eskileri geçmez. ') + 'Onay için Google Authenticator\'daki 6 haneli kodu ya da kullanılmamış bir yedek kodu yazın.</p>' +
+      '<div class="field"><label for="wgKod2">Kod</label><input class="inp num" id="wgKod2" autocomplete="one-time-code" maxlength="9"></div>' + hata +
+      '</div><div class="sh-foot"><div class="row"><button class="btn line" data-act="whGeri">Vazgeç</button><button class="btn ' + (kapat ? 'dng-line' : 'pri') + '" data-act="whKodOnay"' + (b ? ' disabled' : '') + '>' + bekle('wh') + (kapat ? 'Kapat' : 'Yenile') + '</button></div></div>';
+  }
+  var h = shBas('🔐 Web girişi') + '<div class="sh-body">';
+  if (!U.wh) return h + '<div class="sk" style="height:120px"></div></div>';
+  h += '<p class="tip-txt">Telegram çalışmazsa tarayıcıdan <b>yourpos360.com/giris</b> adresinde bu e-posta ve şifreyle girersiniz' + (w.totp ? ', ardından Authenticator kodu sorulur' : '') + '. ' +
+    (w.admin ? 'Yönetim ekranı ve işletme ekranları açılır.' : 'İşletme ekranınız açılır.') + '</p>' +
+    '<div class="wg-durum">' + wgKv('E-posta (kullanıcı adı)', w.var ? esc(w.eposta) : 'kurulmadı') + wgKv('Şifre', w.var ? 'belirlendi' : '—') +
+    wgKv('Google Authenticator', w.totp ? '✅ açık' : (w.totpZorunlu ? '⚠️ kurulmadı · yöneticide zorunlu' : 'kapalı (önerilir)')) +
+    (w.totp ? wgKv('Kalan yedek kod', String(w.yedekKalan)) : '') + (w.sonGiris ? wgKv('Son web girişi', esc(w.sonGiris)) : '') + '</div>' +
+    (w.isletmeler && w.isletmeler.length ? '<p class="tip-txt">Girişte açılacak işletme' + (w.isletmeler.length > 1 ? 'ler' : '') + ': ' + w.isletmeler.map(function(x){ return '<b>' + esc(x.ad) + '</b>'; }).join(', ') + '</p>' : '') +
+    '<div class="opt-list">' +
+    '<button class="opt" type="button" data-act="whAdim" data-k="sifre"><span class="o-main">' + (w.var ? 'E-posta ya da şifreyi değiştir' : '① E-posta ve şifre belirle') + '<span class="o-sub">Kullanıcı adı e-posta adresiniz</span></span></button>' +
+    (w.var && !w.totp ? '<button class="opt" type="button" data-act="whTotpBaslat"' + (b ? ' disabled' : '') + '><span class="o-main">② Google Authenticator\'ı kur' + (w.totpZorunlu ? ' (zorunlu)' : ' (önerilir)') +
+      '<span class="o-sub">Girişte telefonunuzdaki 6 haneli kod da sorulur; şifreniz çalınsa bile kimse giremez</span></span></button>' : '') +
+    (w.totp ? '<button class="opt" type="button" data-act="whAdim" data-k="kod" data-t="yedek"><span class="o-main">Yedek kodları yenile<span class="o-sub">Kodları kaybettiyseniz ya da azaldıysa</span></span></button>' : '') +
+    (w.totp && !w.totpZorunlu ? '<button class="opt" type="button" data-act="whAdim" data-k="kod" data-t="kapat"><span class="o-main">Google Authenticator\'ı kapat</span></button>' : '') +
+    (w.var ? '<button class="opt" type="button" data-act="whOturumKapat"' + (b ? ' disabled' : '') + '><span class="o-main">Bütün web oturumlarını kapat<span class="o-sub">Başka bir cihazda açık kaldıysa ya da şüphelendiyseniz</span></span></button>' : '') +
+    '</div>' + hata + '</div>';
+  return h;
+};
+function whDeger(id){ var e = $('#' + id); return e ? e.value : ''; }
+function whHata(st, r){ st.hata = (r && r.hata) || 'İşlem yapılamadı.'; if (SH === st) renderSheet(); haptic('notify', 'error'); }
+Object.assign(ACT_EK, {
+  whTekrar:function(){ U.wh = undefined; ciz(); },
+  whAc:function(){ sheetAc({ tip:'webHesap', adim:U.wh && U.wh.var ? 'ana' : 'sifre' }); if (!U.wh || U.wh.hata) whYukle(); },
+  whAdim:function(el){ if (!SH) return; SH.adim = el.getAttribute('data-k'); SH.tur = el.getAttribute('data-t') || ''; SH.hata = ''; renderSheet(); },
+  whGeri:function(){ if (!SH) return; if (!(U.wh && U.wh.var)) { sheetKapat(); return; } SH.adim = 'ana'; SH.hata = ''; renderSheet(); },
+  whKaydet:function(){
+    var st = SH; if (!st) return;
+    var ep = whDeger('wgEp').trim(), s1 = whDeger('wgS1'), s2 = whDeger('wgS2'), mev = whDeger('wgMev');
+    st.ep = ep;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(ep)) return whHata(st, { hata:'Geçerli bir e-posta adresi yazın.' });
+    if (!(U.wh && U.wh.var) && !s1) return whHata(st, { hata:'Bir şifre belirleyin.' });
+    if (s1 !== s2) return whHata(st, { hata:'İki şifre aynı değil.' });
+    whCagir('whKaydet', { eposta:ep, sifre:s1, mevcut:mev }).then(function(r){
+      if (!r) return;
+      if (!r.ok) return whHata(st, r);
+      toast(r.mesaj); haptic('notify', 'success');
+      st.hata = ''; st.ep = undefined;
+      if (r.hesap && !r.hesap.totp && SH === st) { ACT_EK.whTotpBaslat(); return; }
+      st.adim = 'ana'; if (SH === st) renderSheet(); ciz();
+    });
+  },
+  whTotpBaslat:function(){
+    var st = SH;
+    whCagir('whTotpBaslat', {}).then(function(r){
+      if (!r || !st || SH !== st) return;
+      if (!r.ok) return whHata(st, r);
+      st.adim = 'totp'; st.uri = r.uri; st.gizli = r.gizli; st.hata = '';
+      renderSheet();
+      setTimeout(function(){ var k = $('#wgKod'); if (k) k.focus(); }, 60);
+    });
+  },
+  whTotpOnay:function(){
+    var st = SH, k = whDeger('wgKod').replace(/\D/g, '');
+    if (k.length !== 6) return whHata(st, { hata:'Uygulamadaki 6 haneli kodu yazın.' });
+    whCagir('whTotpOnay', { kod:k }).then(function(r){
+      if (!r || SH !== st) return;
+      if (!r.ok) return whHata(st, r);
+      haptic('notify', 'success');
+      st.adim = 'yedek'; st.yedek = r.yedek; st.yazdim = false; st.hata = '';
+      renderSheet(); ciz();
+    });
+  },
+  whKodOnay:function(){
+    var st = SH, k = whDeger('wgKod2');
+    if (!k.trim()) return whHata(st, { hata:'Kodu yazın.' });
+    whCagir(st.tur === 'kapat' ? 'whTotpKapat' : 'whYedekYenile', { kod:k }).then(function(r){
+      if (!r || SH !== st) return;
+      if (!r.ok) return whHata(st, r);
+      toast(r.mesaj);
+      if (r.yedek) { st.adim = 'yedek'; st.yedek = r.yedek; st.yazdim = false; } else st.adim = 'ana';
+      st.hata = ''; renderSheet(); ciz();
+    });
+  },
+  whKopyala:function(el){ kopyala(el.getAttribute('data-k') || '').then(function(ok){ toast(ok ? 'Anahtar kopyalandı.' : 'Kopyalanamadı; elle yazın.', !ok); }); },
+  whYedekKopya:function(){ if (SH) kopyala((SH.yedek || []).join('\n')).then(function(ok){ toast(ok ? 'Yedek kodlar kopyalandı.' : 'Kopyalanamadı; kâğıda yazın.', !ok); }); },
+  whYedekIndir:function(){
+    if (!SH) return;
+    var w = U.wh || {}, m = 'YourPOS 360 · web girişi yedek kodları\n' + (w.eposta ? 'Hesap: ' + w.eposta + '\n' : '') + 'Oluşturma: ' + new Date().toLocaleString('tr-TR') +
+      '\n\nHer kod bir kez geçer. Girişte Authenticator kodu yerine yazın.\n\n' + (SH.yedek || []).join('\n') + '\n';
+    try {
+      var url = URL.createObjectURL(new Blob([m], { type:'text/plain;charset=utf-8' })), a = document.createElement('a');
+      a.href = url; a.download = 'yourpos360-yedek-kodlar.txt'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    } catch(e){ toast('İndirilemedi; kodları kopyalayın ya da kâğıda yazın.', true); }
+  },
+  whYazdim:function(){ if (SH) { SH.yazdim = !SH.yazdim; renderSheet(); } },
+  whBitir:function(){ if (SH) { SH.adim = 'ana'; SH.yedek = null; renderSheet(); } },
+  whOturumKapat:function(){
+    var st = SH;
+    whCagir('whOturumlarKapat', {}).then(function(r){
+      if (!r) return;
+      if (!r.ok) return whHata(st, r);
+      toast(r.mesaj);
+      if (WEB) { LS.del(WEB_KEY); location.href = webGirisLink(); }
+    });
+  },
+  whCikisYap:function(){
+    U.busy.whCikis = true; ciz();
+    call('whCikis', {}).then(function(){ LS.del(WEB_KEY); location.href = GIRIS_URL; });
+  }
+});
+function whDemoIslemler(){
+  var H = { var:false, aktif:false, eposta:'', ad:'Ahmet Usta', totp:false, yedekKalan:0, admin:DEMO_ROL === 'Yonetim', totpZorunlu:DEMO_ROL === 'Yonetim',
+    isletmeler:[{ b:'demo', ad:'Örnek Dönerci', durum:'Aktif' }], sonGiris:'' };
+  var kodlar = ['K7M2-QX4D', 'P3HT-9WZA', 'R8NE-2CJV', 'D4LS-7YBQ', 'H2FU-6KMP', 'X9TA-3RGE', 'B6WC-8NDL', 'M5QJ-4ZHS', 'T3VY-7PAK', 'E8GR-2LUW'];
+  var kopyaH = function(){ return JSON.parse(JSON.stringify(H)); };
+  return {
+    whDurum:function(){ return { ok:true, hesap:kopyaH() }; },
+    whKaydet:function(d){
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(d.eposta || ''))) return { ok:false, kod:'EPOSTA', hata:'Geçerli bir e-posta adresi yazın.' };
+      if (d.sifre && (String(d.sifre).length < 8 || !/\d/.test(d.sifre) || !/[A-Za-z]/.test(d.sifre))) return { ok:false, kod:'SIFRE', hata:'Şifre en az 8 karakter olmalı; en az bir harf ve bir rakam.' };
+      H.var = true; H.eposta = String(d.eposta).toLowerCase(); H.aktif = !H.totpZorunlu || H.totp;
+      return { ok:true, mesaj:H.totpZorunlu && !H.totp ? 'Kaydedildi. Şimdi Google Authenticator\'ı kurun.' : 'Kaydedildi. Artık web\'den e-posta adresiniz ve şifrenizle girebilirsiniz.', hesap:kopyaH() };
+    },
+    whTotpBaslat:function(){ return { ok:true, gizli:'JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP', uri:'otpauth://totp/YourPOS%20360%3A' + encodeURIComponent(H.eposta) + '?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=YourPOS%20360&digits=6&period=30' }; },
+    whTotpOnay:function(d){
+      if (!/^\d{6}$/.test(String(d.kod || ''))) return { ok:false, kod:'KOD', hata:'Kod tutmadı.' };
+      H.totp = true; H.aktif = true; H.yedekKalan = 10;
+      return { ok:true, yedek:kodlar.slice(), mesaj:'Google Authenticator açıldı.', hesap:kopyaH() };
+    },
+    whYedekYenile:function(){ H.yedekKalan = 10; return { ok:true, yedek:kodlar.slice().reverse(), mesaj:'Yeni yedek kodlar oluşturuldu; eskileri artık geçmez.', hesap:kopyaH() }; },
+    whTotpKapat:function(){ if (H.totpZorunlu) return { ok:false, kod:'YETKI', hata:'Yönetici hesabında Google Authenticator kapatılamaz.' }; H.totp = false; H.yedekKalan = 0; return { ok:true, mesaj:'Google Authenticator kapatıldı.', hesap:kopyaH() }; },
+    whOturumlarKapat:function(){ return { ok:true, mesaj:'Açık web oturumu yoktu.', hesap:kopyaH() }; },
+    whCikis:function(){ return { ok:true }; }
+  };
+}
+
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
   var k = o.lat && o.lng ? o.lat + ',' + o.lng : '', q = encodeURIComponent(o.adres || '');
@@ -7475,6 +7712,7 @@ function cikisEkrani(r){
     LS.del(CIHAZ_KEY);
     return tamEkran('tablet', 'Bu tabletin bağlantısı geçersiz', esc(r.hata || '') );
   }
+  if (r.kod === 'GIRIS' && WEB) { LS.del(WEB_KEY); WEB = null; return tamEkran('kilit', 'Oturumunuzun süresi doldu', esc(r.hata || 'Yeniden giriş yapın.'), '<a class="btn pri block" href="' + esc(webGirisLink()) + '">🔐 Yeniden giriş yap</a>'); }
   if (r.kod === 'GIRIS') return tamEkran('kilit', 'Oturum doğrulanamadı', esc(r.hata || ''), inTelegram ? '<button class="btn pri block" id="kapatBtn">Ekranı kapat</button>' : '');
   if (r.kod === 'YETKI') return tamEkran('kilit', 'Bu ekran işletme ekibi içindir', esc(r.hata || ''), inTelegram ? '<button class="btn pri block" id="kapatBtn">Ekranı kapat</button>' : '');
   if (r.kod === 'ISLETME') return tamEkran('dukkan', 'İşletme bulunamadı', 'Bağlantı eksik ya da işletme kaldırılmış olabilir.');
@@ -7489,12 +7727,13 @@ function basla(){
   if (YONETIM) return ynBasla();
   if (!DEMO) {
     if (!B) return tamEkran('kilit', 'Bağlantı eksik', 'Bu ekranı işletmenizin Telegram botundaki «Restoran» düğmesinden ya da @yourpos360_bot içindeki «Panelim»den açın.');
-    if (!inTelegram && !CIHAZ) {
+    if (!inTelegram && !CIHAZ && !WEB) {
       var q = new URLSearchParams(); q.set('b', B); q.set('demo', '1');
       return tamEkran('kilit', 'Bu ekran işletme ekibi içindir',
+        '<b>İşletme sahibiyseniz:</b> e-posta adresiniz ve şifrenizle tarayıcıdan girebilirsiniz.<br><br>' +
         '<b>Telefonda:</b> işletmenizin Telegram botunu açıp alttaki «Restoran» (kuryeler için «Kurye») düğmesine dokunun.<br><br>' +
         '<b>Tablette:</b> işletme sahibi Ekip → «Tablet bağla» ile bu tablete özel bağlantı oluşturur.',
-        '<a class="btn line block" href="?' + esc(q.toString()) + '">Örnek ekranı gör</a>');
+        '<a class="btn pri block" href="' + esc(webGirisLink()) + '">🔐 E-posta ve şifreyle giriş yap</a><a class="btn line block" href="?' + esc(q.toString()) + '">Örnek ekranı gör</a>');
     }
   }
   call('ekBaslat').then(function(r){
@@ -8010,6 +8249,7 @@ function demoMock(rol){
     },
     ekKampanyaSil:function(d){ KAMP = KAMP.filter(function(x){ return x.id !== d.id; }); return { ok:true, kampanyalar:kopya(KAMP) }; }
   };
+  Object.assign(islemler, whDemoIslemler());
   return function(act, d){
     var f = islemler[act];
     var gecikme = act === 'ekYenile' ? 120 : act === 'ekRaporGonder' || act === 'ekAfisGonder' ? 1100 : 380 + Math.random() * 320;
