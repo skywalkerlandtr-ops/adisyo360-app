@@ -1348,15 +1348,36 @@ var EMOJI = [
   [/dürüm|durum|wrap/, '🌯'], [/porsiyon|iskender|pilav/, '🍛'], [/tost|sandviç/, '🥪'], [/patates/, '🍟'], [/salata|ezme/, '🥗'], [/burger/, '🍔'], [/pizza/, '🍕'],
   [/ayran|süt/, '🥛'], [/kola|gazoz|içecek|soda|meşrubat/, '🥤'], [/(^|[^a-zçğıöşü])su($|[^a-zçğıöşü])/, '💧'], [/çay/, '🍵'], [/kahve/, '☕'],
   [/tatlı|baklava|künefe|sütlaç|kadayıf/, '🍮'], [/pasta|kek/, '🍰'], [/pide|lahmacun/, '🫓'], [/köfte/, '🍖'], [/tavuk/, '🍗'], [/çorba/, '🍲'],
-  [/simit/, '🥯'], [/döner/, '🥙'], [/ekmek/, '🍞'], [/yumurta/, '🥚'], [/peynir/, '🧀'], [/zeytin/, '🫒'], [/bal|reçel/, '🍯'], [/makarna/, '🍝'], [/pirinç|bulgur|bakliyat/, '🍚'],
-  [/deterjan|şampuan/, '🧴'], [/sabun/, '🧼'], [/peçete|havlu|tuvalet/, '🧻'], [/cips|çerez/, '🍿'], [/çikolata/, '🍫'], [/meyve suyu/, '🧃'], [/dondurma/, '🍨']
+  [/simit/, '🥯'], [/döner/, '🥙'], [/ekmek/, '🍞'], [/yumurta/, '🥚'], [/peynir/, '🧀'], [/zeytin/, '🫒'], [/(^|[^a-zçğıöşü])balı?($|[^a-zçğıöşü])|reçel/, '🍯'], [/makarna/, '🍝'], [/pirinç|bulgur|bakliyat/, '🍚'],
+  [/deterjan|şampuan/, '🧴'], [/sabun/, '🧼'], [/peçete|havlu|tuvalet/, '🧻'], [/cips|çerez/, '🍿'], [/çikolata/, '🍫'], [/meyve suyu/, '🧃'], [/dondurma/, '🍨'],
+  [/kebap|kebab|adana|urfa|(^|[^a-zçğıöşü])şiş/, '🍢'], [/pirzola|antrikot|biftek|kuzu|kokoreç/, '🥩'], [/sucuk|sosis/, '🌭'], [/pastırma/, '🥓'], [/tavuğ|nugget/, '🍗'], [/ekmeğ/, '🍞'],
+  [/balık|balığ|levrek|çipura|hamsi|somon|uskumru/, '🐟'], [/karides/, '🦐'], [/kalamar/, '🦑'], [/midye/, '🦪'], [/ahtapot/, '🐙'], [/sushi/, '🍣'],
+  [/mantı/, '🥟'], [/gözleme/, '🫓'], [/börek|böreğ/, '🥧'], [/poğaça|açma|kruvasan/, '🥐'], [/pankek|krep/, '🥞'], [/waffle/, '🧇'], [/menemen|omlet|sahan|kahvaltı/, '🍳'],
+  [/kumpir/, '🥔'], [/patlamış mısır/, '🍿'], [/falafel|içli/, '🧆'], [/noodle|erişte/, '🍜'], [/dolma/, '🫑'], [/sarma/, '🥬'],
+  [/limonata/, '🍹'], [/milkshake|frappe|smoothie/, '🧋'], [/fanta|sprite|şalgam|soğuk/, '🥤'], [/kefir/, '🥛'],
+  [/kedi dili|kurabiye|bisküvi|kraker/, '🍪'], [/donut|lokma|tulumba/, '🍩'], [/cupcake|muffin/, '🧁'], [/lokum|şekerleme/, '🍬'], [/brownie|sufle/, '🍫'],
+  [/tereyağ/, '🧈'], [/zeytinyağ/, '🫒'], [/sıvı yağ|ayçiçek yağ/, '🛢️'], [/salça|konserve/, '🥫'], [/turşu/, '🫙'], [/tuz|baharat|pul biber/, '🧂'],
+  [/kuruyemiş|fıstık|badem|ceviz/, '🥜'], [/fındık|kestane/, '🌰'], [/çekirdek/, '🌻'],
+  [/elma/, '🍎'], [/armut/, '🍐'], [/portakal|mandalina/, '🍊'], [/limon/, '🍋'], [/muz/, '🍌'], [/karpuz/, '🍉'], [/kavun/, '🍈'], [/üzüm/, '🍇'], [/çilek|çileğ/, '🍓'],
+  [/kiraz|vişne/, '🍒'], [/şeftali|kayısı/, '🍑'], [/ananas/, '🍍'], [/kivi/, '🥝'], [/mango/, '🥭'], [/avokado/, '🥑'],
+  [/domates/, '🍅'], [/biber/, '🫑'], [/havuç/, '🥕'], [/sarımsak/, '🧄'], [/soğan/, '🧅'], [/marul|ıspanak|lahana/, '🥬'], [/brokoli/, '🥦'], [/patlıcan/, '🍆'], [/mantar/, '🍄'],
+  [/mısır/, '🌽'], [/maydanoz|dereotu|nane|roka|yeşillik/, '🌿'],
+  [/kedi/, '🐱'], [/köpek/, '🐶'], [/kuş yemi/, '🐦'], [/bebek bezi|ıslak mendil/, '👶'], [/mama|biberon/, '🍼'],
+  [/diş fırçası|diş macunu/, '🪥'], [/tıraş|jilet/, '🪒'], [/ruj|makyaj|oje/, '💄'], [/kolonya|parfüm/, '🌸'], [/çamaşır|yumuşatıcı/, '🧺'], [/bulaşık|sünger/, '🧽'],
+  [/çöp/, '🗑️'], [/eldiven/, '🧤'], [/(^|[^a-zçğıöşü])pil($|[^a-zçğıöşü])/, '🔋'], [/ampul|lamba/, '💡'], [/(^|[^a-zçğıöşü])mum($|[^a-zçğıöşü])/, '🕯️'],
+  [/kalem/, '✏️'], [/defter/, '📓'], [/kitap/, '📚'], [/gazete|dergi/, '📰'], [/çiçek|çiçeğ|buket/, '💐'], [/oyuncak/, '🧸'], [/balon/, '🎈'],
+  [/şarj|kablo/, '🔌'], [/kulaklık/, '🎧'], [/çorap/, '🧦'], [/terlik/, '🩴'], [/şemsiye/, '🌂'],
+  [/vida|civata/, '🔩'], [/çekiç/, '🔨'], [/tornavida/, '🪛'], [/kilit/, '🔒'], [/boya|fırça/, '🖌️'], [/merdiven/, '🪜'], [/kova/, '🪣'], [/hortum|musluk/, '🚰']
 ];
 var EMOJI_H = [
   [/kombi|petek|kalorifer|doğalgaz|dogalgaz/, '🔥'], [/tesisat|musluk|batarya|su kaçağı|kaçak|tıkanık|gider|lavabo|klozet|rezervuar|boru/, '🔧'],
   [/elektrik|priz|sigorta|avize|aydınlatma|kablo|anahtar takma/, '💡'], [/klima|soğutma/, '❄️'], [/boya|badana|alçı/, '🖌️'],
   [/marangoz|dolap|mobilya|kapı|parke|ahşap/, '🪚'], [/çilingir|kilit|anahtar/, '🔑'], [/cam|ayna/, '🪟'], [/temizlik|halı|koltuk yıkama/, '🧽'],
   [/nakliye|taşıma|taşımacılık/, '🚚'], [/bahçe|çim|ağaç/, '🌳'], [/bilgisayar|telefon|tamir|onarım/, '🛠️'], [/montaj|kurulum/, '🪛'],
-  [/keşif|teklif/, '📋'], [/kuaför|berber|saç/, '💈'], [/güzellik|cilt|manikür/, '💅'], [/oto|araba|lastik/, '🚗'], [/veteriner/, '🐾']
+  [/keşif|teklif/, '📋'], [/kuaför|berber|saç/, '💈'], [/güzellik|cilt|manikür/, '💅'], [/oto|araba|lastik/, '🚗'], [/veteriner/, '🐾'],
+  [/su arıtma|arıtma/, '🚰'], [/duş|banyo|küvet/, '🚿'], [/tadilat|tamirat/, '🔨'], [/fayans|seramik|duvar|sıva/, '🧱'], [/ilaçlama|haşere|böcek/, '🪳'],
+  [/kuru temizleme|çamaşır|ütü/, '🧺'], [/terzi|dikiş/, '🧵'], [/ayakkabı/, '👞'], [/uydu|anten/, '📡'], [/masaj/, '💆'], [/kombi bakım|baca/, '🔥'],
+  [/perde|stor/, '🪟'], [/ev hizmet|ev temizliği/, '🏠']
 ];
 function emojiFor(ad, kat){
   var a = lower(ad), k = lower(kat), i;

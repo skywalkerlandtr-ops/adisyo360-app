@@ -729,6 +729,18 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .yn-k-alt b{color:var(--text)}
 .yn-k-say{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--sub);padding-top:6px;border-top:1px solid var(--sep)}
 .yn-k-say b{color:var(--text)}
+.yn-pz-l{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:8px}
+.yn-pz{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;background:var(--bg2)}
+.yn-pz.kapali{opacity:.78}
+.yn-pz-tek{margin-bottom:6px}
+.yn-pz-bas{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.yn-pz-bas .pill{vertical-align:0;margin-left:auto}
+.yn-pz-orta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.yn-pz-orta .btn{flex:none;min-height:40px}
+.yn-yildiz{font-size:20px;letter-spacing:1px;color:var(--warn-ink)}
+.yn-yildiz-bos{color:var(--sep)}
+.yn-pz-urun{font-size:14px;overflow-wrap:anywhere}
+.yn-pz-not{font-size:13px;color:var(--sub);overflow-wrap:anywhere}
 .yn-uyari{color:var(--warn-ink);font-weight:700}
 .yn-aks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .yn-aks .btn.pri{grid-column:1 / -1}
@@ -2309,40 +2321,104 @@ function urunSoz(buyuk){ var s = hzm() ? 'hizmet' : 'ürün'; return buyuk ? s.c
 function teslimYazi(ms){ return gunKey(ms) === gunKey(simdi()) ? saatYaz(ms) : gunYaz(gunKey(ms)) + ' ' + saatYaz(ms); }
 
 var RENKLER = [['0', 'Turuncu'], ['1', 'Pembe'], ['2', 'Sarı'], ['3', 'Yeşil'], ['4', 'Mavi']];
+var GAL_HIZMET = 'Hizmetler (ustalar)';
 var GALERI = [
-  ['Döner, kebap, ızgara', [['🌯', 'dürüm wrap'], ['🥙', 'döner ekmek arası'], ['🍢', 'şiş kebap'], ['🍖', 'et pirzola kemik köfte'], ['🥩', 'biftek et antrikot'],
-    ['🍗', 'tavuk kanat but'], ['🌭', 'sosisli sucuk'], ['🥓', 'pastırma']]],
+  ['Döner, kebap, ızgara', [['🌯', 'dürüm wrap'], ['🥙', 'döner ekmek arası'], ['🍢', 'şiş kebap adana urfa çöp şiş'], ['🍖', 'et pirzola kemik köfte kokoreç'], ['🥩', 'biftek et antrikot kuzu'],
+    ['🍗', 'tavuk kanat but piliç nugget'], ['🌭', 'sosisli sucuk'], ['🥓', 'pastırma'], ['🔥', 'mangal ızgara közleme']]],
   ['Fast food', [['🍔', 'hamburger burger'], ['🍟', 'patates kızartması'], ['🍕', 'pizza'], ['🥪', 'tost sandviç'], ['🌮', 'taco'], ['🧆', 'falafel içli köfte'],
-    ['🥨', 'pretzel']]],
-  ['Ev yemekleri', [['🍛', 'pilav üstü sulu yemek'], ['🍲', 'çorba güveç tencere'], ['🥘', 'sahan menemen kaşarlı'], ['🍝', 'makarna spagetti'], ['🍜', 'erişte noodle'],
-    ['🍚', 'pilav pirinç'], ['🥟', 'mantı'], ['🫓', 'pide lahmacun gözleme'], ['🥗', 'salata'], ['🥣', 'yoğurt kase mercimek']]],
-  ['Kahvaltı ve fırın', [['🍳', 'yumurta menemen kahvaltı'], ['🥞', 'pankek krep'], ['🧇', 'waffle'], ['🥐', 'kruvasan poğaça'], ['🥯', 'simit'],
-    ['🍞', 'ekmek tost ekmeği'], ['🥖', 'francala baget'], ['🧀', 'peynir'], ['🫒', 'zeytin'], ['🍯', 'bal reçel'], ['🧈', 'tereyağı'], ['🥚', 'yumurta']]],
-  ['Deniz ürünleri', [['🐟', 'balık'], ['🦐', 'karides'], ['🦑', 'kalamar'], ['🦪', 'midye'], ['🍣', 'sushi'], ['🍤', 'tempura kızartma'], ['🍱', 'bento menü']]],
+    ['🥨', 'pretzel'], ['🫔', 'burrito quesadilla']]],
+  ['Ev yemekleri', [['🍛', 'pilav üstü sulu yemek'], ['🍲', 'çorba güveç tencere kuru fasulye nohut'], ['🥘', 'sahan menemen kaşarlı'], ['🍝', 'makarna spagetti'], ['🍜', 'erişte noodle'],
+    ['🍚', 'pilav pirinç bulgur'], ['🥟', 'mantı'], ['🫓', 'pide lahmacun gözleme'], ['🥗', 'salata'], ['🥣', 'yoğurt kase mercimek'], ['🫕', 'güveç fondü'], ['🍠', 'fırın patates közlenmiş']]],
+  ['Kahvaltı ve fırın', [['🍳', 'yumurta menemen kahvaltı tava'], ['🥞', 'pankek krep'], ['🧇', 'waffle'], ['🥐', 'kruvasan poğaça açma'], ['🥯', 'simit gevrek'],
+    ['🍞', 'ekmek tost ekmeği somun'], ['🥖', 'francala baget'], ['🧀', 'peynir kaşar'], ['🫒', 'zeytin zeytinyağı'], ['🍯', 'bal reçel'], ['🧈', 'tereyağı'], ['🥚', 'yumurta']]],
+  ['Deniz ürünleri', [['🐟', 'balık levrek çipura hamsi'], ['🦐', 'karides'], ['🦑', 'kalamar'], ['🦪', 'midye'], ['🍣', 'sushi'], ['🍤', 'tempura kızartma'], ['🍱', 'bento menü'],
+    ['🦀', 'yengeç'], ['🦞', 'ıstakoz'], ['🐙', 'ahtapot']]],
   ['Tatlılar', [['🍮', 'sütlaç muhallebi kazandibi künefe'], ['🍰', 'pasta dilim cheesecake'], ['🎂', 'yaş pasta doğum günü'], ['🧁', 'kek cupcake'], ['🍩', 'donut lokma'],
-    ['🍪', 'kurabiye bisküvi'], ['🍫', 'çikolata'], ['🍬', 'şeker lokum'], ['🍭', 'lolipop'], ['🍨', 'dondurma kup'], ['🍦', 'külah dondurma'], ['🥧', 'börek turta']]],
-  ['İçecekler', [['🥤', 'kola gazoz meşrubat'], ['🥛', 'ayran süt'], ['💧', 'su'], ['🧃', 'meyve suyu'], ['🧋', 'milkshake soğuk kahve'], ['🍹', 'limonata kokteyl'],
-    ['🍵', 'çay bitki çayı'], ['☕', 'kahve türk kahvesi'], ['🫖', 'demlik çay'], ['🧊', 'buz soda']]],
-  ['Meyve ve sebze', [['🍎', 'elma'], ['🍐', 'armut'], ['🍊', 'portakal mandalina'], ['🍋', 'limon'], ['🍌', 'muz'], ['🍉', 'karpuz'], ['🍇', 'üzüm'], ['🍓', 'çilek'],
-    ['🍒', 'kiraz'], ['🍑', 'şeftali'], ['🍍', 'ananas'], ['🥝', 'kivi'], ['🍅', 'domates'], ['🥒', 'salatalık'], ['🫑', 'biber'], ['🌶️', 'acı biber'],
-    ['🥕', 'havuç'], ['🧅', 'soğan'], ['🧄', 'sarımsak'], ['🥔', 'patates'], ['🥬', 'marul ıspanak'], ['🥦', 'brokoli'], ['🌽', 'mısır'], ['🍆', 'patlıcan'], ['🍄', 'mantar']]],
-  ['Market', [['🥫', 'konserve salça'], ['🧂', 'tuz baharat'], ['🫙', 'kavanoz turşu'], ['🍿', 'cips çerez patlamış mısır'], ['🥜', 'kuruyemiş fıstık'],
-    ['🌰', 'fındık kestane'], ['🍼', 'bebek mama biberon'], ['👶', 'bebek bezi'], ['🦴', 'köpek maması'], ['🐱', 'kedi maması']]],
+    ['🍪', 'kurabiye bisküvi'], ['🍫', 'çikolata'], ['🍬', 'şeker lokum'], ['🍭', 'lolipop'], ['🍨', 'dondurma kup'], ['🍦', 'külah dondurma'], ['🥧', 'börek turta'],
+    ['🍧', 'buzlu tatlı granita kar helvası'], ['🥮', 'ay çöreği'], ['🍡', 'şekerleme pamuk şeker'], ['🥠', 'şans kurabiyesi']]],
+  ['İçecekler', [['🥤', 'kola gazoz meşrubat soğuk içecek'], ['🥛', 'ayran süt kefir'], ['💧', 'su maden suyu'], ['🧃', 'meyve suyu'], ['🧋', 'milkshake soğuk kahve frappe'],
+    ['🍹', 'limonata kokteyl smoothie'], ['🍵', 'çay bitki çayı yeşil çay'], ['☕', 'kahve türk kahvesi espresso latte'], ['🫖', 'demlik çay'], ['🧊', 'buz soda'], ['🧉', 'mate bitki'],
+    ['🥥', 'hindistan cevizi']]],
+  ['Meyve ve sebze', [['🍎', 'elma'], ['🍏', 'yeşil elma'], ['🍐', 'armut'], ['🍊', 'portakal mandalina'], ['🍋', 'limon'], ['🍌', 'muz'], ['🍉', 'karpuz'], ['🍈', 'kavun'],
+    ['🍇', 'üzüm'], ['🍓', 'çilek'], ['🍒', 'kiraz vişne'], ['🍑', 'şeftali kayısı'], ['🍍', 'ananas'], ['🥝', 'kivi'], ['🥭', 'mango'], ['🫐', 'yaban mersini böğürtlen'],
+    ['🥑', 'avokado'], ['🍅', 'domates'], ['🥒', 'salatalık'], ['🫑', 'biber dolma'], ['🌶️', 'acı biber'], ['🥕', 'havuç'], ['🧅', 'soğan'], ['🧄', 'sarımsak'],
+    ['🥔', 'patates kumpir'], ['🍠', 'tatlı patates'], ['🥬', 'marul ıspanak lahana sarma'], ['🥦', 'brokoli'], ['🌽', 'mısır'], ['🍆', 'patlıcan karnıyarık'], ['🍄', 'mantar'],
+    ['🌿', 'maydanoz dereotu nane roka yeşillik']]],
+  ['Market', [['🛒', 'market alışveriş sepet'], ['🥫', 'konserve salça'], ['🧂', 'tuz baharat'], ['🫙', 'kavanoz turşu'], ['🛢️', 'sıvı yağ ayçiçek yağı'], ['🍿', 'cips çerez patlamış mısır'],
+    ['🥜', 'kuruyemiş fıstık badem ceviz'], ['🌰', 'fındık kestane'], ['🌻', 'ay çekirdeği çekirdek'], ['🍼', 'bebek mama biberon'], ['👶', 'bebek bezi ıslak mendil'], ['📦', 'koli paket kargo']]],
+  ['Evcil hayvan', [['🐾', 'evcil hayvan pati'], ['🐶', 'köpek maması'], ['🐱', 'kedi maması kedi kumu'], ['🦴', 'köpek ödülü kemik'], ['🐦', 'kuş yemi'], ['🐹', 'hamster kemirgen'],
+    ['🐠', 'akvaryum balık yemi']]],
   ['Temizlik ve bakım', [['🧴', 'deterjan şampuan losyon'], ['🧼', 'sabun'], ['🧽', 'sünger bulaşık'], ['🧻', 'tuvalet kağıdı peçete havlu'], ['🪥', 'diş fırçası macun'],
-    ['🧹', 'temizlik süpürge'], ['🧺', 'çamaşır'], ['🗑️', 'çöp poşeti'], ['🧤', 'eldiven'], ['🪒', 'tıraş']]],
+    ['🧹', 'temizlik süpürge'], ['🧺', 'çamaşır'], ['🗑️', 'çöp poşeti'], ['🧤', 'eldiven'], ['🪒', 'tıraş'], ['🪣', 'kova paspas'], ['💄', 'ruj makyaj kozmetik'],
+    ['💅', 'oje manikür'], ['🩹', 'yara bandı ilk yardım'], ['🌸', 'kolonya parfüm']]],
+  ['Kırtasiye', [['✏️', 'kurşun kalem'], ['🖊️', 'tükenmez kalem'], ['🖍️', 'boya kalemi pastel'], ['📏', 'cetvel'], ['✂️', 'makas'], ['📎', 'ataş zımba'], ['📓', 'defter'],
+    ['📚', 'kitap'], ['🎒', 'okul çantası'], ['🎨', 'resim boyası suluboya'], ['🏷️', 'etiket'], ['🖨️', 'fotokopi çıktı'], ['🧮', 'hesap']]],
+  ['Ev ve mutfak eşyası', [['🥄', 'kaşık'], ['🍴', 'çatal bıçak takımı'], ['🔪', 'bıçak'], ['🍳', 'tava'], ['🫖', 'demlik çaydanlık'], ['☕', 'fincan kupa'], ['🪑', 'sandalye tabure'],
+    ['🛏️', 'yatak nevresim'], ['🛋️', 'koltuk kanepe'], ['🪞', 'ayna'], ['🖼️', 'çerçeve tablo'], ['🕰️', 'duvar saati'], ['⏰', 'çalar saat'], ['🧷', 'çengelli iğne'],
+    ['🧵', 'iplik dikiş'], ['🪡', 'dikiş iğnesi'], ['🧶', 'yün örgü']]],
+  ['Elektronik', [['📱', 'telefon cep'], ['🔌', 'şarj kablo priz'], ['🎧', 'kulaklık'], ['⌚', 'saat akıllı saat'], ['🔦', 'el feneri'], ['📺', 'televizyon'], ['🖱️', 'mouse fare'],
+    ['⌨️', 'klavye'], ['📷', 'fotoğraf makinesi'], ['🎮', 'oyun konsolu'], ['💡', 'ampul lamba'], ['🔋', 'pil']]],
+  ['Hırdavat ve yapı', [['🔧', 'ingiliz anahtarı'], ['🔨', 'çekiç'], ['🪛', 'tornavida'], ['🪚', 'testere'], ['🔩', 'vida civata somun'], ['⚙️', 'yedek parça'], ['🧰', 'alet çantası'],
+    ['🪜', 'merdiven'], ['🧲', 'mıknatıs'], ['🔗', 'zincir'], ['🧱', 'tuğla çimento'], ['🪵', 'odun kereste'], ['🔒', 'kilit asma kilit'], ['🔑', 'anahtar'], ['🖌️', 'fırça boya'],
+    ['🧯', 'yangın tüpü'], ['🦺', 'iş yeleği'], ['🥽', 'koruyucu gözlük'], ['🪠', 'lavabo pompası']]],
+  ['Giyim ve aksesuar', [['👕', 'tişört giyim'], ['👖', 'pantolon kot'], ['🧦', 'çorap'], ['🧣', 'atkı bere'], ['🧢', 'şapka'], ['👟', 'spor ayakkabı'], ['🩴', 'terlik'],
+    ['👜', 'çanta'], ['🌂', 'şemsiye'], ['👓', 'gözlük'], ['💍', 'yüzük takı']]],
+  ['Çiçek ve bitki', [['💐', 'buket çiçek'], ['🌹', 'gül'], ['🌷', 'lale'], ['🌸', 'çiçek'], ['🪴', 'saksı bitki'], ['🌵', 'kaktüs sukulent'], ['🌱', 'fide tohum']]],
+  ['Oyuncak ve parti', [['🧸', 'oyuncak ayı peluş'], ['🪀', 'yoyo oyuncak'], ['🪁', 'uçurtma'], ['🧩', 'yapboz puzzle'], ['🎲', 'zar kutu oyunu'], ['🃏', 'iskambil kart'],
+    ['🎈', 'balon'], ['🎀', 'kurdele hediye paketi'], ['🎉', 'parti süs']]],
+  [GAL_HIZMET, [['🛠️', 'genel tamir hizmet'], ['🔧', 'tesisat su tesisatı'], ['🚰', 'musluk su arıtma'], ['🚿', 'duş banyo'], ['🚽', 'klozet tuvalet'], ['🔥', 'kombi petek doğalgaz'],
+    ['💡', 'elektrik aydınlatma'], ['🔌', 'priz kablo sigorta'], ['❄️', 'klima soğutma'], ['🖌️', 'boya badana'], ['🪚', 'marangoz mobilya'], ['🪛', 'montaj kurulum'],
+    ['🔨', 'tadilat tamirat'], ['🧱', 'duvar fayans sıva'], ['🪟', 'cam pencere'], ['🔑', 'çilingir anahtar'], ['🧽', 'temizlik ev ofis'], ['🚚', 'nakliye taşıma'],
+    ['🌳', 'bahçe ağaç budama'], ['✂️', 'kuaför saç kesimi'], ['💈', 'berber'], ['💅', 'manikür güzellik'], ['💆', 'masaj cilt bakımı'], ['🚗', 'oto araba lastik'],
+    ['🧺', 'kuru temizleme çamaşır'], ['👔', 'ütü'], ['🧵', 'terzi dikiş'], ['👞', 'ayakkabı tamiri'], ['💻', 'bilgisayar'], ['📱', 'telefon tamiri'], ['📡', 'uydu anten'],
+    ['🪳', 'ilaçlama haşere'], ['🐾', 'veteriner pet kuaför'], ['📋', 'keşif teklif'], ['🏠', 'ev hizmeti']]],
   ['Diğer', [['🍽️', 'genel yemek'], ['🥡', 'paket kutu'], ['🛍️', 'poşet'], ['🎁', 'kampanya menü hediye'], ['⭐', 'özel'], ['🔥', 'fırsat acılı'],
-    ['🔋', 'pil'], ['💡', 'ampul'], ['🕯️', 'mum'], ['📰', 'gazete']]]
+    ['🔋', 'pil'], ['💡', 'ampul'], ['🕯️', 'mum'], ['📰', 'gazete dergi']]]
 ];
 // Görsel seçilmemişse ürün adına göre (sipariş sayfasıyla aynı kurallar)
 var OTO = [
   [/dürüm|durum|wrap/, '🌯'], [/porsiyon|iskender|pilav/, '🍛'], [/tost|sandviç/, '🥪'], [/patates/, '🍟'], [/salata|ezme/, '🥗'], [/burger/, '🍔'], [/pizza/, '🍕'],
   [/ayran|süt/, '🥛'], [/kola|gazoz|içecek|soda|meşrubat/, '🥤'], [/(^|[^a-zçğıöşü])su($|[^a-zçğıöşü])/, '💧'], [/çay/, '🍵'], [/kahve/, '☕'],
   [/tatlı|baklava|künefe|sütlaç|kadayıf/, '🍮'], [/pasta|kek/, '🍰'], [/pide|lahmacun/, '🫓'], [/köfte/, '🍖'], [/tavuk/, '🍗'], [/çorba/, '🍲'],
-  [/simit/, '🥯'], [/döner/, '🥙'], [/ekmek/, '🍞'], [/yumurta/, '🥚'], [/peynir/, '🧀'], [/zeytin/, '🫒'], [/bal|reçel/, '🍯'], [/makarna/, '🍝'], [/pirinç|bulgur|bakliyat/, '🍚'],
-  [/deterjan|şampuan/, '🧴'], [/sabun/, '🧼'], [/peçete|havlu|tuvalet/, '🧻'], [/cips|çerez/, '🍿'], [/çikolata/, '🍫'], [/meyve suyu/, '🧃'], [/dondurma/, '🍨']
+  [/simit/, '🥯'], [/döner/, '🥙'], [/ekmek/, '🍞'], [/yumurta/, '🥚'], [/peynir/, '🧀'], [/zeytin/, '🫒'], [/(^|[^a-zçğıöşü])balı?($|[^a-zçğıöşü])|reçel/, '🍯'], [/makarna/, '🍝'], [/pirinç|bulgur|bakliyat/, '🍚'],
+  [/deterjan|şampuan/, '🧴'], [/sabun/, '🧼'], [/peçete|havlu|tuvalet/, '🧻'], [/cips|çerez/, '🍿'], [/çikolata/, '🍫'], [/meyve suyu/, '🧃'], [/dondurma/, '🍨'],
+  [/kebap|kebab|adana|urfa|(^|[^a-zçğıöşü])şiş/, '🍢'], [/pirzola|antrikot|biftek|kuzu|kokoreç/, '🥩'], [/sucuk|sosis/, '🌭'], [/pastırma/, '🥓'], [/tavuğ|nugget/, '🍗'], [/ekmeğ/, '🍞'],
+  [/balık|balığ|levrek|çipura|hamsi|somon|uskumru/, '🐟'], [/karides/, '🦐'], [/kalamar/, '🦑'], [/midye/, '🦪'], [/ahtapot/, '🐙'], [/sushi/, '🍣'],
+  [/mantı/, '🥟'], [/gözleme/, '🫓'], [/börek|böreğ/, '🥧'], [/poğaça|açma|kruvasan/, '🥐'], [/pankek|krep/, '🥞'], [/waffle/, '🧇'], [/menemen|omlet|sahan|kahvaltı/, '🍳'],
+  [/kumpir/, '🥔'], [/patlamış mısır/, '🍿'], [/falafel|içli/, '🧆'], [/noodle|erişte/, '🍜'], [/dolma/, '🫑'], [/sarma/, '🥬'],
+  [/limonata/, '🍹'], [/milkshake|frappe|smoothie/, '🧋'], [/fanta|sprite|şalgam|soğuk/, '🥤'], [/kefir/, '🥛'],
+  [/kedi dili|kurabiye|bisküvi|kraker/, '🍪'], [/donut|lokma|tulumba/, '🍩'], [/cupcake|muffin/, '🧁'], [/lokum|şekerleme/, '🍬'], [/brownie|sufle/, '🍫'],
+  [/tereyağ/, '🧈'], [/zeytinyağ/, '🫒'], [/sıvı yağ|ayçiçek yağ/, '🛢️'], [/salça|konserve/, '🥫'], [/turşu/, '🫙'], [/tuz|baharat|pul biber/, '🧂'],
+  [/kuruyemiş|fıstık|badem|ceviz/, '🥜'], [/fındık|kestane/, '🌰'], [/çekirdek/, '🌻'],
+  [/elma/, '🍎'], [/armut/, '🍐'], [/portakal|mandalina/, '🍊'], [/limon/, '🍋'], [/muz/, '🍌'], [/karpuz/, '🍉'], [/kavun/, '🍈'], [/üzüm/, '🍇'], [/çilek|çileğ/, '🍓'],
+  [/kiraz|vişne/, '🍒'], [/şeftali|kayısı/, '🍑'], [/ananas/, '🍍'], [/kivi/, '🥝'], [/mango/, '🥭'], [/avokado/, '🥑'],
+  [/domates/, '🍅'], [/biber/, '🫑'], [/havuç/, '🥕'], [/sarımsak/, '🧄'], [/soğan/, '🧅'], [/marul|ıspanak|lahana/, '🥬'], [/brokoli/, '🥦'], [/patlıcan/, '🍆'], [/mantar/, '🍄'],
+  [/mısır/, '🌽'], [/maydanoz|dereotu|nane|roka|yeşillik/, '🌿'],
+  [/kedi/, '🐱'], [/köpek/, '🐶'], [/kuş yemi/, '🐦'], [/bebek bezi|ıslak mendil/, '👶'], [/mama|biberon/, '🍼'],
+  [/diş fırçası|diş macunu/, '🪥'], [/tıraş|jilet/, '🪒'], [/ruj|makyaj|oje/, '💄'], [/kolonya|parfüm/, '🌸'], [/çamaşır|yumuşatıcı/, '🧺'], [/bulaşık|sünger/, '🧽'],
+  [/çöp/, '🗑️'], [/eldiven/, '🧤'], [/(^|[^a-zçğıöşü])pil($|[^a-zçğıöşü])/, '🔋'], [/ampul|lamba/, '💡'], [/(^|[^a-zçğıöşü])mum($|[^a-zçğıöşü])/, '🕯️'],
+  [/kalem/, '✏️'], [/defter/, '📓'], [/kitap/, '📚'], [/gazete|dergi/, '📰'], [/çiçek|çiçeğ|buket/, '💐'], [/oyuncak/, '🧸'], [/balon/, '🎈'],
+  [/şarj|kablo/, '🔌'], [/kulaklık/, '🎧'], [/çorap/, '🧦'], [/terlik/, '🩴'], [/şemsiye/, '🌂'],
+  [/vida|civata/, '🔩'], [/çekiç/, '🔨'], [/tornavida/, '🪛'], [/kilit/, '🔒'], [/boya|fırça/, '🖌️'], [/merdiven/, '🪜'], [/kova/, '🪣'], [/hortum|musluk/, '🚰']
+];
+// Hizmet işletmeleri (sipariş sayfasındaki EMOJI_H ile aynı)
+var OTO_H = [
+  [/kombi|petek|kalorifer|doğalgaz|dogalgaz/, '🔥'], [/tesisat|musluk|batarya|su kaçağı|kaçak|tıkanık|gider|lavabo|klozet|rezervuar|boru/, '🔧'],
+  [/elektrik|priz|sigorta|avize|aydınlatma|kablo|anahtar takma/, '💡'], [/klima|soğutma/, '❄️'], [/boya|badana|alçı/, '🖌️'],
+  [/marangoz|dolap|mobilya|kapı|parke|ahşap/, '🪚'], [/çilingir|kilit|anahtar/, '🔑'], [/cam|ayna/, '🪟'], [/temizlik|halı|koltuk yıkama/, '🧽'],
+  [/nakliye|taşıma|taşımacılık/, '🚚'], [/bahçe|çim|ağaç/, '🌳'], [/bilgisayar|telefon|tamir|onarım/, '🛠️'], [/montaj|kurulum/, '🪛'],
+  [/keşif|teklif/, '📋'], [/kuaför|berber|saç/, '💈'], [/güzellik|cilt|manikür/, '💅'], [/oto|araba|lastik/, '🚗'], [/veteriner/, '🐾'],
+  [/su arıtma|arıtma/, '🚰'], [/duş|banyo|küvet/, '🚿'], [/tadilat|tamirat/, '🔨'], [/fayans|seramik|duvar|sıva/, '🧱'], [/ilaçlama|haşere|böcek/, '🪳'],
+  [/kuru temizleme|çamaşır|ütü/, '🧺'], [/terzi|dikiş/, '🧵'], [/ayakkabı/, '👞'], [/uydu|anten/, '📡'], [/masaj/, '💆'], [/kombi bakım|baca/, '🔥'],
+  [/perde|stor/, '🪟'], [/ev hizmet|ev temizliği/, '🏠']
 ];
 function otoEmoji(ad, kat){
   var a = trKucuk(ad), k = trKucuk(kat), i;
+  if (hzm()) {
+    for (i = 0; i < OTO_H.length; i++) if (OTO_H[i][0].test(a)) return OTO_H[i][1];
+    for (i = 0; i < OTO_H.length; i++) if (OTO_H[i][0].test(k)) return OTO_H[i][1];
+    return '🛠️';
+  }
   for (i = 0; i < OTO.length; i++) if (OTO[i][0].test(a)) return OTO[i][1];
   for (i = 0; i < OTO.length; i++) if (OTO[i][0].test(k)) return OTO[i][1];
   return market() ? '🛍️' : hzm() ? '🛠️' : '🍽️';
@@ -2818,7 +2894,7 @@ SHEET.galeri = function(s){
   h += '<div class="blk"><h3 class="blk-h" id="renkH">Zemin rengi</h3><div class="renkler" role="radiogroup" aria-labelledby="renkH">' + RENKLER.map(function(r){
     return '<button class="renk t' + r[0] + '" role="radio" aria-checked="' + (gp.t === r[0]) + '" data-act="renkSec" data-k="' + r[0] + '" aria-label="' + r[1] + '"></button>';
   }).join('') + '</div></div>';
-  h += '<div class="search">' + ic('ara') + '<input class="inp" id="galAra" type="search" placeholder="Ara: pizza, su, peynir, deterjan…" value="' + esc(s.q || '') + '" autocomplete="off" aria-label="Görsel ara"></div>';
+  h += '<div class="search">' + ic('ara') + '<input class="inp" id="galAra" type="search" placeholder="Ara: pizza, su, çiçek, kalem, tesisat…" value="' + esc(s.q || '') + '" autocomplete="off" aria-label="Görsel ara"></div>';
   h += '<div id="galIc">' + galeriIc(s, gp) + '</div></div>';
   h += '<div class="sh-foot"><button class="btn pri block" data-act="galeriTamam">' + ic('tik') + 'Bu görseli kullan</button></div>';
   return h;
@@ -2828,7 +2904,9 @@ function galeriIc(s, gp){
   var q = trKucuk(s.q || '').trim();
   var h = q ? '' : '<button class="opt" type="button" data-act="emojiSec" data-k="" aria-pressed="' + (!s.sec) + '"><span class="o-main">Otomatik<span class="o-sub">Ürün adına göre sistem seçer</span></span></button>';
   var bulundu = 0;
-  GALERI.forEach(function(g){
+  // hizmet işletmesinde «Hizmetler (ustalar)» en üstte; diğerlerinde yalnız aramada çıkar
+  (hzm() ? [GALERI.filter(function(g){ return g[0] === GAL_HIZMET; })[0]].concat(GALERI.filter(function(g){ return g[0] !== GAL_HIZMET; }))
+    : GALERI.filter(function(g){ return q || g[0] !== GAL_HIZMET; })).forEach(function(g){
     var l = g[1].filter(function(x){ return !q || trKucuk(x[1]).indexOf(q) >= 0 || trKucuk(g[0]).indexOf(q) >= 0; });
     if (!l.length) return;
     bulundu += l.length;
@@ -5163,6 +5241,7 @@ SHEET.ynIsl = function(s){
   h += '<button class="btn line" data-act="ynMod" data-k="kredi"' + (d ? '' : ' disabled') + '>' + ic('arti', 'sm') + 'Kredi (TL) yükle</button>';
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="paket"' + (d ? '' : ' disabled') + '>' + ic('kutu', 'sm') + 'Paket değiştir</button>';
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="ucretsiz"' + (d ? '' : ' disabled') + '>🎁 Ücretsiz kullanım</button>';
+  h += '<button class="btn line" data-act="ynMod" data-k="puan"' + (d ? '' : ' disabled') + '>⭐ Müşteri puanları</button>';
   h += x.durum === 'Donduruldu' ? '<button class="btn ok" data-act="ynMod" data-k="ac"' + (d ? '' : ' disabled') + '>' + ic('oynat', 'sm') + 'Yeniden aç</button>'
     : '<button class="btn dng-line" data-act="ynMod" data-k="dondur"' + (d ? '' : ' disabled') + '>' + ic('kilit', 'sm') + 'Dondur</button>';
   h += '</div>';
@@ -5199,6 +5278,7 @@ function ynGeriBas(s, baslik){
     '<button class="icon-btn" data-act="kapat" aria-label="Kapat">' + ic('x') + '</button></div>';
 }
 function ynAltPencere(s, x){
+  if (s.mod === 'puan') return ynPuanPencere(s, x);
   var b = U.busy.ynIslem, ad = '<span class="muted">' + esc(x.ad) + '</span>';
   var hata = s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '';
   if (s.mod === 'kredi') {
@@ -5404,6 +5484,24 @@ function ynAlanAdi(a){ return { BASVURU_ONAYI:'Başvurular onayımla açılsın'
 
 /* --- olaylar --- */
 var ACT_YN = {
+  ynPzFiltre:function(el){ if (SH) { SH.pzF = el.getAttribute('data-k'); haptic('select'); renderSheet(); } },
+  ynPzGizle:function(el){ if (SH) { SH.gz = el.getAttribute('data-k'); SH.gzNeden = ''; SH.gzNot = ''; SH.gzBildir = true; SH.hata = ''; renderSheet(); try { sheetEl.querySelector('.sh-body').scrollTop = 0; } catch(e){} } },
+  ynPzVazgec:function(){ if (SH) { SH.gz = ''; SH.hata = ''; renderSheet(); } },
+  ynPzNeden:function(el){ if (SH) { ynPzNotOku(SH); SH.gzNeden = el.getAttribute('data-k'); SH.hata = ''; haptic('select'); renderSheet(); } },
+  ynPzBildir:function(){ if (SH) { ynPzNotOku(SH); SH.gzBildir = SH.gzBildir === false; renderSheet(); } },
+  ynPzUygula:function(){
+    var st = SH; if (!st || !st.gz) return;
+    ynPzNotOku(st);
+    if (!st.gzNeden) { st.hata = 'Gizleme nedenini seçin.'; renderSheet(); return; }
+    if (st.gzNeden === 'diger' && !st.gzNot) { st.hata = '«Diğer» için kısa bir açıklama yazın.'; renderSheet(); return; }
+    var p = st.gz.split('|');
+    ynPuanIslem(st, { no:Number(p[0]), t:Number(p[1]), gizle:true, neden:st.gzNeden, not:st.gzNot, bildir:st.gzNeden !== 'test' && st.gzBildir !== false });
+  },
+  ynPzYayinla:function(el){
+    var st = SH; if (!st) return;
+    var p = el.getAttribute('data-k').split('|');
+    ynPuanIslem(st, { no:Number(p[0]), t:Number(p[1]), gizle:false });
+  },
   ynDon:function(){ location.href = ynDonusUrl(); },
   ynResimSec:function(){ var i = $('#ynResimDosya'); if (i) i.click(); },
   ynResimKaldir:function(){ ynResimYaz(null); },
@@ -5437,8 +5535,9 @@ var ACT_YN = {
   },
   ynMod:function(el){
     if (!SH || SH.tip !== 'ynIsl') return;
-    SH.mod = el.getAttribute('data-k') || ''; SH.hata = ''; SH.onay = null; SH.paket = ''; SH.gun = '';
+    SH.mod = el.getAttribute('data-k') || ''; SH.hata = ''; SH.onay = null; SH.paket = ''; SH.gun = ''; SH.gz = '';
     if (SH.mod === 'kredi') { SH.ref = ynRef(); SH.tutar = ''; SH.aciklama = ''; }
+    if (SH.mod === 'puan') ynPuanYukle(SH);
     renderSheet();
     try { sheetEl.querySelector('.sh-body').scrollTop = 0; } catch(e){}
   },
@@ -5626,7 +5725,7 @@ function ynDemoMock(){
     d.hesap = { bakiye:x.bakiye, sonrakiCekim:x.cekim ? gunYaz(gunKey(x.cekim), true) : '', tutar:x.paket.ucret, eksik:x.odeme ? Math.max(0, x.paket.ucret - x.bakiye) : 0, ucretsiz:!!x.ucretsiz,
       durduruldu:x.odeme === 'durdu', ilkOdeme:x.odeme === 'ilk', kalanGun:x.odeme === 'bekleme' ? 5 : 0, hareketler:x.bakiye || x.odeme ? kopya(HAREKET) : [] };
     d.limit = { urun:x.tur === 'market' ? 42 : 28, urunSinir:pk.urun, ekip:2, ekipSinir:pk.ekip, haftaSinir:pk.hafta };
-    d.kurulum = { konum:x.b !== 'd4', alim:true }; d.puan = x.say.hafta ? { ort:4.6, adet:37 } : null;
+    d.kurulum = { konum:x.b !== 'd4', alim:true }; var pv = pzVeri(x.b); d.puan = pv.ozet.adet ? { ort:pv.ozet.ort, adet:pv.ozet.adet } : null;
     d.ekranUrl = '?b=demo&demo=1&rol=sahip&yd=1'; d.donmus = x.durum === 'Donduruldu';
     if (x.zincir && x.zincir.merkez) {
       d.merkezUrl = '?b=demo&demo=1&rol=merkez&yd=1';
@@ -5636,6 +5735,25 @@ function ynDemoMock(){
     return d;
   };
   var bul = function(b){ return ISL.filter(function(x){ return x.b === b; })[0]; };
+  // örnek müşteri puanları (müşteri adı yok: yalnız sipariş no, zaman, yıldızlar)
+  var PZ = {};
+  var pzListe = function(b){
+    if (PZ[b]) return PZ[b];
+    var x = bul(b), l = [], urun = [['Et Döner Dürüm', 'Ayran'], ['Tavuk Döner Dürüm', 'Patates Kızartması'], ['İskender', 'Ayran'], ['Tavuk Döner Porsiyon'], ['Dürüm Menü', 'Kola']];
+    var yil = [5, 5, 4, 1, 5, 3, 5, 4, 2, 5, 5, 4];
+    if (x && x.say.hafta) yil.forEach(function(p, i){
+      var u = urun[i % urun.length];
+      l.push({ no:1188 - i * 3, t:t0 - (i * 7 + 2) * 3600000, isletme:p, urunler:u.map(function(a, j){ return { ad:a, p:Math.max(1, Math.min(5, p + (j ? 0 : (i % 2)))) }; }),
+        durum:i === 6 ? 'Gizli' : i === 10 ? 'Yönetici' : 'Geçerli', neden:i === 6 ? 'test' : '', nedenAd:i === 6 ? 'Test siparişi' : '', not:'', isleyen:i === 6 ? 'Ferhat' : '', islemT:i === 6 ? t0 - 30 * 3600000 : 0 });
+    });
+    return (PZ[b] = l);
+  };
+  var pzVeri = function(b){
+    var l = pzListe(b), g = l.filter(function(y){ return y.durum === 'Geçerli'; });
+    var ort = g.length ? Math.round(g.reduce(function(s, y){ return s + y.isletme; }, 0) / g.length * 10) / 10 : 0;
+    return { b:b, ozet:{ ort:ort, adet:g.length, gizli:l.filter(function(y){ return y.durum === 'Gizli'; }).length, ekip:l.filter(function(y){ return y.durum === 'Yönetici'; }).length, toplam:l.length },
+      puanlar:kopya(l), fazla:0, nedenler:{ test:'Test siparişi', sahte:'Sahte ya da kötü niyetli', istek:'Müşterinin isteği', diger:'Diğer' } };
+  };
   var islemler = {
     ynBaslat:function(d){
       var r = { ok:true, rol:'Yonetim', ben:{ id:'1001', ad:'Ferhat' }, ozet:ozet(), isletmeler:kopya(ISL), basvurular:kopya(BV), anaBot:'yourpos360_bot', zaman:Date.now() };
@@ -5686,6 +5804,19 @@ function ynDemoMock(){
       return { ok:true, mesaj:'Yönetici çıkarıldı.', sistem:kopya(SIS) };
     },
     ynResim:function(d){ return d.sil ? { ok:true, url:'' } : { ok:true, url:'data:' + d.mime + ';base64,' + d.veri }; },
+    ynPuanlar:function(d){ var x = bul(d.sb); return x ? { ok:true, puan:pzVeri(d.sb) } : { ok:false, kod:'YOK', hata:'İşletme bulunamadı.' }; },
+    ynPuanDurum:function(d){
+      var x = bul(d.sb), l = pzListe(d.sb), k = l.filter(function(y){ return y.no === d.no && y.t === d.t; })[0];
+      if (!x || !k) return { ok:false, kod:'YOK', hata:'Puan bulunamadı. Listeyi yenileyin.' };
+      if (d.gizle) {
+        if (k.durum !== 'Geçerli') return { ok:false, kod:'DURUM', hata:'Bu puan zaten gizli.' };
+        var ad = { test:'Test siparişi', sahte:'Sahte ya da kötü niyetli', istek:'Müşterinin isteği', diger:'Diğer' };
+        k.durum = 'Gizli'; k.neden = d.neden; k.nedenAd = ad[d.neden]; k.not = d.not || ''; k.isleyen = 'Ferhat'; k.islemT = Date.now();
+      } else { k.durum = 'Geçerli'; k.neden = ''; k.nedenAd = ''; k.not = 'Yeniden yayınlandı'; k.isleyen = 'Ferhat'; k.islemT = Date.now(); }
+      var v = pzVeri(d.sb), dt = detay(x); dt.puan = v.ozet.adet ? { ort:v.ozet.ort, adet:v.ozet.adet } : null;
+      return { ok:true, mesaj:'#' + k.no + (d.gizle ? ' puanı gizlendi; ortalamaya katılmıyor.' + (d.neden === 'istek' ? ' Müşteri 7 gün içinde yeniden puanlayabilir.' : '') +
+        (d.bildir ? ' Müşteriye haber verildi.' : '') : ' puanı yeniden yayında.'), bildirildi:!!d.bildir, puan:v, isletme:dt };
+    },
     ynYedek:function(){ SIS.sunucu.yedek = { zaman:Date.now(), parca:3, mb:2.4 }; return { ok:true, mesaj:'Yedek alınıyor. Bitince size haber vereceğim (genelde 1-2 dakika).' }; }
   };
   return function(act, d){
@@ -5718,6 +5849,91 @@ document.addEventListener('change', function(e){
   logoHazirla(f).then(function(veri){ delete U.busy.ynResim; return ynResimYaz(veri); },
     function(err){ delete U.busy.ynResim; U.ynResimHata = err.message; renderMain(); });
 });
+
+/* --- müşteri puanları (1.16.3): yönetici puanı nedeniyle gizler ya da yeniden yayınlar; yıldız değiştirilmez.
+   Müşteri adı / numarası bu ekrana gelmez: yalnız sipariş no, tarih ve yıldızlar. --- */
+var YN_PZ_NEDEN = [['test', 'Test siparişi', 'Deneme amaçlı verilmiş. Müşteriye mesaj gitmez.'],
+  ['sahte', 'Sahte ya da kötü niyetli', 'Gerçek bir sipariş deneyimine dayanmıyor (ör. aynı kişinin çok hesabı).'],
+  ['istek', 'Müşterinin isteği', 'Müşteri yanlış puan verdiğini söyledi. Siparişi 7 gün içinde kendisi yeniden puanlar.'],
+  ['diger', 'Diğer', 'Kısa bir açıklama yazın.']];
+function ynPuanYukle(st){
+  st.pz = null; st.pzHata = '';
+  call('ynPuanlar', { sb:st.b }).then(function(r){
+    if (SH !== st) return;
+    if (!r || !r.ok) {
+      if (r && (r.kod === 'GIRIS' || r.kod === 'YETKI')) return cikisEkrani(r);
+      st.pzHata = (r && r.hata) || 'Puanlar alınamadı.'; renderSheet(); return;
+    }
+    st.pz = r.puan; renderSheet();
+  });
+}
+function ynPzNotOku(st){ var i = $('#ynPzNot'); if (i) st.gzNot = i.value.replace(/\s+/g, ' ').trim().slice(0, 120); }
+function ynPuanIslem(st, veri){
+  st.hata = ''; veri.sb = st.b;
+  islem('ynPuanDurum', veri, { busy:'ynPz' }).then(function(r){
+    if (!r) { if (SH === st) renderSheet(); return; }
+    var i = (D.isletmeler || []).findIndex(function(y){ return y.b === r.isletme.b; });
+    if (i >= 0) D.isletmeler[i] = Object.assign({}, D.isletmeler[i], r.isletme);
+    if (SH === st) { st.d = r.isletme; st.pz = r.puan; st.gz = ''; renderSheet(); }
+    toast(r.mesaj || 'Kaydedildi');
+  });
+}
+function ynYildiz(n){
+  n = Math.max(0, Math.min(5, Number(n) || 0));
+  return '<span class="yn-yildiz" role="img" aria-label="' + n + ' yıldız"><span aria-hidden="true">' + '★★★★★'.slice(0, n) + '<span class="yn-yildiz-bos">' + '★★★★★'.slice(0, 5 - n) + '</span></span></span>';
+}
+function ynPzZaman(ms){ return ms ? (gunKey(ms) === gunKey(simdi()) ? 'bugün ' : gunYaz(gunKey(ms)) + ' ') + saatYaz(ms) : ''; }
+function ynPuanPencere(s, x){
+  var ad = '<span class="muted">' + esc(x.ad) + '</span>', b = U.busy.ynPz;
+  if (s.gz) {
+    var k = (s.pz && s.pz.puanlar || []).filter(function(y){ return y.no + '|' + y.t === s.gz; })[0];
+    var h = '<div class="sh-head"><button class="icon-btn" data-act="ynPzVazgec" aria-label="Geri">' + ic('geri') + '</button><h2 id="shTitle">Puanı gizle</h2>' +
+      '<button class="icon-btn" data-act="kapat" aria-label="Kapat">' + ic('x') + '</button></div><div class="sh-body">';
+    if (k) h += '<div class="yn-pz yn-pz-tek"><div class="yn-pz-bas"><b>#' + k.no + '</b><span class="muted">' + esc(ynPzZaman(k.t)) + '</span></div>' + ynYildiz(k.isletme) +
+      (k.urunler.length ? '<div class="yn-pz-urun muted">' + k.urunler.map(function(u){ return esc(u.ad) + ' ' + u.p + '★'; }).join(' · ') + '</div>' : '') + '</div>';
+    h += '<p class="tip-txt">Gizlenen puan ortalamaya katılmaz, yıldızı değişmez. İstediğiniz zaman yeniden yayınlayabilirsiniz.</p>';
+    h += '<h3 class="blk-h" id="pzNedenH">Neden gizliyorsunuz?</h3><div class="opt-list" role="radiogroup" aria-labelledby="pzNedenH">' + YN_PZ_NEDEN.map(function(n){
+      return '<button class="opt" type="button" role="radio" aria-checked="' + (s.gzNeden === n[0]) + '" data-act="ynPzNeden" data-k="' + n[0] + '"><span class="radio" aria-hidden="true"></span>' +
+        '<span class="o-main">' + n[1] + '<span class="o-sub">' + n[2] + '</span></span></button>';
+    }).join('') + '</div>';
+    h += '<div class="field"><label for="ynPzNot">Açıklama <span class="muted">(' + (s.gzNeden === 'diger' ? 'zorunlu' : 'isteğe bağlı') + ' · yalnız yöneticiler görür)</span></label>' +
+      '<input class="inp" id="ynPzNot" maxlength="120" autocomplete="off" placeholder="ör. Aynı kişi 3 farklı hesaptan puan verdi" value="' + esc(s.gzNot || '') + '"></div>';
+    if (s.gzNeden && s.gzNeden !== 'test') h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.gzBildir !== false) + '" data-act="ynPzBildir"><span class="o-main">Müşteriye haber ver' +
+      '<span class="o-sub">' + (s.gzNeden === 'istek' ? 'İşletmenin botundan «puanınız kaldırıldı, yeniden puanlayabilirsiniz» mesajı ve düğmesi gider' : 'İşletmenin botundan «puanınız kurallar gereği yayından kaldırıldı» bilgisi gider') +
+      '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+    h += (s.hata ? '<div class="err-txt" role="alert">' + esc(s.hata) + '</div>' : '') + '</div>';
+    return h + '<div class="sh-foot"><div class="row"><button class="btn line" data-act="ynPzVazgec">Vazgeç</button><button class="btn dng" data-act="ynPzUygula"' + (b ? ' disabled' : '') + '>' +
+      bekle('ynPz') + 'Puanı gizle</button></div></div>';
+  }
+  var h2 = ynGeriBas(s, 'Müşteri puanları') + '<div class="sh-body"><p>' + ad + '</p>';
+  if (s.pzHata) return h2 + '<div class="err-txt" role="alert">' + esc(s.pzHata) + '</div><button class="btn line block" data-act="ynMod" data-k="puan">Yeniden dene</button></div>';
+  if (!s.pz) return h2 + '<div class="sk" style="height:72px"></div><div class="sk" style="height:96px"></div><div class="sk" style="height:96px"></div></div>';
+  var o = s.pz.ozet, f = s.pzF || '';
+  h2 += '<div class="kpis">' + kpi('Ortalama', o.adet ? '★ ' + NF1.format(o.ort) : '—', adet(o.adet) + ' geçerli puan') + kpi('Gizli', adet(o.gizli), o.gizli ? 'ortalamaya katılmıyor' : '') +
+    (o.ekip ? kpi('İşletme ekibi', adet(o.ekip), 'ortalamaya katılmaz') : '') + '</div>';
+  h2 += '<p class="tip-txt">Yıldızlar değiştirilemez: müşterinin verdiği puan olduğu gibi kalır. Uygunsuz bir puanı nedeniyle <b>gizleyebilir</b>, sonra yeniden yayınlayabilirsiniz. Her işlem adınızla kaydedilir. Müşteri adları bu ekranda görünmez.</p>';
+  var l = s.pz.puanlar || [];
+  var say = { '':l.length, dusuk:l.filter(function(y){ return y.durum === 'Geçerli' && y.isletme <= 2; }).length, gizli:l.filter(function(y){ return y.durum === 'Gizli'; }).length };
+  h2 += '<div class="kat-chips" role="group" aria-label="Süz">' + [['', 'Hepsi'], ['dusuk', '1–2 yıldız'], ['gizli', 'Gizli']].map(function(c){
+    return '<button class="chip sm" type="button" data-act="ynPzFiltre" data-k="' + c[0] + '" aria-pressed="' + (f === c[0]) + '">' + c[1] + ' <span class="n">' + say[c[0]] + '</span></button>';
+  }).join('') + '</div>';
+  var gor = l.filter(function(y){ return !f || (f === 'gizli' ? y.durum === 'Gizli' : y.durum === 'Geçerli' && y.isletme <= 2); });
+  if (!l.length) return h2 + bosDurum('rapor', 'Henüz puan yok', 'Müşteriler teslim edilen siparişleri puanladıkça burada görünür.') + '</div>';
+  if (!gor.length) return h2 + '<p class="muted">Bu süzgece uyan puan yok.</p></div>';
+  h2 += '<ul class="yn-pz-l">' + gor.map(function(y){
+    var key = y.no + '|' + y.t, durum = y.durum === 'Gizli' ? '<span class="pill yn-pasif">gizli</span>' : y.durum === 'Yönetici' ? '<span class="pill yn-pasif">işletme ekibi</span>' : '<span class="pill">yayında</span>';
+    var alt = '';
+    if (y.durum === 'Gizli') alt = '<div class="yn-pz-not">Gizlendi · ' + esc(y.nedenAd || y.neden || '') + (y.not ? ': ' + esc(y.not) : '') + (y.isleyen ? ' · ' + esc(y.isleyen) : '') + (y.islemT ? ' · ' + esc(ynPzZaman(y.islemT)) : '') + '</div>';
+    else if (y.durum === 'Geçerli' && y.not && y.islemT) alt = '<div class="yn-pz-not">' + esc(y.not) + (y.isleyen ? ' · ' + esc(y.isleyen) : '') + ' · ' + esc(ynPzZaman(y.islemT)) + '</div>';
+    var dg = y.durum === 'Geçerli' ? '<button class="btn line sm" data-act="ynPzGizle" data-k="' + key + '">Gizle</button>'
+      : y.durum === 'Gizli' ? '<button class="btn line sm" data-act="ynPzYayinla" data-k="' + key + '"' + (b ? ' disabled' : '') + '>' + 'Yeniden yayınla</button>' : '';
+    return '<li class="yn-pz' + (y.durum !== 'Geçerli' ? ' kapali' : '') + '"><div class="yn-pz-bas"><b>#' + y.no + '</b><span class="muted">' + esc(ynPzZaman(y.t)) + '</span>' + durum + '</div>' +
+      '<div class="yn-pz-orta">' + ynYildiz(y.isletme) + dg + '</div>' +
+      (y.urunler.length ? '<div class="yn-pz-urun muted">' + y.urunler.map(function(u){ return esc(u.ad) + ' ' + u.p + '★'; }).join(' · ') + '</div>' : '') + alt + '</li>';
+  }).join('') + '</ul>';
+  if (s.pz.fazla) h2 += '<p class="tip-txt">En yeni ' + adet(l.length) + ' puan gösteriliyor (' + adet(s.pz.fazla) + ' eski puan daha var).</p>';
+  return h2 + '</div>';
+}
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
