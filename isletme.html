@@ -1466,6 +1466,7 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .sby-s:last-child{border-bottom:0}
 .sby-m{padding:8px 12px;border-radius:12px;background:var(--bg2);overflow-wrap:anywhere;white-space:pre-wrap}
 .sby-kr{display:flex;flex-wrap:wrap;gap:8px}
+.chips.sby-bl{flex-wrap:wrap;overflow:visible;margin:6px 0 0;padding:0}
 </style>
 </head>
 <body>
@@ -6257,7 +6258,7 @@ function ynBannerlar(){
 }
 function ynSekmeler(){
   var o = D.ozet || {};
-  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletme', 'dukkan', 0], ['ynMus', 'Müşteri', 'ekip', 0], ['ynBv', 'Başvuru', 'not', (o.basvuru || 0) + (o.paketTalep || 0)], ['ynPk', 'Paket', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', 0]];
+  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletme', 'dukkan', 0], ['ynMus', 'Müşteri', 'ekip', 0], ['ynBv', 'Başvuru', 'not', (o.basvuru || 0) + (o.paketTalep || 0)], ['ynPk', 'Paket', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', o.sohbetSikayet || 0]];
   koruyarakYaz($('#tabs'), t.map(function(x){
     return '<button class="tab yn-tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
       '<span>' + x[1] + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' bekliyor">' + x[3] + '</span>' : '') + '</button>';
@@ -6297,6 +6298,8 @@ function ynOzetEkrani(){
   var h = '<div class="scr">';
   h += '<div class="kpis">' + kpi('Bugünkü ciro', tl(o.bugunCiro), 'Bütün işletmeler · iptaller hariç', true) + kpi('Bugün sipariş', adet(o.bugun), '') +
     kpi('Bu hafta', tl(o.haftaCiro), adet(o.hafta) + ' sipariş · pazartesiden beri') + kpi('Aylık paket geliri', tl(o.aylikGelir), 'Ücret ödeyen işletmeler · tahmini') + '</div>';
+  if (o.sohbetSikayet) h += '<button class="card pad yn-bv-uyari" data-act="sekme" data-k="ynSis">' + ic('uyari') + '<span class="o-main"><b>🚩 ' + o.sohbetSikayet + ' sohbet şikâyeti karar bekliyor</b>' +
+    '<span class="o-sub">Sistem › Mekânda sohbet</span></span>' + ic('sag') + '</button>';
   if (o.basvuru) {
     h += '<button class="card pad yn-bv-uyari" data-act="sekme" data-k="ynBv">' + ic('not') + '<span class="o-main"><b>' + o.basvuru + ' başvuru onay bekliyor</b>' +
       '<span class="o-sub">Dokunun, tek dokunuşla onaylayın ya da reddedin.</span></span>' + ic('sag') + '</button>';
@@ -7045,7 +7048,7 @@ function ynDemoMock(){
     yedek:{ zaman:t0 - 5 * 3600000, parca:3, mb:2.4 }, yedekHata:null, yedekCalisiyor:false, yedekGun:1, bellekMB:212, calismaSn:3 * 86400, onbellek:{ tablo:46, mb:7.2, isabet:96 } } };
   var ozet = function(){
     var o = { isletme:ISL.length, aktif:0, deneme:0, ucretsiz:0, odeme:0, uyari:0, donduruldu:0, botsuz:0, sessiz:0, bugun:0, bugunCiro:0, hafta:0, haftaCiro:0, aylikGelir:0,
-      basvuru:BV.filter(function(v){ return v.bekliyor; }).length };
+      basvuru:BV.filter(function(v){ return v.bekliyor; }).length, sohbetSikayet:1 };
     ISL.forEach(function(x){
       if (x.durum === 'Donduruldu') o.donduruldu++; else if (x.odeme === 'ilk' || x.odeme === 'durdu') o.odeme++; else if (x.hizmet) o.aktif++;
       if (x.odeme === 'bekleme') o.uyari++;
@@ -7379,13 +7382,14 @@ function ynDemoMock(){
     };
   })();
   (function(){
-    var GENEL = true, YSK = {};
+    var GENEL = true, YSK = {}, BLD = 'ikisi', BLDL = { ikisi:'Ekranda ve Telegram\'da', ekran:'Yalnız ekranda', telegram:'Yalnız Telegram\'da', kapali:'Kapalı' };
     var SBS = [
       { id:'SSDEMO01', tarih:t0 - 40 * 60000, isletme:'Lezzet Pide Salonu', eden:'Zeynep', edilen:'Can', metin:'Neden cevap vermiyorsun? Masana geleyim mi?', neden:'Taciz / rahatsız etme — ısrarla yazıyor', durum:'Yeni', karar:'' },
       { id:'SSDEMO02', tarih:t0 - 2 * gun, isletme:'Kahve Durağı', eden:'Mert', edilen:'Ece', metin:'Takipçi kazanmak ister misin? Profilime bak', neden:'Reklam / dolandırıcılık', durum:'Karar verildi', karar:'Yoksayıldı (1001)' }];
-    var json = function(){ return { ok:true, genel:GENEL, sikayetler:SBS.map(function(x){ var z = kopya(x); z.yasakli = !!YSK[x.edilen]; return z; }), bekleyen:SBS.filter(function(x){ return x.durum === 'Yeni'; }).length }; };
+    var json = function(){ return { ok:true, genel:GENEL, bildirim:BLD, bildirimler:BLDL, sikayetler:SBS.map(function(x){ var z = kopya(x); z.yasakli = !!YSK[x.edilen]; return z; }), bekleyen:SBS.filter(function(x){ return x.durum === 'Yeni'; }).length }; };
     islemler.ynSohbet = function(d){
       if (d.genel !== undefined) GENEL = d.genel !== false;
+      if (d.bildirim !== undefined) { if (!BLDL[d.bildirim]) return { ok:false, kod:'ISTEK', hata:'Bildirim seçeneği geçersiz.' }; BLD = d.bildirim; }
       if (d.karar) {
         var x = SBS.filter(function(y){ return y.id === d.id; })[0];
         if (!x) return { ok:false, kod:'YOK', hata:'Şikâyet bulunamadı.' };
@@ -12587,6 +12591,10 @@ function sbyKarti(){
     '<span class="o-sub">Kapatırsanız hiçbir işletmede sohbet kullanılamaz (acil durum anahtarı). İşletmeler kendi sohbetlerini Ayarlar › Masalar\'dan açıp kapatır.</span></span><span class="tgl" aria-hidden="true"></span></button>';
   if (SBY.genelOnay) h += '<div class="note-box" role="group"><b>Sohbet bütün işletmelerde kapatılsın mı?</b><br>Müşteriler yeni mesaj yazamaz; açınca kaldığı yerden devam eder.' +
     '<div class="row2" style="margin-top:10px"><button class="btn line sm" data-act="sbyVazgec">Vazgeç</button><button class="btn dng sm" data-act="sbyGenelKapat"' + (b ? ' disabled' : '') + '>' + bekle('sby') + 'Kapat</button></div></div>';
+  var bl = v.bildirimler || { ikisi:'Ekranda ve Telegram\'da', ekran:'Yalnız ekranda', telegram:'Yalnız Telegram\'da', kapali:'Kapalı' };
+  h += '<div class="blk-h">Yeni şikâyet bildirimi</div><div class="chips sby-bl" role="radiogroup" aria-label="Yeni şikâyet bildirimi">' + Object.keys(bl).map(function(k){
+    return '<button type="button" class="chip" role="radio" aria-checked="' + (v.bildirim === k) + '" aria-pressed="' + (v.bildirim === k) + '" data-act="sbyBildirim" data-k="' + k + '"' + (U.busy.sbyB ? ' disabled' : '') + '>' + esc(bl[k]) + '</button>'; }).join('') + '</div>' +
+    '<p class="tip-txt">«Ekranda»: karar bekleyen şikâyet sayısı Sistem sekmesinde ve Özet\'te görünür. «Telegram»: her yeni şikâyette ana bottan mesaj gelir. Kapalıyken de şikâyetler bu listeye düşer.</p>';
   var l = v.sikayetler || [];
   h += '<div class="blk-h">Şikâyetler' + (v.bekleyen ? ' · <span class="od-d uyar">' + v.bekleyen + ' karar bekliyor</span>' : '') + '</div>';
   if (!l.length) h += '<p class="muted" style="margin:6px 0 0">Henüz şikâyet yok.</p>';
@@ -12615,13 +12623,20 @@ ACT_EK.sbyGenel = function(){
 ACT_EK.sbyGenelKapat = function(){
   islem('ynSohbet', { genel:false }, { busy:'sby' }).then(function(r){ SBY.genelOnay = false; if (r) { SBY.v = r; toast('Sohbet bütün işletmelerde kapatıldı'); } ciz(); });
 };
+ACT_EK.sbyBildirim = function(el){
+  var k = el.getAttribute('data-k');
+  islem('ynSohbet', { bildirim:k }, { busy:'sbyB' }).then(function(r){
+    if (r) { SBY.v = r; if (D && D.ozet) D.ozet.sohbetSikayet = (k === 'ikisi' || k === 'ekran') ? r.bekleyen : 0; toast('Şikâyet bildirimi: ' + (r.bildirimler || {})[k]); haptic('select'); }
+    ciz();
+  });
+};
 ACT_EK.sbyVazgec = function(){ SBY.onay = ''; SBY.genelOnay = false; ciz(); };
 ACT_EK.sbySor = function(el){ SBY.onay = el.getAttribute('data-k') + ':' + el.getAttribute('data-kr'); haptic('select'); ciz(); };
 ACT_EK.sbyKarar = function(el){
   var id = el.getAttribute('data-k'), kr = el.getAttribute('data-kr');
   islem('ynSohbet', { id:id, karar:kr }, { busy:'sby:' + id }).then(function(r){
     SBY.onay = '';
-    if (r) { SBY.v = r; toast(kr === 'yoksay' ? 'Şikâyet yoksayıldı' : 'Karar kaydedildi: ' + SBY_KARAR[kr]); haptic('notify', 'success'); }
+    if (r) { SBY.v = r; if (D && D.ozet && (r.bildirim === 'ikisi' || r.bildirim === 'ekran')) D.ozet.sohbetSikayet = r.bekleyen; toast(kr === 'yoksay' ? 'Şikâyet yoksayıldı' : 'Karar kaydedildi: ' + SBY_KARAR[kr]); haptic('notify', 'success'); }
     ciz();
   });
 };
