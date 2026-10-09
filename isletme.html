@@ -9532,6 +9532,8 @@ function msAyarHtml(){
     (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR\'ı okutur, garsonun verdiği 4 haneli masa koduyla masaya katılır, menüyü görür. Sipariş için Telegram\'dan doğrulanıp telefonunu paylaşır.') +
       (a.qr ? sw('qrOnaysiz', !!a.qrOnaysiz, 'Doğrulanan müşterinin siparişi onaysız mutfağa gitsin', 'Kapalıysa QR siparişini garson / kasa onaylar.') +
         sw('sohbetMasa', a.sohbetMasa !== false, '💬 Masa sohbeti', 'QR ile masaya katılıp Telegram\'dan doğrulanan müşteriler kendi masalarındakilerle yazışır. Mesajlar 24 saat sonra silinir; mesajları siz de göremezsiniz.') +
+        sw('ismarla', a.ismarla !== false, '🎁 Ismarlama (önceden kartla ödenir)', 'Müşteriler mekânda görünür olan başka masadakilere, dışarıdaki arkadaşları da «Bana ısmarla» bağlantısıyla masadaki müşteriye menüden ürün ısmarlar. Ödeme önceden kartla, doğrudan sizin online ödeme hesabınıza yapılır; sipariş alıcının masasına ödenmiş olarak gelir. Alkollü içecekler ısmarlanamaz.' +
+          (a.onlineOdeme === false ? ' <b>Şu an çalışmıyor: önce Ayarlar\'daki «💳 Masada online ödeme» bölümünü açın.</b>' : '')) +
         sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar ve görünür olan başka masadaki kişilerle birebir yazışır. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
         '<div class="ms-qs"><b>QR sipariş sınırları</b> <span class="muted">(0 = sınırsız)</span><div class="ms-qs-r">' +
         '<div class="field"><label for="msqSip">Tek siparişte en fazla (TL)</label><input class="inp num" id="msqSip" inputmode="decimal" value="' + esc(a.qrSiparis || 0) + '"></div>' +
@@ -9917,14 +9919,14 @@ var ACT_MS = {
   },
   msAyarSw:function(el){
     var k = el.getAttribute('data-k'), a = masaAyar(), v = {};
-    v[k] = k === 'sohbetMasa' ? a.sohbetMasa === false : !a[k];
+    v[k] = k === 'sohbetMasa' || k === 'ismarla' ? a[k] === false : !a[k];
     islem('ekMasaAyar', v, { busy:'msAyarSw' }).then(function(r){
       if (!r) return;
       D.isletme.masa = r.ayar; D.masalar = r.masalar;
       if (!r.ayar.acik && U.tab === 'masa') U.tab = 'siparis';
       toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır',
         qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar',
-        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
+        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', ismarla:r.ayar.ismarla ? 'Ismarlama açıldı' : 'Ismarlama kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
       ciz();
     });
   },
@@ -9968,7 +9970,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false };
+  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true };
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
@@ -10034,7 +10036,7 @@ function masaDemoIslemler(x){
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -10289,6 +10291,7 @@ function masaDemoIslemler(x){
       if (d.qrOnaysiz !== undefined) AYR.qrOnaysiz = !!d.qrOnaysiz;
       if (d.sohbetMasa !== undefined) AYR.sohbetMasa = !!d.sohbetMasa;
       if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
+      if (d.ismarla !== undefined) AYR.ismarla = !!d.ismarla;
       ['qrSiparis', 'qrAdet', 'qrKisi'].forEach(function(q){ if (d[q] !== undefined) AYR[q] = Math.max(0, Number(String(d[q]).replace(',', '.')) || 0); });
       if (Array.isArray(d.masalar)) {
         var eski = {}; MASA.forEach(function(m){ eski[m.id] = m; });
