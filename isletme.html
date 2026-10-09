@@ -1411,6 +1411,30 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .yt-seg button{flex:1 1 0;justify-content:center}
 .yt-l{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
 .opt[disabled]{opacity:.55}
+/* ---------- QR ile masaya katılma (1.19) ---------- */
+.ms-qrb{border:1px solid var(--sep);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px;background:var(--bg)}
+.ms-kod{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ms-kod-e{font-weight:700}
+.ms-kod b{font-size:30px;letter-spacing:6px;font-weight:900;padding:2px 12px;border-radius:10px;background:var(--bg2)}
+.ms-ist{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:var(--ok-soft);border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.ms-ist .row{display:flex;gap:8px}
+.ms-kisiler{display:flex;flex-direction:column;gap:6px}
+.ms-kisi{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--sep)}
+.ms-kisi-t{display:flex;align-items:baseline;gap:2px;white-space:nowrap}
+.ms-tg{color:var(--ok-ink);font-size:13px;font-weight:700}
+.ms-gz{font-size:13px;color:var(--sub)}
+.ms-qac{display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:12px;border:1px dashed var(--sep);border-radius:14px;margin-bottom:10px}
+.ms-qac2{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;margin-bottom:10px;border:1px dashed var(--sep);border-radius:12px;font-size:14px}
+.ms-r.r-is{background:var(--ok-soft);color:var(--ok-ink)}
+.ms-r.r-ms{background:var(--bg2)}
+.ms-odk{margin:0 0 6px;padding:2px 0;flex-wrap:wrap}
+.ms-qs{display:flex;flex-direction:column;gap:8px;padding:10px 0}
+.ms-qs-r{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.ms-dqr{min-height:36px;font-size:13px;white-space:nowrap}
+.ms-dr.q{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 100px 44px}
+.ms-dr.q .ms-dqr{width:100%;justify-content:center;padding-left:6px;padding-right:6px}
+.ms-dqr[aria-pressed=false]{color:var(--sub)}
+@media (max-width:480px){ .ms-dr.q{grid-template-columns:minmax(0,1fr) 100px 44px} }
 </style>
 </head>
 <body>
@@ -8971,11 +8995,13 @@ function msAdisyonYukle(sessiz){
 }
 // yoklamada masa planı değişti: açık masanın hesabı da tazelenir
 function msYoklamaSonrasi(){
+  msQrUyar();
   if (U.tab !== 'masa' || !MS.ac) return;
   var m = msMasa(MS.ac);
   if (!m || !m.adisyon) { if (MS.ad) { MS.ad = null; } return; }
   if (!MS.ad || MS.ad.id !== m.adisyon.id || MS.ad.toplam !== m.adisyon.toplam || MS.ad.odenen !== m.adisyon.odenen || (m.adisyon.fis + m.adisyon.qr) !== MS.ad.fisler.filter(function(f){ return f.kod !== 'I'; }).length ||
-    MS.ad.fisler.some(function(f){ var o = siparis(f.no); return o && o.kod !== f.kod; })) msAdisyonYukle(true);
+    MS.ad.fisler.some(function(f){ var o = siparis(f.no); return o && o.kod !== f.kod; }) ||
+    (MS.ad.qr && ((m.adisyon.istek || 0) !== MS.ad.qr.odemeIstekleri.length || (m.adisyon.misafir || 0) !== MS.ad.qr.misafirler.filter(function(y){ return y.ad; }).length || !!m.adisyon.qrKapali !== !!MS.ad.qr.qrKapali))) msAdisyonYukle(true);
 }
 function msSure(ms){ var d = dkGecti(ms); return d < 60 ? d + ' dk' : Math.floor(d / 60) + ' sa ' + (d % 60) + ' dk'; }
 
@@ -9027,9 +9053,12 @@ function msKutu(m){
     if (x.qr) roz += '<span class="ms-r r-qr">📱 QR ' + x.qr + '</span>';
     if (x.hazir) roz += '<span class="ms-r r-hz">Hazır ' + x.hazir + '</span>';
     if (x.hesapMs) roz += '<span class="ms-r r-hs">Hesap</span>';
+    if (x.istek) roz += '<span class="ms-r r-is">💳 Ödeme</span>';
+    if (x.misafir) roz += '<span class="ms-r r-ms">👥 ' + x.misafir + '</span>';
+    if (x.qrKapali) roz += '<span class="ms-r">QR durdu</span>';
     if (x.odenen > 0) roz += '<span class="ms-r r-od">Kısmi ödeme</span>';
   }
-  if (x && x.qr) cls += ' st-qr';
+  if (x && (x.qr || x.istek)) cls += ' st-qr';
   return '<button class="' + cls + (MS.ac === m.id ? ' sec' : '') + '" data-act="msAc" data-id="' + esc(m.id) + '" aria-label="' + esc(m.ad) + (x ? ', dolu, ' + tl(x.kalan) : ', boş') + '">' +
     '<span class="ms-ad">' + esc(m.ad) + '</span>' + (roz ? '<span class="ms-rz">' + roz + '</span>' : '') + alt + '</button>';
 }
@@ -9044,12 +9073,15 @@ function msAdisyonPaneli(iki){
     (iki ? '<button class="icon-btn" data-act="msGeri" aria-label="Kapat">' + ic('x') + '</button>' : '') + '</div>';
   h += '<div class="ms-govde" data-scroll="msAd">';
   if (x && !a) h += MS.adHata ? '<div class="note-box">' + esc(MS.adHata) + ' <button class="btn ghost sm" data-act="msYenidenYukle">Tekrar dene</button></div>' : '<div class="sk" style="height:140px"></div>';
+  if (!x && masaAyar().qr && !t.l.length) h += '<div class="ms-qac"><p>Müşteriler QR\'la masaya katılacaksa masayı açın: 4 haneli masa kodu oluşur, kodu müşteriye söylersiniz.</p>' +
+    '<button class="btn pri" data-act="msMasaAc"' + (U.busy.msMasaAc ? ' disabled' : '') + '>' + bekle('msMasaAc') + '🔑 Masayı aç, kodu ver</button></div>';
   if (a) {
     if (a.not) h += '<div class="ms-not">📝 ' + esc(a.not) + '</div>';
+    h += msQrBlok(a);
     var qr = a.fisler.filter(function(f){ return f.kod === 'Y'; });
     qr.forEach(function(f){
       var b = U.busy['msOnay:' + f.no];
-      h += '<div class="ms-qr" role="group" aria-label="Onay bekleyen QR siparişi"><div class="ms-qh">📱 <b>QR sipariş</b> · ' + saatYaz(f.tarihMs) + ' · <b class="num">' + tl(f.toplam) + '</b></div>' +
+      h += '<div class="ms-qr" role="group" aria-label="Onay bekleyen QR siparişi"><div class="ms-qh">📱 <b>' + (f.misafir ? esc(msMisafirAd(f.misafir)) + ' · QR sipariş' : 'QR sipariş') + '</b> · ' + saatYaz(f.tarihMs) + ' · <b class="num">' + tl(f.toplam) + '</b></div>' +
         '<ul class="ms-kl">' + f.kalemler.map(function(k){ return '<li><span class="q">' + adet(k.adet) + '×</span><span class="a">' + esc(k.ad) + kalemSecimHtml(k) + '</span></li>'; }).join('') + '</ul>' +
         (f.not ? '<div class="ms-not">📝 ' + esc(f.not) + '</div>' : '') +
         (yt('masa_onay') ? '<div class="row"><button class="btn line sm" data-act="msRed" data-no="' + f.no + '"' + (b ? ' disabled' : '') + '>Reddet</button>' +
@@ -9095,7 +9127,7 @@ function msFisHtml(f){
   var ipt = f.kod === 'I', b = U.busy['msServis:' + f.no];
   var dur = f.kod === 'H' ? 'Hazırlanıyor' : f.kod === 'R' ? 'Hazır' : f.kod === 'T' ? 'Servis edildi' : f.kod === 'I' ? 'İptal' : '';
   var h = '<article class="ms-f k-' + f.kod + '"><div class="ms-fh"><span class="badge st-' + f.kod + '"><span class="dot"></span>' + dur + '</span><span class="muted">' + saatYaz(f.tarihMs) +
-    (f.garson ? ' · ' + esc(f.garson) : '') + (f.qr ? ' · 📱 QR' : '') + ' · #' + f.no + '</span>' +
+    (f.garson ? ' · ' + esc(f.garson) : '') + (f.qr ? ' · 📱 ' + (f.misafir ? esc(msMisafirAd(f.misafir)) : 'QR') : '') + ' · #' + f.no + '</span>' +
     (!ipt && (f.kod === 'R' || f.kod === 'H') ? '<button class="btn ' + (f.kod === 'R' ? 'ok' : 'line') + ' sm" data-act="msServis" data-no="' + f.no + '"' + (b ? ' disabled' : '') + '>' + bekle('msServis:' + f.no) + 'Servis edildi</button>' : '') + '</div>';
   if (f.kalemler.length) h += '<ul class="ms-kl">' + f.kalemler.map(function(k){
     return '<li><button class="ms-kb" data-act="msKalem" data-no="' + f.no + '" data-k="' + k.i + '"' + (ipt ? ' disabled' : '') + '><span class="q">' + adet(k.adet) + '×</span><span class="a">' + esc(k.ad) +
@@ -9122,6 +9154,7 @@ function msUrunPaneli(iki){
   if (MS.kat && katlar.indexOf(MS.kat) < 0) MS.kat = '';
   var h = '<div class="ms-uh"><button class="btn line sm" data-act="msEkleBitti">' + ic('geri', 'sm') + (iki ? 'Masalar' : esc(m ? m.ad : '')) + '</button>' +
     '<input class="inp ms-ara" id="msAra" type="search" placeholder="Ürün ara" value="' + esc(MS.ara || '') + '" autocomplete="off" aria-label="Ürün ara"></div>';
+  if (!iki && m && !m.adisyon && masaAyar().qr && !t.l.length) h += '<div class="ms-qac2"><span>📱 Müşteri QR\'la mı katılacak?</span><button class="btn line sm" data-act="msMasaAc"' + (U.busy.msMasaAc ? ' disabled' : '') + '>' + bekle('msMasaAc') + '🔑 Masayı aç, kodu ver</button></div>';
   if (katlar.length > 1) h += '<div class="chips" role="group" aria-label="Kategori" style="margin-bottom:10px"><button class="chip" data-act="msKat" data-k="" aria-pressed="' + !MS.kat + '">Tümü</button>' +
     katlar.map(function(k){ return '<button class="chip" data-act="msKat" data-k="' + esc(k) + '" aria-pressed="' + (MS.kat === k) + '">' + esc(k) + '</button>'; }).join('') + '</div>';
   var gos = ur.filter(function(u){ return (!MS.kat || u.kat === MS.kat) && (!q || (u.ad + ' ' + (u.sec || '') + ' ' + u.kat).toLocaleLowerCase('tr').indexOf(q) >= 0); });
@@ -9307,7 +9340,7 @@ SHEET.msOdeme = function(s){
   if (!a) return shBas('Ödeme') + '<div class="sh-body"><p>Hesap kapanmış.</p></div>';
   var kalan = a.kalan, tut = Number(String(s.tutar || '').replace(',', '.')) || 0, al = Number(String(s.alinan || '').replace(',', '.')) || 0, b = U.busy.msOde;
   var h = shBas(esc(a.masa) + ' · ödeme') + '<div class="sh-body">' +
-    '<div class="ms-kal"><span>Kalan</span><b class="num">' + tl(kalan) + '</b>' + (a.odenen ? '<small>' + tl(a.odenen) + ' ödendi</small>' : '') + '</div>' +
+    '<div class="ms-kal"><span>Kalan</span><b class="num">' + tl(kalan) + '</b>' + (a.odenen ? '<small>' + tl(a.odenen) + ' ödendi</small>' : '') + '</div>' + msOdKimHtml(s, a) +
     '<div class="seg" role="group" aria-label="Ne kadar?"><button data-act="msOdMod" data-k="tam" aria-pressed="' + (s.mod === 'tam') + '">Tamamı</button>' +
     '<button data-act="msOdMod" data-k="kisi" aria-pressed="' + (s.mod === 'kisi') + '">Kişi başı</button><button data-act="msOdMod" data-k="tutar" aria-pressed="' + (s.mod === 'tutar') + '">Tutar gir</button></div>';
   if (s.mod === 'kisi') h += '<div class="ms-sc-a"><span>Kaç kişiye bölünsün?</span><span class="kz-ar"><button data-act="msOdKisi" data-k="-1">−</button><b>' + s.kisi + '</b><button data-act="msOdKisi" data-k="1">+</button></span></div>';
@@ -9326,9 +9359,25 @@ SHEET.msOdeme = function(s){
   }
   return h + '</div>';
 };
+// Ödeme penceresinde «Kimin hesabı?»: QR'la katılan kişiler ve masa (garsonun girdiği)
+function msOdKimHtml(s, a){
+  var q = msQr(a);
+  if (!q) return '';
+  var l = q.misafirler.filter(function(m){ return m.kalan > 0; }).map(function(m){ return [m.id, (m.ad || 'Misafir') + (m.gizli ? ' 🔒' : ''), m.kalan]; });
+  if (q.ortak && q.ortak.kalan > 0) l.push(['ortak', 'Masa', q.ortak.kalan]);
+  if (!l.length) return '';
+  var sec = s.kisiler || [];
+  return (s.istekKimden ? '<div class="note-box">💳 ' + esc(s.istekKimden) + ' ' + (s.istekYontem === 'Kart' ? 'kartla' : 'nakit') + ' ödemek istiyor.</div>' : '') +
+    '<div class="blk-h">Kimin hesabı?</div><div class="chips ms-odk" role="group" aria-label="Kimin hesabı"><button class="chip" data-act="msOdKisiSec" data-k="*" aria-pressed="' + !sec.length + '">Tümü</button>' +
+    l.map(function(x){ return '<button class="chip" data-act="msOdKisiSec" data-k="' + esc(x[0]) + '" aria-pressed="' + (sec.indexOf(x[0]) >= 0) + '">' + esc(x[1]) + ' <span class="n">' + tl(x[2]) + '</span></button>'; }).join('') + '</div>';
+}
 function msOdTutar(s){
   var a = MS.ad;
   if (!a) return '';
+  if (s.mod === 'sec' && s.kisiler && msQr(a)) {
+    var q = msQr(a), t = s.kisiler.reduce(function(n, k){ var m = k === 'ortak' ? q.ortak : q.misafirler.filter(function(y){ return y.id === k; })[0]; return n + (m ? m.kalan : 0); }, 0);
+    return String(msYuv(Math.min(t, a.kalan))).replace('.', ',');
+  }
   if (s.mod === 'tam') return String(a.kalan).replace('.', ',');
   if (s.mod === 'kisi') { var p = Math.ceil(a.kalan / Math.max(1, s.kisi) * 100) / 100; return String(msYuv(Math.min(p, a.kalan))).replace('.', ','); }
   return s.tutar;
@@ -9366,8 +9415,9 @@ SHEET.msDuzen = function(s){
       l.map(function(m, i){
         if ((m.bolum || 'Salon') !== bl) return '';
         var dolu = m.id && msMasa(m.id) && msMasa(m.id).adisyon;
-        return '<div class="ms-dr"><input class="inp" data-ms-ad="' + i + '" maxlength="24" value="' + esc(m.ad) + '" aria-label="Masa adı">' +
+        return '<div class="ms-dr' + (masaAyar().qr ? ' q' : '') + '"><input class="inp" data-ms-ad="' + i + '" maxlength="24" value="' + esc(m.ad) + '" aria-label="Masa adı">' +
           '<input class="inp" data-ms-bolum="' + i + '" maxlength="24" value="' + esc(m.bolum || '') + '" aria-label="Bölüm" list="msBolumListe">' +
+          (masaAyar().qr ? '<button class="chip ms-dqr" type="button" data-act="msDQr" data-k="' + i + '" aria-pressed="' + (m.qs !== false) + '" title="Bu masadan QR siparişi" aria-label="' + esc(m.ad) + ': QR siparişi">' + (m.qs !== false ? 'QR açık' : 'QR kapalı') + '</button>' : '') +
           '<button class="icon-btn" data-act="msDSil" data-k="' + i + '"' + (dolu ? ' disabled title="Açık hesabı var"' : '') + ' aria-label="' + esc(m.ad) + ' masasını kaldır">' + ic('cop') + '</button></div>';
       }).join('') + '</div></div>';
   }).join('');
@@ -9387,7 +9437,14 @@ function msAyarHtml(){
   var sw = function(k, acik, ad, alt){ return '<button class="opt" type="button" role="switch" aria-checked="' + acik + '" data-act="msAyarSw" data-k="' + k + '"' + (b ? ' disabled' : '') + '><span class="o-main">' + ad + '<span class="o-sub">' + alt + '</span></span><span class="tgl" aria-hidden="true"></span></button>'; };
   return '<section class="card pad frm"><h2 class="frm-h">Masalar ve garson</h2>' +
     sw('acik', !!a.acik, 'Masa modülü', 'Masalar sekmesi: garsonlar telefonundan masaya sipariş girer, mutfağa gönderir; hesap kasada ya da garsonda kapanır.') +
-    (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR kodu okutup menüden seçer; sipariş garson onaylayınca mutfağa gider.') : paketYokNotu('Masa QR siparişi')) +
+    (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR\'ı okutur, garsonun verdiği 4 haneli masa koduyla masaya katılır, menüyü görür. Sipariş için Telegram\'dan doğrulanıp telefonunu paylaşır.') +
+      (a.qr ? sw('qrOnaysiz', !!a.qrOnaysiz, 'Doğrulanan müşterinin siparişi onaysız mutfağa gitsin', 'Kapalıysa QR siparişini garson / kasa onaylar.') +
+        '<div class="ms-qs"><b>QR sipariş sınırları</b> <span class="muted">(0 = sınırsız)</span><div class="ms-qs-r">' +
+        '<div class="field"><label for="msqSip">Tek siparişte en fazla (TL)</label><input class="inp num" id="msqSip" inputmode="decimal" value="' + esc(a.qrSiparis || 0) + '"></div>' +
+        '<div class="field"><label for="msqAdet">Tek siparişte en fazla ürün</label><input class="inp num" id="msqAdet" inputmode="numeric" value="' + esc(a.qrAdet || 0) + '"></div>' +
+        '<div class="field"><label for="msqKisi">Kişi başı ödenmemiş hesap (TL)</label><input class="inp num" id="msqKisi" inputmode="decimal" value="' + esc(a.qrKisi || 0) + '"></div></div>' +
+        '<p class="tip-txt">Kişi başı sınır dolunca müşteri yeni sipariş için önce hesabını öder. Masa bazında QR siparişini «Masaları düzenle»den, açık bir hesapta garson ekranından durdurabilirsiniz.</p>' +
+        '<button class="btn line sm" data-act="msQrSinirKaydet"' + (U.busy.msqS ? ' disabled' : '') + '>' + bekle('msqS') + 'Sınırları kaydet</button></div>' : '') : paketYokNotu('Masa QR siparişi')) +
       sw('garsonOdeme', !!a.garsonOdeme, 'Garson ödeme alabilir', 'Kapalıysa ödemeyi yalnız kasa (siz ve personel) alır; garson hesabı kasaya yönlendirir.') +
       '<div class="row" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn line sm" data-act="msDuzenle">' + ic('masa', 'sm') + 'Masaları düzenle (' + (a.sayi || 0) + ')</button>' +
       (a.sayi && qrVar ? '<button class="btn line sm" data-act="msQrYazdir">' + ic('qr', 'sm') + 'Masa QR kodlarını yazdır</button>' : '') + '</div>' : '') +
@@ -9695,7 +9752,7 @@ var ACT_MS = {
     if (!a || !s) return;
     var tut = Number(String(s.tutar || '').replace(',', '.')) || 0, al = s.alan === 'alinan' ? Number(String(s.alinan || '').replace(',', '.')) || tut : tut;
     var masa = a.masa;
-    islem('ekMasaOdeme', { adisyon:a.id, yontem:yontem, tutar:tut, alinan:al, istek:s.istek }, { busy:'msOde' }).then(function(r){
+    islem('ekMasaOdeme', { adisyon:a.id, yontem:yontem, tutar:tut, alinan:al, istek:s.istek, kisiler:s.kisiler || undefined, istekId:s.istekId || undefined }, { busy:'msOde' }).then(function(r){
       if (!r) { if (SH === s) renderSheet(); return; }
       msCevap(r);
       var ustu = r.paraUstu > 0 ? ' · para üstü ' + tl(r.paraUstu) : '';
@@ -9706,7 +9763,7 @@ var ACT_MS = {
         toast('✅ ' + masa + ' · hesap kapandı' + ustu);
       } else {
         toast('Ödeme alındı: ' + tl(tut) + ' ' + yontem + ustu + ' · kalan ' + tl(r.adisyon.kalan));
-        s.mod = 'tam'; s.alan = ''; s.alinan = ''; s.istek = msIstek(); s.tutar = msOdTutar(s);
+        s.mod = 'tam'; s.alan = ''; s.alinan = ''; s.istek = msIstek(); s.kisiler = null; s.istekId = ''; s.istekKimden = ''; s.tutar = msOdTutar(s);
         if (SH === s) renderSheet();
       }
       msCiz();
@@ -9736,7 +9793,7 @@ var ACT_MS = {
     });
   },
   msDuzenle:function(){
-    sheetAc({ tip:'msDuzen', liste:(D.masalar || []).filter(function(m){ return !m.silinmis; }).map(function(m){ return { id:m.id, ad:m.ad, bolum:m.bolum }; }), hata:'' });
+    sheetAc({ tip:'msDuzen', liste:(D.masalar || []).filter(function(m){ return !m.silinmis; }).map(function(m){ var y = { id:m.id, ad:m.ad, bolum:m.bolum }; if (m.qs === false) y.qs = false; return y; }), hata:'' });
   },
   msTopluEkle:function(){
     msDuzenOku();
@@ -9758,7 +9815,7 @@ var ACT_MS = {
   msDKaydet:function(){
     msDuzenOku();
     var s = SH;
-    islem('ekMasaAyar', { masalar:s.liste.map(function(m){ return { id:m.id || '', ad:m.ad, bolum:m.bolum }; }) }, { busy:'msAyar' }).then(function(r){
+    islem('ekMasaAyar', { masalar:s.liste.map(function(m){ return { id:m.id || '', ad:m.ad, bolum:m.bolum, qs:m.qs !== false }; }) }, { busy:'msAyar' }).then(function(r){
       if (!r) return;
       D.masalar = r.masalar; D.isletme.masa = r.ayar;
       sheetKapat(); toast('Masalar kaydedildi (' + r.masalar.length + ')'); ciz();
@@ -9771,7 +9828,8 @@ var ACT_MS = {
       if (!r) return;
       D.isletme.masa = r.ayar; D.masalar = r.masalar;
       if (!r.ayar.acik && U.tab === 'masa') U.tab = 'siparis';
-      toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır' }[k]);
+      toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır',
+        qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar' }[k]);
       ciz();
     });
   },
@@ -9815,7 +9873,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false };
+  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0 };
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
@@ -9848,32 +9906,54 @@ function masaDemoIslemler(x){
     return x.kopya({ id:a.id, masaId:a.masaId, masa:a.masa, bolum:a.bolum, durum:a.durum, acilisMs:a.acilisMs, kapanisMs:a.kapanisMs || 0, garson:a.garson, garsonId:a.garsonId,
       kisi:a.kisi, not:a.not, hesapMs:a.hesapMs || 0, kaynak:a.kaynak, indirimKural:a.indirimKural, brut:h.brut, indirim:h.indirim, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan,
       odemeler:a.odemeler, gecmis:a.gecmis, fisler:h.f.map(function(o){ return { no:o.no, tarihMs:o.tarihMs, kod:o.kod, garson:o.garson, qr:o.qr ? 1 : 0, ara:o.ara, toplam:o.toplam, not:o.not, islem:o.islem || [],
-        kalemler:o.kalemler.map(function(k, i){ var j = JSON.parse(JSON.stringify(k)); j.i = i; return j; }) }; }) });
+        misafir:o.misafir || undefined, kalemler:o.kalemler.map(function(k, i){ var j = JSON.parse(JSON.stringify(k)); j.i = i; return j; }) }; }),
+      qr:a.durum === 'Açık' ? qrJson(a, h) : null });
+  };
+  // 1.19 QR ile masaya katılma (önizleme): kişi kişi hesap — kişinin fişleri, ödemenin kişi payı, kalan önce masa hesabından
+  var kisiHesap = function(a, h){
+    var borc = { ortak:0 }, sira = ['ortak'];
+    (a.misafirler || []).forEach(function(m){ borc[m.id] = 0; sira.push(m.id); });
+    h.f.forEach(function(o){ if (o.kod === 'Y' || o.kod === 'I') return; var k = o.misafir && borc[o.misafir] !== undefined ? o.misafir : 'ortak'; borc[k] = yuv(borc[k] + o.ara); });
+    var kalan = {}, havuz = 0;
+    sira.forEach(function(k){ kalan[k] = borc[k]; });
+    a.odemeler.forEach(function(p){ var t = p.t; Object.keys(p.p || {}).forEach(function(k){ if (kalan[k] === undefined) return; var v = Math.min(p.p[k], kalan[k], t); kalan[k] = yuv(kalan[k] - v); t = yuv(t - v); }); havuz = yuv(havuz + Math.max(0, t)); });
+    sira.forEach(function(k){ var v = Math.min(havuz, kalan[k]); kalan[k] = yuv(kalan[k] - v); havuz = yuv(havuz - v); });
+    return { borc:borc, kalan:kalan };
+  };
+  var qrJson = function(a, h){
+    var kh = kisiHesap(a, h), adi = function(id){ var m = (a.misafirler || []).filter(function(y){ return y.id === id; })[0]; return id === 'ortak' ? 'Masa' : m ? m.ad || 'Misafir' : '?'; };
+    return { kod:a.kod, qrKapali:!!a.qrKapali, ortak:{ toplam:kh.borc.ortak, kalan:kh.kalan.ortak },
+      misafirler:(a.misafirler || []).map(function(m){ return Object.assign({}, m, { toplam:kh.borc[m.id] || 0, kalan:kh.kalan[m.id] || 0, telefon:m.dogrulandi ? (x.rol === 'Sahip' ? '0532 ' + m.tel : '•••• ' + m.tel.slice(-2)) : '' }); }),
+      odemeIstekleri:(a.istekler || []).filter(function(i){ return i.d === 'B'; }).map(function(i){ return { id:i.id, ms:i.ms, kimden:adi(i.m), kisiler:i.k, adlar:i.k.map(adi), tutar:i.t, yontem:i.y }; }) };
   };
   var acik = function(masaId){ return Object.keys(AD).map(function(k){ return AD[k]; }).filter(function(a){ return a.durum === 'Açık' && a.masaId === masaId; })[0]; };
   var liste = function(){
     return x.kopya(MASA.map(function(m){
       var r = { id:m.id, ad:m.ad, bolum:m.bolum }, a = acik(m.id);
       if (x.rol === 'Sahip') r.qr = location.origin + location.pathname.replace(/isletme\.html$/, '') + 'index.html?b=DEMO&masa=' + m.id + '.' + m.k;
-      if (a) { var h = hesap(a); r.adisyon = { id:a.id, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan, acilisMs:a.acilisMs, garson:a.garson, garsonId:a.garsonId, kisi:a.kisi, hesapMs:a.hesapMs || 0, fis:h.fis, qr:h.qr, hazir:h.hazir, mutfak:h.mutfak, kaynak:a.kaynak }; }
+      if (m.qs === false) r.qs = false;
+      if (a) { var h = hesap(a); r.adisyon = { id:a.id, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan, acilisMs:a.acilisMs, garson:a.garson, garsonId:a.garsonId, kisi:a.kisi, hesapMs:a.hesapMs || 0, fis:h.fis, qr:h.qr, hazir:h.hazir, mutfak:h.mutfak, kaynak:a.kaynak,
+        misafir:(a.misafirler || []).filter(function(y){ return y.ad; }).length, istek:(a.istekler || []).filter(function(i){ return i.d === 'B'; }).length, qrKapali:!!a.qrKapali }; }
       return r;
     }));
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
-  var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length }; };
+  var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
-      kisi:0, not:'', hesapMs:0, kaynak:kaynak, indirimKural:'', odemeler:[], gecmis:'' };
+      kisi:0, not:'', hesapMs:0, kaynak:kaynak, indirimKural:'', odemeler:[], gecmis:'', kod:String(1000 + Math.floor(Math.random() * 8999)), misafirler:[], istekler:[], qrKapali:false };
     gecmis(a, 'Açıldı', kim ? kim.ad : kaynak);
     AD[a.id] = a;
     return a;
   };
-  var fisYaz = function(a, kal, kod, kim, dk, not, qr){
+  var fisYaz = function(a, kal, kod, kim, dk, not, qr, misafir){
     var no = x.yeniNo(), t = Date.now() - (dk || 0) * 60000, top = yuv(kal.reduce(function(s, k){ return s + k.tutar; }, 0));
     var o = { no:no, tarihMs:t, guncelMs:t, kanal:'Masa', adisyon:a.id, masa:a.masa, garson:kim ? kim.ad : '', qr:!!qr, kod:kod, durum:x.DN[kod], ad:a.masa + (qr ? ' · QR' : ''),
       kalemler:kal, ara:top, ucret:0, toplam:top, odeme:'', tahsilat:'', not:not || '', gecmis:saatYaz(t) + ' ' + x.DN[kod] + ' (' + (kim ? 'Garson: ' + kim.ad : 'QR') + ')',
       adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'', iptalEden:'', iptalNedeni:'', islem:[], odendi:false, sira:0 };
+    if (misafir) { o.misafir = misafir; var mm = (a.misafirler || []).filter(function(y){ return y.id === misafir; })[0]; if (mm) o.ad = a.masa + ' · ' + mm.ad; }
     x.S.push(o); x.degisti();
     return o;
   };
@@ -9889,8 +9969,16 @@ function masaDemoIslemler(x){
     fisYaz(a3, [k('U002', 1), k('U008', 1), k('U010', 2)], 'H', GCAN, 8, 'Önce çorbalar');
     var a4 = adAc(MASA[5], GECE, 'Garson', 68); a4.kisi = 2; a4.hesapMs = Date.now() - 3 * 60000;
     fisYaz(a4, [k('U004', 1), k('U014', 2)], 'T', GECE, 66);
-    var a5 = adAc(MASA[10], null, 'QR', 2);
-    fisYaz(a5, [k('U012', 1), k('U005', 1)], 'Y', null, 2, '', true);
+    var a5 = adAc(MASA[10], GECE, 'Garson', 26); a5.kisi = 3;
+    a5.misafirler = [{ id:'MSZ', ad:'Zeynep', dogrulandi:true, gizli:false, girisMs:Date.now() - 24 * 60000, tel:'123 45 67' },
+      { id:'MSA', ad:'Ali', dogrulandi:true, gizli:true, girisMs:Date.now() - 20 * 60000, tel:'765 43 21' },
+      { id:'MSM', ad:'', dogrulandi:false, gizli:false, girisMs:Date.now() - 3 * 60000, tel:'' }];
+    fisYaz(a5, [k('U002', 1), k('U006', 1)], 'T', GECE, 22, '', true, 'MSZ');
+    fisYaz(a5, [k('U003', 1)], 'T', GECE, 21, '', true, 'MSA');
+    fisYaz(a5, [k('U010', 2)], 'T', GECE, 23);
+    fisYaz(a5, [k('U012', 1), k('U005', 1)], 'Y', null, 2, '', true, 'MSZ');
+    a5.istekler = [{ id:'IST1', ms:Date.now() - 60000, m:'MSZ', k:['MSZ', 'ortak'], t:0, y:'Kart', d:'B' }];
+    (function(){ var kh = kisiHesap(a5, hesap(a5)); a5.istekler[0].t = yuv(kh.kalan.MSZ + kh.kalan.ortak); })();
     var a6 = adAc(MASA[11], GCAN, 'Garson', 15);
     fisYaz(a6, [k('U007', 2), k('U010', 1)], 'T', GCAN, 14);
     a6.odemeler.push({ y:'Nakit', t:30, ms:Date.now() - 5 * 60000, kim:'Mehmet' });
@@ -10027,12 +10115,25 @@ function masaDemoIslemler(x){
       x.gecmisEkle(o, 'T', 'Ekran: ' + kim().ad + ' · servis');
       return { ok:true, siparis:x.kopya(o), rev:'s' + Date.now() };
     },
+    ekMasaAc:function(d){
+      var m = MASA.filter(function(y){ return y.id === d.masa; })[0]; if (!m) return hata('YOK', 'Masa bulunamadı.');
+      var a = acik(m.id) || adAc(m, kim(), x.rol === 'Garson' ? 'Garson' : 'Kasa', 0);
+      return cevap(a);
+    },
+    ekMasaKod:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].kod = String(1000 + Math.floor(Math.random() * 8999)); gecmis(b[0], 'Masa kodu yenilendi', kim().ad); return cevap(b[0]); },
+    ekMasaQr:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].qrKapali = d.kapali !== false; return cevap(b[0]); },
+    ekMasaMisafir:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].misafirler = b[0].misafirler.filter(function(y){ return y.id !== d.misafir; }); return cevap(b[0]); },
+    ekMasaOdemeIstek:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].istekler.forEach(function(i){ if (i.id === d.id) i.d = 'K'; }); return cevap(b[0]); },
     ekMasaOdeme:function(d){
       if (x.rol === 'Garson' && !AYR.garsonOdeme) return hata('YETKI', 'Bu işletmede ödemeyi kasa alıyor. Hesabı kasaya yönlendirin.');
       var b = bulAd(d.adisyon); if (!b[0]) return b[1];
-      var a = b[0], h = hesap(a), t = yuv(Number(d.tutar) || h.kalan);
+      var a = b[0], h = hesap(a), kh = kisiHesap(a, h), sec = Array.isArray(d.kisiler) && d.kisiler.length ? d.kisiler : null;
+      var t = yuv(Number(d.tutar) || (sec ? Math.min(h.kalan, sec.reduce(function(s, q){ return s + (kh.kalan[q] || 0); }, 0)) : h.kalan));
       if (t > h.kalan + 0.009) return hata('FORM', 'Tutar kalan hesaptan (' + tl(h.kalan) + ') fazla olamaz.');
-      a.odemeler.push({ y:d.yontem, t:t, ms:Date.now(), kim:kim().ad });
+      var pay = null;
+      if (sec) { var kal = t; pay = {}; sec.forEach(function(q){ var v = Math.min(kh.kalan[q] || 0, kal); if (v > 0.004) { pay[q] = yuv(v); kal = yuv(kal - v); } }); }
+      a.odemeler.push(Object.assign({ y:d.yontem, t:t, ms:Date.now(), kim:kim().ad }, pay && Object.keys(pay).length ? { p:pay } : {}));
+      if (d.istekId) a.istekler.forEach(function(i){ if (i.id === d.istekId) i.d = 'A'; });
       var ustu = yuv(Math.max(0, (Number(d.alinan) || t) - t));
       if (h.kalan - t <= 0.009) {
         a.durum = 'Kapandı'; a.kapanisMs = Date.now(); a.kapanisToplam = h.toplam;
@@ -10061,6 +10162,8 @@ function masaDemoIslemler(x){
       if (d.acik !== undefined) AYR.acik = !!d.acik;
       if (d.qr !== undefined) AYR.qr = !!d.qr;
       if (d.garsonOdeme !== undefined) AYR.garsonOdeme = !!d.garsonOdeme;
+      if (d.qrOnaysiz !== undefined) AYR.qrOnaysiz = !!d.qrOnaysiz;
+      ['qrSiparis', 'qrAdet', 'qrKisi'].forEach(function(q){ if (d[q] !== undefined) AYR[q] = Math.max(0, Number(String(d[q]).replace(',', '.')) || 0); });
       if (Array.isArray(d.masalar)) {
         var eski = {}; MASA.forEach(function(m){ eski[m.id] = m; });
         var enb = MASA.reduce(function(t, m){ return Math.max(t, parseInt(m.id.slice(1), 36) || 0); }, 0);
@@ -10068,7 +10171,9 @@ function masaDemoIslemler(x){
         for (var i = 0; i < d.masalar.length; i++) {
           var m = d.masalar[i], ad = String(m.ad || '').trim();
           if (!ad) return hata('FORM', (i + 1) + '. masanın adını yazın.');
-          yeni.push(m.id && eski[m.id] ? { id:m.id, ad:ad, bolum:String(m.bolum || '').trim(), k:eski[m.id].k } : { id:'m' + (++enb).toString(36), ad:ad, bolum:String(m.bolum || '').trim() || 'Salon', k:'demo' + enb });
+          var ym = m.id && eski[m.id] ? { id:m.id, ad:ad, bolum:String(m.bolum || '').trim(), k:eski[m.id].k } : { id:'m' + (++enb).toString(36), ad:ad, bolum:String(m.bolum || '').trim() || 'Salon', k:'demo' + enb };
+          if (m.qs === false || (m.qs === undefined && m.id && eski[m.id] && eski[m.id].qs === false)) ym.qs = false;
+          yeni.push(ym);
         }
         var kalan = {}; yeni.forEach(function(m){ kalan[m.id] = 1; });
         var dolu = MASA.filter(function(m){ return !kalan[m.id] && acik(m.id); })[0];
@@ -11502,7 +11607,9 @@ function yetkiDemoIslemler(x){
     ['masa_odeme', 'Masa işlemleri', 'Masada ödeme alma', '', { Personel:1, Mudur:1, Garson:0 }],
     ['masa_ikram', 'Masa işlemleri', 'İkram', '', { Personel:1, Mudur:1, Garson:0 }],
     ['masa_indirim', 'Masa işlemleri', 'İndirim', '', { Personel:1, Mudur:1, Garson:0 }],
-    ['masa_odemesil', 'Masa işlemleri', 'Alınan ödemeyi silme', '', { Personel:1, Mudur:1, Garson:0 }]];
+    ['masa_odemesil', 'Masa işlemleri', 'Alınan ödemeyi silme', '', { Personel:1, Mudur:1, Garson:0 }],
+    ['qr_telefon', 'Masa işlemleri', 'Masadaki müşterinin telefonunu görme', 'QR ile masaya katılıp doğrulanan kişinin numarası', { Personel:0, Mudur:1, Garson:0 }],
+    ['masa_qr', 'Masa işlemleri', 'Masada QR siparişini durdurma', 'Açık hesapta müşterilerin QR\'dan sipariş vermesini durdurur / açar', { Personel:1, Mudur:1, Garson:0 }]];
   var KEY = 'yourpos360-demo-yetki', V = {};
   try { V = JSON.parse(LS.get(KEY) || '{}') || {}; } catch(e){ V = {}; }
   var deger = function(rk, t){ return V[rk] && typeof V[rk][t[0]] === 'boolean' ? V[rk][t[0]] : !!t[4][rk]; };
@@ -11533,6 +11640,110 @@ function yetkiDemoIslemler(x){
     }
   };
 }
+
+/* ---------- 1.19 QR ile masaya katılma (ekip) ---------- */
+var MSQ = { onceki:null };
+function msQr(a){ return a && a.qr ? a.qr : null; }
+function msMisafirAd(id){ var q = msQr(MS.ad), m = q && id ? q.misafirler.filter(function(x){ return x.id === id; })[0] : null; return m ? (m.ad || 'Misafir') : ''; }
+function msQrBlok(a){
+  var q = msQr(a);
+  if (!q || !masaAyar().qr) return '';
+  var h = '<section class="ms-qrb" aria-label="QR ile masaya katılma">';
+  h += '<div class="ms-kod"><span class="ms-kod-e">🔑 Masa kodu</span><b class="num" aria-label="Masa kodu ' + esc(q.kod.split('').join(' ')) + '">' + esc(q.kod) + '</b>' +
+    '<button class="btn ghost sm" data-act="msKodYenile"' + (U.busy.msKod ? ' disabled' : '') + '>' + bekle('msKod') + 'Yenile</button></div>' +
+    '<p class="tip-txt">Müşteri masadaki QR\'ı okutup bu kodu girer; masadakiler kodu birbirine de söyleyebilir.</p>';
+  if (yt('masa_qr')) h += '<button class="opt" type="button" role="switch" aria-checked="' + !q.qrKapali + '" data-act="msQrDurdur"' + (U.busy.msQrD ? ' disabled' : '') + '><span class="o-main">Bu masadan QR siparişi' +
+    '<span class="o-sub">' + (q.qrKapali ? 'Durduruldu: müşteriler menüyü görür ama sipariş veremez' : 'Açık: doğrulanan müşteriler kendi telefonundan sipariş verir') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  else if (q.qrKapali) h += '<p class="muted">Bu masada QR siparişi durduruldu.</p>';
+  (q.odemeIstekleri || []).forEach(function(i){
+    h += '<div class="ms-ist" role="group" aria-label="Ödeme isteği"><div><b>💳 ' + esc(i.kimden) + '</b> ödemek istiyor · <b class="num">' + tl(i.tutar) + '</b> · ' + (i.yontem === 'Kart' ? 'Kartla <span class="muted">(POS götürün)</span>' : 'Nakit') +
+      '<div class="muted">' + esc(i.adlar.join(', ')) + ' · ' + saatYaz(i.ms) + '</div></div><div class="row">' +
+      (msOdemeYetki() ? '<button class="btn ok sm" data-act="msIstekAl" data-k="' + esc(i.id) + '">' + ic('para', 'sm') + 'Ödemeyi al</button>' +
+      '<button class="btn ghost sm" data-act="msIstekKaldir" data-k="' + esc(i.id) + '"' + (U.busy.msIstek ? ' disabled' : '') + '>Kaldır</button>' : '<span class="muted">Ödemeyi kasa alır</span>') + '</div></div>';
+  });
+  var ms = q.misafirler || [];
+  h += '<div class="ms-kisiler"><h3 class="blk-h">👥 Masadakiler <span class="muted">' + ms.length + ' kişi</span></h3>';
+  if (!ms.length) h += '<p class="muted">Henüz QR ile katılan yok.</p>';
+  h += ms.map(function(m){
+    return '<div class="ms-kisi"><div class="ms-kisi-a"><b>' + (m.ad ? esc(m.ad) : '<span class="muted">Adını yazmadı</span>') + '</b>' +
+      (m.dogrulandi ? ' <span class="ms-tg" title="Telegram ve telefonla doğrulandı">✓ Telegram</span>' : ' <span class="muted">· doğrulanmadı (yalnız menüyü görür)</span>') +
+      (m.gizli ? ' <span class="ms-gz" title="Hesabını masadakilerden gizledi">🔒 gizli</span>' : '') +
+      (m.telefon ? '<div class="muted num">📞 ' + esc(m.telefon) + '</div>' : '') + '</div>' +
+      '<div class="ms-kisi-t">' + (m.toplam ? '<b class="num">' + tl(m.kalan) + '</b>' + (m.kalan < m.toplam ? '<span class="muted">/' + tl(m.toplam) + '</span>' : '') : '<span class="muted">—</span>') + '</div>' +
+      '<button class="icon-btn" data-act="msMisafirCikar" data-k="' + esc(m.id) + '" aria-label="' + esc(m.ad || 'Misafir') + ' kişisini masadan çıkar">' + ic('x', 'sm') + '</button></div>';
+  }).join('');
+  if (q.ortak && q.ortak.toplam) h += '<div class="ms-kisi"><div class="ms-kisi-a"><b>Masa</b> <span class="muted">· garsonun girdiği</span></div><div class="ms-kisi-t"><b class="num">' + tl(q.ortak.kalan) + '</b>' +
+    (q.ortak.kalan < q.ortak.toplam ? '<span class="muted">/' + tl(q.ortak.toplam) + '</span>' : '') + '</div><span></span></div>';
+  return h + '</div></section>';
+}
+// yoklamada: yeni ödeme isteği ya da doğrulanan kişi → uyarı
+function msQrUyar(){
+  var l = D.masalar || [], s = {};
+  l.forEach(function(m){ if (m.adisyon) s[m.id] = { i:m.adisyon.istek || 0, k:m.adisyon.misafir || 0, ad:m.ad }; });
+  var o = MSQ.onceki;
+  MSQ.onceki = s;
+  if (!o || garson() && false) return;
+  var mesaj = [];
+  Object.keys(s).forEach(function(id){
+    var x = s[id], y = o[id] || { i:0, k:0 };
+    if (x.i > y.i) mesaj.push('💳 ' + x.ad + ': ödeme isteği');
+    else if (x.k > y.k) mesaj.push('👥 ' + x.ad + ': ' + (x.k - y.k) + ' kişi katıldı');
+  });
+  if (mesaj.length) { toast(mesaj.join(' · ')); haptic('notify', 'warning'); if (SES.acik && /💳/.test(mesaj.join(''))) bip('yeni', 1); }
+}
+ACT_EK.msMasaAc = function(){
+  var id = MS.ac;
+  islem('ekMasaAc', { masa:id }, { busy:'msMasaAc' }).then(function(r){ if (r) { msCevap(r); if (r.adisyon) { MS.ad = r.adisyon; MS.ac = id; MS.ekle = false; main.scrollTop = 0; } toast('🔑 Masa açıldı · kod ' + (r.adisyon && r.adisyon.qr ? r.adisyon.qr.kod : '')); msCiz(); } });
+};
+ACT_EK.msKodYenile = function(){
+  var a = MS.ad; if (!a) return;
+  sheetAc({ tip:'onay', busy:'msKod', baslik:'Masa kodu yenilensin mi?', metin:'Masadaki kişiler oturumlarını kaybetmez; yeni katılacaklar yeni kodu girer. Kod başkasına yayıldıysa ya da yanlış kod denemeleri yüzünden giriş kilitlendiyse yenileyin.', dugme:'Yenile',
+    yap:function(){ return islem('ekMasaKod', { adisyon:a.id }, { busy:'msKod' }).then(function(r){ if (r) { msCevap(r); sheetKapat(); toast('🔑 Yeni kod: ' + r.adisyon.qr.kod); msCiz(); } }); } });
+};
+ACT_EK.msQrDurdur = function(){
+  var a = MS.ad, q = msQr(a); if (!q) return;
+  islem('ekMasaQr', { adisyon:a.id, kapali:!q.qrKapali }, { busy:'msQrD' }).then(function(r){ if (r) { msCevap(r); toast(r.adisyon.qr.qrKapali ? 'Bu masada QR siparişi durduruldu' : 'Bu masada QR siparişi açıldı'); msCiz(); } });
+};
+ACT_EK.msMisafirCikar = function(el){
+  var a = MS.ad, id = el.getAttribute('data-k'), ad = msMisafirAd(id);
+  sheetAc({ tip:'onay', busy:'msMisafir', baslik:ad + ' masadan çıkarılsın mı?', metin:'Kişinin bu masadaki oturumu kapanır, yeniden girmek için kodu girmesi gerekir. Siparişleri ve hesabı masada kalır.', dugme:'Çıkar',
+    yap:function(){ return islem('ekMasaMisafir', { adisyon:a.id, misafir:id }, { busy:'msMisafir' }).then(function(r){ if (r) { msCevap(r); sheetKapat(); toast(ad + ' masadan çıkarıldı'); msCiz(); } }); } });
+};
+ACT_EK.msIstekKaldir = function(el){
+  var a = MS.ad;
+  islem('ekMasaOdemeIstek', { adisyon:a.id, id:el.getAttribute('data-k') }, { busy:'msIstek' }).then(function(r){ if (r) { msCevap(r); toast('Ödeme isteği kaldırıldı'); msCiz(); } });
+};
+ACT_EK.msIstekAl = function(el){
+  var a = MS.ad, q = msQr(a), i = q ? q.odemeIstekleri.filter(function(x){ return x.id === el.getAttribute('data-k'); })[0] : null;
+  if (!a || !i || !msOdemeYetki()) return;
+  var s = { tip:'msOdeme', mod:'sec', kisi:Math.max(2, a.kisi || 2), tutar:'', alinan:'', alan:'', istek:msIstek(), kisiler:i.kisiler.slice(), istekId:i.id, istekYontem:i.yontem, istekKimden:i.kimden };
+  s.tutar = msOdTutar(s);
+  sheetAc(s);
+};
+ACT_EK.msOdKisiSec = function(el){
+  var k = el.getAttribute('data-k'), s = SH;
+  if (!s) return;
+  if (k === '*') { s.kisiler = null; s.mod = 'tam'; }
+  else {
+    s.kisiler = (s.kisiler || []).slice();
+    var i = s.kisiler.indexOf(k);
+    if (i >= 0) s.kisiler.splice(i, 1); else s.kisiler.push(k);
+    s.mod = s.kisiler.length ? 'sec' : 'tam';
+    if (!s.kisiler.length) s.kisiler = null;
+  }
+  s.istekId = s.kisiler ? s.istekId : '';
+  s.alan = ''; s.alinan = ''; s.istek = msIstek(); s.tutar = msOdTutar(s);
+  haptic('select'); renderSheet();
+};
+ACT_EK.msQrSinirKaydet = function(){
+  var v = function(id){ var e = $('#' + id); return e ? e.value : ''; };
+  islem('ekMasaAyar', { qrSiparis:v('msqSip'), qrAdet:v('msqAdet'), qrKisi:v('msqKisi') }, { busy:'msqS' }).then(function(r){
+    if (!r) return;
+    D.isletme.masa = r.ayar; D.masalar = r.masalar;
+    toast('QR sipariş sınırları kaydedildi'); ciz();
+  });
+};
+ACT_EK.msDQr = function(el){ msDuzenOku(); var m = SH.liste[Number(el.getAttribute('data-k'))]; if (m) { m.qs = m.qs === false; renderSheet(); } };
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
