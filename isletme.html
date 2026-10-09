@@ -6776,7 +6776,7 @@ function ynSisEkrani(){
   return h + '</div>';
 }
 function ynAlanAdi(a){ return { BASVURU_ONAYI:'Başvurular onayımla açılsın', KAMPANYA_DAVETI:'Fırsat bildirimlerine davet', REHBER_MUSTERI:'Müşteri Rehberi gönderilsin',
-  REHBER_ISLETME:'İşletme Rehberi gönderilsin', WEB_SIPARIS:'🌐 Web\'den (Telegram\'sız) sipariş açık', TELEGRAMSIZ_MOD:'🛟 Telegram\'sız mod' }[a.k] || a.k; }
+  REHBER_ISLETME:'İşletme Rehberi gönderilsin', WEB_SIPARIS:'🌐 Web\'den (Telegram\'sız) sipariş açık', TELEGRAMSIZ_MOD:'🛟 Telegram\'sız mod', WEB_TG_DOGRULAMA:'📲 Web siparişinde telefon Telegram\'dan doğrulansın' }[a.k] || a.k; }
 
 /* --- olaylar --- */
 var ACT_YN = {
@@ -7137,7 +7137,8 @@ function ynDemoMock(){
       { k:'REHBER_ISLETME', ad:'Üyelik açılınca İşletme Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' }] },
     { ad:'Bakiye yükleme', alanlar:[{ k:'BAKIYE_HANE', ad:'Bakiye yüklemede tek seferde tutar en fazla kaç haneli olabilsin (4 = en fazla 9.999 TL · 0 = sınır yok)', deger:'4', tip:'sayi' }] },
     { ad:'Telegram\'sız mod', alanlar:[{ k:'WEB_SIPARIS', ad:'Müşteriler Telegram\'ı olmadan tarayıcıdan da sipariş verebilsin (QR\'da ve web sitesinde iki seçenek)', deger:'Evet', tip:'evet' },
-      { k:'TELEGRAMSIZ_MOD', ad:'Telegram\'sız mod: QR\'lar ve bağlantılar doğrudan web siparişini açsın (Telegram kapanır ya da erişilemezse açın)', deger:'Hayır', tip:'evet' }] }
+      { k:'TELEGRAMSIZ_MOD', ad:'Telegram\'sız mod: QR\'lar ve bağlantılar doğrudan web siparişini açsın (Telegram kapanır ya da erişilemezse açın)', deger:'Hayır', tip:'evet' },
+      { k:'WEB_TG_DOGRULAMA', ad:'Web\'den sipariş veren müşterinin telefonu Telegram\'dan doğrulansın (doğrulanmayan numarayla sipariş alınmaz). Telegram tamamen kapanırsa geçici olarak «Hayır» yapın.', deger:'Evet', tip:'evet' }] }
   ], sunucu:{ dbMB:41.6,
     vps:{ diskGB:44.1, diskToplamGB:193, diskYuzde:22.8, ramGB:3.5, ramToplamGB:16, ramYuzde:22.4, cpuYuzde:3.4, cekirdek:4,
       trGB:13.04, gelenGB:9.12, gidenGB:3.92, trSinirTB:16, trYuzde:0.08, tahminGB:41.3, olcumGun:9, calismaSn:37 * 86400 + 17 * 3600, eski:false, yasDk:1 },
