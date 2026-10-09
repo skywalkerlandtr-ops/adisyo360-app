@@ -1460,6 +1460,12 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .cd-sl li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--bg2)}
 .cd-sl li>div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .cd-sl .cd-sh{color:var(--danger,#c0392b);font-size:13px}
+/* ---------- 1.23 mekânda sohbet (yönetim) ---------- */
+.sby-l{list-style:none;margin:8px 0 0;padding:0}
+.sby-s{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid var(--line,#e2e3e8)}
+.sby-s:last-child{border-bottom:0}
+.sby-m{padding:8px 12px;border-radius:12px;background:var(--bg2);overflow-wrap:anywhere;white-space:pre-wrap}
+.sby-kr{display:flex;flex-wrap:wrap;gap:8px}
 </style>
 </head>
 <body>
@@ -6609,7 +6615,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti();
+  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti() + sbyKarti();
   if (k) {
     var by = U.busy.ynYedek, v = k.vps;
     var sure = function(sn){ var st = Math.floor((Number(sn) || 0) / 3600); return st >= 24 ? Math.floor(st / 24) + ' gündür' : st ? st + ' saattir' : 'az önce'; };
@@ -7370,6 +7376,25 @@ function ynDemoMock(){
       if (['Bekliyor', 'Onay bekliyor'].indexOf(x.durum) < 0) return { ok:false, kod:'DURUM', hata:'Bu ödeme zaten «' + x.durum + '».' };
       x.durum = d.karar === 'onay' ? 'Ödendi' : 'Reddedildi'; x.aciklama = d.karar === 'onay' ? 'Yönetici onayladı' : 'Yönetici reddetti';
       return { ok:true, odeme:kopya(x), son:kopya(PSON) };
+    };
+  })();
+  (function(){
+    var GENEL = true, YSK = {};
+    var SBS = [
+      { id:'SSDEMO01', tarih:t0 - 40 * 60000, isletme:'Lezzet Pide Salonu', eden:'Zeynep', edilen:'Can', metin:'Neden cevap vermiyorsun? Masana geleyim mi?', neden:'Taciz / rahatsız etme — ısrarla yazıyor', durum:'Yeni', karar:'' },
+      { id:'SSDEMO02', tarih:t0 - 2 * gun, isletme:'Kahve Durağı', eden:'Mert', edilen:'Ece', metin:'Takipçi kazanmak ister misin? Profilime bak', neden:'Reklam / dolandırıcılık', durum:'Karar verildi', karar:'Yoksayıldı (1001)' }];
+    var json = function(){ return { ok:true, genel:GENEL, sikayetler:SBS.map(function(x){ var z = kopya(x); z.yasakli = !!YSK[x.edilen]; return z; }), bekleyen:SBS.filter(function(x){ return x.durum === 'Yeni'; }).length }; };
+    islemler.ynSohbet = function(d){
+      if (d.genel !== undefined) GENEL = d.genel !== false;
+      if (d.karar) {
+        var x = SBS.filter(function(y){ return y.id === d.id; })[0];
+        if (!x) return { ok:false, kod:'YOK', hata:'Şikâyet bulunamadı.' };
+        var et = { yoksay:'Yoksayıldı', yasak7:'7 gün yasak', yasak30:'30 gün yasak', kalici:'Kalıcı yasak' }[d.karar];
+        if (!et) return { ok:false, kod:'ISTEK', hata:'Karar seçin.' };
+        if (d.karar !== 'yoksay') YSK[x.edilen] = 1;
+        x.durum = 'Karar verildi'; x.karar = et + ' (1001)';
+      }
+      return json();
     };
   })();
   return function(act, d){
@@ -9502,6 +9527,8 @@ function msAyarHtml(){
     sw('acik', !!a.acik, 'Masa modülü', 'Masalar sekmesi: garsonlar telefonundan masaya sipariş girer, mutfağa gönderir; hesap kasada ya da garsonda kapanır.') +
     (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR\'ı okutur, garsonun verdiği 4 haneli masa koduyla masaya katılır, menüyü görür. Sipariş için Telegram\'dan doğrulanıp telefonunu paylaşır.') +
       (a.qr ? sw('qrOnaysiz', !!a.qrOnaysiz, 'Doğrulanan müşterinin siparişi onaysız mutfağa gitsin', 'Kapalıysa QR siparişini garson / kasa onaylar.') +
+        sw('sohbetMasa', a.sohbetMasa !== false, '💬 Masa sohbeti', 'QR ile masaya katılıp Telegram\'dan doğrulanan müşteriler kendi masalarındakilerle yazışır. Mesajlar 24 saat sonra silinir; mesajları siz de göremezsiniz.') +
+        sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar ve görünür olan başka masadaki kişilerle birebir yazışır. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
         '<div class="ms-qs"><b>QR sipariş sınırları</b> <span class="muted">(0 = sınırsız)</span><div class="ms-qs-r">' +
         '<div class="field"><label for="msqSip">Tek siparişte en fazla (TL)</label><input class="inp num" id="msqSip" inputmode="decimal" value="' + esc(a.qrSiparis || 0) + '"></div>' +
         '<div class="field"><label for="msqAdet">Tek siparişte en fazla ürün</label><input class="inp num" id="msqAdet" inputmode="numeric" value="' + esc(a.qrAdet || 0) + '"></div>' +
@@ -9886,13 +9913,14 @@ var ACT_MS = {
   },
   msAyarSw:function(el){
     var k = el.getAttribute('data-k'), a = masaAyar(), v = {};
-    v[k] = !a[k];
+    v[k] = k === 'sohbetMasa' ? a.sohbetMasa === false : !a[k];
     islem('ekMasaAyar', v, { busy:'msAyarSw' }).then(function(r){
       if (!r) return;
       D.isletme.masa = r.ayar; D.masalar = r.masalar;
       if (!r.ayar.acik && U.tab === 'masa') U.tab = 'siparis';
       toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır',
-        qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar' }[k]);
+        qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar',
+        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
       ciz();
     });
   },
@@ -9936,7 +9964,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0 };
+  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false };
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
@@ -10002,7 +10030,7 @@ function masaDemoIslemler(x){
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -10255,6 +10283,8 @@ function masaDemoIslemler(x){
       if (d.qr !== undefined) AYR.qr = !!d.qr;
       if (d.garsonOdeme !== undefined) AYR.garsonOdeme = !!d.garsonOdeme;
       if (d.qrOnaysiz !== undefined) AYR.qrOnaysiz = !!d.qrOnaysiz;
+      if (d.sohbetMasa !== undefined) AYR.sohbetMasa = !!d.sohbetMasa;
+      if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
       ['qrSiparis', 'qrAdet', 'qrKisi'].forEach(function(q){ if (d[q] !== undefined) AYR[q] = Math.max(0, Number(String(d[q]).replace(',', '.')) || 0); });
       if (Array.isArray(d.masalar)) {
         var eski = {}; MASA.forEach(function(m){ eski[m.id] = m; });
@@ -12533,6 +12563,68 @@ cdHazir();
 if (params.get('cdtest') === '1') window.__yp = { CD:CD, call:function(a, d){ return call(a, d); }, D:function(){ return D; }, KZ:function(){ return KZ; }, U:U,
   kzUrunler:function(){ return kzUrunler(); }, kzOde:function(o, a){ return kzOde(o, a); }, ciz:function(){ ciz(); }, SH:function(){ return SH; }, sheetKapat:function(){ sheetKapat(); },
   cdKaydet:function(){ return cdKaydet(); }, cdDene:function(){ return cdDene(); } };
+
+/* ---------- 1.23 Mekânda sohbet (yönetim) ---------- */
+var SBY = { v:null, yuk:false, hata:'', onay:'', genelOnay:false };
+var SBY_KARAR = { yoksay:'Yoksay', yasak7:'7 gün yasak', yasak30:'30 gün yasak', kalici:'Kalıcı yasak' };
+function sbyYukle(){
+  if (SBY.yuk) return;
+  SBY.yuk = true;
+  call('ynSohbet', {}).then(function(r){
+    SBY.yuk = false;
+    if (r && r.ok) { SBY.v = r; SBY.hata = ''; }
+    else SBY.hata = (r && r.hata) || 'Sohbet bilgileri alınamadı.';
+    ciz();
+  });
+}
+function sbyKarti(){
+  var bas = '<section class="card pad frm sby-k" id="sbyKart"><h2 class="frm-h">💬 Mekânda sohbet</h2>';
+  if (!SBY.v) { if (!SBY.hata) sbyYukle(); return bas + (SBY.hata ? '<div class="err-txt">' + esc(SBY.hata) + ' <button class="btn ghost sm" data-act="sbyYenile">Tekrar dene</button></div>' : '<div class="sk" style="height:90px"></div>') + '</section>'; }
+  var v = SBY.v, b = U.busy.sby;
+  var h = bas + '<p class="tip-txt">Müşteriler masadakilerle ve (işletme açtıysa) mekânda görünür olan kişilerle yazışır. Mesajlar 24 saat sonra silinir; işletmeler mesajları göremez. ' +
+    'Şikâyet edilen mesajın kopyası burada 30 gün durur. Şikâyet eden kişi, şikâyet ettiği kişiyi kendiliğinden engeller.</p>';
+  h += '<button class="opt" type="button" role="switch" aria-checked="' + !!v.genel + '" data-act="sbyGenel"' + (b ? ' disabled' : '') + '><span class="o-main">Sohbet bütün işletmelerde açık' +
+    '<span class="o-sub">Kapatırsanız hiçbir işletmede sohbet kullanılamaz (acil durum anahtarı). İşletmeler kendi sohbetlerini Ayarlar › Masalar\'dan açıp kapatır.</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (SBY.genelOnay) h += '<div class="note-box" role="group"><b>Sohbet bütün işletmelerde kapatılsın mı?</b><br>Müşteriler yeni mesaj yazamaz; açınca kaldığı yerden devam eder.' +
+    '<div class="row2" style="margin-top:10px"><button class="btn line sm" data-act="sbyVazgec">Vazgeç</button><button class="btn dng sm" data-act="sbyGenelKapat"' + (b ? ' disabled' : '') + '>' + bekle('sby') + 'Kapat</button></div></div>';
+  var l = v.sikayetler || [];
+  h += '<div class="blk-h">Şikâyetler' + (v.bekleyen ? ' · <span class="od-d uyar">' + v.bekleyen + ' karar bekliyor</span>' : '') + '</div>';
+  if (!l.length) h += '<p class="muted" style="margin:6px 0 0">Henüz şikâyet yok.</p>';
+  else h += '<ul class="sby-l">' + l.map(function(x){
+    var yeni = x.durum === 'Yeni', on = SBY.onay && SBY.onay.split(':')[0] === x.id, kr = on ? SBY.onay.split(':')[1] : '', yb = U.busy['sby:' + x.id];
+    var s = '<li class="sby-s"><div class="sby-u"><b>' + esc(x.edilen || '—') + '</b> <span class="muted">· ' + esc(x.isletme || '') + ' · ' + esc(tarihYazi(x.tarih)) + '</span>' +
+      (yeni ? ' <span class="od-d uyar">Yeni</span>' : '') + '</div>' +
+      '<div class="sby-m">«' + esc(x.metin) + '»</div><div class="tip-txt">Neden: ' + esc(x.neden || '—') + ' · Şikâyet eden: ' + esc(x.eden || '—') + '</div>';
+    if (yeni && on) s += '<div class="note-box" role="group">' + (kr === 'yoksay' ? 'Şikâyet yoksayılsın mı? (Şikâyet edenin koyduğu engel kalır.)'
+        : '<b>' + esc(x.edilen) + '</b> ' + (kr === 'kalici' ? 'kalıcı olarak' : (kr === 'yasak7' ? '7 gün' : '30 gün') + ' boyunca') + ' hiçbir işletmede sohbet kullanamaz.') +
+      '<div class="row2" style="margin-top:10px"><button class="btn line sm" data-act="sbyVazgec">Vazgeç</button><button class="btn ' + (kr === 'yoksay' ? 'pri' : 'dng') + ' sm" data-act="sbyKarar" data-k="' + esc(x.id) + '" data-kr="' + kr + '"' + (yb ? ' disabled' : '') + '>' +
+      bekle('sby:' + x.id) + 'Onayla</button></div></div>';
+    else if (yeni) s += '<div class="sby-kr">' + Object.keys(SBY_KARAR).map(function(k){
+      return '<button class="btn ' + (k === 'yoksay' ? 'line' : 'ghost') + ' sm" data-act="sbySor" data-k="' + esc(x.id) + '" data-kr="' + k + '">' + SBY_KARAR[k] + '</button>'; }).join('') + '</div>';
+    else s += '<div class="tip-txt"><span class="od-d ' + (/yasak/i.test(x.karar) ? 'dng' : '') + '">' + esc(x.karar || x.durum) + '</span>' + (x.yasakli ? ' · <b>şu an yasaklı</b>' : '') + '</div>';
+    return s + '</li>';
+  }).join('') + '</ul>';
+  return h + '</section>';
+}
+ACT_EK.sbyYenile = function(){ SBY.hata = ''; SBY.v = null; sbyYukle(); ciz(); };
+ACT_EK.sbyGenel = function(){
+  if (!SBY.v) return;
+  if (SBY.v.genel) { SBY.genelOnay = true; ciz(); return; }
+  islem('ynSohbet', { genel:true }, { busy:'sby' }).then(function(r){ if (r) { SBY.v = r; toast('Sohbet bütün işletmelerde açıldı'); } ciz(); });
+};
+ACT_EK.sbyGenelKapat = function(){
+  islem('ynSohbet', { genel:false }, { busy:'sby' }).then(function(r){ SBY.genelOnay = false; if (r) { SBY.v = r; toast('Sohbet bütün işletmelerde kapatıldı'); } ciz(); });
+};
+ACT_EK.sbyVazgec = function(){ SBY.onay = ''; SBY.genelOnay = false; ciz(); };
+ACT_EK.sbySor = function(el){ SBY.onay = el.getAttribute('data-k') + ':' + el.getAttribute('data-kr'); haptic('select'); ciz(); };
+ACT_EK.sbyKarar = function(el){
+  var id = el.getAttribute('data-k'), kr = el.getAttribute('data-kr');
+  islem('ynSohbet', { id:id, karar:kr }, { busy:'sby:' + id }).then(function(r){
+    SBY.onay = '';
+    if (r) { SBY.v = r; toast(kr === 'yoksay' ? 'Şikâyet yoksayıldı' : 'Karar kaydedildi: ' + SBY_KARAR[kr]); haptic('notify', 'success'); }
+    ciz();
+  });
+};
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
