@@ -1467,6 +1467,12 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .sby-m{padding:8px 12px;border-radius:12px;background:var(--bg2);overflow-wrap:anywhere;white-space:pre-wrap}
 .sby-kr{display:flex;flex-wrap:wrap;gap:8px}
 .chips.sby-bl{flex-wrap:wrap;overflow:visible;margin:6px 0 0;padding:0}
+/* ---------- 1.25 sanal hediyeler (yönetim) ---------- */
+.hdy-f{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 12px}
+.hdy-f .field{margin:0}
+.hdy-t{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hdy-t>span{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:12px;background:var(--bg2)}
+.hdy-t b{font-size:20px}
 </style>
 </head>
 <body>
@@ -6258,7 +6264,7 @@ function ynBannerlar(){
 }
 function ynSekmeler(){
   var o = D.ozet || {};
-  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletme', 'dukkan', 0], ['ynMus', 'Müşteri', 'ekip', 0], ['ynBv', 'Başvuru', 'not', (o.basvuru || 0) + (o.paketTalep || 0)], ['ynPk', 'Paket', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', o.sohbetSikayet || 0]];
+  var t = [['ynOzet', 'Özet', 'rapor', 0], ['ynIsl', 'İşletme', 'dukkan', 0], ['ynMus', 'Müşteri', 'ekip', 0], ['ynBv', 'Başvuru', 'not', (o.basvuru || 0) + (o.paketTalep || 0)], ['ynPk', 'Paket', 'kutu', 0], ['ynSis', 'Sistem', 'ayar', (o.sohbetSikayet || 0) + (o.hediyeBekleyen || 0)]];
   koruyarakYaz($('#tabs'), t.map(function(x){
     return '<button class="tab yn-tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
       '<span>' + x[1] + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' bekliyor">' + x[3] + '</span>' : '') + '</button>';
@@ -6298,6 +6304,8 @@ function ynOzetEkrani(){
   var h = '<div class="scr">';
   h += '<div class="kpis">' + kpi('Bugünkü ciro', tl(o.bugunCiro), 'Bütün işletmeler · iptaller hariç', true) + kpi('Bugün sipariş', adet(o.bugun), '') +
     kpi('Bu hafta', tl(o.haftaCiro), adet(o.hafta) + ' sipariş · pazartesiden beri') + kpi('Aylık paket geliri', tl(o.aylikGelir), 'Ücret ödeyen işletmeler · tahmini') + '</div>';
+  if (o.hediyeBekleyen) h += '<button class="card pad yn-bv-uyari" data-act="sekme" data-k="ynSis">' + ic('uyari') + '<span class="o-main"><b>💝 ' + o.hediyeBekleyen + ' hediye ödemesi onay bekliyor</b>' +
+    '<span class="o-sub">Sistem › Sanal hediyeler</span></span>' + ic('sag') + '</button>';
   if (o.sohbetSikayet) h += '<button class="card pad yn-bv-uyari" data-act="sekme" data-k="ynSis">' + ic('uyari') + '<span class="o-main"><b>🚩 ' + o.sohbetSikayet + ' sohbet şikâyeti karar bekliyor</b>' +
     '<span class="o-sub">Sistem › Mekânda sohbet</span></span>' + ic('sag') + '</button>';
   if (o.basvuru) {
@@ -6618,7 +6626,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti() + sbyKarti();
+  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti() + sbyKarti() + hdyKarti();
   if (k) {
     var by = U.busy.ynYedek, v = k.vps;
     var sure = function(sn){ var st = Math.floor((Number(sn) || 0) / 3600); return st >= 24 ? Math.floor(st / 24) + ' gündür' : st ? st + ' saattir' : 'az önce'; };
@@ -7048,7 +7056,7 @@ function ynDemoMock(){
     yedek:{ zaman:t0 - 5 * 3600000, parca:3, mb:2.4 }, yedekHata:null, yedekCalisiyor:false, yedekGun:1, bellekMB:212, calismaSn:3 * 86400, onbellek:{ tablo:46, mb:7.2, isabet:96 } } };
   var ozet = function(){
     var o = { isletme:ISL.length, aktif:0, deneme:0, ucretsiz:0, odeme:0, uyari:0, donduruldu:0, botsuz:0, sessiz:0, bugun:0, bugunCiro:0, hafta:0, haftaCiro:0, aylikGelir:0,
-      basvuru:BV.filter(function(v){ return v.bekliyor; }).length, sohbetSikayet:1 };
+      basvuru:BV.filter(function(v){ return v.bekliyor; }).length, sohbetSikayet:1, hediyeBekleyen:1 };
     ISL.forEach(function(x){
       if (x.durum === 'Donduruldu') o.donduruldu++; else if (x.odeme === 'ilk' || x.odeme === 'durdu') o.odeme++; else if (x.hizmet) o.aktif++;
       if (x.odeme === 'bekleme') o.uyari++;
@@ -7397,6 +7405,40 @@ function ynDemoMock(){
         if (!et) return { ok:false, kod:'ISTEK', hata:'Karar seçin.' };
         if (d.karar !== 'yoksay') YSK[x.edilen] = 1;
         x.durum = 'Karar verildi'; x.karar = et + ' (1001)';
+      }
+      return json();
+    };
+  })();
+  (function(){
+    var TUR = [['gul', '🌹', 'Gül', 20], ['buket', '💐', 'Buket', 50], ['pasta', '🎂', 'Pasta', 40], ['kutu', '🧸', 'Sürpriz kutu', 60], ['konfeti', '🎉', 'Konfeti', 30], ['fisek', '🎆', 'Havai fişek', 75], ['tac', '👑', 'Taç', 100]];
+    var HA = { acik:false, fiyat:{}, tacArtis:50 }; TUR.forEach(function(x){ HA.fiyat[x[0]] = x[3]; });
+    var HS = [
+      { id:'YHDEMOA1', tarih:t0 - 35 * 60000, isletme:'Lezzet Pide Salonu', tur:'tac', i:'👑', unvan:'kralice', tutar:150, durum:'Onay bekliyor', aciklama:'Shopier\'e ulaşılamadı', no:'98770011', gizli:false },
+      { id:'YHDEMOA2', tarih:t0 - 50 * 60000, isletme:'Lezzet Pide Salonu', tur:'gul', i:'🌹', unvan:'', tutar:20, durum:'Ödendi', aciklama:'Shopier doğruladı', no:'98770010', gizli:true },
+      { id:'YHDEMOA3', tarih:t0 - 2 * gun, isletme:'Kahve Durağı', tur:'konfeti', i:'🎉', unvan:'', tutar:30, durum:'Ödendi', aciklama:'Shopier doğruladı', no:'98769001', gizli:false }];
+    var json = function(){
+      var bg = 0, ay = 0, n = 0;
+      HS.forEach(function(x){ if (x.durum !== 'Ödendi') return; if (t0 - x.tarih < gun) bg += x.tutar; ay += x.tutar; n++; });
+      return { ok:true, ayar:{ acik:HA.acik, fiyat:kopya(HA.fiyat), tacArtis:HA.tacArtis, turler:TUR.map(function(x){ return { k:x[0], i:x[1], ad:x[2] }; }) },
+        odemeHazir:true, toplam:{ bugun:bg, ay:ay, adet:n }, son:kopya(HS), bekleyen:HS.filter(function(x){ return x.durum === 'Onay bekliyor'; }).length };
+    };
+    islemler.ynHediye = function(d){
+      var k = d.kaydet;
+      if (k) {
+        if (k.acik !== undefined) HA.acik = !!k.acik;
+        if (k.fiyat) for (var i = 0; i < TUR.length; i++) {
+          var t = TUR[i]; if (k.fiyat[t[0]] === undefined) continue;
+          var f = Math.round(Number(String(k.fiyat[t[0]]).replace(',', '.')) * 100) / 100;
+          if (!(f >= 1) || f > 2000) return { ok:false, kod:'FORM', hata:t[2] + ' için 1 ile 2.000 TL arasında bir fiyat yazın.' };
+          HA.fiyat[t[0]] = f;
+        }
+        if (k.tacArtis !== undefined) { var ar = Math.round(Number(String(k.tacArtis).replace(',', '.')) * 100) / 100; if (!(ar >= 0) || ar > 2000) return { ok:false, kod:'FORM', hata:'Taç artışı 0 ile 2.000 TL arasında olmalı.' }; HA.tacArtis = ar; }
+      }
+      if (d.karar) {
+        var x = HS.filter(function(y){ return y.id === d.id; })[0];
+        if (!x) return { ok:false, kod:'YOK', hata:'Hediye ödemesi bulunamadı.' };
+        if (['Onay bekliyor', 'Bekliyor'].indexOf(x.durum) < 0) return { ok:false, kod:'DURUM', hata:'Bu ödeme zaten «' + x.durum + '».' };
+        x.durum = d.karar === 'onay' ? 'Ödendi' : 'Reddedildi'; x.aciklama = d.karar === 'onay' ? 'Yönetici onayladı' : 'Yönetici reddetti';
       }
       return json();
     };
@@ -9534,6 +9576,7 @@ function msAyarHtml(){
         sw('sohbetMasa', a.sohbetMasa !== false, '💬 Masa sohbeti', 'QR ile masaya katılıp Telegram\'dan doğrulanan müşteriler kendi masalarındakilerle yazışır. Mesajlar 24 saat sonra silinir; mesajları siz de göremezsiniz.') +
         sw('ismarla', a.ismarla !== false, '🎁 Ismarlama (önceden kartla ödenir)', 'Müşteriler mekânda görünür olan başka masadakilere, dışarıdaki arkadaşları da «Bana ısmarla» bağlantısıyla masadaki müşteriye menüden ürün ısmarlar. Ödeme önceden kartla, doğrudan sizin online ödeme hesabınıza yapılır; sipariş alıcının masasına ödenmiş olarak gelir. Alkollü içecekler ısmarlanamaz.' +
           (a.onlineOdeme === false ? ' <b>Şu an çalışmıyor: önce Ayarlar\'daki «💳 Masada online ödeme» bölümünü açın.</b>' : '')) +
+        (a.hediyeHazir ? sw('hediye', a.hediye !== false, '💝 Sanal hediyeler ve taç', 'Sohbet açıkken müşteriler masadakilere ve mekânda görünür olanlara dijital hediye (gül, buket, pasta, konfeti, taç…) gönderir; gecenin tacı ve en çok hediye alanlar sohbetteki «Sahne»de görünür. Hediyeleri YourPOS 360 satar ve ödemesini alır; işletmenize bir ücreti ya da işi yoktur. İsterseniz kapatabilirsiniz.') : '') +
         sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar ve görünür olan başka masadaki kişilerle birebir yazışır. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
         '<div class="ms-qs"><b>QR sipariş sınırları</b> <span class="muted">(0 = sınırsız)</span><div class="ms-qs-r">' +
         '<div class="field"><label for="msqSip">Tek siparişte en fazla (TL)</label><input class="inp num" id="msqSip" inputmode="decimal" value="' + esc(a.qrSiparis || 0) + '"></div>' +
@@ -9919,14 +9962,14 @@ var ACT_MS = {
   },
   msAyarSw:function(el){
     var k = el.getAttribute('data-k'), a = masaAyar(), v = {};
-    v[k] = k === 'sohbetMasa' || k === 'ismarla' ? a[k] === false : !a[k];
+    v[k] = k === 'sohbetMasa' || k === 'ismarla' || k === 'hediye' ? a[k] === false : !a[k];
     islem('ekMasaAyar', v, { busy:'msAyarSw' }).then(function(r){
       if (!r) return;
       D.isletme.masa = r.ayar; D.masalar = r.masalar;
       if (!r.ayar.acik && U.tab === 'masa') U.tab = 'siparis';
       toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır',
         qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar',
-        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', ismarla:r.ayar.ismarla ? 'Ismarlama açıldı' : 'Ismarlama kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
+        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', ismarla:r.ayar.ismarla ? 'Ismarlama açıldı' : 'Ismarlama kapatıldı', hediye:r.ayar.hediye ? 'Sanal hediyeler açıldı' : 'Sanal hediyeler kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
       ciz();
     });
   },
@@ -9970,7 +10013,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true };
+  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true };
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
@@ -10036,7 +10079,7 @@ function masaDemoIslemler(x){
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -10292,6 +10335,7 @@ function masaDemoIslemler(x){
       if (d.sohbetMasa !== undefined) AYR.sohbetMasa = !!d.sohbetMasa;
       if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
       if (d.ismarla !== undefined) AYR.ismarla = !!d.ismarla;
+      if (d.hediye !== undefined) AYR.hediye = !!d.hediye;
       ['qrSiparis', 'qrAdet', 'qrKisi'].forEach(function(q){ if (d[q] !== undefined) AYR[q] = Math.max(0, Number(String(d[q]).replace(',', '.')) || 0); });
       if (Array.isArray(d.masalar)) {
         var eski = {}; MASA.forEach(function(m){ eski[m.id] = m; });
@@ -12640,6 +12684,87 @@ ACT_EK.sbyKarar = function(el){
   islem('ynSohbet', { id:id, karar:kr }, { busy:'sby:' + id }).then(function(r){
     SBY.onay = '';
     if (r) { SBY.v = r; if (D && D.ozet && (r.bildirim === 'ikisi' || r.bildirim === 'ekran')) D.ozet.sohbetSikayet = r.bekleyen; toast(kr === 'yoksay' ? 'Şikâyet yoksayıldı' : 'Karar kaydedildi: ' + SBY_KARAR[kr]); haptic('notify', 'success'); }
+    ciz();
+  });
+};
+
+/* ---------- 1.25 Sanal hediyeler (yönetim) ---------- */
+var HDY = { v:null, yuk:false, hata:'', onay:'', acOnay:false };
+function hdyYukle(){
+  if (HDY.yuk) return;
+  HDY.yuk = true;
+  call('ynHediye', {}).then(function(r){
+    HDY.yuk = false;
+    if (r && r.ok) { HDY.v = r; HDY.hata = ''; }
+    else HDY.hata = (r && r.hata) || 'Hediye bilgileri alınamadı.';
+    ciz();
+  });
+}
+function hdyCevap(r){ HDY.v = r; if (D && D.ozet) D.ozet.hediyeBekleyen = r.bekleyen || 0; }
+function hdyKarti(){
+  var bas = '<section class="card pad frm hdy-k" id="hdyKart"><h2 class="frm-h">💝 Sanal hediyeler</h2>';
+  if (!HDY.v) { if (!HDY.hata) hdyYukle(); return bas + (HDY.hata ? '<div class="err-txt">' + esc(HDY.hata) + ' <button class="btn ghost sm" data-act="hdyYenile">Tekrar dene</button></div>' : '<div class="sk" style="height:90px"></div>') + '</section>'; }
+  var v = HDY.v, a = v.ayar, b = U.busy.hdy;
+  var h = bas + '<p class="tip-txt">Masadaki müşteriler birbirine dijital hediye gönderir. Satışı YourPOS 360 yapar: ödeme yalnız kartla, <b>Shopier hesabınıza</b> ' +
+    '(paket ödemesindeki hesap) gelir; işletmeye gitmez. Dijital içerik anında teslim edildiği için iade yoktur. Hediyelerin parasal ya da puan değeri yoktur.</p>';
+  if (!v.odemeHazir) h += '<div class="note-box">Açmak için önce yukarıdaki «💳 Paket ödemesi» bölümüne Shopier <b>API kullanıcı</b>, <b>API şifre</b> ve <b>kişisel erişim anahtarı</b>nı girin. ' +
+    'Her hediye ödemesi Shopier\'e sorularak doğrulanır.</div>';
+  h += '<button class="opt" type="button" role="switch" aria-checked="' + !!a.acik + '" data-act="hdyAc"' + (b || (!a.acik && !v.odemeHazir) ? ' disabled' : '') + '><span class="o-main">Sanal hediyeler bütün işletmelerde açık' +
+    '<span class="o-sub">' + (a.acik ? 'Müşteriler hediye satın alabilir. İşletmeler isterse kendi ekranından (Ayarlar › Masalar) kapatır.' : 'Kapalı: müşteriler hediye bölümünü ve sahneyi görmez.') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (HDY.acOnay) h += '<div class="note-box" role="group"><b>Sanal hediyeler açılsın mı?</b><br>Sohbeti açık bütün işletmelerde müşteriler aşağıdaki fiyatlarla kartla hediye satın alabilecek. ' +
+    'Açmadan önce Shopier\'de küçük bir deneme ödemesi yaptığınızdan emin olun.' +
+    '<div class="row2" style="margin-top:10px"><button class="btn line sm" data-act="hdyVazgec">Vazgeç</button><button class="btn pri sm" data-act="hdyAcEvet"' + (b ? ' disabled' : '') + '>' + bekle('hdy') + 'Evet, aç</button></div></div>';
+  // fiyatlar
+  h += '<div class="blk-h">Fiyatlar (KDV dahil, TL)</div><div class="hdy-f">' + a.turler.map(function(t){
+    return '<div class="field"><label for="hdyF_' + t.k + '">' + t.i + ' ' + esc(t.ad) + '</label>' +
+      '<input class="inp num" id="hdyF_' + t.k + '" type="text" inputmode="decimal" autocomplete="off" value="' + esc(String(a.fiyat[t.k])) + '"></div>';
+  }).join('') + '<div class="field"><label for="hdyArtis">👑 Taç artışı</label><input class="inp num" id="hdyArtis" type="text" inputmode="decimal" autocomplete="off" value="' + esc(String(a.tacArtis)) + '"></div></div>' +
+    '<p class="tip-txt">«Taç» gecenin ilk tacının fiyatıdır. Taç mekânda her gece tek kişide durur; aynı gece yeniden alındıkça fiyat «Taç artışı» kadar artar, gece 06:00\'da sıfırlanır. Fiyatı değişen hediyede ekranı açık müşteri «Fiyat değişti» uyarısı alır.</p>' +
+    '<button class="btn pri" data-act="hdyFiyat"' + (U.busy.hdyF ? ' disabled' : '') + '>' + bekle('hdyF') + ic('tik', 'sm') + 'Fiyatları kaydet</button>';
+  // satışlar
+  var tp = v.toplam || { bugun:0, ay:0, adet:0 };
+  h += '<div class="blk-h">Satışlar</div><div class="hdy-t"><span><b class="num">' + tl(tp.bugun) + '</b><span class="muted">bugün</span></span><span><b class="num">' + tl(tp.ay) + '</b><span class="muted">bu ay · ' + tp.adet + ' hediye</span></span></div>';
+  var l = v.son || [];
+  if (!l.length) h += '<p class="muted" style="margin:6px 0 0">Henüz hediye satışı yok.</p>';
+  else h += '<details class="od-son"' + (v.bekleyen ? ' open' : '') + '><summary class="blk-h">Son satışlar' + (v.bekleyen ? ' · <span class="od-d uyar">' + v.bekleyen + ' onay bekliyor</span>' : '') + '</summary><ul class="kz-sat po-son">' + l.map(function(x){
+    var on = HDY.onay && HDY.onay.split(':')[0] === x.id, kr = on ? HDY.onay.split(':')[1] : '', yb = U.busy['hdy:' + x.id];
+    var s = '<li><span class="kz-s1">' + tarihYazi(x.tarih) + ' · ' + x.i + ' <b>' + esc(x.unvan ? { kral:'Gecenin Kralı', kralice:'Gecenin Kraliçesi', yildiz:'Gecenin Yıldızı' }[x.unvan] || 'Taç' : (a.turler.filter(function(t){ return t.k === x.tur; })[0] || {}).ad || x.tur) + '</b>' +
+      ' <span class="muted">· ' + esc(x.isletme) + (x.gizli ? ' · gizli hayran' : '') + '</span><span class="muted" style="display:block">' + (x.no ? 'Shopier no ' + esc(x.no) : esc(x.id)) + (x.aciklama ? ' · ' + esc(x.aciklama) : '') + '</span></span>' +
+      '<span class="kz-s3 num">' + tl(x.tutar) + '</span><span class="kz-s4">' + poEtiket(x.durum) + '</span>';
+    if (x.durum === 'Onay bekliyor' || x.durum === 'Bekliyor') {
+      s += on ? '<span class="po-onay" role="group" aria-label="Onay"><span>' + (kr === 'onay' ? 'Shopier panelinde bu ödemeyi gördünüz mü? Hediye hemen alıcıya gider.' : 'Bu ödeme reddedilsin mi? Hediye gönderilmez; ücret alındıysa Shopier\'den iade edin.') + '</span>' +
+        '<button class="btn ' + (kr === 'onay' ? 'pri' : 'dng-line') + ' sm" data-act="hdyKarar" data-k="' + esc(x.id) + '" data-kr="' + kr + '"' + (yb ? ' disabled' : '') + '>' + bekle('hdy:' + x.id) + (kr === 'onay' ? 'Evet, onayla' : 'Evet, reddet') + '</button>' +
+        '<button class="btn ghost sm" data-act="hdyVazgec">Vazgeç</button></span>'
+        : '<span class="po-onay"><button class="btn line sm" data-act="hdySor" data-k="' + esc(x.id) + '" data-kr="onay">' + ic('tik', 'sm') + 'Onayla</button>' +
+          '<button class="btn ghost sm" data-act="hdySor" data-k="' + esc(x.id) + '" data-kr="red">Reddet</button></span>';
+    }
+    return s + '</li>';
+  }).join('') + '</ul></details>';
+  return h + '</section>';
+}
+ACT_EK.hdyYenile = function(){ HDY.hata = ''; HDY.v = null; hdyYukle(); ciz(); };
+ACT_EK.hdyAc = function(){
+  if (!HDY.v) return;
+  if (!HDY.v.ayar.acik) { HDY.acOnay = true; haptic('select'); ciz(); return; }
+  islem('ynHediye', { kaydet:{ acik:false } }, { busy:'hdy' }).then(function(r){ if (r) { hdyCevap(r); toast('Sanal hediyeler kapatıldı'); } ciz(); });
+};
+ACT_EK.hdyAcEvet = function(){
+  islem('ynHediye', { kaydet:{ acik:true } }, { busy:'hdy' }).then(function(r){ HDY.acOnay = false; if (r) { hdyCevap(r); toast('Sanal hediyeler açıldı'); haptic('notify', 'success'); } ciz(); });
+};
+ACT_EK.hdyVazgec = function(){ HDY.onay = ''; HDY.acOnay = false; ciz(); };
+ACT_EK.hdyFiyat = function(){
+  if (!HDY.v) return;
+  var f = {};
+  HDY.v.ayar.turler.forEach(function(t){ var e = $('#hdyF_' + t.k); if (e) f[t.k] = e.value.trim(); });
+  var ar = $('#hdyArtis');
+  islem('ynHediye', { kaydet:{ fiyat:f, tacArtis:ar ? ar.value.trim() : undefined } }, { busy:'hdyF' }).then(function(r){ if (r) { hdyCevap(r); toast('Fiyatlar kaydedildi'); } ciz(); });
+};
+ACT_EK.hdySor = function(el){ HDY.onay = el.getAttribute('data-k') + ':' + el.getAttribute('data-kr'); haptic('select'); ciz(); };
+ACT_EK.hdyKarar = function(el){
+  var id = el.getAttribute('data-k'), kr = el.getAttribute('data-kr');
+  islem('ynHediye', { id:id, karar:kr }, { busy:'hdy:' + id }).then(function(r){
+    HDY.onay = '';
+    if (r) { hdyCevap(r); toast(kr === 'onay' ? 'Onaylandı; hediye alıcıya gönderildi' : 'Reddedildi'); haptic('notify', 'success'); }
     ciz();
   });
 };
