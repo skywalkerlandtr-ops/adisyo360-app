@@ -1525,7 +1525,15 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .sp-sekmeler button[aria-selected="true"]::after{background:var(--accent)}
 .sp-sekmeler button[aria-selected="true"] svg{color:var(--accent)}
 .sp-sekmeler button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-.sp-sekmeler .n{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--danger-fill);color:var(--on-danger);font-size:13px;font-weight:800;display:inline-grid;place-items:center}
+.sp-sekmeler .say,.sp-kanal .say{font-variant-numeric:tabular-nums;font-weight:700}
+.sp-nokta{width:9px;height:9px;border-radius:50%;background:var(--danger-fill);flex:none;box-shadow:0 0 0 2px var(--bg2)}
+.sp-sekmeler .sp-nokta{margin-left:-2px;align-self:flex-start;margin-top:13px}
+.sp-kanal button{position:relative;padding:0 3px;gap:3px;letter-spacing:-.01em}
+.sp-kanal .sp-nokta{position:absolute;top:5px;right:5px;width:8px;height:8px}
+@media (max-width:430px){ .sp-kanal button{font-size:14px} .sp-kanal .say{font-weight:600} }
+@media (max-width:370px){ .sp-kanal button{flex-direction:column;gap:0;line-height:1.15;min-height:48px} .sp-kanal .say{font-size:12px} }
+.sp-nokta{font-style:normal}
+.app.yan .tab .sp-nokta{margin-left:auto}
 @media (min-width:1200px){ .sp-sekmeler button{font-size:17px;min-height:54px;padding:0 22px} }
 </style>
 </head>
@@ -9026,7 +9034,8 @@ function moduller(){
     .concat(kasaAcik() && yt('kasa') ? [['kasa', 'Kasa', 'kasa', 0, 'Servis']] : []);
   var l = [], erp = erpVar();
   if (sahip() || yt('rapor')) l.push(['ozet', 'Özet', 'ozet', 0, 'Genel']);
-  if (!spHicYok()) l.push(['siparis', 'Siparişler', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme
+  if (!spHicYok()) l.push(GENIS_NAV.matches ? ['siparis', 'Siparişler (' + spAcikSay('tumu') + ')', 'fis', 0, 'Satış', '', spToplamRozet() > 0]
+    : ['siparis', 'Siparişler', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme; parantezde açık sipariş sayısı
   if (masaSekmesi() && yt('masa')) l.push(['masa', 'Masalar', 'masa', msRozet(), 'Satış']);
   if (kasaAcik() && yt('kasa')) l.push(['kasa', 'Kasa', 'kasa', 0, 'Satış']);
   if (yt('menu')) l.push(['menu', menuAdi(), 'menu', 0, 'Ürünler']);
@@ -9056,7 +9065,8 @@ function modulNav(){
   if (!l.some(function(x){ return x[0] === U.tab; })) U.tab = l[0][0];
   var dugme = function(x){
     return '<button class="tab" data-act="sekme" data-k="' + x[0] + '"' + (x[5] ? ' data-kanal="' + x[5] + '"' : '') + (U.tab === x[0] && (!x[5] || x[5] === spKanal()) ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
-      '<span>' + esc(x[1]) + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' adet">' + x[3] + '</span>' : '') + '</button>';
+      '<span>' + esc(x[1]) + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' adet">' + x[3] + '</span>' : '') +
+      (x[6] ? '<i class="sp-nokta" role="img" aria-label="Yeni sipariş var"></i>' : '') + '</button>';
   };
   var h = '';
   if (genis) {
@@ -11835,7 +11845,8 @@ function spSecici(){
   var k = spKanal();
   return '<div class="seg sp-kanal" role="group" aria-label="Sipariş kanalı">' + l.map(function(x){
     var n = x[0] === 'tumu' ? 0 : spRozet(x[0]);
-    return '<button data-act="spKanal" data-k="' + x[0] + '" aria-pressed="' + (k === x[0]) + '">' + esc(x[1]) + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
+    if (x[0] === 'tumu') n = spToplamRozet();
+    return '<button data-act="spKanal" data-k="' + x[0] + '" aria-pressed="' + (k === x[0]) + '">' + esc(x[1]) + ' <span class="say">(' + spAcikSay(x[0]) + ')</span>' + spNokta(n) + '</button>';
   }).join('') + '</div>';
 }
 function spEtiket(o){
@@ -13167,6 +13178,9 @@ ACT_EK.saBitirOde = function(){
 
 /* ---------- 1.27 Siparişler: Online · Masa · Tabldot tek pencerede, ayrı sekmeler ---------- */
 // Menüdeki «Siparişler» sayısı: kanal sekmelerindeki sayıların toplamı (tek kanal varsa onay bekleyenler)
+// Kanaldaki açık sipariş sayısı (sekmenin yanında parantez içinde; «Tümü» = hepsinin toplamı)
+function spAcikSay(k){ return acikSiparisler().filter(function(o){ return spUygun(o, k); }).length; }
+function spNokta(n){ return n ? '<i class="sp-nokta" role="img" aria-label="' + n + ' sipariş ilgi bekliyor"></i>' : ''; }
 function spToplamRozet(){
   var l = spKanallar();
   if (!l.length) return sayac('Y');
@@ -13178,9 +13192,9 @@ function spSekmeSeridi(){
   if (!l.length) return '';
   var k = spKanal();
   return '<div class="sp-sekmeler" role="tablist" aria-label="Sipariş kanalı">' + l.map(function(x){
-    var n = x[0] === 'tumu' ? 0 : spRozet(x[0]), on = k === x[0];
+    var n = x[0] === 'tumu' ? spToplamRozet() : spRozet(x[0]), on = k === x[0];
     return '<button type="button" role="tab" id="spSekme-' + x[0] + '" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-act="spKanal" data-k="' + x[0] + '" title="' + esc(x[2]) + '">' +
-      ic(x[3]) + '<span>' + esc(x[1]) + '</span>' + (n ? '<span class="n" aria-label="' + n + ' adet dikkat bekliyor">' + n + '</span>' : '') + '</button>';
+      ic(x[3]) + '<span>' + esc(x[1]) + ' <span class="say">(' + spAcikSay(x[0]) + ')</span></span>' + spNokta(n) + '</button>';
   }).join('') + '</div>';
 }
 // Sekme şeridinde ok tuşlarıyla gezinme
