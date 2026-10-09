@@ -231,6 +231,12 @@ details.ek summary{cursor:pointer;color:var(--link);font-weight:700;min-height:4
 .bakiye span{color:var(--sub);font-size:15px}
 .bakiye b{font-size:26px;font-weight:800}
 .havale{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--sep);padding-top:12px}
+.kart-ode{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--sep);padding-top:12px}
+.kart-ode .chips{display:flex;flex-wrap:wrap;gap:8px}
+.kart-ode .chip[aria-checked="true"]{background:var(--accent);color:var(--on-accent);box-shadow:none}
+.ko-bekle{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:15px}
+.ko-row{display:flex;gap:8px}.ko-row .btn{flex:1}
+.note.bad{background:var(--bad-soft,#fde8e8);color:var(--bad-ink,#9b1c1c)}
 .mini{border:1px solid var(--sep);background:var(--bg2);color:var(--link);border-radius:8px;font-size:13px;font-weight:700;padding:3px 8px;margin-inline-start:6px;vertical-align:1px}
 .hareket summary{cursor:pointer;font-weight:700;color:var(--link);min-height:40px;display:flex;align-items:center}
 .hareket .blist li > span:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -782,7 +788,8 @@ function odemeKarti(d){
   if (hs.ilkOdeme) h += '<dl class="kv"><dt>İlk aylık ücret</dt><dd class="num">' + tl(hs.tutar) + '</dd></dl>';
   else if (!hs.ucretsiz) h += '<dl class="kv"><dt>' + (d.deneme && d.deneme.kalanGun > 0 ? 'Deneme bitişi' : 'Sonraki çekim') + '</dt><dd class="num">' + esc(hs.sonrakiCekim || '-') + ' · ' + tl(hs.tutar) + '</dd>' +
     (hs.asim ? '<dt>Aşım</dt><dd class="num">' + adet(hs.asim) + ' sipariş · ' + tl(hs.asimTL) + '</dd>' : '') + '</dl>';
-  h += '<div class="havale"><b>Havale / EFT ile yükleyin</b><dl class="kv"><dt>Açıklama</dt><dd class="num">' + esc(o.kod) +
+  if (o.kart) h += kartOdemeHtml(d, hs);
+  if (o.havale !== false) h += '<div class="havale"><b>' + (o.kart ? 'ya da Havale / EFT ile yükleyin' : 'Havale / EFT ile yükleyin') + '</b><dl class="kv"><dt>Açıklama</dt><dd class="num">' + esc(o.kod) +
     ' <button class="mini" data-act="kopyala" data-k="' + esc(o.kod) + '">Kopyala</button></dd>' +
     (o.iban ? '<dt>IBAN</dt><dd class="num">' + esc(o.iban) + ' <button class="mini" data-act="kopyala" data-k="' + esc(String(o.iban).replace(/\s+/g, '')) + '">Kopyala</button></dd><dt>Alıcı</dt><dd>' + esc(o.alici || '') + '</dd>' : '') + '</dl>' +
     '<p class="tip">' + (o.iban ? 'Açıklamaya yalnızca işletme kodunuzu yazın; ödemeniz bu kodla eşleşir. Dilediğiniz tutarı, örneğin birkaç aylık ücreti, peşin yükleyebilirsiniz.' + (hs.yuklemeSiniri ? ' Tek seferde en fazla <b class="num">' + tl(hs.yuklemeSiniri) + '</b> yükleyebilirsiniz; daha fazlası için birden çok ödeme yapın.' : '') + '</p><p class="tip"><b>Yüklenen bakiye yalnızca YourPOS 360 hizmet ücretlerinde kullanılır; iade edilmez ve nakde çevrilemez.</b> Yanlış ya da mükerrer ödeme yaptıysanız «Bize yazın»dan bildirin.' : 'Banka bilgileri deneme süreniz bitmeden Telegram\'dan size iletilecek.') + '</p></div>' +
@@ -1205,6 +1212,81 @@ var ACT = {
   },
   tekrar:function(){ basla(); }
 };
+/* --- 1.21 kartla ödeme (Shopier) --- */
+var KO = { tutar:'', oid:'', url:'', durum:'', sonuc:null, bas:0, t:null, b:'' };
+function koSiniri(hs){ return Number(hs && hs.yuklemeSiniri) || 100000; }
+function kartOdemeHtml(d, hs){
+  var o = d.odeme || {}, en = Number(o.enAz) || 10, lim = koSiniri(hs);
+  if (KO.b !== d.id) { KO.b = d.id; KO.tutar = ''; KO.oid = ''; KO.durum = ''; KO.sonuc = null; koDurdur(); }
+  var oneri = Number(hs.eksik) > 0 ? Math.ceil(hs.eksik) : Math.ceil(Number(hs.tutar) || 0);
+  if (KO.tutar === '') KO.tutar = String(Math.min(lim, Math.max(en, oneri || en)));
+  var sec = [];
+  if (Number(hs.eksik) > 0) sec.push(['Eksik tutar', Math.ceil(hs.eksik)]);
+  if (Number(hs.tutar) > 0) { sec.push(['1 aylık', Math.ceil(hs.tutar)]); sec.push(['3 aylık', Math.ceil(hs.tutar) * 3]); }
+  sec = sec.filter(function(x, i){ return x[1] >= en && x[1] <= lim && sec.findIndex(function(y){ return y[1] === x[1]; }) === i; });
+  var h = '<div class="kart-ode"><b>💳 Kartla ödeyin</b><p class="tip">Kredi ya da banka kartınızla Shopier\'in güvenli ödeme sayfasında ödersiniz. Ödeme onaylanınca bakiyenize <b>kendiliğinden</b> eklenir.</p>';
+  var bekleyen = (o.kartlar || []).filter(function(x){ return x.durum === 'Onay bekliyor'; });
+  if (bekleyen.length) h += '<div class="note" role="status">⏳ ' + bekleyen.map(function(x){ return tl(x.tutar); }).join(', ') + ' kartla ödemeniz kontrol ediliyor; onaylanınca bakiyenize eklenir.</div>';
+  if (KO.sonuc) h += '<div class="' + (KO.sonuc.ok ? 'okbox' : 'note' + (KO.sonuc.hata ? ' bad' : '')) + '" role="status"><span>' + esc(KO.sonuc.metin) + '</span></div>';
+  if (KO.oid && KO.durum === 'Bekliyor') {
+    return h + '<div class="ko-bekle" role="status"><span class="spin" aria-hidden="true"></span><span><b class="num">' + tl(KO.t) + '</b> için ödeme sayfası açıldı. Ödemeyi tamamlayınca burası kendiliğinden güncellenir.</span></div>' +
+      '<div class="row ko-row"><button class="btn line" data-act="koKontrol"' + (S.busy.koK ? ' disabled' : '') + '>' + bekle(S.busy.koK) + 'Kontrol et</button>' +
+      '<button class="btn line" data-act="koAc">Ödeme sayfasını aç</button></div><button class="btn ghost block" data-act="koVazgec">Vazgeç</button></div>';
+  }
+  if (sec.length) h += '<div class="chips ko-sec" role="radiogroup" aria-label="Tutar">' + sec.map(function(x){
+    var on = Number(KO.tutar) === x[1];
+    return '<button class="chip" type="button" role="radio" aria-checked="' + on + '" data-act="koSec" data-k="' + x[1] + '">' + esc(x[0]) + ' · <span class="num">' + tl(x[1]) + '</span></button>';
+  }).join('') + '</div>';
+  var n = Number(String(KO.tutar).replace(',', '.')), gecerli = n >= en && n <= lim;
+  h += '<div class="field"><label for="koTutar">Ödenecek tutar (TL)</label><input class="inp num" id="koTutar" inputmode="decimal" autocomplete="off" value="' + esc(KO.tutar) + '"' +
+    (KO.hata ? ' aria-invalid="true" aria-describedby="koHata"' : '') + '>' + (KO.hata ? '<div class="err" id="koHata" role="alert">' + esc(KO.hata) + '</div>' : '') +
+    '<p class="tip">En az ' + tl(en) + ', tek seferde en fazla ' + tl(lim) + '.</p></div>' +
+    '<button class="btn pri block" data-act="kartOde"' + (S.busy.ko ? ' disabled' : '') + '>' + (S.busy.ko ? bekle(1) + 'Hazırlanıyor…' : '💳 Kartla öde' + (gecerli ? ' · <span class="num">' + tl(n) + '</span>' : '')) + '</button>';
+  return h + '</div>';
+}
+function koDurdur(){ if (KO.zam) { clearInterval(KO.zam); KO.zam = null; } }
+function koYokla(sessiz){
+  if (!KO.oid || KO.durum !== 'Bekliyor') { koDurdur(); return Promise.resolve(); }
+  if (Date.now() - KO.bas > 35 * 60000) { koDurdur(); KO.durum = ''; KO.oid = ''; KO.sonuc = { ok:false, metin:'Ödeme sayfasının süresi doldu. Ödemeyi tamamladıysanız birkaç dakika içinde bakiyenize yansır.' }; ciz(); return Promise.resolve(); }
+  if (!sessiz) { S.busy.koK = true; ciz(); }
+  return call('uyKartDurum', { b:durum().id, oid:KO.oid }).then(function(r){
+    S.busy.koK = false;
+    if (!r || !r.ok) { if (!sessiz) { ciz(); toast((r && r.hata) || 'Kontrol edilemedi.', true); } return; }
+    var dr = r.odeme.durum;
+    if (dr === 'Bekliyor') { if (!sessiz) { ciz(); toast('Ödeme henüz tamamlanmadı.'); } return; }
+    koDurdur(); KO.durum = dr; KO.oid = '';
+    if (r.durum) durumAl(r);
+    if (dr === 'Ödendi') { KO.sonuc = { ok:true, metin:'✅ ' + tl(r.odeme.tutar) + ' bakiyenize eklendi.' }; KO.tutar = ''; haptic('notify', 'success'); toast('Ödemeniz alındı'); }
+    else if (dr === 'Onay bekliyor') KO.sonuc = { ok:false, metin:'⏳ Ödemeniz alındı; kontrol edilip onaylanınca bakiyenize eklenecek.' };
+    else { KO.sonuc = { ok:false, hata:true, metin:'Ödeme tamamlanmadı' + (r.odeme.aciklama ? ' (' + r.odeme.aciklama + ')' : '') + '. Kartınızdan çekim yapıldıysa «Bize yazın»dan bildirin.' }; haptic('notify', 'error'); }
+    ciz();
+  });
+}
+document.addEventListener('input', function(e){ if (e.target && e.target.id === 'koTutar') { KO.tutar = e.target.value; KO.hata = ''; } });
+document.addEventListener('visibilitychange', function(){ if (!document.hidden && KO.oid && KO.durum === 'Bekliyor') koYokla(true); });
+Object.assign(ACT, {
+  koSec:function(el){ KO.tutar = el.getAttribute('data-k'); KO.hata = ''; haptic('select'); ciz(); },
+  kartOde:function(){
+    var hs = durum().hesap || {}, en = Number((durum().odeme || {}).enAz) || 10, lim = koSiniri(hs);
+    var inp = $('#koTutar'); if (inp) KO.tutar = inp.value;
+    var n = Math.round(Number(String(KO.tutar).replace(',', '.')) * 100) / 100;
+    if (!(n >= en)) { KO.hata = 'En az ' + tl(en) + ' yazın.'; ciz(); if ($('#koTutar')) $('#koTutar').focus(); return; }
+    if (n > lim) { KO.hata = 'Tek seferde en fazla ' + tl(lim) + ' ödeyebilirsiniz.'; ciz(); if ($('#koTutar')) $('#koTutar').focus(); return; }
+    if (S.busy.ko) return;
+    S.busy.ko = true; KO.hata = ''; KO.sonuc = null; ciz();
+    call('uyKartOde', { b:durum().id, tutar:n }).then(function(r){
+      S.busy.ko = false;
+      if (!r || !r.ok) { KO.hata = (r && r.hata) || 'Ödeme başlatılamadı.'; ciz(); haptic('notify', 'error'); return; }
+      KO.oid = r.oid; KO.url = r.url || ''; KO.t = r.tutar; KO.durum = 'Bekliyor'; KO.bas = Date.now();
+      ciz();
+      if (KO.url) disaAc(KO.url);
+      koDurdur(); KO.zam = setInterval(function(){ if (!document.hidden) koYokla(true); }, 4000);
+    });
+  },
+  koAc:function(){ if (KO.url) disaAc(KO.url); },
+  koKontrol:function(){ koYokla(false); },
+  koVazgec:function(){ koDurdur(); KO.oid = ''; KO.durum = ''; KO.sonuc = null; ciz(); }
+});
 function eskiKopya(t){
   var a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', ''); a.style.position = 'fixed'; a.style.opacity = '0';
   document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch(e){} a.remove();
@@ -1341,11 +1423,13 @@ function uyeDemo(hal){
       deneme:{ bitis:'20.10.2026 10:00', kalanGun:14 }, ucretsiz:'', bot:hazir ? { bagli:true, kullanici:'lezzet_durum_bot', link:'https://t.me/lezzet_durum_bot' } : { bagli:false, kullanici:'', link:'' },
       kurulum:{ menu:hazir, konum:hazir, bot:hazir, acik:true }, ekranUrl:taban + 'isletme.html?b=ornek&demo=1&rol=sahip&ana=1' + (hazir ? '' : '&kurulum=1'),
       bilgi:{ yetkili:'Hasan Kaya', telefon:'0532 111 22 33', eposta:'hasan@lezzet.com', il:'Ankara', ilce:'Çankaya', adres:'Kızılay Mah. Atatürk Blv. No: 5', faturaUnvani:'', vergiDairesi:'', vergiNo:'' },
-      odeme:{ kod:'K7M2QX', iban:'TR00 0000 0000 0000 0000 0000 00', alici:'YourPOS 360' }, hesap:hesapYap(), satinTalep:null,
+      odeme:{ kod:'K7M2QX', iban:Q0.get('kart') === 'yalniz' ? '' : 'TR00 0000 0000 0000 0000 0000 00', alici:Q0.get('kart') === 'yalniz' ? '' : 'YourPOS 360',
+        havale:Q0.get('kart') !== 'yalniz', kart:Q0.get('kart') !== '0', yontem:Q0.get('kart') === '0' ? 'iban' : Q0.get('kart') === 'yalniz' ? 'shopier' : 'ikisi', enAz:10, kartlar:[] },
+      hesap:hesapYap(), satinTalep:null,
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t], tarih:'06.10.2026 21:14', surum:'1.0', ozet:'a1b2c3d4e5f6' }; }) };
   }
   // ?odeme=durdu | bekle | tamam | ilk : bakiye kartının hallerini göstermek için · ?onay=0 : başvuru onayı kapalı (eski hemen üyelik)
-  var Q = new URLSearchParams(location.search), OD = Q.get('odeme') || '', ONAY = Q.get('onay') !== '0', BG_ONAY = false;
+  var Q = new URLSearchParams(location.search), OD = Q.get('odeme') || '', ONAY = Q.get('onay') !== '0', BG_ONAY = false, KART = null;
   var TAL = Q.get('talep') || '', OZP = { kod:'OZEL_1002', ad:'Mega Paket', ucret:850, urun:1000, hafta:8000, ekip:40, asim:1, aciklama:'Yoğun döner salonları için', sube:0, ozel:true };
   var TALEP = TAL ? { no:'P-1002', durum:TAL, tarih:'08.10.2026 10:12', urun:1000, hafta:8000, ekip:40, not:'Hafta sonu çok yoğunuz', paket:TAL === 'teklif' ? OZP : null,
     karar:TAL === 'ret' ? 'Bu hacimde önce bir görüşme yapalım.' : '' } : null;
@@ -1421,6 +1505,21 @@ function uyeDemo(hal){
     uyDestek:function(d){
       if (!d.konu) return hata('FORM', 'Bir konu seçin.', 'konu');
       return { ok:true, talep:'D-1001' };
+    },
+    uyKartOde:function(d){
+      var n = Number(d.tutar);
+      if (!(n >= 10)) return hata('TUTAR', 'En az 10 TL ödeyebilirsiniz.');
+      if (n > 9999) return hata('TUTAR', 'Tek seferde en fazla 9.999 TL ödeyebilirsiniz.');
+      KART = { oid:'YKDEMO' + Date.now().toString(36).toUpperCase(), tutar:n, sayac:0 };
+      return { ok:true, oid:KART.oid, url:'', tutar:n };
+    },
+    uyKartDurum:function(d){
+      if (!KART || KART.oid !== d.oid) return hata('YOK', 'Ödeme bulunamadı.');
+      if (++KART.sayac < 2) return { ok:true, odeme:{ oid:KART.oid, tutar:KART.tutar, durum:'Bekliyor', aciklama:'' } };
+      DUR.hesap.bakiye += KART.tutar; DUR.hesap.eksik = Math.max(0, DUR.hesap.tutar - DUR.hesap.bakiye); DUR.hesap.yeterli = DUR.hesap.eksik === 0;
+      DUR.hesap.hareketler.unshift({ tarih:'09.10.2026 18:40', tur:'Yükleme', tutar:KART.tutar, bakiye:DUR.hesap.bakiye, aciklama:'Kartla ödeme (Shopier)' });
+      var o = { oid:KART.oid, tutar:KART.tutar, durum:'Ödendi', aciklama:'Shopier doğruladı' }; KART = null;
+      return { ok:true, odeme:o, durum:kopya(DUR) };
     },
     uyOdemeKontrol:function(){
       return { ok:true, sonuc:'yetersiz', metin:'Ödemeniz henüz hesabımıza yansımadı. Havale/EFT genelde birkaç dakika içinde görünür; ödemeniz işlenince size hemen haber vereceğiz.', durum:kopya(DUR) };

@@ -1447,6 +1447,11 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .od-son summary{cursor:pointer}
 .od-k .chips{flex-wrap:wrap}
 .ms-dv{font-size:12px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--bg2);color:var(--sub)}
+/* ---------- 1.21 paket ödemesi (yönetim) ---------- */
+.po-k .chips{flex-wrap:wrap;overflow:visible}
+.po-son li{flex-wrap:wrap}
+.po-onay{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex-basis:100%;margin-top:6px}
+.po-onay>span{flex-basis:100%;font-size:14px;font-weight:600}
 </style>
 </head>
 <body>
@@ -6594,7 +6599,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti();
+  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti();
   if (k) {
     var by = U.busy.ynYedek, v = k.vps;
     var sure = function(sn){ var st = Math.floor((Number(sn) || 0) / 3600); return st >= 24 ? Math.floor(st / 24) + ' gündür' : st ? st + ' saattir' : 'az önce'; };
@@ -7322,6 +7327,39 @@ function ynDemoMock(){
       x.eski = x.durum === 'Donduruldu' ? 'Aktif' : x.durum; x.durum = 'Donduruldu'; x.hizmet = false;
       ISL.push(x);
       return { ok:true, isletme:detay(x), mesaj:x.ad + ' (' + x.kod + ') geri yüklendi ve donduruldu olarak bekliyor; kontrol edip «Yeniden aç» deyin. Bot @' + String(x.bot || 'ornek_bot').replace(/^@/, '') + ' yeniden bağlandı.' };
+    };
+  })();
+  (function(){
+    var PYT = { iban:'Yalnız IBAN (havale/EFT)', shopier:'Yalnız kart (Shopier)', ikisi:'IBAN ve kart' };
+    var PA = { yontem:'ikisi', shopier:{ api:'••••7Q2K', sec:true, pat:false, site:1 } };
+    var PSON = [
+      { oid:'YKMG3K2ABCDEF12', ms:t0 - 25 * 60000, tutar:300, durum:'Onay bekliyor', aciklama:'Shopier erişim anahtarı girilmemiş', b:'d3', kod:'P4R8NE', ad:'Lezzet Pide Salonu', no:'98765432', islem:'' },
+      { oid:'YKMG2Q1ABCDEF34', ms:t0 - 3 * gun, tutar:600, durum:'Ödendi', aciklama:'Shopier doğruladı', b:'d6', kod:'T3Y5HC', ad:'Tatlı Köşe Pastanesi', no:'98765001', islem:'otomatik' },
+      { oid:'YKMG1Z9ABCDEF56', ms:t0 - 5 * gun, tutar:200, durum:'Başarısız', aciklama:'Shopier: ödeme tamamlanmadı', b:'d5', kod:'M2N6BT', ad:'Mahalle Bakkalı', no:'', islem:'' }];
+    var json = function(){ var hz = !!(PA.shopier.api && PA.shopier.sec);
+      return { yontem:PA.yontem, yontemler:PYT, hazir:hz, kart:hz && PA.yontem !== 'iban', iban:true, shopier:kopya(PA.shopier), donus:'https://api.yourpos360.com/exec?odeme=shopier-paket' }; };
+    islemler.ynPaketOdeme = function(d){
+      var k = d.kaydet;
+      if (k) {
+        var y = { yontem:PYT[k.yontem] ? k.yontem : PA.yontem, shopier:kopya(PA.shopier) };
+        if (k.shopier) { if (k.shopier.api) y.shopier.api = '••••' + String(k.shopier.api).slice(-4); if (k.shopier.sec) y.shopier.sec = true; if (k.shopier.pat) y.shopier.pat = true;
+          if (k.shopier.site) y.shopier.site = Math.max(1, Math.min(10, Number(k.shopier.site) || 1)); }
+        if (k.sil === 'pat') y.shopier.pat = false;
+        if (y.yontem !== 'iban' && !(y.shopier.api && y.shopier.sec)) return { ok:false, kod:'FORM', hata:'Kartla ödeme için Shopier API kullanıcı ve API şifresini girin.' };
+        PA = y;
+      }
+      return { ok:true, ayar:json(), son:kopya(PSON) };
+    };
+    islemler.ynPaketOdemeDene = function(){
+      if (!PA.shopier.pat) return { ok:true, mesaj:'API kullanıcı ve şifre kayıtlı. Kişisel erişim anahtarı girilmediği için kartla gelen ödemeler sizin onayınıza düşer; anahtarı girerseniz Shopier\'e sorularak kendiliğinden onaylanır.' };
+      return { ok:true, mesaj:'Shopier erişim anahtarı çalışıyor ✅ Kartla gelen ödemeler Shopier\'e sorularak kendiliğinden onaylanacak.', alanlar:['id:string', 'status:string', 'totals.total:string', 'createdAt:string'] };
+    };
+    islemler.ynKartOdeme = function(d){
+      var x = PSON.filter(function(y){ return y.oid === d.oid; })[0];
+      if (!x) return { ok:false, kod:'YOK', hata:'Ödeme bulunamadı.' };
+      if (['Bekliyor', 'Onay bekliyor'].indexOf(x.durum) < 0) return { ok:false, kod:'DURUM', hata:'Bu ödeme zaten «' + x.durum + '».' };
+      x.durum = d.karar === 'onay' ? 'Ödendi' : 'Reddedildi'; x.aciklama = d.karar === 'onay' ? 'Yönetici onayladı' : 'Yönetici reddetti';
+      return { ok:true, odeme:kopya(x), son:kopya(PSON) };
     };
   })();
   return function(act, d){
@@ -11890,6 +11928,108 @@ ACT_EK.msOdemeSilOnline = function(el){
   if (!x) return;
   sheetAc({ tip:'onay', busy:'msOdSil', baslik:'Online ödeme silinsin mi?', metin:'Bu ödeme müşterinin kartından ' + (x.kim || 'online') + ' ile alındı. Burada silmek parayı iade ETMEZ; iadeyi ödeme kuruluşunun panelinden yapın. Yalnız iade ettiyseniz ya da hatalıysa silin.', dugme:'Sil',
     yap:function(){ return islem('ekMasaOdemeSil', { adisyon:MS.ad.id, i:i }, { busy:'msOdSil' }).then(function(r){ if (r) { msCevap(r); sheetKapat(); toast('Ödeme silindi'); msCiz(); } }); } });
+};
+
+/* ---------- 1.21 Paket ödemesi (yönetim) ---------- */
+var POY = { v:null, son:[], yuk:false, t:null, mesaj:'', hata:'', alanlar:null, onay:'' };
+function poYukle(){
+  if (POY.yuk) return;
+  POY.yuk = true;
+  call('ynPaketOdeme', {}).then(function(r){
+    POY.yuk = false;
+    if (r && r.ok) { POY.v = r.ayar; POY.son = r.son || []; if (!POY.t) POY.t = { yontem:r.ayar.yontem }; }
+    else POY.hata = (r && r.hata) || 'Paket ödemesi ayarları alınamadı.';
+    ciz();
+  });
+}
+function poEtiket(d){
+  var m = { 'Ödendi':['ok', '✓ Ödendi'], 'Onay bekliyor':['uyar', '⏳ Onay bekliyor'], 'Başarısız':['dng', '✕ Başarısız'], 'Reddedildi':['dng', '✕ Reddedildi'],
+    'Sınır aşıldı':['uyar', '⚠️ Sınır aşıldı'], 'Bekliyor':['', '… Ödeme sayfasında'], 'Vazgeçildi':['', 'Vazgeçildi'] }[d] || ['', d];
+  return '<span class="od-d ' + m[0] + '">' + m[1] + '</span>';
+}
+function poKarti(){
+  var bas = '<section class="card pad frm po-k" id="poKart"><h2 class="frm-h">💳 Paket ödemesi</h2>';
+  if (!POY.v) { if (!POY.hata) poYukle(); return bas + (POY.hata ? '<div class="err-txt">' + esc(POY.hata) + ' <button class="btn ghost sm" data-act="poYenile">Tekrar dene</button></div>' : '<div class="sk" style="height:90px"></div>') + '</section>'; }
+  var v = POY.v, t = POY.t || { yontem:v.yontem }, b = U.busy.poKaydet || U.busy.poDene;
+  var h = bas + '<p class="tip-txt">İşletmeler paket ücretini (bakiyelerini) nasıl ödesin? <b>Kartla</b> ödemede para sizin Shopier hesabınıza geçer; Shopier doğrulayınca bakiye ' +
+    'kendiliğinden yüklenir. <b>Havale/EFT</b>\'de bakiyeyi «Kredi yükle» ile siz yüklersiniz.</p>';
+  h += '<div class="od-dur ' + (v.kart ? 'ok' : '') + '">' + (v.kart ? '<span class="dot"></span>' : '') + 'Şu an: ' + esc(v.yontemler[v.yontem] || v.yontem) +
+    (v.yontem !== 'iban' && !v.kart ? ' <span class="muted">(Shopier bilgisi eksik; IBAN gösteriliyor)</span>' : '') + '</div>';
+  h += '<div class="blk-h">İşletmelere hangi ödeme yolu gösterilsin?</div><div class="chips" role="radiogroup" aria-label="Paket ödeme yöntemi">' +
+    [['iban', 'Yalnız IBAN'], ['shopier', 'Yalnız kart (Shopier)'], ['ikisi', 'İkisi de']].map(function(x){
+      return '<button class="chip" type="button" role="radio" data-act="poYontem" data-k="' + x[0] + '" aria-checked="' + (t.yontem === x[0]) + '" aria-pressed="' + (t.yontem === x[0]) + '">' + x[1] + '</button>';
+    }).join('') + '</div>';
+  if (t.yontem === 'ikisi' && !v.iban) h += '<div class="note-box">İkisi de gösterilecekse önce aşağıdaki «Ödeme bilgisi» bölümüne IBAN yazın.</div>';
+  if (t.yontem !== 'iban' || v.hazir) {
+    var alan = function(id, et, yer, tip, ipucu, deger){
+      return '<div class="field"><label for="' + id + '">' + et + '</label><input class="inp" id="' + id + '" type="' + (tip || 'text') + '" autocomplete="off" spellcheck="false"' +
+        (deger !== undefined ? ' value="' + esc(deger) + '"' : '') + (yer ? ' placeholder="' + esc(yer) + '"' : '') + '>' + (ipucu ? '<p class="tip-txt">' + ipucu + '</p>' : '') + '</div>';
+    };
+    h += '<div class="blk-h">Shopier hesabınız</div>' +
+      alan('poApi', 'API kullanıcı (API key)', v.shopier.api ? 'Kayıtlı ' + v.shopier.api + '  (değiştirmek için yazın)' : '', 'password') +
+      alan('poSec', 'API şifre (API secret)', v.shopier.sec ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password', 'İkisi de Shopier › Entegrasyonlar › <b>Modül Yönetimi</b> sayfasında yazar.') +
+      alan('poSite', 'Site sırası (website index)', '1', 'text', 'Modül Yönetimi\'nde bu site için tanımladığınız sıra numarası (çoğunlukla 1).', String(v.shopier.site || 1)) +
+      '<div class="od-url"><span class="muted">Modül Yönetimi\'nde bu sitenin <b>Geri Dönüş URL</b>\'si olarak bunu yazın:</span><code>' + esc(v.donus) + '</code>' +
+        '<button class="btn line sm" type="button" data-act="poKopya" data-k="' + esc(v.donus) + '">Kopyala</button></div>' +
+      alan('poPat', 'Kişisel erişim anahtarı <span class="muted">(önerilir)</span>', v.shopier.pat ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password',
+        'Shopier › Entegrasyonlar › <b>API Erişimi</b>\'nden «siparişleri okuma» izniyle oluşturun. Girilirse her kartlı ödeme Shopier\'e sorularak doğrulanır ve bakiye <b>kendiliğinden</b> yüklenir; girilmezse ödemeler sizin onayınıza düşer.' +
+        (v.shopier.pat ? ' <button class="btn ghost sm" type="button" data-act="poPatSil">Anahtarı kaldır</button>' : ''));
+  }
+  if (POY.mesaj) h += '<div class="ok-box" role="status">' + esc(POY.mesaj) + '</div>';
+  if (POY.alanlar && POY.alanlar.length) h += '<details class="od-son"><summary class="blk-h">Teknik ayrıntı · Shopier sipariş alanları (değerler gösterilmez)</summary><p class="tip-txt" style="word-break:break-word">' +
+    POY.alanlar.map(esc).join(' · ') + '</p></details>';
+  h += '<div class="row2"><button class="btn pri" data-act="poKaydet"' + (b ? ' disabled' : '') + '>' + bekle('poKaydet') + ic('tik', 'sm') + 'Kaydet</button>' +
+    (v.hazir ? '<button class="btn line" data-act="poDene"' + (b ? ' disabled' : '') + '>' + bekle('poDene') + 'Bağlantıyı dene</button>' : '') + '</div>';
+  if (POY.son.length) {
+    var bek = POY.son.filter(function(x){ return x.durum === 'Onay bekliyor'; }).length;
+    h += '<details class="od-son"' + (bek ? ' open' : '') + '><summary class="blk-h">Son kartla ödemeler' + (bek ? ' · <span class="od-d uyar">' + bek + ' onay bekliyor</span>' : '') + '</summary><ul class="kz-sat po-son">' + POY.son.map(function(x){
+      var on = POY.onay && POY.onay.split(':')[0] === x.oid, kr = on ? POY.onay.split(':')[1] : '', yb = U.busy['po:' + x.oid];
+      var s = '<li><span class="kz-s1">' + tarihYazi(x.ms) + ' · <b>' + esc(x.ad) + '</b> <span class="muted">(' + esc(x.kod) + ')</span>' +
+        '<span class="muted" style="display:block">' + (x.no ? 'Shopier no ' + esc(x.no) : esc(x.oid)) + (x.aciklama ? ' · ' + esc(x.aciklama) : '') + '</span></span><span class="kz-s3 num">' + tl(x.tutar) + '</span>' +
+        '<span class="kz-s4">' + poEtiket(x.durum) + '</span>';
+      if (x.durum === 'Onay bekliyor' || x.durum === 'Bekliyor') {
+        s += on ? '<span class="po-onay" role="group" aria-label="Onay"><span>' + (kr === 'onay' ? 'Shopier panelinde bu ödemeyi gördünüz mü? Bakiyeye ' + tl(x.tutar) + ' eklenecek.' : 'Bu ödeme reddedilsin mi? Bakiye değişmez.') + '</span>' +
+          '<button class="btn ' + (kr === 'onay' ? 'pri' : 'dng-line') + ' sm" data-act="poKarar" data-k="' + esc(x.oid) + '" data-kr="' + kr + '"' + (yb ? ' disabled' : '') + '>' + bekle('po:' + x.oid) + (kr === 'onay' ? 'Evet, onayla' : 'Evet, reddet') + '</button>' +
+          '<button class="btn ghost sm" data-act="poVazgec">Vazgeç</button></span>'
+          : '<span class="po-onay"><button class="btn line sm" data-act="poSor" data-k="' + esc(x.oid) + '" data-kr="onay">' + ic('tik', 'sm') + 'Onayla</button>' +
+            '<button class="btn ghost sm" data-act="poSor" data-k="' + esc(x.oid) + '" data-kr="red">Reddet</button></span>';
+      }
+      return s + '</li>';
+    }).join('') + '</ul></details>';
+  }
+  return h + '</section>';
+}
+function poOku(id){ var e = $('#' + id); return e ? e.value.trim() : undefined; }
+ACT_EK.poYenile = function(){ POY.hata = ''; POY.v = null; poYukle(); ciz(); };
+ACT_EK.poYontem = function(el){ if (!POY.t) return; POY.t.yontem = el.getAttribute('data-k'); POY.mesaj = ''; haptic('select'); ciz(); };
+ACT_EK.poKopya = function(el){ kopyala(el.getAttribute('data-k')).then(function(ok){ toast(ok ? 'Adres kopyalandı' : 'Kopyalanamadı; elle seçip kopyalayın', !ok); }); };
+ACT_EK.poKaydet = function(ek){
+  var t = POY.t; if (!t) return;
+  var k = { yontem:t.yontem };
+  if ($('#poApi')) k.shopier = { api:poOku('poApi'), sec:poOku('poSec'), pat:poOku('poPat'), site:poOku('poSite') };
+  if (ek && ek.sil) k.sil = ek.sil;
+  POY.mesaj = '';
+  islem('ynPaketOdeme', { kaydet:k }, { busy:'poKaydet' }).then(function(r){
+    if (!r) return;
+    POY.v = r.ayar; POY.son = r.son || []; POY.t = { yontem:r.ayar.yontem };
+    ['poApi', 'poSec', 'poPat'].forEach(function(id){ var e = $('#' + id); if (e) e.value = ''; });
+    toast('Kaydedildi · ' + (r.ayar.yontemler[r.ayar.yontem] || '')); ciz();
+  });
+};
+ACT_EK.poPatSil = function(){ ACT_EK.poKaydet({ sil:'pat' }); };
+ACT_EK.poDene = function(){
+  POY.mesaj = ''; POY.alanlar = null;
+  islem('ynPaketOdemeDene', {}, { busy:'poDene' }).then(function(r){ if (r) { POY.mesaj = r.mesaj; POY.alanlar = r.alanlar || null; ciz(); } });
+};
+ACT_EK.poSor = function(el){ POY.onay = el.getAttribute('data-k') + ':' + el.getAttribute('data-kr'); ciz(); };
+ACT_EK.poVazgec = function(){ POY.onay = ''; ciz(); };
+ACT_EK.poKarar = function(el){
+  var oid = el.getAttribute('data-k'), kr = el.getAttribute('data-kr');
+  islem('ynKartOdeme', { oid:oid, karar:kr }, { busy:'po:' + oid }).then(function(r){
+    POY.onay = '';
+    if (r) { POY.son = r.son || POY.son; toast(kr === 'onay' ? 'Onaylandı; bakiyeye eklendi' : 'Reddedildi'); haptic('notify', 'success'); }
+    ciz();
+  });
 };
 
 /* ---------- yardımcı işlemler ---------- */
