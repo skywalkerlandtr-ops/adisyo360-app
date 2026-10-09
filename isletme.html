@@ -6120,14 +6120,26 @@ function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
   var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti();
   if (k) {
-    var saat = Math.floor(k.calismaSn / 3600), by = U.busy.ynYedek;
-    h += '<section class="card pad yn-sunucu"><h2 class="frm-h">Sunucu ve kullanım</h2>' +
-      '<div class="yn-olcu"><div class="kv"><span>Veritabanı</span><span><b class="num">' + NF1.format(k.dbMB) + ' MB</b> / ' + adet(k.dbSinir) + ' MB · %' + k.dbYuzde + '</span></div>' + ynCubuk(k.dbYuzde) + '</div>' +
-      '<div class="yn-olcu"><div class="kv"><span>Veri trafiği (bu ay)</span><span><b class="num">' + NF2.format(k.okGB) + ' GB</b> / ' + adet(k.trSinir) + ' GB · %' + k.trYuzde + '</span></div>' + ynCubuk(k.trYuzde) +
-      (k.olcumGun >= 1 ? '<p class="tip-txt">Bu hızla ay sonunda ~' + NF2.format(k.tahminGB) + ' GB</p>' : '') + '</div>' +
+    var by = U.busy.ynYedek, v = k.vps;
+    var sure = function(sn){ var st = Math.floor((Number(sn) || 0) / 3600); return st >= 24 ? Math.floor(st / 24) + ' gündür' : st ? st + ' saattir' : 'az önce'; };
+    var yz = function(n){ n = Number(n) || 0; return n > 0 && n < 1 ? '<1' : String(Math.round(n)); };
+    var olcu = function(ad, deger, yuzde, alt){
+      return '<div class="yn-olcu"><div class="kv"><span>' + ad + '</span><span>' + deger + ' · %' + yz(yuzde) + '</span></div>' + ynCubuk(yuzde) +
+        (alt ? '<p class="tip-txt">' + alt + '</p>' : '') + '</div>';
+    };
+    h += '<section class="card pad yn-sunucu"><h2 class="frm-h">Sunucu ve kullanım<span class="muted" style="font-weight:500"> · Hostinger VPS</span></h2>' +
+      (v ? olcu('Disk', '<b class="num">' + NF1.format(v.diskGB) + ' GB</b> / ' + adet(v.diskToplamGB) + ' GB', v.diskYuzde) +
+        olcu('Bellek (RAM)', '<b class="num">' + NF1.format(v.ramGB) + ' GB</b> / ' + adet(v.ramToplamGB) + ' GB', v.ramYuzde) +
+        olcu('İşlemci', '<b class="num">' + adet(v.cekirdek) + ' çekirdek</b>', v.cpuYuzde) +
+        olcu('Veri trafiği (bu ay)', '<b class="num">' + NF2.format(v.trGB) + ' GB</b> / ' + adet(v.trSinirTB) + ' TB', v.trYuzde,
+          'Gelen ' + NF2.format(v.gelenGB) + ' GB · giden ' + NF2.format(v.gidenGB) + ' GB' + (v.olcumGun >= 1 ? ' · bu hızla ay sonunda ~' + NF1.format(v.tahminGB) + ' GB' : '')) +
+        ynKv('VPS', sure(v.calismaSn) + ' açık' + (v.eski ? ' · <span class="yn-uyari">son ölçüm ' + adet(v.yasDk) + ' dk önce</span>' : ''))
+        : '<p class="muted">VPS ölçümü bekleniyor (birkaç dakika içinde gelir).</p>') +
+      ynKv('Veritabanı', NF1.format(k.dbMB) + ' MB · bu sunucuda') +
       ynKv('Son yedek', k.yedek ? tarihYazi(k.yedek.zaman) + ' · ' + k.yedek.parca + ' parça · ' + NF1.format(k.yedek.mb) + ' MB ✅' : '<span class="yn-uyari">henüz alınmadı</span>') +
       (k.yedekHata ? '<div class="err-txt">⚠️ Son yedek denemesi başarısız (' + tarihYazi(k.yedekHata.zaman) + '): ' + esc(k.yedekHata.hata) + '</div>' : '') +
-      ynKv('Yedek sıklığı', k.yedekGun + ' günde bir · Google Drive') + ynKv('Sunucu', adet(k.bellekMB) + ' MB bellek · ' + (saat >= 24 ? Math.floor(saat / 24) + ' gündür' : saat ? saat + ' saattir' : 'az önce') + ' açık') +
+      ynKv('Yedek sıklığı', (k.yedekGun === 1 ? 'Her gün' : k.yedekGun + ' günde bir') + ' · Google Drive + sunucuda son 14 gün') +
+      ynKv('Uygulama', adet(k.bellekMB) + ' MB bellek · ' + sure(k.calismaSn) + ' açık') +
       ynKv('Önbellek', k.onbellek.tablo + ' tablo · ' + NF1.format(k.onbellek.mb) + ' MB · isabet %' + k.onbellek.isabet) +
       '<div class="row2"><button class="btn line" data-act="ynYedek"' + (by || k.yedekCalisiyor ? ' disabled' : '') + '>' + (by || k.yedekCalisiyor ? '<span class="spin" aria-hidden="true"></span>' : ic('indir', 'sm')) +
       (k.yedekCalisiyor ? 'Yedek alınıyor…' : 'Şimdi yedek al') + '</button></div></section>';
@@ -6519,7 +6531,7 @@ function ynDemoMock(){
       { k:'KAMPANYA_DAVETI', ad:'Sipariş sonrası müşteriye fırsat bildirimlerine katılma daveti gösterilsin mi?', deger:'Evet', tip:'evet' }] },
     { ad:'İletişim', alanlar:[{ k:'INSTAGRAM_URL', ad:'Instagram hesabınızın linki', deger:'', tip:'url' }] },
     { ad:'Eğitim videoları', alanlar:[{ k:'VIDEO_UYELIK', ad:'Eğitim videosu: üyelik', deger:'', tip:'url' }] },
-    { ad:'Sunucu', alanlar:[{ k:'DB_SINIR_MB', ad:'Veritabanı sınırı (MB)', deger:'500', tip:'sayi' }, { k:'TRAFIK_SINIR_GB', ad:'Aylık veri trafiği sınırı (GB)', deger:'5', tip:'sayi' }] },
+    { ad:'Sunucu', alanlar:[{ k:'VPS_TRAFIK_SINIR_TB', ad:'VPS aylık veri trafiği sınırı (TB) · Hostinger paketinize göre (KVM 4: 16 TB)', deger:'16', tip:'sayi' }] },
     { ad:'Puanlar', alanlar:[{ k:'PUAN_EN_AZ', ad:'Puan ortalaması müşterilere kaç değerlendirmeden sonra gösterilsin', deger:'10', tip:'sayi' },
       { k:'PUAN_AY', ad:'Puan ortalaması son kaç ayın değerlendirmelerinden hesaplansın (0 = hepsi)', deger:'6', tip:'sayi' }] },
     { ad:'Rehber PDF dosyaları', alanlar:[{ k:'REHBER_MUSTERI', ad:'Müşteri bir işletmenin botunu ilk kez başlatınca Müşteri Rehberi (PDF) gönderilsin', deger:'Evet', tip:'evet' },
@@ -6527,7 +6539,9 @@ function ynDemoMock(){
     { ad:'Bakiye yükleme', alanlar:[{ k:'BAKIYE_HANE', ad:'Bakiye yüklemede tek seferde tutar en fazla kaç haneli olabilsin (4 = en fazla 9.999 TL · 0 = sınır yok)', deger:'4', tip:'sayi' }] },
     { ad:'Telegram\'sız mod', alanlar:[{ k:'WEB_SIPARIS', ad:'Müşteriler Telegram\'ı olmadan tarayıcıdan da sipariş verebilsin (QR\'da ve web sitesinde iki seçenek)', deger:'Evet', tip:'evet' },
       { k:'TELEGRAMSIZ_MOD', ad:'Telegram\'sız mod: QR\'lar ve bağlantılar doğrudan web siparişini açsın (Telegram kapanır ya da erişilemezse açın)', deger:'Hayır', tip:'evet' }] }
-  ], sunucu:{ dbMB:41.6, dbSinir:500, dbYuzde:8, okGB:0.31, trSinir:5, trYuzde:6, tahminGB:1.4, tahminYuzde:28, olcumGun:7,
+  ], sunucu:{ dbMB:41.6,
+    vps:{ diskGB:44.1, diskToplamGB:193, diskYuzde:22.8, ramGB:3.5, ramToplamGB:16, ramYuzde:22.4, cpuYuzde:3.4, cekirdek:4,
+      trGB:13.04, gelenGB:9.12, gidenGB:3.92, trSinirTB:16, trYuzde:0.08, tahminGB:41.3, olcumGun:9, calismaSn:37 * 86400 + 17 * 3600, eski:false, yasDk:1 },
     yedek:{ zaman:t0 - 5 * 3600000, parca:3, mb:2.4 }, yedekHata:null, yedekCalisiyor:false, yedekGun:1, bellekMB:212, calismaSn:3 * 86400, onbellek:{ tablo:46, mb:7.2, isabet:96 } } };
   var ozet = function(){
     var o = { isletme:ISL.length, aktif:0, deneme:0, ucretsiz:0, odeme:0, uyari:0, donduruldu:0, botsuz:0, sessiz:0, bugun:0, bugunCiro:0, hafta:0, haftaCiro:0, aylikGelir:0,
