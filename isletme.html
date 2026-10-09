@@ -1435,6 +1435,18 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .ms-dr.q .ms-dqr{width:100%;justify-content:center;padding-left:6px;padding-right:6px}
 .ms-dqr[aria-pressed=false]{color:var(--sub)}
 @media (max-width:480px){ .ms-dr.q{grid-template-columns:minmax(0,1fr) 100px 44px} }
+/* ---------- 1.20 online ödeme ---------- */
+.od-dur{display:inline-flex;align-items:center;gap:8px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--bg2);align-self:flex-start}
+.od-dur.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.od-dur .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.od-url{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--sep);border-radius:12px}
+.od-url code{font-size:13px;word-break:break-all;background:var(--bg2);padding:6px 8px;border-radius:8px}
+.od-url .btn{align-self:flex-start}
+.od-d{font-size:13px;font-weight:700;white-space:nowrap}
+.od-d.ok{color:var(--ok-ink)}.od-d.dng{color:var(--dng,#cf3a30)}.od-d.uyar{color:var(--warn-ink,#7f4600)}
+.od-son summary{cursor:pointer}
+.od-k .chips{flex-wrap:wrap}
+.ms-dv{font-size:12px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--bg2);color:var(--sub)}
 </style>
 </head>
 <body>
@@ -4090,6 +4102,7 @@ function ayarEkrani(){
   h += ayarAdimHtml();
   h += kasaAyarHtml();
   h += msAyarHtml();
+  h += odAyarHtml();
   // konum
   var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
   h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
@@ -9131,11 +9144,13 @@ function msFisHtml(f){
     (!ipt && (f.kod === 'R' || f.kod === 'H') ? '<button class="btn ' + (f.kod === 'R' ? 'ok' : 'line') + ' sm" data-act="msServis" data-no="' + f.no + '"' + (b ? ' disabled' : '') + '>' + bekle('msServis:' + f.no) + 'Servis edildi</button>' : '') + '</div>';
   if (f.kalemler.length) h += '<ul class="ms-kl">' + f.kalemler.map(function(k){
     return '<li><button class="ms-kb" data-act="msKalem" data-no="' + f.no + '" data-k="' + k.i + '"' + (ipt ? ' disabled' : '') + '><span class="q">' + adet(k.adet) + '×</span><span class="a">' + esc(k.ad) +
-      (k.ikram ? ' <span class="ms-ik">İkram</span>' : '') + kalemSecimHtml(k) + '</span><span class="t num">' + (k.ikram ? '—' : tl(k.tutar)) + '</span></button></li>';
+      (k.ikram ? ' <span class="ms-ik">İkram</span>' : '') + (k.m && k.m !== f.misafir ? ' <span class="ms-dv">→ ' + esc(msMisafirAd(k.m) || 'Masa') + '</span>' : '') + kalemSecimHtml(k) + '</span><span class="t num">' + (k.ikram ? '—' : tl(k.tutar)) + '</span></button></li>';
   }).join('') + '</ul>';
   if (f.not) h += '<div class="ms-not">📝 ' + esc(f.not) + '</div>';
   var isl = (f.islem || []).filter(function(l){ return l.t === 'iptal'; });
   if (isl.length) h += '<p class="ms-isl">' + isl.map(function(l){ return '✕ ' + adet(l.adet) + '× ' + esc(l.ad) + ' iptal (' + esc(l.neden || '') + ', ' + esc(l.kim || '') + ')'; }).join('<br>') + '</p>';
+  var dvl = (f.islem || []).filter(function(l){ return l.t === 'devir'; });
+  if (dvl.length) h += '<p class="ms-isl ms-dvl">' + dvl.map(function(l){ return '⇄ ' + adet(l.adet) + '× ' + esc(l.ad) + ': ' + esc(l.kimden || '') + ' → ' + esc(l.kime || ''); }).join('<br>') + '</p>';
   return h + '</article>';
 }
 
@@ -9326,7 +9341,7 @@ SHEET.msOdemeler = function(){
   if (!a) return shBas('Ödemeler') + '<div class="sh-body"></div>';
   return shBas('Alınan ödemeler') + '<div class="sh-body"><ul class="kz-sat">' + a.odemeler.map(function(x, i){
     return '<li><span class="kz-s1">' + (x.ms ? saatYaz(x.ms) + ' · ' : '') + esc(x.y) + (x.kim ? ' <span class="muted">· ' + esc(x.kim) + '</span>' : '') + '</span><span class="kz-s3">' + tl(x.t) + '</span>' +
-      (yt('masa_odemesil') && (msYonetici() || garson()) ? '<span class="kz-s4"><button class="btn dng-line sm" data-act="msOdemeSil" data-k="' + i + '"' + (U.busy.msOdSil ? ' disabled' : '') + '>Sil</button></span>' : '') + '</li>';
+      (yt('masa_odemesil') && (msYonetici() || garson()) ? '<span class="kz-s4"><button class="btn dng-line sm" data-act="' + (x.oid ? 'msOdemeSilOnline' : 'msOdemeSil') + '" data-k="' + i + '"' + (U.busy.msOdSil ? ' disabled' : '') + '>Sil</button></span>' : '') + '</li>';
   }).join('') + '</ul><p class="tip-txt">Yanlış girilen ödemeyi silip doğrusunu alabilirsiniz.</p></div>';
 };
 SHEET.msFis = function(s){
@@ -9986,6 +10001,10 @@ function masaDemoIslemler(x){
   var oncekiBaslat = x.islemler.ekBaslat, oncekiYenile = x.islemler.ekYenile, oncekiDurum = x.islemler.ekDurum;
   var hata = x.hata, kim = function(){ return x.rol === 'Garson' ? GCAN : { id:x.BEN.id, ad:x.BEN.ad }; };
   var cevap = function(a, ek){ var r = { ok:true, adisyon:a && a.durum === 'Açık' ? json(a) : null, masalar:liste(), rev:'m' + Date.now() }; Object.keys(ek || {}).forEach(function(q){ r[q] = ek[q]; }); return r; };
+  var ODM = { s:'', test:true, acik:true, paytr:{}, iyzico:{}, shopier:{} };
+  var ODS = [{ ms:Date.now() - 12 * 60000, masa:'Bahçe 1', odeyen:'Zeynep', sag:'PayTR', tutar:345, durum:'Ödendi', aciklama:'', test:true },
+    { ms:Date.now() - 40 * 60000, masa:'Masa 3', odeyen:'Ali (link)', sag:'PayTR', tutar:170, durum:'Ödendi', aciklama:'', test:true },
+    { ms:Date.now() - 65 * 60000, masa:'Masa 5', odeyen:'Can', sag:'PayTR', tutar:90, durum:'Başarısız', aciklama:'PayTR: Kart limiti yetersiz', test:true }];
   var garsonFiltre = function(r){ if (r.siparisler && x.rol === 'Garson') r.siparisler = r.siparisler.filter(function(o){ return o.kanal === 'Masa'; }); if (r.siparisler && x.rol === 'Kurye') r.siparisler = r.siparisler.filter(function(o){ return !o.kanal; }); return r; };
   var bulAd = function(id){ var a = AD[id]; if (!a) return [null, hata('YOK', 'Adisyon bulunamadı.')]; if (a.durum !== 'Açık') return [null, hata('DURUM', 'Bu masanın hesabı kapanmış.')]; return [a, null]; };
   var fisBul = function(no){ return x.S.filter(function(o){ return o.kanal === 'Masa' && o.no === Number(no); })[0]; };
@@ -10124,6 +10143,31 @@ function masaDemoIslemler(x){
     ekMasaQr:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].qrKapali = d.kapali !== false; return cevap(b[0]); },
     ekMasaMisafir:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].misafirler = b[0].misafirler.filter(function(y){ return y.id !== d.misafir; }); return cevap(b[0]); },
     ekMasaOdemeIstek:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].istekler.forEach(function(i){ if (i.id === d.id) i.d = 'K'; }); return cevap(b[0]); },
+    // 1.20 online ödeme ayarı (önizleme: anahtarlar yalnız «kayıtlı» olarak görünür)
+    ekOdemeAyar:function(d){
+      if (x.rol !== 'Sahip') return hata('YETKI', 'Bu işlem için yetkiniz yok.');
+      var k = d && d.kaydet;
+      if (k) {
+        var y = { s:k.s || '', test:!!k.test, acik:k.acik !== false, paytr:Object.assign({}, ODM.paytr), iyzico:Object.assign({}, ODM.iyzico), shopier:Object.assign({}, ODM.shopier) };
+        if (k.paytr) { if (k.paytr.mid !== undefined) { if (k.paytr.mid && !/^\d{3,20}$/.test(k.paytr.mid)) return hata('FORM', 'PayTR mağaza numarası yalnız rakamdan oluşur.'); y.paytr.mid = k.paytr.mid; } if (k.paytr.key) y.paytr.key = true; if (k.paytr.salt) y.paytr.salt = true; }
+        if (k.iyzico) { if (k.iyzico.api) y.iyzico.api = '••••' + String(k.iyzico.api).slice(-4); if (k.iyzico.sec) y.iyzico.sec = true; }
+        if (k.shopier) { if (k.shopier.api) y.shopier.api = '••••' + String(k.shopier.api).slice(-4); if (k.shopier.sec) y.shopier.sec = true; if (k.shopier.site) y.shopier.site = Number(k.shopier.site) || 1; }
+        var hz = function(s){ return s === 'paytr' ? !!(y.paytr.mid && y.paytr.key && y.paytr.salt) : s === 'iyzico' ? !!(y.iyzico.api && y.iyzico.sec) : s === 'shopier' ? !!(y.shopier.api && y.shopier.sec) : false; };
+        if (y.s && !hz(y.s)) return hata('FORM', { paytr:'PayTR', iyzico:'iyzico', shopier:'Shopier' }[y.s] + ' için bütün bilgileri girin.');
+        ODM = y;
+      }
+      var hz2 = function(s){ return s === 'paytr' ? !!(ODM.paytr.mid && ODM.paytr.key && ODM.paytr.salt) : s === 'iyzico' ? !!(ODM.iyzico.api && ODM.iyzico.sec) : s === 'shopier' ? !!(ODM.shopier.api && ODM.shopier.sec) : false; };
+      var u = 'https://api.yourpos360.com/exec?odeme=';
+      return { ok:true, odeme:{ s:ODM.s, test:ODM.test, acik:ODM.acik, hazir:!!ODM.s && ODM.acik && hz2(ODM.s),
+        paytr:{ mid:ODM.paytr.mid || '', key:!!ODM.paytr.key, salt:!!ODM.paytr.salt, hazir:hz2('paytr') }, iyzico:{ api:ODM.iyzico.api || '', sec:!!ODM.iyzico.sec, hazir:hz2('iyzico') },
+        shopier:{ api:ODM.shopier.api || '', sec:!!ODM.shopier.sec, site:ODM.shopier.site || 1, hazir:hz2('shopier') }, bildirim:{ paytr:u + 'paytr&b=ornek-donerci', shopier:u + 'shopier&b=ornek-donerci' } },
+        son:ODM.s ? ODS : [] };
+    },
+    ekOdemeDene:function(){
+      if (!ODM.s) return hata('FORM', 'Önce ödeme kuruluşunun bilgilerini kaydedin.');
+      if (ODM.s === 'shopier') return { ok:true, mesaj:'Shopier bilgileri kayıtlı. Shopier bağlantısı ödeme sırasında denenir: bir masada 1 TL\'lik deneme ödemesi yapıp hesaba işlendiğini kontrol edin.' };
+      return { ok:true, mesaj:{ paytr:'PayTR', iyzico:'iyzico' }[ODM.s] + ' bağlantısı çalışıyor' + (ODM.test ? ' (test modu)' : '') + '. Müşteriler masadan kartla ödeyebilir. (Önizleme)' };
+    },
     ekMasaOdeme:function(d){
       if (x.rol === 'Garson' && !AYR.garsonOdeme) return hata('YETKI', 'Bu işletmede ödemeyi kasa alıyor. Hesabı kasaya yönlendirin.');
       var b = bulAd(d.adisyon); if (!b[0]) return b[1];
@@ -11679,14 +11723,15 @@ function msQrBlok(a){
 // yoklamada: yeni ödeme isteği ya da doğrulanan kişi → uyarı
 function msQrUyar(){
   var l = D.masalar || [], s = {};
-  l.forEach(function(m){ if (m.adisyon) s[m.id] = { i:m.adisyon.istek || 0, k:m.adisyon.misafir || 0, ad:m.ad }; });
+  l.forEach(function(m){ if (m.adisyon) s[m.id] = { i:m.adisyon.istek || 0, k:m.adisyon.misafir || 0, o:m.adisyon.onl || 0, ad:m.ad }; });
   var o = MSQ.onceki;
   MSQ.onceki = s;
   if (!o || garson() && false) return;
   var mesaj = [];
   Object.keys(s).forEach(function(id){
-    var x = s[id], y = o[id] || { i:0, k:0 };
-    if (x.i > y.i) mesaj.push('💳 ' + x.ad + ': ödeme isteği');
+    var x = s[id], y = o[id] || { i:0, k:0, o:0 };
+    if (x.o > (y.o || 0)) mesaj.push('💳 ' + x.ad + ': online ödeme alındı');
+    else if (x.i > y.i) mesaj.push('💳 ' + x.ad + ': ödeme isteği');
     else if (x.k > y.k) mesaj.push('👥 ' + x.ad + ': ' + (x.k - y.k) + ' kişi katıldı');
   });
   if (mesaj.length) { toast(mesaj.join(' · ')); haptic('notify', 'warning'); if (SES.acik && /💳/.test(mesaj.join(''))) bip('yeni', 1); }
@@ -11744,6 +11789,108 @@ ACT_EK.msQrSinirKaydet = function(){
   });
 };
 ACT_EK.msDQr = function(el){ msDuzenOku(); var m = SH.liste[Number(el.getAttribute('data-k'))]; if (m) { m.qs = m.qs === false; renderSheet(); } };
+
+/* ---------- 1.20 Masada online ödeme (ayar) ---------- */
+var ODA = { v:null, son:[], yuk:false, t:null, mesaj:'', hata:'' };
+var OD_SAG = { paytr:'PayTR', iyzico:'iyzico', shopier:'Shopier' };
+function odAyarYukle(){
+  if (ODA.yuk) return;
+  ODA.yuk = true;
+  call('ekOdemeAyar', {}).then(function(r){
+    ODA.yuk = false;
+    if (r && r.ok) { ODA.v = r.odeme; ODA.son = r.son || []; if (!ODA.t) ODA.t = { s:r.odeme.s, test:r.odeme.test, acik:r.odeme.acik }; }
+    else ODA.hata = (r && r.hata) || 'Ödeme ayarları alınamadı.';
+    ciz();
+  });
+}
+function odDurumEtiket(x){
+  var m = { 'Ödendi':['ok', '✓ Ödendi'], 'Başarısız':['dng', '✕ Başarısız'], 'Fazla ödeme':['uyar', '⚠️ Fazla ödeme'], 'Bekliyor':['', '… Bekliyor'], 'Vazgeçildi':['', 'Vazgeçildi'] }[x.durum] || ['', x.durum];
+  return '<span class="od-d ' + m[0] + '">' + m[1] + '</span>';
+}
+function odAyarHtml(){
+  if (!sahip() || hzm() || !D.isletme || !paketOzVar('qrmasa')) return '';
+  var bas = '<section class="card pad frm od-k" id="odKart"><h2 class="frm-h">💳 Masada online ödeme</h2>';
+  if (!ODA.v) { if (!ODA.hata) odAyarYukle(); return bas + (ODA.hata ? '<div class="err-txt">' + esc(ODA.hata) + ' <button class="btn ghost sm" data-act="odYenile">Tekrar dene</button></div>' : '<div class="sk" style="height:90px"></div>') + '</section>'; }
+  var v = ODA.v, t = ODA.t || { s:v.s, test:v.test, acik:v.acik }, b = U.busy.odKaydet || U.busy.odDene, a = masaAyar();
+  var h = bas + '<p class="tip-txt">Müşteri masadaki QR sayfasından kendi hesabını, arkadaşlarının hesabını ya da hepsini kartla öder; isterse hesabının linkini başkasına gönderir. ' +
+    'Para doğrudan <b>sizin</b> ödeme kuruluşu hesabınıza geçer; YourPOS 360 komisyon almaz (kuruluşun kendi komisyonu uygulanır). Ödeme gelince hesap kişilere işlenir, tamamı ödenen masa kapanır.</p>';
+  if (!a.acik || !a.qr) h += '<div class="note-box">Online ödeme, masadan QR ile sipariş açıkken çalışır (Ayarlar › Masalar ve garson).</div>';
+  h += '<div class="od-dur ' + (v.hazir ? 'ok' : '') + '">' + (v.hazir ? '<span class="dot"></span>Açık · ' + esc(OD_SAG[v.s]) + (v.test ? ' <span class="muted">(deneme modu)</span>' : '') : 'Kapalı') + '</div>';
+  h += '<div class="blk-h">Ödeme kuruluşu</div><div class="chips" role="radiogroup" aria-label="Ödeme kuruluşu">' +
+    [['', 'Kapalı'], ['paytr', 'PayTR'], ['iyzico', 'iyzico'], ['shopier', 'Shopier']].map(function(x){
+      return '<button class="chip" type="button" role="radio" data-act="odSag" data-k="' + x[0] + '" aria-checked="' + (t.s === x[0]) + '" aria-pressed="' + (t.s === x[0]) + '">' + x[1] +
+        (x[0] && v[x[0]] && v[x[0]].hazir ? ' <span class="n">✓</span>' : '') + '</button>';
+    }).join('') + '</div>';
+  var alan = function(id, et, deger, yer, tip, ipucu){
+    return '<div class="field"><label for="' + id + '">' + et + '</label><input class="inp" id="' + id + '" type="' + (tip || 'text') + '" autocomplete="off" spellcheck="false" value="' + esc(deger || '') + '"' +
+      (yer ? ' placeholder="' + esc(yer) + '"' : '') + '>' + (ipucu ? '<p class="tip-txt">' + ipucu + '</p>' : '') + '</div>';
+  };
+  var kopya = function(et, url){ return '<div class="od-url"><span class="muted">' + et + '</span><code>' + esc(url) + '</code><button class="btn line sm" type="button" data-act="odKopya" data-k="' + esc(url) + '">Kopyala</button></div>'; };
+  if (t.s === 'paytr') {
+    h += alan('odPtMid', 'Mağaza no (merchant_id)', v.paytr.mid, 'ör. 123456', 'text') +
+      alan('odPtKey', 'Mağaza parolası (merchant_key)', '', v.paytr.key ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password') +
+      alan('odPtSalt', 'Mağaza gizli anahtarı (merchant_salt)', '', v.paytr.salt ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password',
+        'Üçü de PayTR Mağaza Paneli › <b>Bilgi</b> sayfasında yazar.') +
+      kopya('PayTR Mağaza Paneli › Ayarlar › <b>Bildirim URL</b> alanına bunu yapıştırın:', v.bildirim.paytr);
+  } else if (t.s === 'iyzico') {
+    h += alan('odIyApi', 'API anahtarı', '', v.iyzico.api ? 'Kayıtlı ' + v.iyzico.api + '  (değiştirmek için yazın)' : '', 'password') +
+      alan('odIySec', 'Güvenlik anahtarı (secret key)', '', v.iyzico.sec ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password',
+        'iyzico Üye İşyeri Paneli › Ayarlar › <b>Firma Ayarları</b>\'nda yazar. Deneme modunda iyzico\'nun sandbox anahtarlarını girin.');
+  } else if (t.s === 'shopier') {
+    h += alan('odShApi', 'API kullanıcı (API key)', '', v.shopier.api ? 'Kayıtlı ' + v.shopier.api + '  (değiştirmek için yazın)' : '', 'password') +
+      alan('odShSec', 'API şifre (API secret)', '', v.shopier.sec ? 'Kayıtlı ••••  (değiştirmek için yazın)' : '', 'password',
+        'Shopier › Entegrasyonlar › <b>Modül Yönetimi</b>\'nde yazar.') +
+      alan('odShSite', 'Site sırası (website index)', String(v.shopier.site || 1), '1', 'text') +
+      kopya('Shopier › Modül Yönetimi\'nde bu sitenin <b>Geri Dönüş URL</b>\'si olarak bunu yazın:', v.bildirim.shopier) +
+      '<p class="tip-txt">Shopier\'in deneme modu yoktur: kaydettikten sonra 1 TL\'lik bir ödemeyle deneyin.</p>';
+  }
+  if (t.s) {
+    var sw = function(k, acik, ad, alt){ return '<button class="opt" type="button" role="switch" aria-checked="' + !!acik + '" data-act="odSw" data-k="' + k + '"><span class="o-main">' + ad + '<span class="o-sub">' + alt + '</span></span><span class="tgl" aria-hidden="true"></span></button>'; };
+    if (t.s !== 'shopier') h += sw('test', t.test, 'Deneme modu', 'Gerçek para çekilmez; kuruluşun deneme kartlarıyla denersiniz. Canlıya geçince kapatın.');
+    h += sw('acik', t.acik, 'Müşteriler masadan online ödeyebilsin', 'Kapalıysa müşteri yalnız garsona ödeme isteği gönderir.');
+  }
+  if (ODA.mesaj) h += '<div class="ok-box" role="status">' + esc(ODA.mesaj) + '</div>';
+  h += '<div class="row2"><button class="btn pri" data-act="odKaydet"' + (b ? ' disabled' : '') + '>' + bekle('odKaydet') + ic('tik', 'sm') + 'Kaydet</button>' +
+    (t.s && t.s === v.s && v.hazir ? '<button class="btn line" data-act="odDene"' + (b ? ' disabled' : '') + '>' + bekle('odDene') + 'Bağlantıyı dene</button>' : '') + '</div>';
+  if (ODA.son.length) {
+    h += '<details class="od-son"><summary class="blk-h">Son online ödemeler</summary><ul class="kz-sat">' + ODA.son.map(function(x){
+      return '<li><span class="kz-s1">' + saatYaz(x.ms) + ' · ' + esc(x.masa) + ' · ' + esc(x.odeyen) + (x.test ? ' <span class="muted">(deneme)</span>' : '') +
+        '<span class="muted" style="display:block">' + esc(x.sag) + (x.aciklama ? ' · ' + esc(x.aciklama) : '') + '</span></span><span class="kz-s3 num">' + tl(x.tutar) + '</span>' +
+        '<span class="kz-s4">' + odDurumEtiket(x) + '</span></li>';
+    }).join('') + '</ul></details>';
+  }
+  return h + '</section>';
+}
+function odOku(id){ var e = $('#' + id); return e ? e.value.trim() : undefined; }
+ACT_EK.odYenile = function(){ ODA.hata = ''; ODA.v = null; odAyarYukle(); ciz(); };
+ACT_EK.odSag = function(el){ if (!ODA.t) return; ODA.t.s = el.getAttribute('data-k') || ''; ODA.mesaj = ''; haptic('select'); ciz(); };
+ACT_EK.odSw = function(el){ if (!ODA.t) return; var k = el.getAttribute('data-k'); ODA.t[k] = !ODA.t[k]; haptic('select'); ciz(); };
+ACT_EK.odKopya = function(el){ kopyala(el.getAttribute('data-k')).then(function(ok){ toast(ok ? 'Adres kopyalandı' : 'Kopyalanamadı; elle seçip kopyalayın', !ok); }); };
+ACT_EK.odKaydet = function(){
+  var t = ODA.t; if (!t) return;
+  var k = { s:t.s, test:!!t.test, acik:t.acik !== false };
+  if (t.s === 'paytr') k.paytr = { mid:odOku('odPtMid'), key:odOku('odPtKey'), salt:odOku('odPtSalt') };
+  if (t.s === 'iyzico') k.iyzico = { api:odOku('odIyApi'), sec:odOku('odIySec') };
+  if (t.s === 'shopier') k.shopier = { api:odOku('odShApi'), sec:odOku('odShSec'), site:odOku('odShSite') };
+  ODA.mesaj = '';
+  islem('ekOdemeAyar', { kaydet:k }, { busy:'odKaydet' }).then(function(r){
+    if (!r) return;
+    ODA.v = r.odeme; ODA.son = r.son || []; ODA.t = { s:r.odeme.s, test:r.odeme.test, acik:r.odeme.acik };
+    ['odPtKey', 'odPtSalt', 'odIyApi', 'odIySec', 'odShApi', 'odShSec'].forEach(function(id){ var e = $('#' + id); if (e) e.value = ''; });
+    toast(r.odeme.hazir ? 'Online ödeme açık · ' + OD_SAG[r.odeme.s] : 'Online ödeme kapalı'); ciz();
+  });
+};
+ACT_EK.odDene = function(){
+  ODA.mesaj = '';
+  islem('ekOdemeDene', {}, { busy:'odDene' }).then(function(r){ if (r) { ODA.mesaj = r.mesaj; ciz(); } });
+};
+// Alınan ödemeler: online ödemenin silinmesi para iadesi yapmaz
+ACT_EK.msOdemeSilOnline = function(el){
+  var i = Number(el.getAttribute('data-k')), x = MS.ad && MS.ad.odemeler[i];
+  if (!x) return;
+  sheetAc({ tip:'onay', busy:'msOdSil', baslik:'Online ödeme silinsin mi?', metin:'Bu ödeme müşterinin kartından ' + (x.kim || 'online') + ' ile alındı. Burada silmek parayı iade ETMEZ; iadeyi ödeme kuruluşunun panelinden yapın. Yalnız iade ettiyseniz ya da hatalıysa silin.', dugme:'Sil',
+    yap:function(){ return islem('ekMasaOdemeSil', { adisyon:MS.ad.id, i:i }, { busy:'msOdSil' }).then(function(r){ if (r) { msCevap(r); sheetKapat(); toast('Ödeme silindi'); msCiz(); } }); } });
+};
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
