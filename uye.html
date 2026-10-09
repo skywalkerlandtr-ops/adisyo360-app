@@ -175,7 +175,10 @@ textarea.inp{resize:vertical;min-height:76px;line-height:1.4}
 .paket .fiyat{font-size:26px;font-weight:900;letter-spacing:-.02em}
 .paket .fiyat small{font-size:15px;font-weight:600;color:var(--sub)}
 .paket ul{display:flex;flex-direction:column;gap:4px;font-size:15px}
-.paket li::before{content:"✓ ";color:var(--ok-ink);font-weight:800}
+.paket li::before,.tk-l li::before{content:"✓ ";color:var(--ok-ink);font-weight:800}
+.paket li.pk-yok,.tk-l li.pk-yok{color:var(--hint);text-decoration:line-through}
+.paket li.pk-yok::before,.tk-l li.pk-yok::before{content:"✕ ";color:var(--hint);text-decoration:none;display:inline-block;margin-right:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .paket .rozet{position:absolute;top:-11px;right:14px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px}
 .paket.yeni-pk{border-style:dashed;justify-content:center;gap:6px;background:var(--bg2)}
 .paket .ypk-t{font-size:15px;color:var(--sub);line-height:1.4}
@@ -575,6 +578,13 @@ function geriDugmesi(){
 }
 
 /* --- tanıtım --- */
+// pakete dahil modüller: var olanlar ✓, olmayanlar üstü çizili (eski sunucu bilgi göndermezse gösterilmez)
+var PAKET_OZ_AD = [['tabldot', 'Tabldot satışı'], ['tezgah', 'Tezgâh siparişi ve numaratör'], ['garson', 'Garson ve masa siparişi'], ['qrmasa', 'Masa QR siparişi'], ['muhasebe', 'Ön muhasebe']];
+function pkOzHtml(p){
+  if (!p || !p.oz) return '';
+  var v = PAKET_OZ_AD.filter(function(x){ return p.oz[x[0]] !== false; }), y = PAKET_OZ_AD.filter(function(x){ return p.oz[x[0]] === false; });
+  return v.map(function(x){ return '<li>' + x[1] + '</li>'; }).join('') + y.map(function(x){ return '<li class="pk-yok"><span class="sr">Yok: </span>' + x[1] + '</li>'; }).join('');
+}
 function paketKartlari(secili, mevcut, ozelKart){
   return '<div class="paketler" role="radiogroup" aria-label="Paketler">' + (D.paketler || []).map(function(p, i){
     return '<button class="paket" type="button" role="radio" aria-checked="' + (secili === p.kod) + '" data-act="paketSec" data-k="' + esc(p.kod) + '">' +
@@ -582,7 +592,7 @@ function paketKartlari(secili, mevcut, ozelKart){
       '<span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span><ul>' +
       (p.sube ? '<li><b>' + adet(p.sube) + ' şube</b> · tek bot · merkez ekranı</li>' : '') +
       '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' : 'Sınırsız sipariş') + '</li>' +
-      '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li></ul>' +
+      '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li>' + pkOzHtml(p) + '</ul>' +
       (mevcut === p.kod ? '<span class="simdi">Şu anki paketiniz</span>' : '') + '</button>';
   }).join('') + (ozelKart ? ozelPaketKarti() : '') + '</div>';
 }
@@ -923,7 +933,7 @@ function talepKutusu(kisa){
   return '<section class="card teklif" id="teklif"><h2>✨ Size özel paket teklifi</h2><p class="tip">Talep ' + esc(t.no) + ' · ' + esc(String(t.tarih || '').slice(0, 10)) + ' · istediğiniz: ' + ozIhtiyacYazi(t) + '</p>' +
     '<div class="tk-ust"><span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span></div>' +
     '<ul class="tk-l"><li>' + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' + (p.asim ? ' (aşan her sipariş ' + tl(p.asim) + ')' : '') : 'Sınırsız sipariş') + '</li>' +
-    '<li>' + (p.ekip ? adet(p.ekip) + ' ekip üyesi (personel + kurye)' : 'Sınırsız ekip') + '</li><li>Sipariş başına kesinti yok</li></ul>' + (p.aciklama ? '<p class="tip">' + esc(p.aciklama) + '</p>' : '') +
+    '<li>' + (p.ekip ? adet(p.ekip) + ' ekip üyesi (personel + kurye)' : 'Sınırsız ekip') + '</li><li>Sipariş başına kesinti yok</li>' + pkOzHtml(p) + '</ul>' + (p.aciklama ? '<p class="tip">' + esc(p.aciklama) + '</p>' : '') +
     '<div class="row"><button class="btn line" data-act="teklifRet"' + b + '>İstemiyorum</button><button class="btn pri" data-act="teklifKabul"' + b + '>' + bekle(S.busy.teklif) +
     (durum() ? 'Onayla, paketim olsun' : 'Bu paketle üye ol') + '</button></div>' +
     (durum() ? '<p class="tip">Onaylayınca paketiniz hemen değişir; dönemin kalan günleri için ücret farkı bakiyenize yansıtılır.</p>' : '') + '</section>';
@@ -1319,9 +1329,9 @@ function belgeGuncelKarti(){
 /* ---------- önizleme (?demo=1): örnek verilerle, sunucuya gitmeden ---------- */
 function uyeDemo(hal){
   var Q0 = new URLSearchParams(location.search);
-  var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200, urun:50, hafta:500, ekip:3, asim:1, aciklama:'' },
-    { kod:'STANDART', ad:'Standart', ucret:300, urun:150, hafta:1500, ekip:8, asim:1, aciklama:'' },
-    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:400, urun:1000, hafta:5000, ekip:20, asim:1, aciklama:'' }];
+  var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200, urun:50, hafta:500, ekip:3, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:false, qrmasa:false, muhasebe:false } },
+    { kod:'STANDART', ad:'Standart', ucret:300, urun:150, hafta:1500, ekip:8, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:false } },
+    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:400, urun:1000, hafta:5000, ekip:20, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:true } }];
   var IS_KOLLARI = [{"grup":"yemek","ad":"Yeme · içme","liste":[{"k":"restoran","ad":"Restoran","e":"🍽️"},{"k":"lokanta","ad":"Lokanta / Ev yemekleri","e":"🍲"},{"k":"kebap","ad":"Kebap / Döner / Izgara","e":"🌯"},{"k":"pide","ad":"Pide / Lahmacun","e":"🫓"},{"k":"pizza","ad":"Pizza / Burger / Fast food","e":"🍕"},{"k":"balik","ad":"Balık restoranı","e":"🐟"},{"k":"cigkofte","ad":"Çiğ köfte","e":"🥙"},{"k":"kahvalti","ad":"Kahvaltı / Börek / Simit","e":"🍳"},{"k":"kafe","ad":"Kafe / Kahveci","e":"☕"},{"k":"pastane","ad":"Pastane / Fırın","e":"🥐"},{"k":"tatli","ad":"Tatlıcı / Dondurma","e":"🍨"},{"k":"bar","ad":"Bar / Pub","e":"🍺"},{"k":"catering","ad":"Catering / Toplu yemek","e":"🍱"},{"k":"diger_yemek","ad":"Diğer yeme-içme","e":"🍴"}]},{"grup":"urun","ad":"Market · dükkân","liste":[{"k":"market","ad":"Market / Süpermarket","e":"🛒"},{"k":"bakkal","ad":"Bakkal / Büfe / Tekel","e":"🏪"},{"k":"manav","ad":"Manav / Meyve-sebze","e":"🥦"},{"k":"kasap","ad":"Kasap / Şarküteri","e":"🥩"},{"k":"kuruyemis","ad":"Kuruyemiş / Kahve / Lokum","e":"🥜"},{"k":"su","ad":"Su / Tüp bayii","e":"💧"},{"k":"aktar","ad":"Aktar / Organik ürünler","e":"🌿"},{"k":"hirdavat","ad":"Hırdavat / Nalbur","e":"🔧"},{"k":"elektrik","ad":"Elektrik malzemeleri / Aydınlatma","e":"💡"},{"k":"zuccaciye","ad":"Züccaciye / Milyoncu / Ev gereçleri","e":"🧺"},{"k":"yapi","ad":"Boya / Yapı market","e":"🪣"},{"k":"kirtasiye","ad":"Kırtasiye / Kitap","e":"✏️"},{"k":"cicek","ad":"Çiçekçi","e":"💐"},{"k":"petshop","ad":"Pet shop / Mama","e":"🐾"},{"k":"kozmetik","ad":"Kozmetik / Parfümeri","e":"💄"},{"k":"elektronik","ad":"Telefon / Elektronik","e":"📱"},{"k":"giyim","ad":"Giyim / Ayakkabı","e":"👕"},{"k":"oyuncak","ad":"Oyuncak / Bebek ürünleri","e":"🧸"},{"k":"diger_urun","ad":"Diğer ürün satışı","e":"🛍️"}]},{"grup":"hizmet","ad":"Eve hizmet · usta","liste":[{"k":"tesisat","ad":"Su tesisatı / Sıhhi tesisat","e":"🚿"},{"k":"elektrikci","ad":"Elektrikçi","e":"⚡"},{"k":"marangoz","ad":"Marangoz / Mobilya ustası","e":"🪚"},{"k":"boya","ad":"Boya / Badana","e":"🎨"},{"k":"temizlik","ad":"Ev / Ofis temizliği","e":"🧹"},{"k":"hali","ad":"Halı / Koltuk yıkama","e":"🛋️"},{"k":"klima","ad":"Klima / Kombi servisi","e":"❄️"},{"k":"beyazesya","ad":"Beyaz eşya / Teknik servis","e":"🔌"},{"k":"cilingir","ad":"Çilingir","e":"🔑"},{"k":"camci","ad":"Camcı / PVC / Cam balkon","e":"🪟"},{"k":"nakliyat","ad":"Nakliyat / Taşıma","e":"🚚"},{"k":"tamir","ad":"Bilgisayar / Telefon tamiri","e":"💻"},{"k":"terzi","ad":"Terzi / Kuru temizleme","e":"🧵"},{"k":"bahce","ad":"Bahçe / Peyzaj","e":"🌳"},{"k":"ilaclama","ad":"İlaçlama / Haşere","e":"🪲"},{"k":"kuafor","ad":"Kuaför / Berber (eve servis)","e":"💇"},{"k":"oto","ad":"Oto yıkama / Oto servis","e":"🚗"},{"k":"diger_hizmet","ad":"Diğer hizmet","e":"🛠️"}]}];
   var TUR = [{ k:'restoran', ad:'Restoran' }, { k:'kafe', ad:'Kafe' }, { k:'pastane', ad:'Pastane / Fırın' }, { k:'market', ad:'Bakkal / Market' }, { k:'diger', ad:'Diğer' }];
   var BELGE = { hizmet:'Hizmet (Üyelik) Sözleşmesi', kvkk:'KVKK Aydınlatma Metni', veri:'Veri İşleme Sözleşmesi' };
