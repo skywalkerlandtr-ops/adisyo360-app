@@ -1477,6 +1477,43 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .ms-tv{margin:-4px 0 6px}
 .ms-tv code{word-break:break-all}
 .ms-tv-b{display:flex;flex-wrap:wrap;gap:8px}
+/* ---------- 1.26 süreli alanlar ---------- */
+.ms-r.r-sa{background:var(--accent);color:var(--on-accent);font-variant-numeric:tabular-nums}
+.ms-r.r-sa.sa-durdu{background:var(--sub);color:var(--bg)}
+.ms-r.r-sa.sa-az{background:var(--warn-ink);color:var(--bg)}
+.ms-r.r-sa.sa-bitti{background:var(--dng,#cf3a30);color:#fff}
+.ms-t.st-sa-az{box-shadow:inset 0 0 0 3px var(--warn-ink)}
+.ms-t.st-sa-bitti{background:var(--danger-soft,#fde8e6);box-shadow:inset 0 0 0 3px var(--dng,#cf3a30)}
+@media (prefers-reduced-motion:no-preference){ .ms-t.st-sa-bitti .r-sa{animation:msNab 1.2s ease-in-out infinite} }
+.sa-k{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--bg2);box-shadow:inset 0 0 0 1.5px var(--sep)}
+.sa-k.sa-calisiyor{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.sa-k.sa-az{background:var(--warn-soft);box-shadow:inset 0 0 0 2px var(--warn-ink)}
+.sa-k.sa-bitti{background:var(--danger-soft,#fde8e6);box-shadow:inset 0 0 0 2px var(--dng,#cf3a30)}
+.sa-kh{display:flex;align-items:center;gap:12px}
+.sa-ik{font-size:30px;line-height:1;flex:none}
+.sa-ka{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.sa-ka .muted{font-size:13px}
+.sa-saat{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sa-sn{font-size:44px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.sa-dr{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-weight:700;font-size:14px}
+.sa-dr b{font-size:22px}
+.sa-k.sa-bitti .sa-dr span:first-child{color:var(--dng,#cf3a30);font-weight:900}
+.sa-not{margin:0;font-size:13px}
+.sa-b{display:flex;flex-wrap:wrap;gap:8px}
+.sa-b .btn{flex:1 1 auto}
+.sa-uz{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 2px var(--info-ink)}
+.sa-uzb{display:flex;gap:8px}
+.sa-al{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sa-alb{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--sep);font:inherit;color:inherit;text-align:left}
+.sa-ch{flex-wrap:wrap;overflow:visible;padding:0}
+.sa-tr{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.sa-tr1{display:flex;gap:8px;align-items:center}
+.sa-tr1 .inp{flex:1}
+.sa-tr2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:4px 12px}
+.sa-tr2 .field{margin:0}
+.sa-kisi{display:flex;align-items:center;gap:16px}
+.sa-kisi b{font-size:24px;min-width:2ch;text-align:center}
+.ms-dr .ms-dsa{grid-column:1 / -1}
 </style>
 </head>
 <body>
@@ -9136,7 +9173,7 @@ function msYoklamaSonrasi(){
   var m = msMasa(MS.ac);
   if (!m || !m.adisyon) { if (MS.ad) { MS.ad = null; } return; }
   if (!MS.ad || MS.ad.id !== m.adisyon.id || MS.ad.toplam !== m.adisyon.toplam || MS.ad.odenen !== m.adisyon.odenen || (m.adisyon.fis + m.adisyon.qr) !== MS.ad.fisler.filter(function(f){ return f.kod !== 'I'; }).length ||
-    MS.ad.fisler.some(function(f){ var o = siparis(f.no); return o && o.kod !== f.kod; }) ||
+    MS.ad.fisler.some(function(f){ var o = siparis(f.no); return o && o.kod !== f.kod; }) || saImza(m.adisyon.sure) !== saImza(MS.ad.sure) ||
     (MS.ad.qr && ((m.adisyon.istek || 0) !== MS.ad.qr.odemeIstekleri.length || (m.adisyon.misafir || 0) !== MS.ad.qr.misafirler.filter(function(y){ return y.ad; }).length || !!m.adisyon.qrKapali !== !!MS.ad.qr.qrKapali))) msAdisyonYukle(true);
 }
 function msSure(ms){ var d = dkGecti(ms); return d < 60 ? d + ' dk' : Math.floor(d / 60) + ' sa ' + (d % 60) + ' dk'; }
@@ -9195,8 +9232,9 @@ function msKutu(m){
     if (x.odenen > 0) roz += '<span class="ms-r r-od">Kısmi ödeme</span>';
   }
   if (x && (x.qr || x.istek)) cls += ' st-qr';
+  var sk = saKutu(m, x); if (sk) { roz = sk.roz + roz; cls += sk.cls; }
   return '<button class="' + cls + (MS.ac === m.id ? ' sec' : '') + '" data-act="msAc" data-id="' + esc(m.id) + '" aria-label="' + esc(m.ad) + (x ? ', dolu, ' + tl(x.kalan) : ', boş') + '">' +
-    '<span class="ms-ad">' + esc(m.ad) + '</span>' + (roz ? '<span class="ms-rz">' + roz + '</span>' : '') + alt + '</button>';
+    '<span class="ms-ad">' + (m.sa ? saIkon(m.sa) + ' ' : '') + esc(m.ad) + '</span>' + (roz ? '<span class="ms-rz">' + roz + '</span>' : '') + alt + '</button>';
 }
 
 /* ---------- adisyon ---------- */
@@ -9208,6 +9246,7 @@ function msAdisyonPaneli(iki){
     (x ? '<button class="icon-btn" data-act="msMenu" aria-label="Masa işlemleri">' + ic('daha') + '</button>' : '') +
     (iki ? '<button class="icon-btn" data-act="msGeri" aria-label="Kapat">' + ic('x') + '</button>' : '') + '</div>';
   h += '<div class="ms-govde" data-scroll="msAd">';
+  h += saPanel(m, a, x);
   if (x && !a) h += MS.adHata ? '<div class="note-box">' + esc(MS.adHata) + ' <button class="btn ghost sm" data-act="msYenidenYukle">Tekrar dene</button></div>' : '<div class="sk" style="height:140px"></div>';
   if (!x && masaAyar().qr && !t.l.length) h += '<div class="ms-qac"><p>Müşteriler QR\'la masaya katılacaksa masayı açın: 4 haneli masa kodu oluşur, kodu müşteriye söylersiniz.</p>' +
     '<button class="btn pri" data-act="msMasaAc"' + (U.busy.msMasaAc ? ' disabled' : '') + '>' + bekle('msMasaAc') + '🔑 Masayı aç, kodu ver</button></div>';
@@ -9249,9 +9288,9 @@ function msAdisyonPaneli(iki){
   if (t.l.length) h += '<button class="btn line" data-act="msEkle">' + ic('arti', 'sm') + 'Ürün</button><button class="btn pri wide" data-act="msGonder"' + (gb ? ' disabled' : '') + '>' + (gb ? bekle('msGonder') : ic('gonder', 'sm')) + 'Mutfağa gönder · ' + tl(msTaslakToplam(t)) + '</button>';
   else {
     h += '<button class="btn ' + (a && a.kalan > 0 ? 'line' : 'pri wide') + '" data-act="msEkle">' + ic('arti', 'sm') + 'Ürün ekle</button>';
-    if (a && a.kalan > 0) {
+    if (a && (a.kalan > 0 || a.sure)) {
       h += '<button class="btn line" data-act="msHesap"' + (U.busy.msHesap ? ' disabled' : '') + '>' + bekle('msHesap') + ic('fis', 'sm') + 'Hesap</button>';
-      if (msOdemeYetki()) h += '<button class="btn ok wide" data-act="msOdemeAc">' + ic('para', 'sm') + 'Ödeme al</button>';
+      if (msOdemeYetki()) h += '<button class="btn ok wide" data-act="' + (a.sure ? 'saBitirOde' : 'msOdemeAc') + '">' + ic('para', 'sm') + 'Ödeme al</button>';
     } else if (a && a.kalan <= 0 && !a.fisler.some(function(f){ return f.kod === 'Y'; })) {
       var dolu = a.toplam > 0 || a.odenen > 0 || a.fisler.some(function(f){ return f.kod !== 'I'; });
       if (!dolu || msOdemeYetki()) h += '<button class="btn ' + (dolu ? 'ok wide' : 'line') + '" data-act="msBosKapat"' + (U.busy.msKapat ? ' disabled' : '') + '>' + bekle('msKapat') + (dolu ? ic('tik', 'sm') + 'Hesabı kapat' : 'Masayı kapat') + '</button>';
@@ -9554,7 +9593,7 @@ SHEET.msDuzen = function(s){
         if ((m.bolum || 'Salon') !== bl) return '';
         var dolu = m.id && msMasa(m.id) && msMasa(m.id).adisyon;
         return '<div class="ms-dr' + (masaAyar().qr ? ' q' : '') + '"><input class="inp" data-ms-ad="' + i + '" maxlength="24" value="' + esc(m.ad) + '" aria-label="Masa adı">' +
-          '<input class="inp" data-ms-bolum="' + i + '" maxlength="24" value="' + esc(m.bolum || '') + '" aria-label="Bölüm" list="msBolumListe">' +
+          '<input class="inp" data-ms-bolum="' + i + '" maxlength="24" value="' + esc(m.bolum || '') + '" aria-label="Bölüm" list="msBolumListe">' + saDuzenSecim(m, i) +
           (masaAyar().qr ? '<button class="chip ms-dqr" type="button" data-act="msDQr" data-k="' + i + '" aria-pressed="' + (m.qs !== false) + '" title="Bu masadan QR siparişi" aria-label="' + esc(m.ad) + ': QR siparişi">' + (m.qs !== false ? 'QR açık' : 'QR kapalı') + '</button>' : '') +
           '<button class="icon-btn" data-act="msDSil" data-k="' + i + '"' + (dolu ? ' disabled title="Açık hesabı var"' : '') + ' aria-label="' + esc(m.ad) + ' masasını kaldır">' + ic('cop') + '</button></div>';
       }).join('') + '</div></div>';
@@ -9566,6 +9605,7 @@ function msDuzenOku(){
   if (!SH || SH.tip !== 'msDuzen') return;
   $$('[data-ms-ad]', sheetEl).forEach(function(el){ var i = Number(el.getAttribute('data-ms-ad')); if (SH.liste[i]) SH.liste[i].ad = el.value; });
   $$('[data-ms-bolum]', sheetEl).forEach(function(el){ var i = Number(el.getAttribute('data-ms-bolum')); if (SH.liste[i]) SH.liste[i].bolum = el.value; });
+  $$('[data-ms-sa]', sheetEl).forEach(function(el){ var i = Number(el.getAttribute('data-ms-sa')); if (SH.liste[i]) SH.liste[i].sa = el.value; });
   ['tBolum:msTBolum', 'tOnek:msTOnek', 'tBas:msTBas', 'tSon:msTSon'].forEach(function(p){ var k = p.split(':'), el = $('#' + k[1]); if (el) SH[k[0]] = el.value; });
 }
 function msAyarHtml(){
@@ -9596,6 +9636,7 @@ function msAyarHtml(){
       sw('garsonOdeme', !!a.garsonOdeme, 'Garson ödeme alabilir', 'Kapalıysa ödemeyi yalnız kasa (siz ve personel) alır; garson hesabı kasaya yönlendirir.') +
       '<div class="row" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn line sm" data-act="msDuzenle">' + ic('masa', 'sm') + 'Masaları düzenle (' + (a.sayi || 0) + ')</button>' +
       (a.sayi && qrVar ? '<button class="btn line sm" data-act="msQrYazdir">' + ic('qr', 'sm') + 'Masa QR kodlarını yazdır</button>' : '') + '</div>' : '') +
+    (a.acik ? saAyarBlok(a) : '') +
     '<p class="tip-txt">Garson eklemek için: Ekip › «Garson ekle (PIN)» ya da «Garson davet et». Ortak garson telefonu için Ekip › Tablet bağla › «Garson telefonu».</p></section>';
 }
 // Masa QR kodları (A4, 2 sütun): masa adı + QR + «Menü ve sipariş için okutun»
@@ -9711,7 +9752,7 @@ var ACT_MS = {
     MS.ac = id; MS.ekle = false; MS.ara = '';
     haptic('select');
     var m = msMasa(id);
-    if (m && !m.adisyon && !msTaslak(id).l.length) MS.ekle = true;   // boş masa: doğrudan ürün seçimi
+    if (m && !m.adisyon && !m.sa && !msTaslak(id).l.length) MS.ekle = true;   // boş masa: doğrudan ürün seçimi (süreli alanda süre kartı)
     msAdisyonYukle(true);
     main.scrollTop = 0;
     msCiz();
@@ -9941,7 +9982,7 @@ var ACT_MS = {
     });
   },
   msDuzenle:function(){
-    sheetAc({ tip:'msDuzen', liste:(D.masalar || []).filter(function(m){ return !m.silinmis; }).map(function(m){ var y = { id:m.id, ad:m.ad, bolum:m.bolum }; if (m.qs === false) y.qs = false; return y; }), hata:'' });
+    sheetAc({ tip:'msDuzen', liste:(D.masalar || []).filter(function(m){ return !m.silinmis; }).map(function(m){ var y = { id:m.id, ad:m.ad, bolum:m.bolum }; if (m.qs === false) y.qs = false; if (m.sa) y.sa = m.sa; return y; }), hata:'' });
   },
   msTopluEkle:function(){
     msDuzenOku();
@@ -9963,7 +10004,7 @@ var ACT_MS = {
   msDKaydet:function(){
     msDuzenOku();
     var s = SH;
-    islem('ekMasaAyar', { masalar:s.liste.map(function(m){ return { id:m.id || '', ad:m.ad, bolum:m.bolum, qs:m.qs !== false }; }) }, { busy:'msAyar' }).then(function(r){
+    islem('ekMasaAyar', { masalar:s.liste.map(function(m){ return { id:m.id || '', ad:m.ad, bolum:m.bolum, qs:m.qs !== false, sa:m.sa || '' }; }) }, { busy:'msAyar' }).then(function(r){
       if (!r) return;
       D.masalar = r.masalar; D.isletme.masa = r.ayar;
       sheetKapat(); toast('Masalar kaydedildi (' + r.masalar.length + ')'); ciz();
@@ -10023,9 +10064,13 @@ document.addEventListener('keydown', function(e){
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
   var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
+  var SAL = [{ id:'a1', ad:'PlayStation 5', tur:'ps', dilim:15, enAz:30, tarifeler:[{ id:'t1', ad:'2 kol', tip:'saat', fiyat:80 }, { id:'t2', ad:'4 kol', tip:'saat', fiyat:120 }] },
+    { id:'a2', ad:'Bilardo', tur:'bilardo', dilim:5, enAz:15, tarifeler:[{ id:'t1', ad:'Saatlik', tip:'saat', fiyat:100 }] },
+    { id:'a3', ad:'7D Sinema', tur:'vr', dilim:1, enAz:0, tarifeler:[{ id:'t1', ad:'Tek seans', tip:'seans', fiyat:150, dk:15, kisiBasi:true }] }];
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
+  [['PS 1', 'a1'], ['PS 2', 'a1'], ['Bilardo 1', 'a2'], ['7D Sinema', 'a3']].forEach(function(q){ MASA.push({ id:'m' + (++n).toString(36), ad:q[0], bolum:'Oyun', k:'demoanahtar' + n, sa:q[1] }); });
   if (x.kurulum) MASA = [];
   var yuv = function(v){ return Math.round(v * 100) / 100; };
   var menuU = function(id){ return x.MENU.filter(function(u){ return u.id === id; })[0]; };
@@ -10056,7 +10101,7 @@ function masaDemoIslemler(x){
       kisi:a.kisi, not:a.not, hesapMs:a.hesapMs || 0, kaynak:a.kaynak, indirimKural:a.indirimKural, brut:h.brut, indirim:h.indirim, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan,
       odemeler:a.odemeler, gecmis:a.gecmis, fisler:h.f.map(function(o){ return { no:o.no, tarihMs:o.tarihMs, kod:o.kod, garson:o.garson, qr:o.qr ? 1 : 0, ara:o.ara, toplam:o.toplam, not:o.not, islem:o.islem || [],
         misafir:o.misafir || undefined, kalemler:o.kalemler.map(function(k, i){ var j = JSON.parse(JSON.stringify(k)); j.i = i; return j; }) }; }),
-      qr:a.durum === 'Açık' ? qrJson(a, h) : null });
+      qr:a.durum === 'Açık' ? qrJson(a, h) : null, sure:saDemoJson(a) });
   };
   // 1.19 QR ile masaya katılma (önizleme): kişi kişi hesap — kişinin fişleri, ödemenin kişi payı, kalan önce masa hesabından
   var kisiHesap = function(a, h){
@@ -10079,16 +10124,17 @@ function masaDemoIslemler(x){
   var liste = function(){
     return x.kopya(MASA.map(function(m){
       var r = { id:m.id, ad:m.ad, bolum:m.bolum }, a = acik(m.id);
+      if (m.sa) r.sa = m.sa;
       if (x.rol === 'Sahip') r.qr = location.origin + location.pathname.replace(/isletme\.html$/, '') + 'index.html?b=DEMO&masa=' + m.id + '.' + m.k;
       if (m.qs === false) r.qs = false;
       if (a) { var h = hesap(a); r.adisyon = { id:a.id, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan, acilisMs:a.acilisMs, garson:a.garson, garsonId:a.garsonId, kisi:a.kisi, hesapMs:a.hesapMs || 0, fis:h.fis, qr:h.qr, hazir:h.hazir, mutfak:h.mutfak, kaynak:a.kaynak,
-        misafir:(a.misafirler || []).filter(function(y){ return y.ad; }).length, istek:(a.istekler || []).filter(function(i){ return i.d === 'B'; }).length, qrKapali:!!a.qrKapali }; }
+        misafir:(a.misafirler || []).filter(function(y){ return y.ad; }).length, istek:(a.istekler || []).filter(function(i){ return i.d === 'B'; }).length, qrKapali:!!a.qrKapali, sure:saDemoJson(a) }; }
       return r;
     }));
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv, sureli:{ acik:true, alanlar:x.kopya(SAL) } }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -10135,6 +10181,37 @@ function masaDemoIslemler(x){
   var oncekiBaslat = x.islemler.ekBaslat, oncekiYenile = x.islemler.ekYenile, oncekiDurum = x.islemler.ekDurum;
   var hata = x.hata, kim = function(){ return x.rol === 'Garson' ? GCAN : { id:x.BEN.id, ad:x.BEN.ad }; };
   var cevap = function(a, ek){ var r = { ok:true, adisyon:a && a.durum === 'Açık' ? json(a) : null, masalar:liste(), rev:'m' + Date.now() }; Object.keys(ek || {}).forEach(function(q){ r[q] = ek[q]; }); return r; };
+  // 1.26 süreli alanlar (önizleme): süre nesnesi sunucunun gönderdiği biçimde
+  var saDemoJson = function(a){
+    var s = a && a.sure; if (!s) return null;
+    var simdi = Date.now(), j = x.kopya(s);
+    j.durdu = !!(s.du.length && !s.du[s.du.length - 1][1]); j.bitisMs = saBitis(s, simdi); j.gecenDk = Math.floor(saGecen(s, simdi));
+    j.ucret = saUcret(s, simdi); j.faturaDk = saFaturaDk(s, simdi); j.uz = (s.uz || []).filter(function(y){ return y.d === 'B'; });
+    return j;
+  };
+  var saDemoYeni = function(g, t, d, kimAd){
+    var s = { g:g.id, ga:g.ad, tur:g.tur, t:t.id, ta:t.ad, tip:t.tip, fiyat:t.fiyat, dilim:g.dilim, enAz:g.enAz, basMs:Date.now(), du:[], uz:[], kim:kimAd, kisi:Math.max(1, Number(d.kisi) || 1), planDk:0 };
+    if (t.tip === 'seans') { s.seansDk = t.dk; s.kisiBasi = !!t.kisiBasi; s.planDk = t.dk; } else s.planDk = Math.max(0, Number(d.dk) || 0);
+    return s;
+  };
+  var saDemoBitir = function(a){
+    var s = a.sure, simdi = Date.now(); if (!s) return 0;
+    if (s.du.length && !s.du[s.du.length - 1][1]) s.du[s.du.length - 1][1] = simdi;
+    var u = saUcret(s, simdi), gd = saGecen(s, simdi), n = s.tip === 'seans' && s.kisiBasi ? s.kisi : 1;
+    var not = (n > 1 ? n + ' kişi · ' : '') + saSureYazi(gd) + ' · ' + saatYaz(s.basMs) + '–' + saatYaz(simdi);
+    if (u > 0) fisYaz(a, [{ ad:(SA_TUR[s.tur] || SA_TUR.diger)[0] + ' ' + s.ga + ' · ' + s.ta, adet:n, tutar:u, not:not }], 'T', kim(), 0);
+    gecmis(a, 'Süre bitti: ' + saSureYazi(gd) + ' · ' + tl(u), kim().ad);
+    a.sure = null; x.degisti();
+    return u;
+  };
+  var saAlanDemo = function(id){ return SAL.filter(function(g){ return g.id === id; })[0] || null; };
+  (function(){
+    var ps1 = MASA.filter(function(m){ return m.ad === 'PS 1'; })[0], bl = MASA.filter(function(m){ return m.ad === 'Bilardo 1'; })[0];
+    if (ps1) { var a7 = adAc(ps1, GCAN, 'Süre', 52); a7.kisi = 2; a7.sure = saDemoYeni(SAL[0], SAL[0].tarifeler[0], { dk:60, kisi:2 }, 'Can'); a7.sure.basMs = Date.now() - 52 * 60000;
+      fisYaz(a7, [kalemYap({ id:'U011', adet:2 })], 'T', GCAN, 40);
+      a7.sure.uz.push({ id:'UZD1', dk:30, ms:Date.now() - 60000, kimden:'Zeynep', d:'B' }); }
+    if (bl) { var a8 = adAc(bl, GECE, 'Süre', 31); a8.sure = saDemoYeni(SAL[1], SAL[1].tarifeler[0], {}, 'Ece'); a8.sure.basMs = Date.now() - 31 * 60000; a8.sure.du = [[Date.now() - 6 * 60000, 0]]; }
+  })();
   var ODM = { s:'', test:true, acik:true, paytr:{}, iyzico:{}, shopier:{} };
   var ODS = [{ ms:Date.now() - 12 * 60000, masa:'Bahçe 1', odeyen:'Zeynep', sag:'PayTR', tutar:345, durum:'Ödendi', aciklama:'', test:true },
     { ms:Date.now() - 40 * 60000, masa:'Masa 3', odeyen:'Ali (link)', sag:'PayTR', tutar:170, durum:'Ödendi', aciklama:'', test:true },
@@ -10305,6 +10382,7 @@ function masaDemoIslemler(x){
     ekMasaOdeme:function(d){
       if (x.rol === 'Garson' && !AYR.garsonOdeme) return hata('YETKI', 'Bu işletmede ödemeyi kasa alıyor. Hesabı kasaya yönlendirin.');
       var b = bulAd(d.adisyon); if (!b[0]) return b[1];
+      if (b[0].sure && !Number(d.tutar) && !(Array.isArray(d.kisiler) && d.kisiler.length)) saDemoBitir(b[0]);
       var a = b[0], h = hesap(a), kh = kisiHesap(a, h), sec = Array.isArray(d.kisiler) && d.kisiler.length ? d.kisiler : null;
       var t = yuv(Number(d.tutar) || (sec ? Math.min(h.kalan, sec.reduce(function(s, q){ return s + (kh.kalan[q] || 0); }, 0)) : h.kalan));
       if (t > h.kalan + 0.009) return hata('FORM', 'Tutar kalan hesaptan (' + tl(h.kalan) + ') fazla olamaz.');
@@ -10313,7 +10391,7 @@ function masaDemoIslemler(x){
       a.odemeler.push(Object.assign({ y:d.yontem, t:t, ms:Date.now(), kim:kim().ad }, pay && Object.keys(pay).length ? { p:pay } : {}));
       if (d.istekId) a.istekler.forEach(function(i){ if (i.id === d.istekId) i.d = 'A'; });
       var ustu = yuv(Math.max(0, (Number(d.alinan) || t) - t));
-      if (h.kalan - t <= 0.009) {
+      if (h.kalan - t <= 0.009 && !a.sure) {
         a.durum = 'Kapandı'; a.kapanisMs = Date.now(); a.kapanisToplam = h.toplam;
         h.f.forEach(function(o){ if (o.kod === 'R') { o.kod = 'T'; o.durum = x.DN.T; } if (o.kod !== 'I' && o.kod !== 'Y') { o.odendi = true; o.odeme = o.tahsilat = a.odemeler.length > 1 ? 'Parçalı' : d.yontem; } });
         x.degisti();
@@ -10324,6 +10402,7 @@ function masaDemoIslemler(x){
     ekMasaOdemeSil:function(d){ var b = bulAd(d.adisyon); if (!b[0]) return b[1]; b[0].odemeler.splice(d.i, 1); return cevap(b[0]); },
     ekMasaKapat:function(d){
       var b = bulAd(d.adisyon); if (!b[0]) return b[1];
+      if (b[0].sure) return hata('SURE', 'Bu masada süre çalışıyor. Önce süreyi bitirin.');
       var a = b[0], h = hesap(a);
       if (h.toplam > 0 && x.rol !== 'Sahip') return hata('YETKI', 'Siparişi olan bir hesabı yalnızca işletme sahibi iptal edebilir.');
       h.f.forEach(function(o){ if (o.kod !== 'I') { o.kod = 'I'; o.durum = x.DN.I; o.iptalNedeni = d.neden || 'Hesap iptal'; } });
@@ -10336,7 +10415,67 @@ function masaDemoIslemler(x){
       a.durum = 'Açık'; a.kapanisMs = 0; fisler(a).forEach(function(o){ o.odendi = false; o.odeme = o.tahsilat = ''; }); x.degisti();
       return cevap(a);
     },
+    ekSureBaslat:function(d){
+      var m = MASA.filter(function(q){ return q.id === d.masa; })[0]; if (!m) return hata('YOK', 'Masa bulunamadı.');
+      var g = saAlanDemo(m.sa); if (!g) return hata('SURE', 'Bu masa süreli alan değil. Ayarlar › Masalar\'dan alan türü atayın.');
+      var t = g.tarifeler.filter(function(y){ return y.id === d.tarife; })[0] || (g.tarifeler.length === 1 ? g.tarifeler[0] : null);
+      if (!t) return hata('FORM', 'Ücret seçeneğini seçin.');
+      var a = acik(m.id); if (a && a.sure) return hata('DURUM', m.ad + ' masasında süre zaten çalışıyor.');
+      if (!a) a = adAc(m, kim(), 'Süre', 0);
+      a.sure = saDemoYeni(g, t, d, kim().ad); gecmis(a, 'Süre başladı: ' + g.ad + ' · ' + t.ad, kim().ad); x.degisti();
+      return cevap(a);
+    },
+    ekSureDuraklat:function(d){
+      var b = bulAd(d.adisyon); if (!b[0]) return b[1]; var s = b[0].sure; if (!s) return hata('SURE', 'Bu masada çalışan süre yok.');
+      if (s.du.length && !s.du[s.du.length - 1][1]) s.du[s.du.length - 1][1] = Date.now(); else s.du.push([Date.now(), 0]);
+      x.degisti(); return cevap(b[0]);
+    },
+    ekSureUzat:function(d){
+      var b = bulAd(d.adisyon); if (!b[0]) return b[1]; var s = b[0].sure; if (!s) return hata('SURE', 'Bu masada çalışan süre yok.');
+      if (d.istek) { var q = s.uz.filter(function(y){ return y.id === d.istek && y.d === 'B'; })[0]; if (!q) return hata('YOK', 'Bu uzatma isteği artık geçerli değil.');
+        if (d.red) q.d = 'R'; else { q.d = 'A'; s.planDk = (s.planDk || 0) + q.dk; } x.degisti(); return cevap(b[0], d.red ? {} : { uzatildi:q.dk }); }
+      if (s.tip === 'seans') return hata('SURE', 'Seanslık alanda süre uzatılmaz; seans bitince yeni seans başlatın.');
+      var dk = Number(d.dk) || 0; if (!(dk >= 5)) return hata('FORM', 'Uzatma süresini seçin.');
+      s.planDk = (s.planDk > 0 ? s.planDk : Math.ceil(saGecen(s, Date.now()))) + dk; s.uz.forEach(function(y){ if (y.d === 'B') y.d = 'A'; });
+      x.degisti(); return cevap(b[0]);
+    },
+    ekSureBitir:function(d){
+      var b = bulAd(d.adisyon); if (!b[0]) return b[1]; if (!b[0].sure) return hata('SURE', 'Bu masada çalışan süre yok.');
+      var gd = saGecen(b[0].sure, Date.now()), u = saDemoBitir(b[0]);
+      return cevap(b[0], { tutar:u, sure:saSureYazi(gd) });
+    },
+    ekSureDegistir:function(d){
+      var b = bulAd(d.adisyon); if (!b[0]) return b[1]; var s = b[0].sure; if (!s) return hata('SURE', 'Bu masada çalışan süre yok.');
+      var g = saAlanDemo(s.g), t = g && g.tarifeler.filter(function(y){ return y.id === d.tarife; })[0];
+      if (!t) return hata('FORM', 'Yeni ücret seçeneğini seçin.'); if (t.id === s.t) return hata('ISTEK', 'Bu ücret zaten seçili.');
+      var kalan = s.planDk > 0 ? Math.max(5, Math.ceil((saBitis(s, Date.now()) - Date.now()) / 60000)) : 0, u = saDemoBitir(b[0]);
+      b[0].sure = saDemoYeni(g, t, { dk:kalan, kisi:s.kisi }, kim().ad); x.degisti();
+      return cevap(b[0], { tutar:u });
+    },
     ekMasaAyar:function(d){
+      if (d.sureliAlanlar !== undefined) {
+        if (!Array.isArray(d.sureliAlanlar)) return hata('FORM', 'Süreli alan listesi geçersiz.');
+        var enA = SAL.reduce(function(t, g){ return Math.max(t, parseInt(g.id.slice(1), 36) || 0); }, 0), ys = [];
+        for (var si = 0; si < d.sureliAlanlar.length; si++) {
+          var ga = d.sureliAlanlar[si], gad = String(ga.ad || '').trim();
+          if (!gad) return hata('FORM', (si + 1) + '. alanın adını yazın.');
+          if (!(ga.tarifeler || []).length) return hata('FORM', '«' + gad + '» için en az bir ücret yazın.');
+          var tl0 = [], ten = 0;
+          for (var tj = 0; tj < ga.tarifeler.length; tj++) {
+            var ty = ga.tarifeler[tj], tf = Math.round(Number(String(ty.fiyat).replace(',', '.')) * 100) / 100;
+            if (!(tf > 0)) return hata('FORM', '«' + gad + ' · ' + (ty.ad || '') + '» için geçerli bir ücret yazın.');
+            if (ty.tip === 'seans' && !(Number(ty.dk) >= 1)) return hata('FORM', '«' + gad + ' · ' + (ty.ad || '') + '» seansının süresini dakika olarak yazın.');
+            var tt = { id:ty.id || 't' + (++ten + 20).toString(36), ad:String(ty.ad || '').trim() || (ty.tip === 'seans' ? 'Seans' : 'Saatlik'), tip:ty.tip === 'seans' ? 'seans' : 'saat', fiyat:tf };
+            if (tt.tip === 'seans') { tt.dk = Math.floor(Number(ty.dk)); tt.kisiBasi = !!ty.kisiBasi; }
+            tl0.push(tt);
+          }
+          ys.push({ id:ga.id || 'a' + (++enA).toString(36), ad:gad, tur:SA_TUR[ga.tur] ? ga.tur : 'diger', dilim:Number(ga.dilim) || 15, enAz:Number(ga.enAz) || 0, tarifeler:tl0 });
+        }
+        var kalanG = {}; ys.forEach(function(g){ kalanG[g.id] = 1; });
+        var calisan = Object.keys(AD).map(function(q){ return AD[q]; }).filter(function(a){ return a.durum === 'Açık' && a.sure && !kalanG[a.sure.g]; })[0];
+        if (calisan) return hata('DURUM', calisan.masa + ' masasında bu alanın süresi çalışıyor; önce süreyi bitirin.');
+        SAL = ys;
+      }
       if (d.acik !== undefined) AYR.acik = !!d.acik;
       if (d.qr !== undefined) AYR.qr = !!d.qr;
       if (d.garsonOdeme !== undefined) AYR.garsonOdeme = !!d.garsonOdeme;
@@ -10359,6 +10498,7 @@ function masaDemoIslemler(x){
           if (!ad) return hata('FORM', (i + 1) + '. masanın adını yazın.');
           var ym = m.id && eski[m.id] ? { id:m.id, ad:ad, bolum:String(m.bolum || '').trim(), k:eski[m.id].k } : { id:'m' + (++enb).toString(36), ad:ad, bolum:String(m.bolum || '').trim() || 'Salon', k:'demo' + enb };
           if (m.qs === false || (m.qs === undefined && m.id && eski[m.id] && eski[m.id].qs === false)) ym.qs = false;
+          var msa = m.sa !== undefined ? String(m.sa || '') : (m.id && eski[m.id] && eski[m.id].sa) || ''; if (msa && saAlanDemo(msa)) ym.sa = msa;
           yeni.push(ym);
         }
         var kalan = {}; yeni.forEach(function(m){ kalan[m.id] = 1; });
@@ -12788,6 +12928,228 @@ ACT_EK.msTvYenile = function(){
     if (!r) return;
     D.isletme.masa = r.ayar; D.masalar = r.masalar;
     toast('Yeni ekran bağlantısı oluşturuldu; eski bağlantı artık açılmaz'); ciz();
+  });
+};
+
+/* ---------- 1.26 Süreli alanlar ---------- */
+var SA_TUR = { ps:['🎮', 'PlayStation / konsol'], bilardo:['🎱', 'Bilardo'], tenis:['🏓', 'Masa tenisi'], langirt:['⚽', 'Langırt'], vr:['🥽', 'VR / 7D'],
+  sinema:['🎬', 'Film odası'], karaoke:['🎤', 'Karaoke'], bowling:['🎳', 'Bowling'], diger:['⏱', 'Diğer'] };
+var SA_CALDI = {};
+function saGecen(s, simdi){ var ms = simdi - s.basMs; (s.du || []).forEach(function(p){ ms -= (p[1] || simdi) - p[0]; }); return Math.max(0, ms / 60000); }
+function saBitis(s, simdi){ if (!(s.planDk > 0)) return 0; var d = 0; (s.du || []).forEach(function(p){ d += (p[1] || simdi) - p[0]; }); return s.basMs + s.planDk * 60000 + d; }
+function saFaturaDk(s, simdi){ if (s.tip === 'seans') return s.seansDk || 0; var g = saGecen(s, simdi), dl = s.dilim || 1, fd = Math.max(s.enAz || 0, Math.ceil(Math.max(0, g - 0.05) / dl) * dl); return fd > 0 ? fd : dl; }
+function saUcret(s, simdi){ if (s.tip === 'seans') return msYuv(s.fiyat * (s.kisiBasi ? Math.max(1, s.kisi || 1) : 1)); return msYuv(s.fiyat * saFaturaDk(s, simdi) / 60); }
+function saSaat(dk){ dk = Math.floor(dk); var s = Math.floor(dk / 60), d = dk % 60; return s + ':' + (d < 10 ? '0' : '') + d; }
+function saSureYazi(dk){ dk = Math.round(dk); var s = Math.floor(dk / 60), d = dk % 60; return s ? s + ' sa' + (d ? ' ' + d + ' dk' : '') : d + ' dk'; }
+function saAlan(id){ var a = masaAyar().sureli; return (a && (a.alanlar || []).filter(function(g){ return g.id === id; })[0]) || null; }
+function saIkon(id){ var g = saAlan(id); return (SA_TUR[g ? g.tur : 'diger'] || SA_TUR.diger)[0]; }
+function saDurum(s, simdi){ if (s.durdu) return 'durdu'; var b = saBitis(s, simdi); if (!b) return 'calisiyor'; var k = b - simdi; return k <= 0 ? 'bitti' : k <= 5 * 60000 ? 'az' : 'calisiyor'; }
+function saKalanYazi(s, simdi){ var b = saBitis(s, simdi); if (!b) return 'Açık süre'; var k = Math.round((b - simdi) / 60000); return k > 0 ? k + ' dk kaldı' : k === 0 ? 'Süre doldu' : 'Süre ' + (-k) + ' dk geçti'; }
+function saImza(s){ return s ? [s.t, s.basMs, s.durdu, s.planDk, (s.uz || []).length].join('|') : ''; }
+function saFiyatYazi(t){ return t.tip === 'seans' ? tl(t.fiyat) + (t.kisiBasi ? ' / kişi' : '') + ' · ' + t.dk + ' dk seans' : tl(t.fiyat) + ' / saat'; }
+
+// masa planı rozeti
+function saKutu(m, x){
+  if (!x || !x.sure) return null;
+  var s = x.sure, d = saDurum(s, Date.now());
+  var roz = '<span class="ms-r r-sa sa-' + d + '"><span data-sa-m="' + esc(m.id) + '" data-sa-k="saat">' + (d === 'durdu' ? '⏸ ' : '⏱ ') + saSaat(saGecen(s, Date.now())) + '</span></span>';
+  if ((s.uz || []).length) roz += '<span class="ms-r r-qr">📱 +' + s.uz[0].dk + ' dk</span>';
+  return { roz:roz, cls:d === 'bitti' ? ' st-sa-bitti' : d === 'az' ? ' st-sa-az' : '' };
+}
+// hesap paneli: süre kartı
+function saPanel(m, a, x){
+  if (!m || !m.sa) return '';
+  var g = saAlan(m.sa);
+  if (!g) return '';
+  var s = a ? a.sure : x && x.sure, ik = (SA_TUR[g.tur] || SA_TUR.diger)[0], simdi = Date.now();
+  if (!s) {
+    return '<div class="sa-k sa-bos"><div class="sa-kh"><span class="sa-ik" aria-hidden="true">' + ik + '</span><span class="sa-ka"><b>' + esc(g.ad) + '</b><span class="muted">' +
+      g.tarifeler.map(function(t){ return esc(t.ad) + ' ' + saFiyatYazi(t); }).join(' · ') + '</span></span></div>' +
+      '<button class="btn pri block" data-act="saBaslatAc">' + '▶ Süreyi başlat</button></div>';
+  }
+  var d = saDurum(s, simdi), b = U.busy.sa;
+  var h = '<div class="sa-k sa-' + d + '" role="group" aria-label="Süre"><div class="sa-kh"><span class="sa-ik" aria-hidden="true">' + ik + '</span><span class="sa-ka"><b>' + esc(s.ga) + ' · ' + esc(s.ta) + '</b>' +
+    '<span class="muted">' + (s.tip === 'seans' ? tl(s.fiyat) + (s.kisiBasi ? ' × ' + s.kisi + ' kişi' : '') : tl(s.fiyat) + ' / saat') + ' · ' + saatYaz(s.basMs) + '\'te başladı' + (s.kim ? ' · ' + esc(s.kim) : '') + '</span></span></div>';
+  h += '<div class="sa-saat"><span class="sa-sn" data-sa-m="' + esc(m.id) + '" data-sa-k="saat">' + saSaat(saGecen(s, simdi)) + '</span><span class="sa-dr"><span data-sa-m="' + esc(m.id) + '" data-sa-k="durum">' +
+    (d === 'durdu' ? '⏸ Duraklatıldı' : saKalanYazi(s, simdi)) + '</span><b class="num" data-sa-m="' + esc(m.id) + '" data-sa-k="ucret">' + tl(saUcret(s, simdi)) + '</b></span></div>';
+  if (s.planDk > 0 && s.tip !== 'seans') h += '<p class="muted sa-not">Planlı ' + saSureYazi(s.planDk) + ' · bitiş ' + saatYaz(saBitis(s, simdi)) + (s.dilim > 1 ? ' · ' + s.dilim + ' dakikaya yuvarlanır' : '') + (s.enAz ? ' · en az ' + s.enAz + ' dk' : '') + '</p>';
+  else if (s.tip !== 'seans' && (s.dilim > 1 || s.enAz)) h += '<p class="muted sa-not">' + (s.dilim > 1 ? s.dilim + ' dakikaya yuvarlanır' : '') + (s.enAz ? (s.dilim > 1 ? ' · ' : '') + 'en az ' + s.enAz + ' dk' : '') + '</p>';
+  (s.uz || []).forEach(function(q){
+    h += '<div class="sa-uz" role="group" aria-label="Uzatma isteği"><span>📱 <b>' + esc(q.kimden || 'Müşteri') + '</b> ' + q.dk + ' dk uzatma istiyor</span>' +
+      '<span class="sa-uzb"><button class="btn ghost sm" data-act="saUzIstek" data-k="' + esc(q.id) + '" data-red="1"' + (b ? ' disabled' : '') + '>Reddet</button>' +
+      '<button class="btn pri sm" data-act="saUzIstek" data-k="' + esc(q.id) + '"' + (b ? ' disabled' : '') + '>' + bekle('sa') + 'Onayla</button></span></div>';
+  });
+  var cokT = (saAlan(s.g) || g).tarifeler.length > 1;
+  h += '<div class="sa-b"><button class="btn line sm" data-act="saDuraklat"' + (b ? ' disabled' : '') + '>' + (d === 'durdu' ? '▶ Devam' : '⏸ Duraklat') + '</button>' +
+    (s.tip !== 'seans' ? '<button class="btn line sm" data-act="saUzatAc"' + (b ? ' disabled' : '') + '>＋ Uzat</button>' : '') +
+    (cokT ? '<button class="btn line sm" data-act="saDegistirAc"' + (b ? ' disabled' : '') + '>Ücret değiştir</button>' : '') +
+    '<button class="btn dng-line sm" data-act="saBitir"' + (b ? ' disabled' : '') + '>' + bekle('sa') + '■ Bitir, hesaba ekle</button></div>';
+  return h + '</div>';
+}
+// saniyelik güncelleme (yeniden çizmeden) ve süre dolunca zil
+function saTik(){
+  if (!D || !D.masalar) return;
+  var simdi = Date.now();
+  $$('[data-sa-m]').forEach(function(el){
+    var m = msMasa(el.getAttribute('data-sa-m')), s = m && m.adisyon && m.adisyon.sure;
+    if (MS.ad && m && MS.ad.masaId === m.id && MS.ad.sure) s = MS.ad.sure;
+    if (!s) return;
+    var k = el.getAttribute('data-sa-k'), d = saDurum(s, simdi);
+    el.textContent = k === 'ucret' ? tl(saUcret(s, simdi)) : k === 'durum' ? (d === 'durdu' ? '⏸ Duraklatıldı' : saKalanYazi(s, simdi)) : (k === 'saat' && el.closest('.ms-r') ? (d === 'durdu' ? '⏸ ' : '⏱ ') : '') + saSaat(saGecen(s, simdi));
+  });
+  (D.masalar || []).forEach(function(m){
+    var s = m.adisyon && m.adisyon.sure; if (!s) return;
+    var d = saDurum(s, simdi), k = m.id + '|' + s.basMs + '|' + s.planDk;
+    if (d === 'bitti' && !SA_CALDI[k]) { SA_CALDI[k] = 1; if (Date.now() - saBitis(s, simdi) < 120000) { try { bip('', 2); } catch(e){} toast('⏰ ' + m.ad + ': süre doldu'); } if (U.tab === 'masa' && !SH) msCiz(); }
+    if (d === 'az' && !SA_CALDI[k + '|az']) { SA_CALDI[k + '|az'] = 1; if (U.tab === 'masa' && !SH) msCiz(); }
+  });
+}
+setInterval(saTik, 10000);
+
+// Ayarlar › Masalar › Süreli alanlar
+function saAyarBlok(a){
+  var sa = a.sureli;
+  if (!sa) return '';
+  if (!sa.acik) return '<div class="ms-qs"><b>⏱ Süreli alanlar</b>' + paketYokNotu('Süreli alanlar') + '</div>';
+  var l = sa.alanlar || [], kac = function(id){ return (D.masalar || []).filter(function(m){ return m.sa === id; }).length; };
+  return '<div class="ms-qs sa-ay"><b>⏱ Süreli alanlar</b><p class="tip-txt">PlayStation, bilardo, masa tenisi, VR / 7D, film odası gibi süreyle ücretlendirdiğiniz alanlar. Alan türünü burada tanımlayın, sonra «Masaları düzenle»den masaya atayın; garson masada süreyi başlatır, bitince ücret hesaba eklenir.</p>' +
+    (l.length ? '<ul class="sa-al">' + l.map(function(g){
+      return '<li><button class="sa-alb" data-act="saAlanAc" data-k="' + esc(g.id) + '"><span class="sa-ik" aria-hidden="true">' + (SA_TUR[g.tur] || SA_TUR.diger)[0] + '</span><span class="sa-ka"><b>' + esc(g.ad) + '</b><span class="muted">' +
+        g.tarifeler.map(function(t){ return esc(t.ad) + ' ' + saFiyatYazi(t); }).join(' · ') + ' · ' + kac(g.id) + ' masa</span></span>' + ic('sag', 'sm') + '</button></li>';
+    }).join('') + '</ul>' : '') +
+    '<button class="btn line sm" data-act="saAlanAc">' + ic('arti', 'sm') + 'Alan türü ekle</button></div>';
+}
+function saDuzenSecim(m, i){
+  var sa = masaAyar().sureli, l = sa && sa.acik ? sa.alanlar || [] : [];
+  if (!l.length) return '';
+  return '<select class="inp ms-dsa" data-ms-sa="' + i + '" aria-label="' + esc(m.ad || 'Masa') + ': süreli alan"><option value="">Normal masa</option>' +
+    l.map(function(g){ return '<option value="' + esc(g.id) + '"' + (m.sa === g.id ? ' selected' : '') + '>' + (SA_TUR[g.tur] || SA_TUR.diger)[0] + ' ' + esc(g.ad) + '</option>'; }).join('') + '</select>';
+}
+SHEET.saAlan = function(s){
+  var g = s.g, b = U.busy.saAyar;
+  var h = shBas(s.yeni ? 'Alan türü ekle' : esc(g.ad || 'Alan türü')) + '<div class="sh-body">';
+  h += '<div class="field"><label for="saAd">Ad</label><input class="inp" id="saAd" maxlength="30" placeholder="ör. PlayStation 5, Bilardo" value="' + esc(g.ad || '') + '"></div>';
+  h += '<div class="blk-h">Tür</div><div class="chips sa-ch" role="radiogroup" aria-label="Tür">' + Object.keys(SA_TUR).map(function(k){
+    return '<button type="button" class="chip" role="radio" aria-checked="' + (g.tur === k) + '" aria-pressed="' + (g.tur === k) + '" data-act="saTur" data-k="' + k + '">' + SA_TUR[k][0] + ' ' + SA_TUR[k][1] + '</button>'; }).join('') + '</div>';
+  h += '<div class="blk-h">Ücretler</div>' + g.tarifeler.map(function(t, i){
+    return '<div class="sa-tr card pad"><div class="sa-tr1"><input class="inp" data-sa-tad="' + i + '" maxlength="24" placeholder="' + (t.tip === 'seans' ? 'ör. Tek seans' : 'ör. 2 kol, Saatlik') + '" value="' + esc(t.ad || '') + '" aria-label="Ücret adı">' +
+      '<button class="icon-btn" data-act="saTSil" data-k="' + i + '"' + (g.tarifeler.length < 2 ? ' disabled' : '') + ' aria-label="Bu ücreti kaldır">' + ic('cop') + '</button></div>' +
+      '<div class="chips" role="radiogroup" aria-label="Ücret şekli"><button type="button" class="chip" role="radio" aria-checked="' + (t.tip !== 'seans') + '" aria-pressed="' + (t.tip !== 'seans') + '" data-act="saTTip" data-k="' + i + '" data-v="saat">Saatlik</button>' +
+      '<button type="button" class="chip" role="radio" aria-checked="' + (t.tip === 'seans') + '" aria-pressed="' + (t.tip === 'seans') + '" data-act="saTTip" data-k="' + i + '" data-v="seans">Seans / bilet</button></div>' +
+      '<div class="sa-tr2"><div class="field"><label for="saTf' + i + '">' + (t.tip === 'seans' ? 'Seans ücreti (TL)' : 'Saatlik ücret (TL)') + '</label><input class="inp num" id="saTf' + i + '" data-sa-tf="' + i + '" inputmode="decimal" value="' + esc(t.fiyat === undefined ? '' : String(t.fiyat)) + '"></div>' +
+      (t.tip === 'seans' ? '<div class="field"><label for="saTd' + i + '">Seans süresi (dk)</label><input class="inp num" id="saTd' + i + '" data-sa-td="' + i + '" inputmode="numeric" value="' + esc(t.dk === undefined ? '' : String(t.dk)) + '"></div>' : '') + '</div>' +
+      (t.tip === 'seans' ? '<button class="opt" type="button" role="switch" aria-checked="' + !!t.kisiBasi + '" data-act="saTKisi" data-k="' + i + '"><span class="o-main">Kişi başı<span class="o-sub">Açıksa ücret kişi sayısıyla çarpılır (7D, VR gibi).</span></span><span class="tgl" aria-hidden="true"></span></button>' : '') + '</div>';
+  }).join('') + (g.tarifeler.length < 8 ? '<button class="btn line sm" data-act="saTEkle">' + ic('arti', 'sm') + 'Ücret ekle (ör. 4 kol)</button>' : '');
+  if (g.tarifeler.some(function(t){ return t.tip !== 'seans'; })) {
+    h += '<div class="blk-h">Saatlik ücret nasıl hesaplansın?</div><p class="tip-txt">Süre bu dakikaya yukarı yuvarlanır. Ör. 15 seçiliyken 61 dakika 75 dakika sayılır.</p><div class="chips" role="radiogroup" aria-label="Yuvarlama">' +
+      [1, 5, 10, 15, 30, 60].map(function(v){ return '<button type="button" class="chip" role="radio" aria-checked="' + (g.dilim === v) + '" aria-pressed="' + (g.dilim === v) + '" data-act="saDilim" data-k="' + v + '">' + (v === 1 ? 'Dakika dakika' : v + ' dk') + '</button>'; }).join('') + '</div>' +
+      '<div class="blk-h">En az ücretlendirilen süre</div><div class="chips" role="radiogroup" aria-label="En az süre">' +
+      [0, 15, 30, 60].map(function(v){ return '<button type="button" class="chip" role="radio" aria-checked="' + (g.enAz === v) + '" aria-pressed="' + (g.enAz === v) + '" data-act="saEnAz" data-k="' + v + '">' + (v ? v + ' dk' : 'Yok') + '</button>'; }).join('') + '</div>';
+  }
+  if (s.hata) h += '<div class="note-box" role="alert">' + esc(s.hata) + '</div>';
+  return h + '</div><div class="sh-foot">' + (!s.yeni ? '<button class="btn dng-line" data-act="saAlanSil"' + (b ? ' disabled' : '') + '>Sil</button>' : '') +
+    '<button class="btn pri block" data-act="saAlanKaydet"' + (b ? ' disabled' : '') + '>' + bekle('saAyar') + ic('tik', 'sm') + 'Kaydet</button></div>';
+};
+function saAlanOku(){
+  if (!SH || SH.tip !== 'saAlan') return;
+  var g = SH.g, e = $('#saAd'); if (e) g.ad = e.value;
+  $$('[data-sa-tad]', sheetEl).forEach(function(el){ var t = g.tarifeler[Number(el.getAttribute('data-sa-tad'))]; if (t) t.ad = el.value; });
+  $$('[data-sa-tf]', sheetEl).forEach(function(el){ var t = g.tarifeler[Number(el.getAttribute('data-sa-tf'))]; if (t) t.fiyat = el.value; });
+  $$('[data-sa-td]', sheetEl).forEach(function(el){ var t = g.tarifeler[Number(el.getAttribute('data-sa-td'))]; if (t) t.dk = el.value; });
+}
+function saAlanlarGonder(liste, mesaj){
+  islem('ekMasaAyar', { sureliAlanlar:liste }, { busy:'saAyar' }).then(function(r){
+    if (!r) return;
+    D.isletme.masa = r.ayar; D.masalar = r.masalar; sheetKapat(); toast(mesaj); ciz();
+  });
+}
+function saIslem(act, veri, mesaj){
+  if (!MS.ad) return;
+  islem(act, Object.assign({ adisyon:MS.ad.id }, veri || {}), { busy:'sa' }).then(function(r){
+    if (!r) return;
+    msCevap(r); if (SH && /^sa/.test(SH.tip)) sheetKapat();
+    if (mesaj) toast(typeof mesaj === 'function' ? mesaj(r) : mesaj);
+    haptic('notify', 'success'); msCiz();
+  });
+}
+SHEET.saBaslat = function(s){
+  var m = msMasa(s.masa), g = saAlan(m && m.sa), b = U.busy.sa;
+  if (!g) return shBas('Süre') + '<div class="sh-body"><p class="muted">Bu masa süreli alan değil.</p></div>';
+  var t = g.tarifeler.filter(function(y){ return y.id === s.t; })[0];
+  var h = shBas((SA_TUR[g.tur] || SA_TUR.diger)[0] + ' ' + esc(m.ad) + ' · süreyi başlat') + '<div class="sh-body">';
+  h += '<div class="blk-h">Ücret</div><div class="chips sa-ch" role="radiogroup" aria-label="Ücret">' + g.tarifeler.map(function(y){
+    return '<button type="button" class="chip" role="radio" aria-checked="' + (s.t === y.id) + '" aria-pressed="' + (s.t === y.id) + '" data-act="saBT" data-k="' + esc(y.id) + '">' + esc(y.ad) + ' · ' + saFiyatYazi(y) + '</button>'; }).join('') + '</div>';
+  if (t && t.tip !== 'seans') h += '<div class="blk-h">Süre</div><p class="tip-txt">Planlı süre seçerseniz 5 dakika kala müşteriye Telegram\'dan, size ekranda haber verilir. Ücret geçen süreye göre hesaplanır.</p><div class="chips" role="radiogroup" aria-label="Planlı süre">' +
+    [0, 30, 60, 90, 120, 180].map(function(v){ return '<button type="button" class="chip" role="radio" aria-checked="' + (s.dk === v) + '" aria-pressed="' + (s.dk === v) + '" data-act="saBDk" data-k="' + v + '">' + (v ? saSureYazi(v) : 'Açık süre') + '</button>'; }).join('') + '</div>';
+  if (t && t.tip === 'seans') h += '<p class="tip-txt">' + t.dk + ' dakikalık seans' + (t.kisiBasi ? '; ücret kişi sayısıyla çarpılır.' : '.') + '</p>';
+  h += '<div class="blk-h">Kişi sayısı</div><div class="sa-kisi"><button class="icon-btn" data-act="saBKisi" data-k="-1" aria-label="Bir azalt">−</button><b class="num">' + s.kisi + '</b><button class="icon-btn" data-act="saBKisi" data-k="1" aria-label="Bir artır">+</button></div>';
+  if (t && t.tip === 'seans') h += '<p class="kv tot"><span>Ücret</span><span>' + tl(t.fiyat * (t.kisiBasi ? s.kisi : 1)) + '</span></p>';
+  return h + '</div><div class="sh-foot"><button class="btn pri block" data-act="saBaslat"' + (!t || b ? ' disabled' : '') + '>' + bekle('sa') + '▶ Başlat</button></div>';
+};
+SHEET.saUzat = function(s){
+  var b = U.busy.sa;
+  return shBas('Süreyi uzat') + '<div class="sh-body"><div class="chips" role="group" aria-label="Uzatma">' +
+    [15, 30, 60, 120].map(function(v){ return '<button type="button" class="chip" data-act="saUzat" data-k="' + v + '"' + (b ? ' disabled' : '') + '>+ ' + saSureYazi(v) + '</button>'; }).join('') + '</div>' +
+    '<p class="tip-txt">Açık sürede uzatma, geçen süreye eklenerek planlı bitiş koyar.</p></div>';
+};
+SHEET.saDegistir = function(s){
+  var a = MS.ad, g = a && a.sure && saAlan(a.sure.g), b = U.busy.sa;
+  if (!g) return shBas('Ücret değiştir') + '<div class="sh-body"><p class="muted">Çalışan süre yok.</p></div>';
+  return shBas('Ücret değiştir') + '<div class="sh-body"><p class="tip-txt">Şu ana kadarki süre «' + esc(a.sure.ta) + '» ücretiyle hesaba yazılır, süre yeni ücretle devam eder.</p><div class="chips" role="group" aria-label="Yeni ücret">' +
+    g.tarifeler.filter(function(t){ return t.id !== a.sure.t; }).map(function(t){ return '<button type="button" class="chip" data-act="saDegistir" data-k="' + esc(t.id) + '"' + (b ? ' disabled' : '') + '>' + esc(t.ad) + ' · ' + saFiyatYazi(t) + '</button>'; }).join('') + '</div></div>';
+};
+ACT_EK.saAlanAc = function(el){
+  var id = el.getAttribute('data-k'), g = id ? saAlan(id) : null;
+  sheetAc({ tip:'saAlan', yeni:!g, id:id || '', g:g ? JSON.parse(JSON.stringify(g)) : { ad:'', tur:'ps', dilim:15, enAz:30, tarifeler:[{ ad:'Saatlik', tip:'saat', fiyat:'' }] }, hata:'', odak:'#saAd' });
+};
+ACT_EK.saTur = function(el){ saAlanOku(); SH.g.tur = el.getAttribute('data-k'); renderSheet(); };
+ACT_EK.saDilim = function(el){ saAlanOku(); SH.g.dilim = Number(el.getAttribute('data-k')); renderSheet(); };
+ACT_EK.saEnAz = function(el){ saAlanOku(); SH.g.enAz = Number(el.getAttribute('data-k')); renderSheet(); };
+ACT_EK.saTEkle = function(){ saAlanOku(); SH.g.tarifeler.push({ ad:'', tip:'saat', fiyat:'' }); renderSheet(); };
+ACT_EK.saTSil = function(el){ saAlanOku(); if (SH.g.tarifeler.length > 1) SH.g.tarifeler.splice(Number(el.getAttribute('data-k')), 1); renderSheet(); };
+ACT_EK.saTTip = function(el){ saAlanOku(); var t = SH.g.tarifeler[Number(el.getAttribute('data-k'))]; if (t) { t.tip = el.getAttribute('data-v'); if (t.tip === 'seans' && !t.dk) t.dk = 15; } renderSheet(); };
+ACT_EK.saTKisi = function(el){ saAlanOku(); var t = SH.g.tarifeler[Number(el.getAttribute('data-k'))]; if (t) t.kisiBasi = !t.kisiBasi; renderSheet(); };
+ACT_EK.saAlanKaydet = function(){
+  saAlanOku();
+  var g = SH.g, l = (masaAyar().sureli.alanlar || []).slice();
+  g.ad = String(g.ad || '').trim();
+  if (!g.ad) { SH.hata = 'Alanın adını yazın.'; return renderSheet(); }
+  var gg = { id:g.id || '', ad:g.ad, tur:g.tur, dilim:g.dilim, enAz:g.enAz, tarifeler:g.tarifeler.map(function(t){ var o = { id:t.id || '', ad:String(t.ad || '').trim(), tip:t.tip, fiyat:String(t.fiyat).replace(',', '.') }; if (t.tip === 'seans') { o.dk = t.dk; o.kisiBasi = !!t.kisiBasi; } return o; }) };
+  var i = l.map(function(x){ return x.id; }).indexOf(SH.id);
+  if (i >= 0) l[i] = gg; else l.push(gg);
+  saAlanlarGonder(l, '«' + g.ad + '» kaydedildi' + (SH.yeni ? '; şimdi «Masaları düzenle»den masalara atayın' : ''));
+};
+ACT_EK.saAlanSil = function(){
+  var l = (masaAyar().sureli.alanlar || []).filter(function(x){ return x.id !== SH.id; });
+  saAlanlarGonder(l, 'Alan türü silindi');
+};
+ACT_EK.saBaslatAc = function(){
+  var m = msMasa(MS.ac), g = saAlan(m && m.sa); if (!g) return;
+  sheetAc({ tip:'saBaslat', masa:m.id, t:g.tarifeler.length === 1 ? g.tarifeler[0].id : '', dk:0, kisi:Math.max(1, (MS.ad && MS.ad.kisi) || 1) });
+};
+ACT_EK.saBT = function(el){ SH.t = el.getAttribute('data-k'); haptic('select'); renderSheet(); };
+ACT_EK.saBDk = function(el){ SH.dk = Number(el.getAttribute('data-k')); haptic('select'); renderSheet(); };
+ACT_EK.saBKisi = function(el){ SH.kisi = Math.max(1, Math.min(50, SH.kisi + Number(el.getAttribute('data-k')))); renderSheet(); };
+ACT_EK.saBaslat = function(){
+  var s = SH;
+  islem('ekSureBaslat', { masa:s.masa, tarife:s.t, dk:s.dk, kisi:s.kisi }, { busy:'sa' }).then(function(r){
+    if (!r) return;
+    msCevap(r); sheetKapat(); toast('⏱ Süre başladı'); haptic('notify', 'success'); msCiz();
+  });
+};
+ACT_EK.saDuraklat = function(){ var d = MS.ad && MS.ad.sure && MS.ad.sure.durdu; saIslem('ekSureDuraklat', {}, d ? 'Süre devam ediyor' : 'Süre duraklatıldı'); };
+ACT_EK.saUzatAc = function(){ sheetAc({ tip:'saUzat' }); };
+ACT_EK.saUzat = function(el){ var dk = Number(el.getAttribute('data-k')); saIslem('ekSureUzat', { dk:dk }, 'Süre uzatıldı: +' + saSureYazi(dk)); };
+ACT_EK.saUzIstek = function(el){ var red = el.getAttribute('data-red') === '1'; saIslem('ekSureUzat', { istek:el.getAttribute('data-k'), red:red }, red ? 'Uzatma isteği reddedildi' : 'Süre uzatıldı'); };
+ACT_EK.saDegistirAc = function(){ sheetAc({ tip:'saDegistir' }); };
+ACT_EK.saDegistir = function(el){ saIslem('ekSureDegistir', { tarife:el.getAttribute('data-k') }, function(r){ return 'Önceki süre hesaba eklendi: ' + tl(r.tutar || 0); }); };
+ACT_EK.saBitir = function(){ saIslem('ekSureBitir', {}, function(r){ return '⏱ ' + (r.sure || '') + ' · ' + tl(r.tutar || 0) + ' hesaba eklendi'; }); };
+ACT_EK.saBitirOde = function(){
+  if (!MS.ad) return;
+  islem('ekSureBitir', { adisyon:MS.ad.id }, { busy:'sa' }).then(function(r){
+    if (!r) return;
+    msCevap(r); toast('⏱ ' + (r.sure || '') + ' · ' + tl(r.tutar || 0) + ' hesaba eklendi'); msCiz();
+    if (MS.ad && MS.ad.kalan > 0) ACT.msOdemeAc();
   });
 };
 
