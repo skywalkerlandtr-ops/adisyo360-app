@@ -1397,6 +1397,13 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .yn-pk-ozf legend{font-weight:800;font-size:15px;margin-bottom:4px;padding:0}
 .kz-tek{font-size:17px;font-weight:800;margin:0;align-self:center}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- siparişler kanala göre (1.18.2) ---------- */
+.sp-kanal{display:flex;width:100%;margin:0 0 4px}
+.sp-kanal button{flex:1 1 0;justify-content:center;padding:0 8px;min-width:0}
+.sp-kanal .n{min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--danger-fill);color:var(--on-danger);font-size:12px;font-weight:800;display:inline-grid;place-items:center}
+.sp-bas{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;margin:0 8px 0 0}
+.board.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.board.k2{grid-template-columns:repeat(2,minmax(0,1fr))}
 </style>
 </head>
 <body>
@@ -1790,7 +1797,7 @@ function degisiklikleriIsle(){
     if (yeniler.length) {
       yeniler.forEach(function(o){ U.taze[(o.b ? o.b + '/' : '') + o.no] = Date.now(); });
       var no = yeniler.map(function(o){ return '#' + o.no + (o.sube ? ' (' + o.sube + ')' : ''); }).join(', ');
-      toast(kurye() ? (hzm() ? '📅 Planlanan iş: ' : '📦 Hazır sipariş: ') + no : garson() ? yeniler.map(function(o){ return (o.kod === 'R' ? '🍽 Hazır: ' : '📱 QR sipariş: ') + (o.masa || '#' + o.no); }).join(', ') : '🔔 Yeni sipariş: ' + no);
+      toast(kurye() ? (hzm() ? '📅 Planlanan iş: ' : '📦 Hazır sipariş: ') + no : garson() ? yeniler.map(function(o){ return (o.kod === 'R' ? '🍽 Hazır: ' : '📱 QR sipariş: ') + (o.masa || '#' + o.no); }).join(', ') : spKanallar().length ? '🔔 ' + yeniler.map(spEtiket).join(' · ') : '🔔 Yeni sipariş: ' + no);
       haptic('notify', 'warning');
       try { if (navigator.vibrate) navigator.vibrate([180, 90, 180]); } catch(e){}
       if (SES.acik && bip(kurye() ? 'kurye' : 'yeni', zilTip() === 'uc' ? 3 : 1)) SES.son = Date.now();
@@ -2151,14 +2158,17 @@ function guncelSatiri(){
     '<button data-act="yenile" aria-label="Şimdi yenile">' + ic('yenile', 'sm') + '</button></span>';
 }
 function siparisEkrani(){
-  var acik = acikSiparisler(), kapali = kapananlar();
+  var spk = spKanal(), spF = function(o){ return spUygun(o, spk); };
+  var acik = acikSiparisler().filter(spF), kapali = kapananlar().filter(spF);
+  var say = function(k){ return acik.filter(function(o){ return o.kod === k; }).length; };
   var bosMetin = D.botVar === false ? 'Kendi botunuzu bağladıktan sonra müşterilerinizin siparişleri burada görünür.'
     : D.isletme.acik
     ? 'Yeni sipariş gelince burada görünür' + (SES.acik ? ' ve ses çalar.' : '.')
     : 'Sipariş alımı kapalı. Açmak için üstteki düğmeyi kullanın.';
+  bosMetin = spBosMetin(spk, bosMetin);
   if (PANO.matches) {
     main.classList.add('fill');
-    var ust = '<div class="toolbar"><div class="seg" role="group" aria-label="Siparişler">' +
+    var ust = '<div class="toolbar">' + spSecici() + '<div class="seg" role="group" aria-label="Siparişler">' +
       '<button data-act="pano" data-k="acik" aria-pressed="' + (U.pano === 'acik') + '">Açık siparişler <span class="num">(' + acik.length + ')</span></button>' +
       '<button data-act="pano" data-k="kapali" aria-pressed="' + (U.pano === 'kapali') + '">Bugün kapananlar <span class="num">(' + kapali.length + ')</span></button>' +
       '</div>' + guncelSatiri() + '</div>';
@@ -2171,15 +2181,16 @@ function siparisEkrani(){
       var l = acik.filter(function(o){ return o.kod === k; });
       return '<section class="col" aria-label="' + DUR[k].ad + '"><h2 class="col-h"><span class="badge st-' + k + '"><span class="dot"></span>' + DUR[k].ad + '</span>' +
         '<span class="n st-' + k + '">' + l.length + '</span></h2><div class="col-list" data-scroll="col' + k + '">' +
-        (l.length ? l.map(function(o){ return siparisKarti(o, false); }).join('') : '<div class="col-empty">' + (k === 'Y' ? (D.isletme.acik ? 'Yeni sipariş bekleniyor' : 'Sipariş alımı kapalı') : 'Boş') + '</div>') +
+        (l.length ? l.map(function(o){ return siparisKarti(o, false); }).join('') : '<div class="col-empty">' + (k === 'Y' ? (spk === 'masa' ? 'Onay bekleyen QR siparişi yok' : D.isletme.acik ? 'Yeni sipariş bekleniyor' : 'Sipariş alımı kapalı') : 'Boş') + '</div>') +
         '</div></section>';
     };
-    return '<div class="scr">' + ust + '<div class="board">' + ACIK.map(kolon).join('') + '</div></div>';
+    var kl = spKolonlar(spk);
+    return '<div class="scr">' + ust + '<div class="board' + (kl.length < 4 ? ' k' + kl.length : '') + '">' + kl.map(kolon).join('') + '</div></div>';
   }
-  var seg = [['aktif', 'Aktif', acik.length], ['Y', DUR.Y.ad, sayac('Y')], ['H', DUR.H.ad, sayac('H')], ['R', DUR.R.ad, sayac('R')],
-    ['O', DUR.O.ad, sayac('O')], ['kapali', 'Kapanan', kapali.length]];
+  var seg = [['aktif', 'Aktif', acik.length]].concat(spKolonlar(spk).map(function(k){ return [k, DUR[k].ad, say(k)]; })).concat([['kapali', 'Kapanan', kapali.length]]);
+  if (!seg.some(function(s){ return s[0] === U.seg; })) U.seg = 'aktif';
   var liste = U.seg === 'aktif' ? acik : U.seg === 'kapali' ? kapali : acik.filter(function(o){ return o.kod === U.seg; });
-  var h = '<div class="scr"><div class="chips" role="group" aria-label="Sipariş durumu">' + seg.map(function(s){
+  var h = '<div class="scr">' + spSecici() + '<div class="chips" role="group" aria-label="Sipariş durumu">' + seg.map(function(s){
     return '<button class="chip" data-act="seg" data-k="' + s[0] + '" aria-pressed="' + (U.seg === s[0]) + '">' + s[1] +
       ' <span class="n' + (s[0] === 'Y' && s[2] ? ' hot' : '') + '">' + s[2] + '</span></button>';
   }).join('') + '</div>';
@@ -8794,7 +8805,9 @@ function moduller(){
   if (garson()) return [['masa', 'Masalar', 'masa', msRozet(), 'Servis'], ['siparis', 'Mutfak', 'fis', 0, 'Servis']];
   var l = [], erp = erpVar();
   if (sahip() || erp) l.push(['ozet', 'Özet', 'ozet', 0, 'Genel']);
-  l.push(['siparis', 'Siparişler', 'fis', sayac('Y'), 'Satış']);
+  var spk = GENIS_NAV.matches ? spKanallar() : [];
+  if (spk.length) spk.forEach(function(x){ l.push(['siparis', x[1], x[3], x[0] === 'tumu' ? 0 : spRozet(x[0]), 'Siparişler', x[0]]); });
+  else l.push(['siparis', 'Siparişler', 'fis', sayac('Y'), 'Satış']);
   if (masaSekmesi()) l.push(['masa', 'Masalar', 'masa', msRozet(), 'Satış']);
   if (kasaAcik()) l.push(['kasa', 'Kasa', 'kasa', 0, 'Satış']);
   l.push(['menu', menuAdi(), 'menu', 0, 'Ürünler']);
@@ -8822,7 +8835,7 @@ function modulNav(){
   $('#app').classList.add('yan');
   if (!l.some(function(x){ return x[0] === U.tab; })) U.tab = l[0][0];
   var dugme = function(x){
-    return '<button class="tab" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
+    return '<button class="tab" data-act="sekme" data-k="' + x[0] + '"' + (x[5] ? ' data-kanal="' + x[5] + '"' : '') + (U.tab === x[0] && (!x[5] || x[5] === spKanal()) ? ' aria-current="page"' : '') + '>' + ic(x[2]) +
       '<span>' + esc(x[1]) + '</span>' + (x[3] ? '<span class="cnt" aria-label="' + x[3] + ' adet">' + x[3] + '</span>' : '') + '</button>';
   };
   var h = '';
@@ -8848,7 +8861,7 @@ SHEET.moduller = function(){
   var l = moduller(), grup = null, h = shBas('Bölümler') + '<div class="sh-body"><div class="mod-l">';
   l.forEach(function(x){
     if (x[4] !== grup) { h += '<h3 class="blk-h">' + esc(x[4]) + '</h3>'; grup = x[4]; }
-    h += '<button class="mod-b" data-act="sekme" data-k="' + x[0] + '"' + (U.tab === x[0] ? ' aria-current="page"' : '') + '>' + ic(x[2]) + '<span>' + esc(x[1]) + '</span>' +
+    h += '<button class="mod-b" data-act="sekme" data-k="' + x[0] + '"' + (x[5] ? ' data-kanal="' + x[5] + '"' : '') + (U.tab === x[0] && (!x[5] || x[5] === spKanal()) ? ' aria-current="page"' : '') + '>' + ic(x[2]) + '<span>' + esc(x[1]) + '</span>' +
       (x[3] ? '<span class="cnt">' + x[3] + '</span>' : '') + ic('sag', 'sm') + '</button>';
   });
   return h + '</div></div>';
@@ -11322,6 +11335,66 @@ ACT_EK.ynPkOz = function(el){
   renderSheet();
 };
 
+/* ---------- 1.18.2 siparişler kanala göre ayrı ekranlarda ---------- */
+var SPK_KEY = 'yourpos360-sp-kanal-' + B;
+// [kod, kısa ad, menüdeki ad, simge]; tek kanal varsa (yalnız online) seçici yok
+function spKanallar(){
+  if (!D || !D.siparisler || garson() || kurye() || hzm() || numarator() || merkez() || yonetim()) return [];
+  var l = [['online', 'Online', 'Online siparişler', 'kurye']];
+  if (masaSekmesi() || D.siparisler.some(function(o){ return o.kanal === 'Masa'; })) l.push(['masa', 'Masa', 'Masa siparişleri', 'masa']);
+  if (kasaAcik() || D.siparisler.some(function(o){ return o.kanal === 'Tezgah' || o.kanal === 'Tabldot'; })) l.push(['kasa', 'Tabldot', 'Tabldot ve tezgâh siparişleri', 'kasa']);
+  if (l.length < 2) return [];
+  l.push(['tumu', 'Tümü', 'Tüm siparişler', 'fis']);
+  return l;
+}
+function spKanal(){
+  var l = spKanallar();
+  if (!l.length) return 'tumu';
+  var k = U.kanal || LS.get(SPK_KEY) || (D.cihaz ? 'tumu' : 'online');
+  return l.some(function(x){ return x[0] === k; }) ? k : l[0][0];
+}
+function spUygun(o, k){
+  k = k || spKanal();
+  if (k === 'tumu') return true;
+  if (k === 'online') return !o.kanal;
+  if (k === 'masa') return o.kanal === 'Masa';
+  return o.kanal === 'Tezgah' || o.kanal === 'Tabldot';
+}
+// Menüdeki sayı: dikkat isteyenler (online ve masada onay bekleyen, kasada hazırlanan / hazır tezgâh siparişi)
+function spRozet(k){
+  return D.siparisler.filter(function(o){
+    if (!spUygun(o, k)) return false;
+    return k === 'kasa' ? (o.kod === 'H' || o.kod === 'R') : o.kod === 'Y';
+  }).length;
+}
+function spKolonlar(k){ return k === 'masa' ? ['Y', 'H', 'R'] : k === 'kasa' ? ['H', 'R'] : ACIK; }
+function spAd(k){ var x = spKanallar().filter(function(y){ return y[0] === k; })[0]; return x ? x[2] : 'Siparişler'; }
+function spBosMetin(k, std){
+  return k === 'masa' ? 'Garsonun mutfağa gönderdiği ve masadaki QR\'dan gelen siparişler burada görünür.'
+    : k === 'kasa' ? 'Tezgâh siparişleri sıra numarasıyla burada görünür. Tabldot satışları kasada hemen kapanır; «Kapanan»da listelenir.' : std;
+}
+// Telefonda kanal seçici (geniş ekranda sol menü yeterli; orada yalnız başlık)
+function spSecici(){
+  var l = spKanallar();
+  if (!l.length) return '';
+  var k = spKanal();
+  if (GENIS_NAV.matches) return '<h2 class="sp-bas">' + ic(l.filter(function(x){ return x[0] === k; })[0][3]) + esc(spAd(k)) + '</h2>';
+  return '<div class="seg sp-kanal" role="group" aria-label="Sipariş kanalı">' + l.map(function(x){
+    var n = x[0] === 'tumu' ? 0 : spRozet(x[0]);
+    return '<button data-act="spKanal" data-k="' + x[0] + '" aria-pressed="' + (k === x[0]) + '">' + esc(x[1]) + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
+  }).join('') + '</div>';
+}
+function spEtiket(o){
+  if (o.kanal === 'Masa') return '🍽️ ' + (o.masa || 'Masa') + (o.qr ? ' · QR siparişi' : ' siparişi');
+  if (o.kanal === 'Tezgah') return '🧾 Tezgâh · sıra ' + (o.sira || o.no);
+  if (o.kanal === 'Tabldot') return '🧾 Tabldot #' + o.no;
+  return '🛵 Online sipariş #' + o.no + (o.sube ? ' (' + o.sube + ')' : '');
+}
+ACT_EK.spKanal = function(el){
+  U.kanal = el.getAttribute('data-k'); LS.set(SPK_KEY, U.kanal); U.seg = 'aktif';
+  haptic('select'); main.scrollTop = 0; renderMain(); renderTabs();
+};
+
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
   var k = o.lat && o.lng ? o.lat + ',' + o.lng : '', q = encodeURIComponent(o.adres || '');
@@ -11368,6 +11441,7 @@ var ACT = {
     var k = el.getAttribute('data-k');
     if (kurye()) U.ktab = k; else U.tab = k;
     if (el.getAttribute('data-seg')) ERP.pseg = el.getAttribute('data-seg');
+    if (el.getAttribute('data-kanal')) { U.kanal = el.getAttribute('data-kanal'); LS.set(SPK_KEY, U.kanal); U.seg = 'aktif'; }
     if (SH && /^erp/.test(SH.tip)) sheetKapat();
     haptic('select');
     main.scrollTop = 0;
@@ -12012,7 +12086,8 @@ function demoMock(rol){
         var saat = agirlikliSec(agirlik, rnd);
         var kal = [], ara = 0, kac = 1 + Math.floor(rnd() * 3);
         for (var k = 0; k < kac; k++) {
-          var u = MENU[agirlikliSec(urunAgirlik, rnd)], ad_ = 1 + (rnd() < 0.3 ? 1 : 0);
+          var u = MENU[agirlikliSec(urunAgirlik, rnd) % Math.max(1, MENU.length)], ad_ = 1 + (rnd() < 0.3 ? 1 : 0);
+          if (!u) break;
           kal.push({ ad:u.ad, adet:ad_, tutar:ad_ * u.fiyat }); ara += ad_ * u.fiyat;
         }
         var ucret = rnd() < 0.25 ? 30 : 0, tutar = ara + ucret;
