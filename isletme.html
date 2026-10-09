@@ -1514,6 +1514,19 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .sa-kisi{display:flex;align-items:center;gap:16px}
 .sa-kisi b{font-size:24px;min-width:2ch;text-align:center}
 .ms-dr .ms-dsa{grid-column:1 / -1}
+/* ---------- 1.27 siparişler: kanal sekmeleri ---------- */
+.sp-sekmeler{display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--sep);margin:0 0 12px;overflow-x:auto;scrollbar-width:none;flex:0 0 auto}
+.sp-sekmeler::-webkit-scrollbar{display:none}
+.sp-sekmeler button{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:50px;padding:0 18px;border:0;background:none;font:inherit;font-size:16px;font-weight:700;color:var(--sub);white-space:nowrap;cursor:pointer;border-radius:10px 10px 0 0}
+.sp-sekmeler button svg{width:20px;height:20px;flex:none}
+.sp-sekmeler button::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:transparent}
+.sp-sekmeler button:hover{color:var(--text);background:var(--bg)}
+.sp-sekmeler button[aria-selected="true"]{color:var(--text)}
+.sp-sekmeler button[aria-selected="true"]::after{background:var(--accent)}
+.sp-sekmeler button[aria-selected="true"] svg{color:var(--accent)}
+.sp-sekmeler button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.sp-sekmeler .n{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--danger-fill);color:var(--on-danger);font-size:13px;font-weight:800;display:inline-grid;place-items:center}
+@media (min-width:1200px){ .sp-sekmeler button{font-size:17px;min-height:54px;padding:0 22px} }
 </style>
 </head>
 <body>
@@ -2281,7 +2294,7 @@ function siparisEkrani(){
   bosMetin = spBosMetin(spk, bosMetin);
   if (PANO.matches) {
     main.classList.add('fill');
-    var ust = '<div class="toolbar">' + spSecici() + '<div class="seg" role="group" aria-label="Siparişler">' +
+    var ust = spSekmeSeridi() + '<div class="toolbar">' + '<div class="seg" role="group" aria-label="Siparişler">' +
       '<button data-act="pano" data-k="acik" aria-pressed="' + (U.pano === 'acik') + '">Açık siparişler <span class="num">(' + acik.length + ')</span></button>' +
       '<button data-act="pano" data-k="kapali" aria-pressed="' + (U.pano === 'kapali') + '">Bugün kapananlar <span class="num">(' + kapali.length + ')</span></button>' +
       '</div>' + guncelSatiri() + '</div>';
@@ -9013,9 +9026,7 @@ function moduller(){
     .concat(kasaAcik() && yt('kasa') ? [['kasa', 'Kasa', 'kasa', 0, 'Servis']] : []);
   var l = [], erp = erpVar();
   if (sahip() || yt('rapor')) l.push(['ozet', 'Özet', 'ozet', 0, 'Genel']);
-  var spk = GENIS_NAV.matches ? spKanallar() : [];
-  if (spk.length) spk.forEach(function(x){ l.push(['siparis', x[1], x[3], x[0] === 'tumu' ? 0 : spRozet(x[0]), 'Siparişler', x[0]]); });
-  else if (!spHicYok()) l.push(['siparis', 'Siparişler', 'fis', sayac('Y'), 'Satış']);
+  if (!spHicYok()) l.push(['siparis', 'Siparişler', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme
   if (masaSekmesi() && yt('masa')) l.push(['masa', 'Masalar', 'masa', msRozet(), 'Satış']);
   if (kasaAcik() && yt('kasa')) l.push(['kasa', 'Kasa', 'kasa', 0, 'Satış']);
   if (yt('menu')) l.push(['menu', menuAdi(), 'menu', 0, 'Ürünler']);
@@ -11822,7 +11833,6 @@ function spSecici(){
   var l = spKanallar();
   if (!l.length) return '';
   var k = spKanal();
-  if (GENIS_NAV.matches) return '<h2 class="sp-bas">' + ic(l.filter(function(x){ return x[0] === k; })[0][3]) + esc(spAd(k)) + '</h2>';
   return '<div class="seg sp-kanal" role="group" aria-label="Sipariş kanalı">' + l.map(function(x){
     var n = x[0] === 'tumu' ? 0 : spRozet(x[0]);
     return '<button data-act="spKanal" data-k="' + x[0] + '" aria-pressed="' + (k === x[0]) + '">' + esc(x[1]) + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
@@ -11836,7 +11846,9 @@ function spEtiket(o){
 }
 ACT_EK.spKanal = function(el){
   U.kanal = el.getAttribute('data-k'); LS.set(SPK_KEY, U.kanal); U.seg = 'aktif';
+  var sekme = el.getAttribute('role') === 'tab';
   haptic('select'); main.scrollTop = 0; renderMain(); renderTabs();
+  if (sekme) setTimeout(function(){ var x = document.getElementById('spSekme-' + U.kanal); if (x) x.focus({ preventScroll:true }); }, 0);
 };
 
 /* ---------- 1.18.2 yetkiler ---------- */
@@ -13152,6 +13164,41 @@ ACT_EK.saBitirOde = function(){
     if (MS.ad && MS.ad.kalan > 0) ACT.msOdemeAc();
   });
 };
+
+/* ---------- 1.27 Siparişler: Online · Masa · Tabldot tek pencerede, ayrı sekmeler ---------- */
+// Menüdeki «Siparişler» sayısı: kanal sekmelerindeki sayıların toplamı (tek kanal varsa onay bekleyenler)
+function spToplamRozet(){
+  var l = spKanallar();
+  if (!l.length) return sayac('Y');
+  return l.reduce(function(t, x){ return t + (x[0] === 'tumu' ? 0 : spRozet(x[0])); }, 0);
+}
+// Geniş ekran (pano): pencerenin üstünde sekme şeridi
+function spSekmeSeridi(){
+  var l = spKanallar();
+  if (!l.length) return '';
+  var k = spKanal();
+  return '<div class="sp-sekmeler" role="tablist" aria-label="Sipariş kanalı">' + l.map(function(x){
+    var n = x[0] === 'tumu' ? 0 : spRozet(x[0]), on = k === x[0];
+    return '<button type="button" role="tab" id="spSekme-' + x[0] + '" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-act="spKanal" data-k="' + x[0] + '" title="' + esc(x[2]) + '">' +
+      ic(x[3]) + '<span>' + esc(x[1]) + '</span>' + (n ? '<span class="n" aria-label="' + n + ' adet dikkat bekliyor">' + n + '</span>' : '') + '</button>';
+  }).join('') + '</div>';
+}
+// Sekme şeridinde ok tuşlarıyla gezinme
+document.addEventListener('keydown', function(e){
+  var t = e.target;
+  if (!t || !t.closest || t.getAttribute('role') !== 'tab' || !t.closest('.sp-sekmeler')) return;
+  var l = [].slice.call(t.closest('.sp-sekmeler').querySelectorAll('[role=tab]')), i = l.indexOf(t), j = -1;
+  if (e.key === 'ArrowRight') j = (i + 1) % l.length;
+  else if (e.key === 'ArrowLeft') j = (i - 1 + l.length) % l.length;
+  else if (e.key === 'Home') j = 0;
+  else if (e.key === 'End') j = l.length - 1;
+  if (j < 0) return;
+  e.preventDefault();
+  var k = l[j].getAttribute('data-k');
+  U.kanal = k; LS.set(SPK_KEY, k); U.seg = 'aktif';
+  renderMain(); renderTabs();
+  setTimeout(function(){ var x = document.getElementById('spSekme-' + k); if (x) x.focus(); }, 0);
+});
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
