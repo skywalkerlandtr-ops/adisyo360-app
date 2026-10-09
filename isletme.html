@@ -1452,6 +1452,14 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .po-son li{flex-wrap:wrap}
 .po-onay{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex-basis:100%;margin-top:6px}
 .po-onay>span{flex-basis:100%;font-size:14px;font-weight:600}
+/* ---------- 1.22 çevrimdışı mod ---------- */
+.cd-ban{font-size:14px}
+.cd-li{list-style:disc;margin:6px 0 12px;padding-left:18px;color:var(--sub);font-size:14px;line-height:1.5}
+.cd-li li{margin:3px 0}
+.cd-sl{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.cd-sl li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--bg2)}
+.cd-sl li>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cd-sl .cd-sh{color:var(--danger,#c0392b);font-size:13px}
 </style>
 </head>
 <body>
@@ -2080,6 +2088,7 @@ function renderBanners(){
     h += '<div class="banner info">' + ic('zil') + '<span class="b-txt">' + (kurye() ? 'Hazır sipariş' : 'Yeni sipariş') + ' sesi için bir kez dokunun.</span>' +
       '<button data-act="sesDene">Sesi aç</button></div>';
   }
+  if (typeof cdBannerHtml === 'function') h = cdBannerHtml() + h;   // 1.22 çevrimdışı mod
   koruyarakYaz($('#banners'), h);
 }
 function renderTabs(){
@@ -4108,6 +4117,7 @@ function ayarEkrani(){
   h += kasaAyarHtml();
   h += msAyarHtml();
   h += odAyarHtml();
+  h += cdAyarHtml();
   // konum
   var lat = Number(a.Enlem) || 0, lng = Number(a.Boylam) || 0, kb = U.busy.ayKonum;
   h += '<section class="card pad frm"><h2 class="frm-h">İşletme konumu</h2>' +
@@ -12031,6 +12041,498 @@ ACT_EK.poKarar = function(el){
     ciz();
   });
 };
+
+/* ============================================================
+   ÇEVRİMDIŞI MOD (1.22.0)
+   • İşletme ekranı her açılışta ve değişiklikte gerekli bilgileri bu cihaza kaydeder (IndexedDB): ekran, menü, masa planı,
+     açık hesapların ayrıntısı, kasa bilgisi. Sayfa da cihazda saklanır (isletme-sw.js), internet yokken yeniden açılabilir.
+   • İnternet giderse ekran kapanmaz: kasa satışı (tabldot / tezgâh), masaya ürün gönderme, masada ödeme ve ödenmiş hesabı kapatma
+     cihazda yapılır, fişler yazıcıdan çıkar; işlemler sıraya girer. Diğer işlemler internet gelene dek yapılamaz.
+   • İnternet gelince sıra baştan sona gönderilir («cd: 1» ve cihazdaki zamanla); aynı işlem iki kez kaydedilmez (istek kimliği).
+     Çevrimdışı açılan masanın geçici hesap kimliği, sunucunun verdiği kimlikle eşleştirilir. Gönderilemeyen işlem listelenir.
+   ============================================================ */
+var CD = { aktif:false, hazirP:null, kuyruk:[], sorunlu:[], ad:{}, kasa:null, snapD:null, eslesme:{}, noEs:{}, no:900000,
+  gonderim:false, gonderilen:0, denemeT:null, kayitT:null, paketMs:0, paketRev:'', paketYuk:false, otoDuraklat:null, testKopuk:false };
+var CD_YAZ = ['ekKasaSatis', 'ekMasaGonder', 'ekMasaOdeme', 'ekMasaKapat', 'ekDurum', 'ekTeslim', 'ekMasaServis'];
+var CD_DURUM = ['ekDurum', 'ekTeslim', 'ekMasaServis'];
+var CD_OKU = ['ekBaslat', 'ekYenile', 'ekMasalar', 'ekMasaAdisyon', 'ekKasa'];
+var CD_ASIL_CALL = call;
+
+// Sayfa cihazda saklansın (yalnız isletme.html; diğer sayfalara karışmaz)
+(function(){
+  try {
+    if (!DEMO && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'))
+      navigator.serviceWorker.register('isletme-sw.js', { scope:'./' }).catch(function(){});
+  } catch(e){}
+})();
+
+/* --- cihazda saklama (IndexedDB; yoksa localStorage) --- */
+function cdDb(){
+  if (CD.dbP) return CD.dbP;
+  CD.dbP = new Promise(function(coz){
+    try {
+      if (!window.indexedDB) return coz(null);
+      var r = indexedDB.open('yourpos360-cd', 1);
+      r.onupgradeneeded = function(){ try { r.result.createObjectStore('kv'); } catch(e){} };
+      r.onsuccess = function(){ coz(r.result); };
+      r.onerror = r.onblocked = function(){ coz(null); };
+    } catch(e){ coz(null); }
+  });
+  return CD.dbP;
+}
+function cdOku(k){
+  return cdDb().then(function(db){
+    if (!db) { try { return JSON.parse(localStorage.getItem('yp-cd:' + k) || 'null'); } catch(e){ return null; } }
+    return new Promise(function(coz){
+      try { var q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = function(){ coz(q.result === undefined ? null : q.result); }; q.onerror = function(){ coz(null); }; }
+      catch(e){ coz(null); }
+    });
+  });
+}
+function cdYaz(k, v){
+  return cdDb().then(function(db){
+    if (!db) { try { localStorage.setItem('yp-cd:' + k, JSON.stringify(v)); } catch(e){} return; }
+    return new Promise(function(coz){
+      try { var t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = t.onerror = t.onabort = function(){ coz(); }; }
+      catch(e){ coz(); }
+    });
+  });
+}
+function cdKopya(o){ return o == null ? o : JSON.parse(JSON.stringify(o)); }
+// Ekranın sahibi (cihaz bağlantısı, Telegram kişisi ya da web girişi): başka birinin kaydı açılmasın
+function cdKimlik(){
+  try {
+    if (CIHAZ) return 'c:' + CIHAZ + (GS ? ':g' : '');
+    if (inTelegram) { var u = realTg.initDataUnsafe && realTg.initDataUnsafe.user; return 't:' + (u ? u.id : '?') + (ANA ? ':a' : ''); }
+    if (WEB) return 'w:' + String(WEB).slice(-24);
+  } catch(e){}
+  return 'x';
+}
+function cdAnahtar(){ return 'snap:' + B + ':' + cdKimlik(); }
+function cdHazir(){
+  if (!CD.hazirP) CD.hazirP = Promise.all([cdOku(cdAnahtar()), cdOku('q:' + B), cdOku('s:' + B)]).then(function(l){
+    var s = l[0];
+    if (s && s.D) { CD.snapD = s.D; CD.ad = s.ad || {}; CD.kasa = s.kasa || null; CD.eslesme = s.eslesme || {}; CD.noEs = s.noEs || {}; CD.no = Math.max(CD.no, Number(s.no) || 0); CD.otoDuraklat = s.oto === undefined ? null : s.oto; }
+    CD.kuyruk = Array.isArray(l[1]) ? l[1] : [];
+    CD.sorunlu = Array.isArray(l[2]) ? l[2] : [];
+  }, function(){});
+  return CD.hazirP;
+}
+function cdKaydet(){
+  clearTimeout(CD.kayitT); CD.kayitT = null;
+  if (!D || DEMO || yonetim() || merkez() || numarator() || kurye()) return Promise.resolve();
+  var s = { v:1, ms:Date.now(), D:cdKopya(D), ad:CD.ad, kasa:(typeof KZ !== 'undefined' && KZ.veri) || CD.kasa, eslesme:CD.eslesme, noEs:CD.noEs, no:CD.no, oto:CD.otoDuraklat };
+  if (s.D) { delete s.D.rapor; }
+  return cdYaz(cdAnahtar(), s);
+}
+function cdKaydetPlanla(ms){ clearTimeout(CD.kayitT); CD.kayitT = setTimeout(cdKaydet, ms === undefined ? 2500 : ms); }
+function cdKuyrukKaydet(){ return Promise.all([cdYaz('q:' + B, CD.kuyruk), cdYaz('s:' + B, CD.sorunlu)]); }
+document.addEventListener('visibilitychange', function(){ if (document.hidden && D) cdKaydet(); });
+
+/* --- çevrimdışı paket: masa planı, açık hesaplar, kasa --- */
+function cdUygun(){ return !!(D && !DEMO && !yonetim() && !merkez() && !numarator() && !kurye() && (sahip() || D.rol === 'Personel' || garson())); }
+function cdPaketPlanla(zorla){
+  if (!cdUygun() || CD.aktif || CD.paketYuk) return;
+  if (!(masaSekmesi() || kasaAcik())) return;
+  var rev = String(D.rev || '');
+  if (!zorla && Date.now() - CD.paketMs < (rev !== CD.paketRev ? 20000 : 180000)) return;
+  CD.paketYuk = true;
+  CD_ASIL_CALL('ekCdPaket', {}).then(function(r){
+    CD.paketYuk = false;
+    if (!r || !r.ok) return;
+    CD.paketMs = Date.now(); CD.paketRev = String(r.rev || rev);
+    if (typeof r.otoDuraklat === 'boolean') CD.otoDuraklat = r.otoDuraklat;
+    if (r.masa) { var m = {}; (r.masa.adisyonlar || []).forEach(function(a){ m[a.id] = a; }); CD.ad = m; if (r.masa.odemeler) CD.masaOdemeler = r.masa.odemeler; }
+    if (r.kasa) CD.kasa = r.kasa;
+    cdKaydetPlanla(500);
+  });
+}
+// Çevrimiçi yanıtlardan yerel kayıt güncellenir
+function cdBasari(act, data, r){
+  if (act === 'ekBaslat' && CD.demoKes) { setTimeout(cdDemoKes, 600); return; }
+  if (act === 'ekBaslat') { setTimeout(function(){ cdKaydet(); cdPaketPlanla(true); if (CD.kuyruk.length) cdGonder(); }, 800); return; }
+  if (act === 'ekYenile') { if (!r.ayni) cdKaydetPlanla(); cdPaketPlanla(false); return; }
+  if (r.adisyon && r.adisyon.id) { if (r.adisyon.durum === 'Açık') CD.ad[r.adisyon.id] = r.adisyon; else delete CD.ad[r.adisyon.id]; }
+  if (r.kapananId) delete CD.ad[r.kapananId];
+  if (act === 'ekKasa') CD.kasa = r;
+  if (/^ekMasa|^ekKasa/.test(act)) cdKaydetPlanla();
+}
+
+/* --- istek sarmalayıcı --- */
+call = function(act, data){
+  if (MOCK && act === 'ekCdAyar') return Promise.resolve({ ok:true, otoDuraklat:!!(data && data.otoDuraklat) });   // önizleme
+  if (MOCK && !CD.testKopuk) return CD_ASIL_CALL(act, data).then(function(r){ if (r && r.ok && act === 'ekBaslat' && CD.demoKes) cdBasari(act, data, r); return r; });
+  var destek = CD_YAZ.indexOf(act) >= 0 || CD_OKU.indexOf(act) >= 0;
+  if (CD.aktif && destek) return cdHazir().then(function(){ return cdYerel(act, data); });
+  if (CD.aktif) return Promise.resolve(cdHataCD());
+  var p = CD.testKopuk ? Promise.resolve({ ok:false, kod:'AG', hata:'İnternet bağlantısı yok gibi görünüyor.' }) : CD_ASIL_CALL(act, data);
+  return p.then(function(r){
+    var kopuk = r && (r.kod === 'AG' || (r.kod === 'ZAMAN' && CD_YAZ.indexOf(act) >= 0));
+    if (kopuk && destek && cdUygunKimlik()) {
+      return cdHazir().then(function(){
+        if (!CD.snapD && !D) return r;              // bu cihazda kayıt yok: çevrimdışı açılamaz
+        cdCevrimdisi();
+        return cdYerel(act, data);
+      });
+    }
+    if (r && r.ok) { try { cdBasari(act, data, r); } catch(e){} }
+    return r;
+  });
+};
+function cdUygunKimlik(){ return !DEMO || CD.testKopuk; }
+function cdHataCD(){ return { ok:false, kod:'CD', hata:'İnternet yokken bu işlem yapılamaz. Bağlantı gelince tekrar deneyin.' }; }
+function cdHata(kod, hata){ return { ok:false, kod:kod, hata:hata }; }
+
+/* --- çevrimdışı / çevrimiçi geçişleri --- */
+function cdCevrimdisi(){
+  if (CD.aktif) return;
+  CD.aktif = true;
+  U.net = true;   // genel «bağlantı yok» şeridi yerine çevrimdışı şeridi
+  toast('📴 İnternet yok — çevrimdışı çalışıyorsunuz. İşlemler bu cihazda saklanıyor.');
+  try { renderBanners(); } catch(e){}
+  cdDenemePlanla(15000);
+}
+function cdDenemePlanla(ms){ clearTimeout(CD.denemeT); CD.denemeT = setTimeout(cdDene, ms); }
+function cdDene(){
+  clearTimeout(CD.denemeT);
+  if (!CD.aktif) return Promise.resolve();
+  var p = CD.testKopuk ? Promise.resolve({ ok:false, kod:'AG' }) : CD_ASIL_CALL('ekYenile', { rev:D ? D.rev : 0 });
+  return p.then(function(r){
+    if (r && (r.kod === 'AG' || r.kod === 'ZAMAN')) { cdDenemePlanla(15000); return; }
+    cdCevrimici();
+  });
+}
+function cdCevrimici(){
+  CD.aktif = false;
+  try { renderBanners(); } catch(e){}
+  return cdGonder().then(function(){ if (D) return tamYenile(); });
+}
+window.addEventListener('online', function(){ if (CD.aktif) cdDene(); else if (CD.kuyruk.length) cdGonder(); });
+
+/* --- sıradaki işlemleri gönder --- */
+function cdGonder(){
+  if (CD.gonderim || CD.aktif || !CD.kuyruk.length) return Promise.resolve();
+  CD.gonderim = true; CD.gonderilen = 0;
+  var toplam = CD.kuyruk.length, sorun = 0;
+  try { renderBanners(); } catch(e){}
+  function sonraki(){
+    if (!CD.kuyruk.length) return Promise.resolve('bitti');
+    var is = CD.kuyruk[0], d = cdKopya(is.data);
+    if (d.adisyon && /^YEREL/.test(d.adisyon)) {
+      if (!CD.eslesme[d.adisyon]) { cdSorunaAl(is, 'Bu masanın hesabı sunucuda açılamadı (önceki işlem gönderilemedi).'); sorun++; return cdKuyrukKaydet().then(sonraki); }
+      d.adisyon = CD.eslesme[d.adisyon];
+    }
+    if (d.no && Number(d.no) > 900000) {
+      if (!CD.noEs[d.no]) { cdSorunaAl(is, 'Bu siparişin kendisi sunucuya kaydedilemedi.'); sorun++; return cdKuyrukKaydet().then(sonraki); }
+      d.no = CD.noEs[d.no];
+    }
+    d.cd = 1; d.cdZaman = is.zaman;
+    return CD_ASIL_CALL(is.act, d).then(function(r){
+      if (!r || r.kod === 'AG' || r.kod === 'ZAMAN') return 'kopuk';
+      if (r.kod === 'GIRIS' || r.kod === 'PIN') return 'giris';
+      var tamam = r.ok || (is.act === 'ekMasaKapat' && /^(DURUM|YOK)$/.test(r.kod)) || (CD_DURUM.indexOf(is.act) >= 0 && r.kod === 'DURUM');
+      if (tamam) {
+        if (r.ok && is.yeniAd && r.adisyon && r.adisyon.id) CD.eslesme[is.yeniAd] = r.adisyon.id;
+        if (r.ok && is.yeniAd && !r.adisyon && r.kapananId) CD.eslesme[is.yeniAd] = r.kapananId;
+        // aynı fiş yazıcıdan ikinci kez çıkmasın, yeni sipariş sesi çalmasın
+        if (r.ok && is.yerelNo) { var gercek = r.no || (r.satis && r.satis.no); if (gercek) CD.noEs[is.yerelNo] = gercek; }
+        var no = r.no || (r.siparis && r.siparis.no) || (r.satis && r.satis.kanal === 'Tezgah' && r.satis.no);
+        if (no) { try { yazdiIsaretle([no]); } catch(e){} if (GORULEN) { GORULEN[no + ':H'] = 1; GORULEN[no + ':T'] = 1; } }
+        CD.kuyruk.shift(); CD.gonderilen++;
+      } else { cdSorunaAl(is, r.hata || 'İşlem kaydedilemedi.'); sorun++; }
+      return cdKuyrukKaydet().then(function(){ try { renderBanners(); } catch(e){} return sonraki(); });
+    });
+  }
+  return sonraki().then(function(son){
+    CD.gonderim = false;
+    cdKaydetPlanla(200);
+    try { renderBanners(); } catch(e){}
+    if (son === 'kopuk') { cdCevrimdisi(); return; }
+    if (son === 'giris') { toast('Bekleyen çevrimdışı işlemler için yeniden giriş gerekiyor; giriş yapınca gönderilecek.', true); return; }
+    if (CD.gonderilen) toast('✅ Çevrimdışı ' + CD.gonderilen + ' işlem sunucuya gönderildi' + (sorun ? ' · ' + sorun + ' işlem gönderilemedi' : ''), !!sorun);
+    else if (sorun) toast(sorun + ' çevrimdışı işlem gönderilemedi. Ayrıntılar üstteki şeritte.', true);
+  });
+}
+function cdSorunaAl(is, hata){
+  CD.kuyruk.shift();
+  is.hata = hata; is.hataMs = Date.now();
+  CD.sorunlu.push(is);
+  if (CD.sorunlu.length > 50) CD.sorunlu = CD.sorunlu.slice(-50);
+}
+
+/* --- yerel işlem (çevrimdışı) --- */
+function cdYuv(n){ return Math.round(n * 100) / 100; }
+function cdYeniNo(){ CD.no = Math.max(CD.no + 1, 900001); return CD.no; }
+function cdZaman(){ return Date.now() + (SKEW || 0); }
+function cdEkle(act, data, ozet, ek){
+  var is = Object.assign({ id:kzIstek(), act:act, data:cdKopya(data), zaman:cdZaman(), ozet:ozet }, ek || {});
+  CD.kuyruk.push(is);
+  cdKuyrukKaydet();
+  cdKaydetPlanla(300);
+  try { renderBanners(); } catch(e){}
+  return is;
+}
+function cdMasaBul(id){ return (D.masalar || []).filter(function(m){ return m.id === id; })[0] || null; }
+function cdKalem(k){
+  var adet = Math.floor(Number(k.adet));
+  if (!(adet >= 1 && adet <= 99)) throw new Error('Adet geçersiz.');
+  if (k.serbest !== undefined && k.serbest !== null && k.serbest !== '') {
+    var fs = Number(String(k.serbest).replace(',', '.'));
+    if (!(fs > 0)) throw new Error('Tutar geçersiz.');
+    var ks = { ad:String(k.ad || 'Diğer').slice(0, 60), adet:adet, tutar:cdYuv(fs * adet) };
+    if (k.not) ks.not = String(k.not).slice(0, 120);
+    return ks;
+  }
+  var u = (D.menu || []).filter(function(m){ return m.id === k.id; })[0];
+  if (!u || !u.aktif) throw new Error('Ürün menüde bulunamadı.');
+  var s = { cikar:k.cikar || [], ekle:k.ekle || [], ekstra:k.ekstra || [], gr:k.gr || {}, not:k.not || '' };
+  var f = typeof msSecimFiyat === 'function' ? msSecimFiyat(u, s) : u.fiyat;
+  var kl = { ad:u.sec ? u.ad + ' (' + u.sec + ')' : u.ad, adet:adet, tutar:cdYuv(f * adet), id:u.id, birim:f };
+  if (s.cikar.length) kl.cikar = s.cikar;
+  if (s.ekle.length) kl.ekle = s.ekle;
+  if (s.ekstra.length) kl.ekstra = s.ekstra.map(function(a){ var e = ((u.oz && u.oz.ek) || []).filter(function(z){ return z.a === a; })[0]; return { ad:a, fiyat:e ? e.f : 0 }; });
+  var gr = Object.keys(s.gr).filter(function(g){ return s.gr[g] && s.gr[g].length; });
+  if (gr.length) kl.gr = gr.map(function(g){ return { g:g, s:s.gr[g] }; });
+  if (s.not) kl.not = s.not;
+  return kl;
+}
+function cdHesap(a){
+  var brut = 0, h = { fis:0, qr:0, hazir:0, mutfak:0 };
+  (a.fisler || []).forEach(function(o){ if (o.kod === 'Y') { h.qr++; return; } if (o.kod === 'I') return; h.fis++; brut += Number(o.ara || o.toplam) || 0; if (o.kod === 'R') h.hazir++; if (o.kod === 'H') h.mutfak++; });
+  brut = cdYuv(brut);
+  var k = String(a.indirimKural || ''), ind = !k ? 0 : k.charAt(0) === '%' ? cdYuv(brut * Number(k.slice(1)) / 100) : Math.min(brut, Number(k) || 0);
+  var od = cdYuv((a.odemeler || []).reduce(function(t, p){ return t + (Number(p.t) || 0); }, 0)), top = cdYuv(brut - ind);
+  a.brut = brut; a.indirim = ind; a.toplam = top; a.odenen = od; a.kalan = cdYuv(Math.max(0, top - od));
+  return Object.assign(h, { brut:brut, indirim:ind, toplam:top, odenen:od, kalan:a.kalan });
+}
+function cdOzetYaz(a){
+  var m = cdMasaBul(a.masaId); if (!m) return;
+  if (a.durum !== 'Açık') { delete m.adisyon; return; }
+  var h = cdHesap(a), x = m.adisyon || {};
+  m.adisyon = Object.assign(x, { id:a.id, toplam:h.toplam, odenen:h.odenen, kalan:h.kalan, acilisMs:a.acilisMs, garson:a.garson, garsonId:a.garsonId, kisi:a.kisi || 0,
+    hesapMs:a.hesapMs || 0, fis:h.fis, qr:h.qr, hazir:h.hazir, mutfak:h.mutfak, kaynak:a.kaynak || 'Garson' });
+}
+function cdBen(){ return (D && D.ben) || { id:'', ad:'Ekip' }; }
+function cdAdKapat(a){
+  a.durum = 'Kapandı'; a.kapanisMs = cdZaman();
+  (a.fisler || []).forEach(function(f){
+    var o = siparis(f.no);
+    if (o && o.kod !== 'I') { o.kod = 'T'; o.durum = DUR.T.ad; o.guncelMs = cdZaman(); }
+  });
+  cdOzetYaz(a);
+  delete CD.ad[a.id];
+}
+function cdYerel(act, d){
+  d = d || {};
+  if (!D && act !== 'ekBaslat') return cdHataCD();
+  try {
+    switch (act) {
+      case 'ekBaslat':
+        if (!CD.snapD) return cdHata('AG', 'İnternet bağlantısı yok ve bu cihazda kayıtlı bilgi bulunmuyor. İnternet gelince ekranı açın.');
+        var r0 = cdKopya(D || CD.snapD); r0.ok = true; r0.cevrimdisi = true;
+        return r0;
+      case 'ekYenile': return { ok:true, ayni:true, rev:D.rev };
+      case 'ekMasalar': return { ok:true, ayar:masaAyar(), masalar:cdKopya(D.masalar || []), odemeler:D.masaOdemeler || CD.masaOdemeler || ['Nakit', 'Kredi kartı'],
+        iptalNedenleri:D.masaIptalNedenleri || [], kapanan:d.kapanan ? [] : undefined, cevrimdisi:true };
+      case 'ekMasaAdisyon':
+        var a0 = d.adisyon ? CD.ad[d.adisyon] : null;
+        if (!a0 && d.masa) { var m0 = cdMasaBul(d.masa); a0 = m0 && m0.adisyon ? CD.ad[m0.adisyon.id] : null; if (!a0 && !(m0 && m0.adisyon)) return { ok:true, adisyon:null }; }
+        if (!a0) return cdHata('CD', 'Bu masanın hesap ayrıntısı bu cihazda kayıtlı değil. İnternet gelince görünür.');
+        return { ok:true, adisyon:cdKopya(a0) };
+      case 'ekKasa':
+        if (!CD.kasa) return cdHata('CD', 'Kasa bilgileri bu cihazda kayıtlı değil. İnternet gelince açılır.');
+        return Object.assign(cdKopya(CD.kasa), { ok:true });
+      case 'ekKasaSatis': return cdKasaSatis(d);
+      case 'ekMasaGonder': return cdMasaGonder(d);
+      case 'ekMasaOdeme': return cdMasaOdeme(d);
+      case 'ekMasaKapat': return cdMasaKapat(d);
+      case 'ekDurum': case 'ekTeslim': case 'ekMasaServis': return cdDurum(act, d);
+    }
+  } catch(e){ return cdHata('FORM', String(e && e.message || e)); }
+  return cdHataCD();
+}
+function cdKasaSatis(d){
+  if (!kasaAcik()) return cdHata('KASA', 'Kasa bu işletmede kapalı.');
+  var kanal = d.tur === 'tezgah' ? 'Tezgah' : d.tur === 'tabldot' ? 'Tabldot' : '';
+  if (!kanal) return cdHata('ISTEK', 'Satış türü geçersiz.');
+  if (!d.odeme) return cdHata('FORM', 'Ödeme yöntemini seçin.');
+  if (!Array.isArray(d.kalemler) || !d.kalemler.length) return cdHata('FORM', 'Önce ürün ekleyin.');
+  var onceki = CD.kuyruk.filter(function(x){ return x.act === 'ekKasaSatis' && d.istek && x.data.istek === d.istek; })[0];
+  if (onceki && onceki.cevap) return Object.assign(cdKopya(onceki.cevap), { tekrar:true });
+  var kal = d.kalemler.map(cdKalem), top = cdYuv(kal.reduce(function(t, k){ return t + k.tutar; }, 0)), t = cdZaman(), ben = cdBen();
+  var kasa = CD.kasa || (CD.kasa = { ozet:{ adet:0, toplam:0, iptal:0, odeme:[], kanal:[] }, satislar:[], odemeler:['Nakit', 'Kredi kartı'], siradaki:1 });
+  var sira = kanal === 'Tezgah' ? (Number(kasa.siradaki) || 1) : 0;
+  var no = cdYeniNo(), kod = kanal === 'Tezgah' ? 'H' : 'T';
+  var o = { no:no, tarihMs:t, guncelMs:t, kanal:kanal, sira:sira, kod:kod, durum:DUR[kod].ad, ad:kanal === 'Tezgah' ? 'Tezgâh · Sıra ' + sira : 'Tabldot',
+    kalemler:kal, ara:top, ucret:0, toplam:top, odeme:d.odeme, tahsilat:d.odeme, not:d.not || '', gecmis:saatYaz(t) + ' ' + DUR[kod].ad + ' (Kasa: ' + ben.ad + ' · çevrimdışı)',
+    adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'', iptalEden:'', iptalNedeni:'', cevrimdisi:1 };
+  var satis = { no:no, tarihMs:t, kod:kod, kanal:kanal, sira:sira, toplam:top, odeme:d.odeme, tahsilat:d.odeme, kalemler:kal, not:o.not, iptalNedeni:'', ad:o.ad, cevrimdisi:1 };
+  if (kanal === 'Tezgah') { kasa.siradaki = sira >= 999 ? 1 : sira + 1; D.siparisler.push(o); }
+  var r = { ok:true, satis:satis, rev:D.rev, cevrimdisi:true };
+  if (kanal === 'Tezgah') r.siparis = cdKopya(o);
+  cdEkle('ekKasaSatis', d, (kanal === 'Tezgah' ? 'Tezgâh · Sıra ' + sira : 'Tabldot') + ' · ' + tl(top) + ' · ' + d.odeme, { cevap:r, yerelNo:no });
+  if (kanal === 'Tezgah') setTimeout(function(){ try { yzKontrol(); } catch(e){} }, 50);
+  return r;
+}
+function cdMasaGonder(d){
+  var m = cdMasaBul(d.masa);
+  if (!m) return cdHata('YOK', 'Masa bulunamadı.');
+  if (!Array.isArray(d.kalemler) || !d.kalemler.length) return cdHata('FORM', 'Önce ürün ekleyin.');
+  var onceki = CD.kuyruk.filter(function(x){ return x.act === 'ekMasaGonder' && d.istek && x.data.istek === d.istek; })[0];
+  if (onceki && onceki.cevap) return Object.assign(cdKopya(onceki.cevap), { tekrar:true });
+  var kal = d.kalemler.map(cdKalem), ben = cdBen(), t = cdZaman(), yeniAd = '';
+  var a = m.adisyon ? CD.ad[m.adisyon.id] : null;
+  if (m.adisyon && !a) return cdHata('CD', 'Bu masanın hesabı bu cihazda kayıtlı değil; çevrimdışıyken ekleme yapılamaz. Siparişi kâğıda yazıp internet gelince girin.');
+  if (!a) {
+    yeniAd = 'YEREL' + kzIstek().slice(0, 10);
+    a = { id:yeniAd, masaId:m.id, masa:m.ad, bolum:m.bolum || '', durum:'Açık', acilisMs:t, kapanisMs:0, garson:ben.ad, garsonId:ben.id, kisi:Number(d.kisi) || 0,
+      not:'', hesapMs:0, kaynak:'Garson', indirimKural:'', odemeler:[], fisler:[], gecmis:saatYaz(t) + ' Açıldı (' + ben.ad + ' · çevrimdışı)', qr:null, cevrimdisi:1 };
+    CD.ad[a.id] = a;
+  }
+  var no = cdYeniNo(), top = cdYuv(kal.reduce(function(s, k){ return s + k.tutar; }, 0));
+  var fis = { no:no, tarihMs:t, kod:'H', garson:ben.ad, qr:0, ara:top, toplam:top, not:d.not || '', islem:[], kalemler:kal.map(function(k, i){ var j = cdKopya(k); j.i = i; return j; }), cevrimdisi:1 };
+  a.fisler.push(fis);
+  var o = { no:no, tarihMs:t, guncelMs:t, kanal:'Masa', adisyon:a.id, masa:a.masa, garson:ben.ad, qr:false, kod:'H', durum:DUR.H.ad, ad:a.masa, kalemler:kal, ara:top, ucret:0, toplam:top,
+    odeme:'', tahsilat:'', not:d.not || '', gecmis:saatYaz(t) + ' ' + DUR.H.ad + ' (Garson: ' + ben.ad + ' · çevrimdışı)', adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'',
+    iptalEden:'', iptalNedeni:'', islem:[], odendi:false, sira:0, cevrimdisi:1 };
+  D.siparisler.push(o);
+  cdOzetYaz(a);
+  var r = { ok:true, adisyon:cdKopya(a), masalar:cdKopya(D.masalar), no:no, rev:D.rev, cevrimdisi:true };
+  cdEkle('ekMasaGonder', d, m.ad + ' · mutfağa ' + adet(kal.reduce(function(s, k){ return s + k.adet; }, 0)) + ' ürün · ' + tl(top), { cevap:r, yeniAd:yeniAd || undefined, yerelNo:no });
+  setTimeout(function(){ try { yzKontrol(); } catch(e){} }, 50);
+  return r;
+}
+function cdMasaOdeme(d){
+  if (!msOdemeYetki()) return cdHata('YETKI', 'Bu işletmede ödemeyi kasa alıyor. Hesabı kasaya yönlendirin.');
+  var a = CD.ad[d.adisyon];
+  if (!a || a.durum !== 'Açık') return cdHata('CD', 'Bu masanın hesabı bu cihazda kayıtlı değil. İnternet gelince ödeme alın.');
+  if (Array.isArray(d.kisiler) && d.kisiler.length) return cdHata('CD', 'Kişi kişi (QR) ödeme çevrimdışıyken alınamaz; tutar yazarak ödeme alın.');
+  var h = cdHesap(a);
+  if (!(h.kalan > 0)) return cdHata('DURUM', 'Bu hesapta ödenecek tutar yok.');
+  var tutar = Number(d.tutar) > 0 ? cdYuv(Number(d.tutar)) : h.kalan;
+  if (tutar > h.kalan + 0.009) return cdHata('FORM', 'Tutar kalan hesaptan (' + tl(h.kalan) + ') fazla olamaz.');
+  var alinan = Number(d.alinan) > 0 ? cdYuv(Number(d.alinan)) : tutar;
+  if (alinan < tutar - 0.009) return cdHata('FORM', 'Alınan para tutardan az olamaz.');
+  if (alinan > tutar + 0.009 && !/nakit/i.test(String(d.yontem))) return cdHata('FORM', 'Para üstü yalnız nakit ödemede verilir.');
+  var onceki = CD.kuyruk.filter(function(x){ return x.act === 'ekMasaOdeme' && d.istek && x.data.istek === d.istek; })[0];
+  if (onceki && onceki.cevap) return Object.assign(cdKopya(onceki.cevap), { tekrar:true });
+  a.odemeler.push({ y:String(d.yontem), t:tutar, ms:cdZaman(), kim:cdBen().ad + ' · çevrimdışı' });
+  h = cdHesap(a);
+  var kapandi = h.kalan <= 0.009, paraUstu = alinan > tutar ? cdYuv(alinan - tutar) : 0;
+  if (kapandi) cdAdKapat(a); else cdOzetYaz(a);
+  var r = { ok:true, adisyon:kapandi ? null : cdKopya(a), masalar:cdKopya(D.masalar), kapandi:kapandi, kapananId:kapandi ? a.id : undefined, paraUstu:paraUstu, rev:D.rev, cevrimdisi:true };
+  cdEkle('ekMasaOdeme', Object.assign({}, d, { tutar:tutar, alinan:alinan }), a.masa + ' · ödeme ' + tl(tutar) + ' ' + d.yontem + (kapandi ? ' · hesap kapandı' : ''), { cevap:r });
+  return r;
+}
+function cdMasaKapat(d){
+  var a = CD.ad[d.adisyon];
+  if (!a || a.durum !== 'Açık') return cdHata('CD', 'Bu masanın hesabı bu cihazda kayıtlı değil.');
+  if (d.neden) return cdHata('CD', 'Hesap iptali çevrimdışıyken yapılamaz. İnternet gelince iptal edin.');
+  var h = cdHesap(a);
+  if (h.fis > 0 && h.kalan > 0.009) return cdHata('CD', 'Ödenmemiş hesap çevrimdışıyken kapatılamaz. Önce ödemeyi alın.');
+  if (h.qr > 0) return cdHata('CD', 'Onay bekleyen QR siparişi olan hesap çevrimdışıyken kapatılamaz.');
+  cdAdKapat(a);
+  var r = { ok:true, adisyon:null, masalar:cdKopya(D.masalar), kapandi:h.fis > 0, kapananId:a.id, rev:D.rev, cevrimdisi:true };
+  cdEkle('ekMasaKapat', d, a.masa + ' · hesap kapatıldı', { cevap:r });
+  return r;
+}
+
+// Sipariş durumu (Hazırlanıyor → Hazır → Teslim / servis): ekranda hemen değişir, internet gelince gönderilir
+function cdDurum(act, d){
+  var o = siparis(d.no);
+  if (!o) return cdHata('YOK', 'Sipariş bulunamadı.');
+  var kod = act === 'ekDurum' ? String(d.kod || '') : 'T';
+  if (!DUR[kod] || kod === 'Y') return cdHataCD();
+  if (kod === 'I') return cdHata('CD', 'İptal çevrimdışıyken yapılamaz. İnternet gelince iptal edin.');
+  if (act === 'ekDurum' && !o.cevrimdisi && o.kanal !== 'Masa' && o.kanal !== 'Tezgah') return cdHata('CD', 'Online siparişlerin durumu internet gelince değiştirilebilir.');
+  o.kod = kod; o.durum = DUR[kod].ad; o.guncelMs = cdZaman();
+  if (act === 'ekTeslim' && d.tahsilat) o.tahsilat = d.tahsilat;
+  o.gecmis = (o.gecmis ? o.gecmis + ' | ' : '') + saatYaz(cdZaman()) + ' ' + DUR[kod].ad + ' (çevrimdışı)';
+  if (o.adisyon && CD.ad[o.adisyon]) { (CD.ad[o.adisyon].fisler || []).forEach(function(f){ if (f.no === o.no) f.kod = kod; }); cdOzetYaz(CD.ad[o.adisyon]); }
+  cdEkle(act, d, (o.sira ? 'Sıra ' + o.sira : '#' + o.no) + ' · ' + DUR[kod].ad);
+  return { ok:true, siparis:cdKopya(o), rev:D.rev, cevrimdisi:true };
+}
+
+/* --- şerit, ayrıntılar ve ayar kartı --- */
+function cdBannerHtml(){
+  if (!D || DEMO && !CD.testKopuk) return '';
+  var n = CD.kuyruk.length, h = '';
+  if (CD.aktif) h += '<div class="banner warn cd-ban" role="status">📴<span class="b-txt"><b>İnternet yok — çevrimdışı çalışıyorsunuz.</b> Kasa satışı, masaya sipariş ve ödeme bu cihazda saklanıyor' +
+    (n ? ' · <b class="num">' + n + '</b> işlem bekliyor' : '') + '. Bağlantı gelince kendiliğinden gönderilir.</span><button data-act="cdDene">Şimdi dene</button></div>';
+  else if (CD.gonderim) h += '<div class="banner info cd-ban" role="status">⏳<span class="b-txt">Çevrimdışı işlemler gönderiliyor… <b class="num">' + CD.gonderilen + ' / ' + (CD.gonderilen + n) + '</b></span></div>';
+  else if (n) h += '<div class="banner warn cd-ban" role="status">⏳<span class="b-txt"><b class="num">' + n + '</b> çevrimdışı işlem gönderilmeyi bekliyor.</span><button data-act="cdGonder">Gönder</button></div>';
+  if (CD.sorunlu.length) h += '<div class="banner err cd-ban" role="alert">⚠️<span class="b-txt"><b class="num">' + CD.sorunlu.length + '</b> çevrimdışı işlem gönderilemedi.</span><button data-act="cdSorunlu">Ayrıntılar</button></div>';
+  return h;
+}
+SHEET.cdSorunlu = function(){
+  var l = CD.sorunlu.slice().reverse();
+  return shBas('Gönderilemeyen işlemler') + '<div class="sh-body">' +
+    '<p class="tip-txt">Bu işlemler internet yokken bu cihazda yapıldı ama sunucuya kaydedilemedi. Kontrol edip gerekiyorsa elle yeniden girin, sonra listeden kaldırın.</p>' +
+    (l.length ? '<ul class="cd-sl">' + l.map(function(x){
+      return '<li><div><b>' + esc(x.ozet || x.act) + '</b><span class="muted">' + esc(tarihYazi(x.zaman)) + '</span><span class="cd-sh">' + esc(x.hata || '') + '</span></div>' +
+        '<button class="btn ghost sm" data-act="cdSorunSil" data-id="' + esc(x.id) + '">Kaldır</button></li>';
+    }).join('') + '</ul>' : '<p class="muted">Liste boş.</p>') + '</div>' +
+    '<div class="sh-foot"><button class="btn line block" data-act="kapat">Kapat</button></div>';
+};
+ACT_EK.cdDene = function(){ toast('Bağlantı deneniyor…'); cdDene(); };
+ACT_EK.cdGonder = function(){ cdGonder(); };
+ACT_EK.cdSorunlu = function(){ sheetAc({ tip:'cdSorunlu' }); };
+ACT_EK.cdSorunSil = function(el){
+  var id = el.getAttribute('data-id');
+  CD.sorunlu = CD.sorunlu.filter(function(x){ return x.id !== id; });
+  cdKuyrukKaydet();
+  if (!CD.sorunlu.length) sheetKapat(); else renderSheet();
+  renderBanners();
+};
+ACT_EK.cdOto = function(){
+  if (U.busy.cdOto) return;
+  var yeni = !(CD.otoDuraklat === true || (U.ay && U.ay.ayarlar && U.ay.ayarlar.OtoDuraklat === 'Evet' && CD.otoDuraklat !== false));
+  islem('ekCdAyar', { otoDuraklat:yeni }, { busy:'cdOto' }).then(function(r){
+    if (!r) return;
+    CD.otoDuraklat = r.otoDuraklat;
+    if (U.ay && U.ay.ayarlar) U.ay.ayarlar.OtoDuraklat = r.otoDuraklat ? 'Evet' : 'Hayır';
+    toast(r.otoDuraklat ? 'Ekran bağlı değilken online siparişler duraklatılacak' : 'Otomatik duraklatma kapalı');
+    cdKaydetPlanla(); ciz();
+  });
+};
+function cdAyarHtml(){
+  if (!sahip() || hzm()) return '';
+  var a = (U.ay && U.ay.ayarlar) || {}, oto = CD.otoDuraklat !== null ? !!CD.otoDuraklat : a.OtoDuraklat === 'Evet', b = U.busy.cdOto;
+  return '<section class="card pad frm cd-k" id="cdKart"><h2 class="frm-h">📴 İnternet kesintisi</h2>' +
+    '<p class="tip-txt">İnternet giderse bu ekran kapanmaz: <b>kasa satışı</b>, <b>masaya sipariş</b>, <b>masada ödeme</b> ve fiş yazdırma bu cihazda sürer; ' +
+    'işlemler internet gelince kendiliğinden gönderilir. Bunun için ekranı internet varken en az bir kez açmış olmanız yeterli.</p>' +
+    '<ul class="cd-li"><li>Kesinti sırasında cihazlar birbirini görmez: garsonun girdiği sipariş mutfak ekranına düşmez, fiş yazıcıdan çıkar.</li>' +
+    '<li>Online siparişler, QR ile masadan sipariş ve kartla ödeme internet gelince görünür.</li>' +
+    '<li>En sağlam çözüm <b>yedek internet</b>: ana internet kesilince kendiliğinden 4G\'ye geçen bir modem ya da telefondan internet paylaşımı.</li>' +
+    '<li>Tablet ya da bilgisayarda ekranı tarayıcıda açıp «Ana ekrana ekle» deyin; internetsizken de oradan açılır.</li></ul>' +
+    '<button class="opt" role="switch" aria-checked="' + oto + '" data-act="cdOto"' + (b ? ' disabled' : '') + '><span class="o-main">Ekran bağlı değilken online siparişleri duraklat' +
+    '<span class="o-sub">Bu işletmenin hiçbir ekranı 5 dakikadır internete bağlı değilse müşteriler sipariş veremez («geçici bağlantı sorunu» yazar) ve size Telegram\'dan haber verilir. ' +
+    'Ekran bağlanınca kendiliğinden açılır. Siparişleri yalnız Telegram\'dan izliyorsanız kapalı bırakın.</span></span><span class="sw" aria-hidden="true" aria-checked="' + oto + '" style="pointer-events:none"><span class="knob"></span></span></button>' +
+    (CD.kuyruk.length ? '<div class="note-box">Bu cihazda gönderilmeyi bekleyen <b class="num">' + CD.kuyruk.length + '</b> işlem var.</div>' : '') +
+    '</section>';
+}
+
+/* --- önizleme (?demo=1&cevrimdisi=1): bağlantıyı kesilmiş gibi göster --- */
+if (DEMO && params.get('cevrimdisi') === '1') {
+  CD.hazirP = Promise.resolve();
+  CD.demoKes = true;
+}
+// önizlemede ekran açıldıktan sonra masaların hesapları ve kasa yüklenir, sonra bağlantı «kesilir»
+function cdDemoKes(){
+  if (!CD.demoKes || !D) return;
+  CD.demoKes = false;
+  var l = (D.masalar || []).filter(function(m){ return m.adisyon; });
+  Promise.all(l.map(function(m){ return CD_ASIL_CALL('ekMasaAdisyon', { adisyon:m.adisyon.id }).then(function(r){ if (r && r.ok && r.adisyon) CD.ad[r.adisyon.id] = r.adisyon; }); })
+    .concat([kasaAcik() ? CD_ASIL_CALL('ekKasa', {}).then(function(r){ if (r && r.ok) CD.kasa = r; }) : Promise.resolve()])).then(function(){
+    CD.testKopuk = true; CD.snapD = cdKopya(D);
+    cdCevrimdisi();
+  });
+}
+cdHazir();
+// deneme kancası (yalnız ?cdtest=1): otomatik testler çevrimdışı durumu okuyabilsin
+if (params.get('cdtest') === '1') window.__yp = { CD:CD, call:function(a, d){ return call(a, d); }, D:function(){ return D; }, KZ:function(){ return KZ; }, U:U,
+  kzUrunler:function(){ return kzUrunler(); }, kzOde:function(o, a){ return kzOde(o, a); }, ciz:function(){ ciz(); }, SH:function(){ return SH; }, sheetKapat:function(){ sheetKapat(); },
+  cdKaydet:function(){ return cdKaydet(); }, cdDene:function(){ return cdDene(); } };
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
