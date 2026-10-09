@@ -1473,6 +1473,10 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .hdy-t{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hdy-t>span{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:12px;background:var(--bg2)}
 .hdy-t b{font-size:20px}
+/* ---------- 1.25.1 sahne ekranı ---------- */
+.ms-tv{margin:-4px 0 6px}
+.ms-tv code{word-break:break-all}
+.ms-tv-b{display:flex;flex-wrap:wrap;gap:8px}
 </style>
 </head>
 <body>
@@ -9578,6 +9582,11 @@ function msAyarHtml(){
           (a.onlineOdeme === false ? ' <b>Şu an çalışmıyor: önce Ayarlar\'daki «💳 Masada online ödeme» bölümünü açın.</b>' : '')) +
         (a.hediyeHazir ? sw('hediye', a.hediye !== false, '💝 Sanal hediyeler ve taç', 'Sohbet açıkken müşteriler masadakilere ve mekânda görünür olanlara dijital hediye (gül, buket, pasta, konfeti, taç…) gönderir; gecenin tacı ve en çok hediye alanlar sohbetteki «Sahne»de görünür. Hediyeleri YourPOS 360 satar ve ödemesini alır; işletmenize bir ücreti ya da işi yoktur. İsterseniz kapatabilirsiniz.') : '') +
         sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar ve görünür olan başka masadaki kişilerle birebir yazışır. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
+        (a.hediyeHazir && a.hediye !== false && a.sohbetMekan ? sw('sahneTv', !!a.sahneTv, '📺 Sahneyi mekândaki ekranda göster', 'Gecenin tacı, en çok hediye alanlar ve son hediyeler TV ya da tablette büyük gösterilir; yeni hediyede ekranda kutlama olur. Ekranda yalnız ad ve hediye görünür; masa, yazı ve telefon gösterilmez. Bağlantıyı TV\'nin tarayıcısında açın.') +
+          (a.sahneTv ? '<div class="od-url ms-tv"><span class="muted">Ekran bağlantısı (gizli tutun):</span><code>' + esc(a.sahneTv) + '</code><span class="ms-tv-b">' +
+            '<button class="btn line sm" type="button" data-act="poKopya" data-k="' + esc(a.sahneTv) + '">Kopyala</button>' +
+            '<a class="btn line sm" href="' + esc(a.sahneTv) + '" target="_blank" rel="noopener">Ekranda aç</a>' +
+            '<button class="btn ghost sm" type="button" data-act="msTvYenile"' + (b ? ' disabled' : '') + '>Yeni bağlantı</button></span></div>' : '') : '') +
         '<div class="ms-qs"><b>QR sipariş sınırları</b> <span class="muted">(0 = sınırsız)</span><div class="ms-qs-r">' +
         '<div class="field"><label for="msqSip">Tek siparişte en fazla (TL)</label><input class="inp num" id="msqSip" inputmode="decimal" value="' + esc(a.qrSiparis || 0) + '"></div>' +
         '<div class="field"><label for="msqAdet">Tek siparişte en fazla ürün</label><input class="inp num" id="msqAdet" inputmode="numeric" value="' + esc(a.qrAdet || 0) + '"></div>' +
@@ -9969,7 +9978,7 @@ var ACT_MS = {
       if (!r.ayar.acik && U.tab === 'masa') U.tab = 'siparis';
       toast({ acik:r.ayar.acik ? 'Masa modülü açıldı' : 'Masa modülü kapatıldı', qr:r.ayar.qr ? 'Masadan QR sipariş açık' : 'Masadan QR sipariş kapalı', garsonOdeme:r.ayar.garsonOdeme ? 'Garsonlar ödeme alabilir' : 'Ödemeyi yalnız kasa alır',
         qrOnaysiz:r.ayar.qrOnaysiz ? 'QR siparişleri onaysız mutfağa gider' : 'QR siparişlerini garson / kasa onaylar',
-        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', ismarla:r.ayar.ismarla ? 'Ismarlama açıldı' : 'Ismarlama kapatıldı', hediye:r.ayar.hediye ? 'Sanal hediyeler açıldı' : 'Sanal hediyeler kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
+        sohbetMasa:r.ayar.sohbetMasa ? 'Masa sohbeti açıldı' : 'Masa sohbeti kapatıldı', ismarla:r.ayar.ismarla ? 'Ismarlama açıldı' : 'Ismarlama kapatıldı', hediye:r.ayar.hediye ? 'Sanal hediyeler açıldı' : 'Sanal hediyeler kapatıldı', sahneTv:r.ayar.sahneTv ? 'Sahne ekranı açıldı; bağlantıyı TV\'de açın' : 'Sahne ekranı kapatıldı', sohbetMekan:r.ayar.sohbetMekan ? 'Mekân içi mesajlaşma açıldı' : 'Mekân içi mesajlaşma kapatıldı' }[k]);
       ciz();
     });
   },
@@ -10013,7 +10022,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true };
+  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
   var bol = [['Salon', 'Masa', 10], ['Bahçe', 'Bahçe', 6], ['Teras', 'Teras', 4]];
   var n = 0;
   bol.forEach(function(b){ for (var i = 1; i <= b[2]; i++) MASA.push({ id:'m' + (++n).toString(36), ad:b[1] + ' ' + i, bolum:b[0], k:'demoanahtar' + n }); });
@@ -10079,7 +10088,7 @@ function masaDemoIslemler(x){
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -10336,6 +10345,10 @@ function masaDemoIslemler(x){
       if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
       if (d.ismarla !== undefined) AYR.ismarla = !!d.ismarla;
       if (d.hediye !== undefined) AYR.hediye = !!d.hediye;
+      if (d.sahneTv !== undefined || d.sahneTvYenile) {
+        var tvAc = d.sahneTvYenile ? true : !!d.sahneTv, tvK = 'DEMOTV' + Math.random().toString(36).slice(2, 12).toUpperCase() + 'ABCDEFGH';
+        AYR.sahneTv = !tvAc ? '' : (d.sahneTvYenile || !AYR.sahneTv ? location.href.split('isletme.html')[0] + 'index.html?demo=1&b=demo&tv=' + tvK.slice(0, 24) : AYR.sahneTv);
+      }
       ['qrSiparis', 'qrAdet', 'qrKisi'].forEach(function(q){ if (d[q] !== undefined) AYR[q] = Math.max(0, Number(String(d[q]).replace(',', '.')) || 0); });
       if (Array.isArray(d.masalar)) {
         var eski = {}; MASA.forEach(function(m){ eski[m.id] = m; });
@@ -12766,6 +12779,15 @@ ACT_EK.hdyKarar = function(el){
     HDY.onay = '';
     if (r) { hdyCevap(r); toast(kr === 'onay' ? 'Onaylandı; hediye alıcıya gönderildi' : 'Reddedildi'); haptic('notify', 'success'); }
     ciz();
+  });
+};
+
+/* ---------- 1.25.1 Sahne ekranı (TV) ---------- */
+ACT_EK.msTvYenile = function(){
+  islem('ekMasaAyar', { sahneTvYenile:true }, { busy:'msAyarSw' }).then(function(r){
+    if (!r) return;
+    D.isletme.masa = r.ayar; D.masalar = r.masalar;
+    toast('Yeni ekran bağlantısı oluşturuldu; eski bağlantı artık açılmaz'); ciz();
   });
 };
 
