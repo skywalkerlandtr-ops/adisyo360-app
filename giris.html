@@ -91,7 +91,7 @@ label{font-size:14px;font-weight:600;color:var(--sub)}
 (function(){
 'use strict';
 var q = new URLSearchParams(location.search);
-var API = q.get('api') || 'https://yourpos360.onrender.com/exec';
+var API = q.get('api') || 'https://api.yourpos360.com/exec';
 var DEMO = q.get('demo') === '1';
 var KEY = 'yourpos360-web';
 var GERI = (function(g){ return g && /^(isletme|uye)\.html(\?[^#<>"']*)?$/.test(g) ? g : ''; })(q.get('geri') || '');

@@ -1175,7 +1175,7 @@ var params = new URLSearchParams(location.search);
 var B = params.get('b') || '';
 var DEMO = params.get('demo') === '1';
 var DEMO_ROL = { sahip:'Sahip', personel:'Personel', kurye:'Kurye', merkez:'Merkez', yonetim:'Yonetim', numarator:'Numaratör' }[String(params.get('rol') || 'sahip').toLowerCase()] || 'Sahip';
-var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
+var API = params.get('api') || 'https://api.yourpos360.com/exec';
 var ACILACAK_NO = Number(params.get('no')) || 0;
 var ANA = params.get('ana') === '1';
 var MERKEZ = params.get('merkez') === '1' || (params.get('demo') === '1' && String(params.get('rol') || '').toLowerCase() === 'merkez');   // zincir merkez ekranı          // işletme sahibi ekranı YourPOS 360 ana botundan açtı
@@ -9050,13 +9050,13 @@ function demoMock(rol){
   }
 
   var BZY = [{ anahtar:'demo1' + 'a'.repeat(35), tur:'star', turAd:'Star CloudPRNT', ad:'Mutfak yazıcısı', genislik:80, tr:false, kopya:1,
-    adres:'https://yourpos360.onrender.com/yazici/demo1' + 'a'.repeat(35), son:Date.now() - 40000, durum:'Basıldı', hata:'', bekleyen:0, olustur:Date.now() - 9 * 86400000 }];
+    adres:'https://api.yourpos360.com/yazici/demo1' + 'a'.repeat(35), son:Date.now() - 40000, durum:'Basıldı', hata:'', bekleyen:0, olustur:Date.now() - 9 * 86400000 }];
   var islemler = {
     ekYazicilar:function(){ return { ok:true, yazicilar:kopya(BZY), sinir:5, sunucu:true }; },
     ekYaziciEkle:function(d){
       var k = 'demo' + Date.now().toString(16) + 'a'.repeat(20);
       BZY.push({ anahtar:k, tur:d.tur, turAd:d.tur === 'star' ? 'Star CloudPRNT' : 'Epson Server Direct Print', ad:d.ad || (d.tur === 'star' ? 'Star yazıcı' : 'Epson yazıcı'), genislik:d.genislik || 80,
-        tr:!!d.tr, kopya:1, adres:'https://yourpos360.onrender.com/yazici/' + k, son:0, durum:'', hata:'', bekleyen:0, olustur:Date.now() });
+        tr:!!d.tr, kopya:1, adres:'https://api.yourpos360.com/yazici/' + k, son:0, durum:'', hata:'', bekleyen:0, olustur:Date.now() });
       return { ok:true, mesaj:'Eklendi. Şimdi yazıcıya sunucu adresini girin.', yeni:k, yazicilar:kopya(BZY), sinir:5, sunucu:true };
     },
     ekYaziciGuncelle:function(d){

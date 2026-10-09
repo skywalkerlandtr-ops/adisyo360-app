@@ -158,7 +158,7 @@ main{padding:4px 16px calc(24px + var(--safe-b))}
 var $ = function(s, r){ return (r || document).querySelector(s); };
 var params = new URLSearchParams(location.search);
 var DEMO = params.get('demo') === '1';
-var API = params.get('api') || 'https://yourpos360.onrender.com/exec';
+var API = params.get('api') || 'https://api.yourpos360.com/exec';
 var realTg = window.Telegram && window.Telegram.WebApp;
 var inTelegram = !!(realTg && realTg.initData);
 var tg = inTelegram ? realTg : null;
