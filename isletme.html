@@ -1636,6 +1636,7 @@ html.dil-bekle #app{visibility:hidden}
 .oyz-k.kir{color:#c62828}
 .oyz-sk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
 .oyz-el{display:flex;flex-wrap:wrap;gap:2px;margin:2px 0}
+.oyz-per{display:inline-flex;gap:1px;padding:1px 3px;border-radius:6px;background:var(--bg);margin-inline-end:4px}
 .oyz-t{display:inline-block;min-width:24px;padding:2px 3px;border-radius:5px;background:#fbf6e8;border:1px solid var(--line);font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
 </style>
 </head>
@@ -1671,7 +1672,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '91236af14b';
+  var SURUM = '867012dbff';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10614,7 +10615,7 @@ function oyAyarHtml(){
   var o = oyAyar(), a = masaAyar(), b = U.busy.oySw;
   var h = '<section class="card pad frm oy-kart"><h2 class="frm-h">🎲 Mekânda oyunlar</h2>';
   if (!o.paket) return h + paketYokNotu('Mekânda oyunlar') + '</section>';
-  h += '<p class="tip-txt">Mekânınızdaki müşteriler birbirleriyle okey, tavla ve pişti oynayabilir. Oynamak için Telegram\'la doğrulanmış, 18 yaşından büyük ve mekânda görünür olmak gerekir. Taşlar, zarlar ve kartlar sunucuda dağıtılır, kurallar sunucuda denetlenir; bahis ve ödül yoktur.</p>' +
+  h += '<p class="tip-txt">Mekânınızdaki müşteriler birbirleriyle okey, 101, tavla, pişti gibi oyunlar oynayabilir. Oynamak için Telegram\'la doğrulanmış, 18 yaşından büyük ve mekânda görünür olmak gerekir. Taşlar, zarlar ve kartlar sunucuda dağıtılır, kurallar sunucuda denetlenir; bahis ve ödül yoktur.</p>' +
     '<p class="tip-txt">Oyun masalarını ve masa sohbetini (eller dahil) buradan canlı izleyebilirsiniz; oyuncular masaya oturmadan önce bunu onaylar. Uygunsuz mesajı oyuncular şikâyet edip engelleyebilir.</p>' +
     '<button class="opt" type="button" role="switch" aria-checked="' + !!o.acik + '" data-act="oySw"' + (b ? ' disabled' : '') + '><span class="o-main">Oyunlar' +
     '<span class="o-sub">' + (o.acik ? 'Açık: müşterileriniz masa ekranında «🎲 Oyunlar»ı görür.' : 'Kapalı: müşterileriniz oyunları görmez.') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
@@ -10653,6 +10654,17 @@ function oyzOyun(m){
     return '<div class="oyz-o">' + [0, 1].map(function(k){
       return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
     }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
+  }
+  if (m.tur === 'okey101') {
+    var ok1 = o.okey || {}, h3 = '<div class="oyz-o"><div><span class="muted">Gösterge:</span> ' + oyzTas(o.gosterge, ok1) + ' <span class="muted">Okey:</span> ' + oyzTas(ok1.c + (ok1.n < 10 ? '0' : '') + ok1.n + 'a', ok1) +
+      ' <span class="muted">· ortada ' + o.deste + ' taş</span></div>';
+    (o.eller || []).forEach(function(el, k){
+      var perler = (o.masa || []).filter(function(p){ return p.kim === k; });
+      h3 += '<div><b>' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b> <span class="muted">(' + (o.acti && o.acti[k] ? (o.acti[k] === 'cift' ? 'çiftle açtı' : 'açtı') + ' · ' : '') + 'ceza ' + (o.skor ? o.skor[k] : 0) + ')</span>' +
+        (perler.length ? '<div class="oyz-el">' + perler.map(function(p){ return '<span class="oyz-per">' + p.taslar.map(function(x){ return oyzTas(x, ok1); }).join('') + '</span>'; }).join('') + '</div>' : '') +
+        '<div class="oyz-el">' + el.slice().sort(function(a, b){ return a < b ? -1 : 1; }).map(function(x){ return oyzTas(x, ok1); }).join('') + '</div></div>';
+    });
+    return h3 + '</div>';
   }
   if (m.tur === 'okey') {
     var ok = o.okey || {}, h2 = '<div class="oyz-o"><div><span class="muted">Gösterge:</span> ' + oyzTas(o.gosterge, ok) + ' <span class="muted">Okey:</span> ' + oyzTas(ok.c + (ok.n < 10 ? '0' : '') + ok.n + 'a', ok) +
@@ -12867,7 +12879,7 @@ var PAKET_OZ = [['tabldot', 'Tabldot satışı', 'Kasada tepsi / self servis sat
   ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi'], ['sureli', 'Süreli alanlar', 'PlayStation, bilardo, masa tenisi gibi alanlarda süre ve ücret takibi'],
   ['hazirlik', 'Hazırlık bölümleri', 'Bar ve nargile ekranı, bölüm yazıcısı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama', 'Masadaki müşteriler mekânda sohbet eder, birbirine ısmarlar'],
   ['sahne', 'Mekân sahnesi', 'Gecenin tacı ve en çok hediye alanlar sahnede; isterse mekândaki TV\'de'],
-  ['oyun', 'Mekânda oyunlar', 'Müşteriler mekândaki diğer kişilerle okey, tavla, pişti gibi oyunlar oynar']];
+  ['oyun', 'Mekânda oyunlar', 'Müşteriler mekândaki diğer kişilerle okey, 101, tavla, pişti gibi oyunlar oynar']];
 function paketOzListe(){ return D && D.paketOz && D.paketOz.length ? D.paketOz : PAKET_OZ.map(function(x){ return { k:x[0], ad:x[1], acik:x[2] }; }); }
 function paketOzHepsi(){ var o = {}; PAKET_OZ.forEach(function(x){ o[x[0]] = true; }); return o; }
 // işletmenin paketinde bu özellik var mı (eski sunucu bilgi göndermezse var sayılır)

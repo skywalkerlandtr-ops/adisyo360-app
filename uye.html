@@ -357,7 +357,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '91236af14b';
+  var SURUM = '867012dbff';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -854,7 +854,7 @@ function geriDugmesi(){
 /* --- tanıtım --- */
 // pakete dahil modüller: var olanlar ✓, olmayanlar üstü çizili (eski sunucu bilgi göndermezse gösterilmez)
 var PAKET_OZ_AD = [['tabldot', 'Tabldot satışı'], ['tezgah', 'Tezgâh siparişi ve numaratör'], ['garson', 'Garson ve masa siparişi'], ['qrmasa', 'Masa QR siparişi'],
-  ['hazirlik', 'Bar ve nargile ekranı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama'], ['hediye', 'Sanal hediyeler (her pakette)'], ['sahne', 'Mekân sahnesi ve TV ekranı'], ['oyun', 'Mekânda oyunlar (okey, tavla, pişti)'],
+  ['hazirlik', 'Bar ve nargile ekranı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama'], ['hediye', 'Sanal hediyeler (her pakette)'], ['sahne', 'Mekân sahnesi ve TV ekranı'], ['oyun', 'Mekânda oyunlar (okey, 101, tavla, pişti…)'],
   ['sureli', 'Süreli alanlar (PlayStation, bilardo)'], ['muhasebe', 'Ön muhasebe']];
 /* ---------- 1.28 fiyat bilgisi: KDV, yıllık ödeme, kurucu üye ---------- */
 function fyt(){ return (D && D.fiyat) || (durum() && durum().fiyat) || {}; }
