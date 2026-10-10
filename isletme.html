@@ -1672,7 +1672,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'f1b71ab74e';
+  var SURUM = '0c50f0d675';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10655,6 +10655,17 @@ function oyzOyun(m){
       return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
     }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
   }
+  if (m.tur === 'king') {
+    var KN = { koz:'Koz', elalmaz:'El almaz', kupa:'Kupa almaz', erkek:'Erkek almaz', kiz:'Kız almaz', rifki:'Rıfkı', soniki:'Son iki' }, KR = { m:'♠', k:'♥', r:'♦', s:'♣' };
+    var h5 = '<div class="oyz-o"><div class="muted">' + o.elNo + '/' + (o.toplamEl || 20) + '. el · ' + (o.faz === 'oyun' ? esc(KN[o.oyunTur] || '') + (o.oyunTur === 'koz' && o.koz ? ' ' + KR[o.koz] : '') + ' (' + esc(oyzAd(m, o.secen)) + ')' : 'Oyun seçiliyor (' + esc(oyzAd(m, o.secen)) + ')') + '</div>';
+    if (o.masa && o.masa.length) h5 += '<div><span class="muted">Yerde:</span> ' + o.masa.map(function(x){ return oyzKart(x.kart); }).join(' ') + '</div>';
+    (o.eller || []).forEach(function(el, k){
+      var cz = o.cezaAldi && o.cezaAldi[k] ? o.cezaAldi[k].length : 0;
+      h5 += '<div><b>' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b> <span class="muted">(' + (o.alinan ? o.alinan[k] : 0) + ' el' + (cz ? ' · ' + cz + ' ceza kartı' : '') + ')</span> ' + el.map(oyzKart).join(' ') + '</div>';
+    });
+    h5 += '<div class="muted">Puan: ' + (o.skor || []).join(' – ') + '</div>';
+    return h5 + '</div>';
+  }
   if (m.tur === 'batak') {
     var RN = { m:'♠', k:'♥', r:'♦', s:'♣' }, h4 = '<div class="oyz-o"><div class="muted">' + (o.ihale && o.ihale.kim >= 0 ? 'İhale ' + o.ihale.en + ' · ' + esc(oyzAd(m, o.ihale.kim)) : 'İhale sürüyor') + (o.koz ? ' · koz ' + RN[o.koz] : '') + '</div>';
     if (o.masa && o.masa.length) h4 += '<div><span class="muted">Yerde:</span> ' + o.masa.map(function(x){ return oyzKart(x.kart); }).join(' ') + '</div>';
@@ -11574,6 +11585,10 @@ function masaDemoIslemler(x){
           oyun:{ n:4, sira:2, asama:'cek', gosterge:'b07a', okey:{ c:'b', n:8 }, deste:31, skor:[2, 0, 1, 0], bitti:null, atik:[['r03a'], ['y11b'], ['k05a'], ['b02a']],
             eller:[['y01a', 'y02a', 'y03a', 'k07a', 'r07a', 'b07b', 'b09a', 'b10a', 'b11a', 'r12a', 'r13a', 'b08a', 'j00a', 'k01a'], ['y05a', 'y06a', 'k09a', 'k10a', 'r02a', 'r04a', 'b13a', 'y13a', 'k13a', 'y08a', 'k08b', 'r09a', 'b01a', 'y10a'],
               ['b03a', 'b04a', 'b05a', 'r05a', 'k05b', 'y12a', 'k12a', 'r11a', 'b12b', 'y07a', 'k03a', 'r06a', 'y04b', 'k02a'], ['k06a', 'r08a', 'y09a', 'b06a', 'r10b', 'k11a', 'y03b', 'r01a', 'b10b', 'k04a', 'y02b', 'r13b', 'j00b', 'b08b']] } },
+        { id:'OYDEMO05', tur:'king', ad:'King', i:'👑', kisi:4, mod:'', d:'O', basMs:dk(34), oyuncular:[{ k:0, ad:'Can' }, { k:1, ad:'Ece' }, { k:2, ad:'Onur' }, { k:3, ad:'Zeynep' }], sonuc:null, sohbet:[],
+          oyun:{ n:4, elNo:6, toplamEl:20, faz:'oyun', sira:3, secen:1, oyunTur:'kupa', koz:'', masa:[{ k:1, kart:'9r' }, { k:2, kart:'Kr' }], alinan:[1, 0, 2, 1], skor:[150, -240, 380, -290], bitti:null,
+            cezaAldi:[['4k'], [], ['Tk', '2k', '6k'], ['3k']],
+            eller:[['Am', 'Tm', '7m', 'Qk', '8k', 'Ks', '9s', '3s', 'Ar'], ['Km', '5m', 'Ak', 'Jk', 'Qs', '6s', 'Jr', '4r'], ['Qm', '3m', '9k', '5k', 'As', 'Ts', '8r', '2r'], ['Jm', '8m', '2m', 'Kk', '7k', '4s', 'Qr', '6r', '5r']] } },
         { id:'OYDEMO03', tur:'tavla', ad:'Tavla', i:'🎲', kisi:2, mod:'', d:'B', basMs:dk(1), oyuncular:[{ k:0, ad:'Deniz' }], sonuc:null, sohbet:[], oyun:null }] };
     },
     ekMasaAyar:function(d){
