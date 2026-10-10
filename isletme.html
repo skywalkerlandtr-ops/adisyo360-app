@@ -1660,7 +1660,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '1e34486322';
+  var SURUM = 'f41d8ae3cc';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10523,10 +10523,10 @@ function msAyarHtml(){
     (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR\'ı okutur, garsonun verdiği 4 haneli masa koduyla masaya katılır, menüyü görür. Sipariş için Telegram\'dan doğrulanıp telefonunu paylaşır.') +
       (a.qr ? sw('qrOnaysiz', !!a.qrOnaysiz, 'Doğrulanan müşterinin siparişi onaysız mutfağa gitsin', 'Kapalıysa QR siparişini garson / kasa onaylar.') +
         sw('sohbetMasa', a.sohbetMasa !== false, '💬 Masa sohbeti', 'QR ile masaya katılıp Telegram\'dan doğrulanan müşteriler kendi masalarındakilerle yazışır. Mesajlar 24 saat sonra silinir; mesajları siz de göremezsiniz.') +
-        sw('ismarla', a.ismarla !== false, '🎁 Ismarlama (önceden kartla ödenir)', 'Müşteriler mekânda görünür olan başka masadakilere, dışarıdaki arkadaşları da «Bana ısmarla» bağlantısıyla masadaki müşteriye menüden ürün ısmarlar. Ödeme önceden kartla, doğrudan sizin online ödeme hesabınıza yapılır; sipariş alıcının masasına ödenmiş olarak gelir. Alkollü içecekler ısmarlanamaz.' +
+        sw('ismarla', a.ismarla !== false, '🎁 Ismarlama (önceden kartla ödenir)', 'Müşteriler mekânda görünür olan başka masadakilere ikram daveti gönderir; dışarıdaki arkadaşları da «Bana ısmarla» bağlantısıyla masadaki müşteriye menüden ürün ısmarlar. Alıcı kabul ederse ısmarlayan 5 dakika içinde kartla öder, ödeme doğrudan sizin online ödeme hesabınıza yapılır; sipariş alıcının masasına ödenmiş olarak gelir. Ödemeden sonra ikram iptal edilmez; ürün tükendiği için servis edemezseniz ücreti siz iade edersiniz. Alkollü içecekler ısmarlanamaz.' +
           (a.onlineOdeme === false ? ' <b>Şu an çalışmıyor: önce Ayarlar\'daki «💳 Masada online ödeme» bölümünü açın.</b>' : '')) +
         (a.hediyeHazir ? sw('hediye', a.hediye !== false, '💝 Sanal hediyeler ve taç', 'Sohbet açıkken müşteriler masadakilere ve mekânda görünür olanlara dijital hediye (gül, buket, pasta, konfeti, taç…) gönderir; gecenin tacı ve en çok hediye alanlar sohbetteki «Sahne»de görünür. Hediyeleri YourPOS 360 satar ve ödemesini alır; işletmenize bir ücreti ya da işi yoktur. İsterseniz kapatabilirsiniz.') : '') +
-        sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar ve görünür olan başka masadaki kişilerle birebir yazışır. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
+        sw('sohbetMekan', !!a.sohbetMekan, '👀 Mekân içi mesajlaşma (18+)', 'Müşteri isterse 18 yaş onayıyla «Mekânda görünür ol»u açar; görünür olan başka masadaki kişilere mesaj isteği gönderir, karşı taraf kabul ederse birebir yazışırlar. «Mesaj ve davet almıyorum»u seçene istek gitmez. Yalnız ad ve masa görünür, telefon asla. Şikâyetleri YourPOS 360 ekibi inceler.') +
         (a.hediyeHazir && a.hediye !== false && a.sohbetMekan ? sw('sahneTv', !!a.sahneTv, '📺 Sahneyi mekândaki ekranda göster', 'Gecenin tacı, en çok hediye alanlar ve son hediyeler TV ya da tablette büyük gösterilir; yeni hediyede ekranda kutlama olur. Ekranda yalnız ad ve hediye görünür; masa, yazı ve telefon gösterilmez. Bağlantıyı TV\'nin tarayıcısında açın.') +
           (a.sahneTv ? '<div class="od-url ms-tv"><span class="muted">Ekran bağlantısı (gizli tutun):</span><code>' + esc(a.sahneTv) + '</code><span class="ms-tv-b">' +
             '<button class="btn line sm" type="button" data-act="poKopya" data-k="' + esc(a.sahneTv) + '">Kopyala</button>' +
