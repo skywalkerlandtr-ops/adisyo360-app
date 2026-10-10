@@ -1626,6 +1626,15 @@ html.dil-bekle #app{visibility:hidden}
   .fis .mb-a4-not{margin:4mm 0 0;font-size:9pt}
   .fis .ms-qn{font-size:7.5pt;line-height:1.3;margin-top:2mm}
 }
+/* ---------- 1.32.1 mekânda oyunlar (izleme) ---------- */
+.oyz{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.oyz-b{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.oyz-o{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;background:var(--bg)}
+.oyz-s{display:flex;flex-direction:column;gap:3px;font-size:14px;border-top:1px solid var(--line);padding-top:6px}
+.oyz-s .btn{align-self:flex-start}
+.oyz-k{display:inline-block;min-width:30px;padding:1px 5px;margin:1px;border-radius:6px;border:1px solid var(--line);background:var(--card);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.oyz-k.kir{color:#c62828}
+.oyz-sk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
 </style>
 </head>
 <body>
@@ -1660,7 +1669,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'f41d8ae3cc';
+  var SURUM = 'a3706e06ad';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -4710,6 +4719,7 @@ function ayarEkrani(){
   h += kasaAyarHtml();
   h += msAyarHtml();
   h += mkAyarHtml();   // 1.31.1 mekân QR'ı
+  h += oyAyarHtml();   // 1.32.1 mekânda oyunlar
   h += hbAyarHtml();   // 1.27 hazırlık bölümleri
   h += odAyarHtml();
   h += cdAyarHtml();
@@ -10595,6 +10605,91 @@ Object.assign(ACT_EK, {
   },
   mkQrYazdir:function(){ mkQrYazdir(); }
 });
+/* ---------- 1.32.1 Mekânda oyunlar ---------- */
+function oyAyar(){ return masaAyar().oyun || { acik:false, paket:paketOzVar('oyun') }; }
+function oyAyarHtml(){
+  if (hzm() || !D.isletme || !sahip() || D.cihaz) return '';
+  var o = oyAyar(), a = masaAyar(), b = U.busy.oySw;
+  var h = '<section class="card pad frm oy-kart"><h2 class="frm-h">🎲 Mekânda oyunlar</h2>';
+  if (!o.paket) return h + paketYokNotu('Mekânda oyunlar') + '</section>';
+  h += '<p class="tip-txt">Mekânınızdaki müşteriler birbirleriyle tavla ve pişti oynayabilir. Oynamak için Telegram\'la doğrulanmış, 18 yaşından büyük ve mekânda görünür olmak gerekir. Zarlar ve kartlar sunucuda dağıtılır, kurallar sunucuda denetlenir; bahis ve ödül yoktur.</p>' +
+    '<p class="tip-txt">Oyun masalarını ve masa sohbetini (eller dahil) buradan canlı izleyebilirsiniz; oyuncular masaya oturmadan önce bunu onaylar. Uygunsuz mesajı oyuncular şikâyet edip engelleyebilir.</p>' +
+    '<button class="opt" type="button" role="switch" aria-checked="' + !!o.acik + '" data-act="oySw"' + (b ? ' disabled' : '') + '><span class="o-main">Oyunlar' +
+    '<span class="o-sub">' + (o.acik ? 'Açık: müşterileriniz masa ekranında «🎲 Oyunlar»ı görür.' : 'Kapalı: müşterileriniz oyunları görmez.') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (o.acik && !(a.acik && a.qr) && !(a.mekanQr && a.mekanQr.acik)) h += '<p class="tip-txt">⚠️ Müşterileriniz oyunlara masa QR\'ı ya da mekân QR\'ı ile girer. İkisi de kapalıyken oyunlar kimseye görünmez.</p>';
+  if (o.acik) h += '<button class="btn line sm" type="button" data-act="oyIzle">👁 Masaları izle</button>';
+  return h + '</section>';
+}
+var OYZ = { l:null, t:null, yuk:false, acik:{} };
+function oyzYukle(){
+  clearTimeout(OYZ.t); OYZ.t = null;
+  if (!SH || SH.tip !== 'oyIzle') return;
+  if (OYZ.yuk) return;
+  OYZ.yuk = true;
+  call('ekOyunlar').then(function(r){
+    OYZ.yuk = false;
+    if (r && r.ok) OYZ.l = r.masalar || []; else if (!OYZ.l) OYZ.l = [];
+    if (!SH || SH.tip !== 'oyIzle') return;
+    renderSheet();
+    OYZ.t = setTimeout(oyzYukle, document.hidden ? 15000 : 4000);
+  });
+}
+var OYZ_RENK = { m:'♠', k:'♥', r:'♦', s:'♣' };
+var OYZ_TUR = { okey:'Okey', okey101:'101 Okey', tavla:'Tavla', batak:'Batak', king:'King', pisti:'Pişti', satranc:'Satranç', bilgi:'Bilgi yarışması' };
+function oyzKart(c){ c = String(c || ''); if (!c) return ''; var r = c.charAt(1), kir = r === 'k' || r === 'r'; return '<span class="oyz-k' + (kir ? ' kir' : '') + '">' + (c.charAt(0) === 'T' ? '10' : c.charAt(0)) + OYZ_RENK[r] + '</span>'; }
+function oyzAd(m, k){ var x = (m.oyuncular || []).filter(function(y){ return y.k === k; })[0]; return x ? x.ad + (x.misafir ? ' 🌐' : '') : '—'; }
+function oyzOyun(m){
+  var o = m.oyun; if (!o) return '';
+  if (m.tur === 'tavla') {
+    var renk = ['Beyaz', 'Siyah'];
+    return '<div class="oyz-o">' + [0, 1].map(function(k){
+      return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
+    }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
+  }
+  if (m.tur === 'pisti') {
+    var h = '<div class="oyz-o"><div class="muted">Yerde ' + o.yerSay + ' kart · deste ' + o.deste + ' · ' + o.elNo + '. el</div>' +
+      (o.yerUst ? '<div><span class="muted">Üstteki kart:</span> ' + oyzKart(o.yerUst) + '</div>' : '');
+    (o.eller || []).forEach(function(el, k){ h += '<div><b>' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b> ' + (el.length ? el.map(oyzKart).join(' ') : '<span class="muted">—</span>') + '</div>'; });
+    var tn = o.takim ? ['Takım 1 (' + esc(oyzAd(m, 0)) + ', ' + esc(oyzAd(m, 2)) + ')', 'Takım 2 (' + esc(oyzAd(m, 1)) + ', ' + esc(oyzAd(m, 3)) + ')'] : (o.skor || []).map(function(x, k){ return esc(oyzAd(m, k)); });
+    h += '<div class="oyz-sk">' + (o.skor || []).map(function(x, k){ return '<span><b>' + tn[k] + ':</b> <span>' + x + ' sayı · ' + (o.alinan ? o.alinan[k] : 0) + ' kart' + (o.pisti && o.pisti[k] ? ' · pişti ' + o.pisti[k] : '') + '</span></span>'; }).join('') +
+      '<span class="muted">Hedef: ' + o.hedef + '</span></div>';
+    return h + '</div>';
+  }
+  return '';
+}
+SHEET.oyIzle = function(s){
+  var l = OYZ.l, h = shBas('🎲 Oyun masaları') + '<div class="sh-body">';
+  h += '<p class="tip-txt">Canlı izleme: eller ve masa sohbeti birkaç saniyede bir yenilenir. Oyunlara karışamazsınız; yalnız görürsünüz.</p>';
+  if (!l) return h + '<p class="muted"><span class="spin" aria-hidden="true"></span> Yükleniyor…</p></div>';
+  if (!l.length) return h + '<p class="muted">Şu an açık oyun masası yok.</p></div>';
+  var DUR = { B:['Oyuncu bekliyor', 'warn'], O:['Oynanıyor', 'ok'], S:['Bitti', ''] };
+  l.forEach(function(m){
+    var d = DUR[m.d] || ['', ''], ch = m.sohbet || [], ac = !!OYZ.acik[m.id];
+    h += '<div class="card pad oyz"><div class="oyz-b"><b><span aria-hidden="true">' + esc(m.i) + '</span> <span>' + esc(OYZ_TUR[m.tur] || m.ad) + '</span> · <span>' + m.kisi + ' kişi</span>' + (m.mod ? ' · <span>' + (m.mod === 'esli' ? 'eşli' : 'tekli') + '</span>' : '') + '</b>' +
+      '<span class="mz-durum ' + d[1] + '"><span class="dot" aria-hidden="true"></span>' + d[0] + '</span></div>' +
+      '<div class="muted"><span>' + (m.oyuncular || []).map(function(x){ return esc(x.ad) + (x.misafir ? ' 🌐' : ''); }).join(', ') + '</span>' + (m.basMs ? ' · <span>' + esc(onceYazi(m.basMs)) + '</span>' : '') + '</div>' +
+      (m.sonuc && m.sonuc.metin ? '<div><b>🏁 ' + esc(m.sonuc.metin) + '</b></div>' : '') + oyzOyun(m);
+    if (ch.length) {
+      var gos = ac ? ch : ch.slice(-4);
+      h += '<div class="oyz-s">' + gos.map(function(x){ return '<div><b>' + esc(x.ad) + ':</b> ' + esc(x.m) + ' <span class="muted">' + esc(saatYaz(x.t)) + '</span></div>'; }).join('') +
+        (ch.length > 4 ? '<button class="btn ghost sm" type="button" data-act="oyzSohbet" data-k="' + esc(m.id) + '">' + (ac ? 'Son mesajlar' : 'Tüm sohbet (' + ch.length + ')') + '</button>' : '') + '</div>';
+    } else h += '<div class="muted">Masa sohbetinde mesaj yok.</div>';
+    h += '</div>';
+  });
+  return h + '</div>';
+};
+Object.assign(ACT_EK, {
+  oySw:function(){
+    var o = oyAyar();
+    islem('ekMasaAyar', { oyun:!o.acik }, { busy:'oySw' }).then(function(r){
+      if (!r) return;
+      D.isletme.masa = r.ayar; D.masalar = r.masalar;
+      toast(r.ayar.oyun && r.ayar.oyun.acik ? 'Oyunlar açıldı' : 'Oyunlar kapatıldı'); ciz();
+    });
+  },
+  oyIzle:function(){ OYZ.l = null; OYZ.acik = {}; sheetAc({ tip:'oyIzle' }); oyzYukle(); },
+  oyzSohbet:function(el){ var k = el.getAttribute('data-k'); OYZ.acik[k] = !OYZ.acik[k]; renderSheet(); }
+});
 function msQrYazdir(){
   var l = (D.masalar || []).filter(function(m){ return m.qr; });
   if (!l.length) return toast('QR için önce masaları kaydedin.', true);
@@ -11031,7 +11126,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { mk:false, mkK:'DEMOMEKAN' + 'QR0000000000000AB', acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
+  var AYR = { oy:false, mk:false, mkK:'DEMOMEKAN' + 'QR0000000000000AB', acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
   var SAL = [{ id:'a1', ad:'PlayStation 5', tur:'ps', dilim:15, enAz:30, tarifeler:[{ id:'t1', ad:'2 kol', tip:'saat', fiyat:80 }, { id:'t2', ad:'4 kol', tip:'saat', fiyat:120 }] },
     { id:'a2', ad:'Bilardo', tur:'bilardo', dilim:5, enAz:15, tarifeler:[{ id:'t1', ad:'Saatlik', tip:'saat', fiyat:100 }] },
     { id:'a3', ad:'7D Sinema', tur:'vr', dilim:1, enAz:0, tarifeler:[{ id:'t1', ad:'Tek seans', tip:'seans', fiyat:150, dk:15, kisiBasi:true }] }];
@@ -11103,6 +11198,7 @@ function masaDemoIslemler(x){
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
     qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv, sureli:{ acik:true, alanlar:x.kopya(SAL) },
+    oyun:{ acik:!!AYR.oy && po.oyun !== false, paket:po.oyun !== false },
     mekanQr:{ uygun:!(AYR.acik && AYR.qr && po.qrmasa !== false && po.garson !== false), hazir:true, acik:AYR.mk, link:AYR.mk ? location.href.split('isletme.html')[0] + 'index.html?demo=1&b=demo&masa=vn.' + AYR.mkK : '' } }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
@@ -11421,6 +11517,20 @@ function masaDemoIslemler(x){
       b[0].sure = saDemoYeni(g, t, { dk:kalan, kisi:s.kisi }, kim().ad); x.degisti();
       return cevap(b[0], { tutar:u });
     },
+    ekOyunlar:function(){   // 1.32.1 önizleme: bir tavla, bir pişti masası
+      if (!AYR.oy) return { ok:true, acik:false, masalar:[] };
+      var sn = Date.now(), dk = function(n){ return sn - n * 60000; };
+      var p = []; for (var i = 0; i < 24; i++) p.push(0);
+      p[23] = 1; p[12] = 4; p[7] = 3; p[5] = 4; p[3] = 2; p[0] = -2; p[11] = -4; p[16] = -3; p[18] = -4; p[20] = -1;
+      return { ok:true, acik:true, masalar:[
+        { id:'OYDEMO01', tur:'tavla', ad:'Tavla', i:'🎲', kisi:2, mod:'', d:'O', basMs:dk(12), oyuncular:[{ k:0, ad:'Zeynep' }, { k:1, ad:'Ali' }], sonuc:null,
+          sohbet:[{ t:dk(11), ad:'Ali', m:'Kolay gelsin 🙂' }, { t:dk(10), ad:'Zeynep', m:'Sana da! Bu sefer ben kazanacağım 😄' }, { t:dk(3), ad:'Ali', m:'Şeşbeş geldi!' }],
+          oyun:{ p:p, bar:[1, 0], off:[0, 0], sira:1, zar:[6, 6], kalan:[6, 6], skor:[1, 0], bitti:null } },
+        { id:'OYDEMO02', tur:'pisti', ad:'Pişti', i:'🃏', kisi:2, mod:'', d:'O', basMs:dk(6), oyuncular:[{ k:0, ad:'Can' }, { k:1, ad:'Ece', misafir:true }], sonuc:null,
+          sohbet:[{ t:dk(5), ad:'Can', m:'Hadi bakalım' }],
+          oyun:{ n:2, sira:0, yerSay:3, yerUst:'7k', deste:28, elNo:1, eller:[['2s', 'Jm', 'Tr'], ['Ak', '7r', 'Qs']], skor:[0, 0], alinan:[6, 4], pisti:[10, 0], hedef:101, takim:false, bitti:null } },
+        { id:'OYDEMO03', tur:'tavla', ad:'Tavla', i:'🎲', kisi:2, mod:'', d:'B', basMs:dk(1), oyuncular:[{ k:0, ad:'Deniz' }], sonuc:null, sohbet:[], oyun:null }] };
+    },
     ekMasaAyar:function(d){
       if (d.sureliAlanlar !== undefined) {
         if (!Array.isArray(d.sureliAlanlar)) return hata('FORM', 'Süreli alan listesi geçersiz.');
@@ -11453,6 +11563,11 @@ function masaDemoIslemler(x){
       if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
       if (d.ismarla !== undefined) AYR.ismarla = !!d.ismarla;
       if (d.hediye !== undefined) AYR.hediye = !!d.hediye;
+      if (d.oyun !== undefined) {   // 1.32.1 mekânda oyunlar
+        var po2 = (x.ISL && x.ISL.paketOz) || {};
+        if (d.oyun && po2.oyun === false) return hata('PAKET', 'Mekânda oyunlar paketinizde yok. Bu özelliği içeren bir pakete geçerek kullanabilirsiniz.');
+        AYR.oy = !!d.oyun;
+      }
       if (d.mekanQr !== undefined || d.mekanQrYenile) {   // 1.31.1 mekân QR'ı
         var po1 = (x.ISL && x.ISL.paketOz) || {};
         if (AYR.acik && AYR.qr && po1.qrmasa !== false && po1.garson !== false) return hata('MASA', 'Masa QR siparişi açıkken mekân QR\'ı kullanılmaz; müşterileriniz hediyeyi masa QR\'ından gönderir.');
@@ -12728,7 +12843,8 @@ var PAKET_OZ = [['tabldot', 'Tabldot satışı', 'Kasada tepsi / self servis sat
   ['garson', 'Garson ve masa siparişi', 'Garson uygulaması, masa planı, adisyon'], ['qrmasa', 'Masa QR siparişi', 'Müşteri masadaki QR kodu okutup sipariş verir'],
   ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi'], ['sureli', 'Süreli alanlar', 'PlayStation, bilardo, masa tenisi gibi alanlarda süre ve ücret takibi'],
   ['hazirlik', 'Hazırlık bölümleri', 'Bar ve nargile ekranı, bölüm yazıcısı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama', 'Masadaki müşteriler mekânda sohbet eder, birbirine ısmarlar'],
-  ['sahne', 'Mekân sahnesi', 'Gecenin tacı ve en çok hediye alanlar sahnede; isterse mekândaki TV\'de']];
+  ['sahne', 'Mekân sahnesi', 'Gecenin tacı ve en çok hediye alanlar sahnede; isterse mekândaki TV\'de'],
+  ['oyun', 'Mekânda oyunlar', 'Müşteriler mekândaki diğer kişilerle tavla, pişti gibi oyunlar oynar']];
 function paketOzListe(){ return D && D.paketOz && D.paketOz.length ? D.paketOz : PAKET_OZ.map(function(x){ return { k:x[0], ad:x[1], acik:x[2] }; }); }
 function paketOzHepsi(){ var o = {}; PAKET_OZ.forEach(function(x){ o[x[0]] = true; }); return o; }
 // işletmenin paketinde bu özellik var mı (eski sunucu bilgi göndermezse var sayılır)
@@ -15050,7 +15166,7 @@ function demoMock(rol){
   BEN.bildirim = 'sesli';
   var ISL = { ad:DEMO_MARKET ? 'Örnek Bakkal' : DEMO_HIZMET ? 'Usta Tesisat' : 'Örnek Dönerci', acik:true, hizmet:true, hazirlikDk:DEMO_HIZMET ? 60 : 20, telefon:'02161234567', lat:40.9871, lng:29.0285,
     tur:DEMO_MARKET ? 'market' : DEMO_HIZMET ? 'hizmet' : 'restoran', kasa:!DEMO_HIZMET, logo:PRM.get('logo') === '1' ? demoLogoVeri() : '' };
-  var DEMO_PAKET = { bas:{ tabldot:true, tezgah:true, garson:false, qrmasa:false, muhasebe:false }, std:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:false },
+  var DEMO_PAKET = { bas:{ tabldot:true, tezgah:true, garson:false, qrmasa:false, muhasebe:false, oyun:false }, std:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:false },
     tezgah:{ tabldot:false, tezgah:true, garson:true, qrmasa:false, muhasebe:true }, yok:{ tabldot:false, tezgah:false, garson:false, qrmasa:false, muhasebe:false } }[PRM.get('paket') || ''];
   if (DEMO_PAKET) { ISL.paketOz = DEMO_PAKET; if (!DEMO_PAKET.tabldot && !DEMO_PAKET.tezgah) ISL.kasa = false; }
   if (PRM.get('kurulum') === '1') { MENU = []; ISL.lat = 0; ISL.lng = 0; AYAR.Enlem = ''; AYAR.Boylam = ''; }

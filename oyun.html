@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
+<meta name="robots" content="noindex">
+<title>Oyunlar</title>
+<style>
+/* YourPOS 360 · Mekânda oyunlar (oyun.html). Masa oturumu sipariş sayfasıyla ortak (aynı tarayıcı deposu). */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --bg2:#f1f2f6; --bg:#fff; --text:#0f0f0f; --hint:#8a8a8f; --sub:#5d5d63; --link:#2481cc; --sep:#e2e3e8;
+  --accent:#e8590c; --on-accent:#fff; --accent-soft:#fdebdf; --accent-ink:#b0420a;
+  --ok:#2e9e4f; --ok-soft:#e1f3e6; --ok-ink:#1d7536; --danger:#cf3a30; --danger-soft:#fdeceb; --warn-soft:#fff2dc; --warn-ink:#7f4600;
+  --felt:#1f6b46; --felt2:#185a3a; --wood:#c58b4e; --wood2:#a86f36; --pt1:#f3e2c4; --pt2:#9a3b2c; --chk0:#fbfbf8; --chk1:#2b2b30;
+  --card:#fff; --card-ink:#1b1b1f; --card-red:#c62828; --scrim:rgb(10 14 20 / .45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg2:#0e1621; --bg:#17212b; --text:#f5f5f5; --hint:#708499; --sub:#a6b2c0; --link:#62a8eb; --sep:#26323f;
+    --accent-soft:#3a2416; --accent-ink:#ffab7d; --ok-soft:#173826; --ok-ink:#7bd69a; --danger-soft:#3a1d1b; --warn-soft:#3a2c12; --warn-ink:#f5c77a;
+    --felt:#174f35; --felt2:#123f2a; --card:#f4f4f2; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg2:#0e1621; --bg:#17212b; --text:#f5f5f5; --hint:#708499; --sub:#a6b2c0; --link:#62a8eb; --sep:#26323f;
+  --accent-soft:#3a2416; --accent-ink:#ffab7d; --ok-soft:#173826; --ok-ink:#7bd69a; --danger-soft:#3a1d1b; --warn-soft:#3a2c12; --warn-ink:#f5c77a;
+  --felt:#174f35; --felt2:#123f2a; --card:#f4f4f2; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg2);color:var(--text);font:16px/1.4 var(--font);-webkit-text-size-adjust:100%}
+body{min-height:100vh}
+button{font:inherit;color:inherit}
+a{color:var(--link)}
+.ust{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--sep)}
+.ust .geri{text-decoration:none;font-weight:600;white-space:nowrap}
+.ust h1{font-size:18px;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ust .isl{color:var(--hint);font-size:13px;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{max-width:720px;margin:0 auto;padding:12px 16px 120px}
+.kart-k{background:var(--bg);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 1px 0 var(--sep)}
+.h2{font-size:16px;font-weight:700;margin:4px 0 10px}
+.muted{color:var(--hint)}
+.fhint{color:var(--sub);font-size:13px;margin:4px 0 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;border:0;font-weight:700;cursor:pointer;background:var(--accent-soft);color:var(--accent-ink)}
+.btn.pri{background:var(--accent);color:var(--on-accent)}
+.btn.duz{background:transparent;color:var(--link);padding:0 8px}
+.btn.kirmizi{background:var(--danger-soft);color:var(--danger)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.blok{width:100%}
+.btn.sm{min-height:34px;padding:0 12px;font-size:14px;border-radius:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:12px;padding:4px;margin:0 0 12px}
+.seg button{border:0;background:transparent;min-height:40px;border-radius:9px;font-weight:700;color:var(--sub);cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.oyunlar{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.oy-k{background:var(--bg);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 0 var(--sep)}
+.oy-k .i{font-size:30px;line-height:1}
+.oy-k b{font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--sep);background:var(--bg2);border-radius:999px;min-height:34px;padding:0 12px;font-weight:600;font-size:14px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.liste{display:flex;flex-direction:column;gap:8px}
+.ms{background:var(--bg);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;box-shadow:0 1px 0 var(--sep)}
+.ms .i{font-size:26px}
+.ms .a{flex:1;min-width:0}
+.ms .a b{display:block}
+.ms .a span{color:var(--sub);font-size:13px}
+.rozet{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--ok-soft);color:var(--ok-ink)}
+.rozet.tur{background:var(--warn-soft);color:var(--warn-ink)}
+.cb{display:flex;gap:10px;align-items:flex-start;border:0;background:transparent;text-align:start;padding:8px 0;cursor:pointer;width:100%}
+.cb .kutu{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--hint);margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
+.cb[aria-checked="true"] .kutu{background:var(--accent);border-color:var(--accent)}
+.err{color:var(--danger);font-size:14px;margin:6px 0 0}
+.koltuklar{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.koltuk{border:1px dashed var(--sep);border-radius:12px;padding:12px;text-align:center;min-height:64px;display:flex;flex-direction:column;justify-content:center}
+.koltuk.dolu{border-style:solid;background:var(--accent-soft)}
+.not{background:var(--warn-soft);color:var(--warn-ink);border-radius:10px;padding:8px 12px;font-size:13px;margin:0 0 12px}
+.oyuncular{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.oyc{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;box-shadow:0 1px 0 var(--sep)}
+.oyc.sira{outline:2px solid var(--accent)}
+.oyc .nokta{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.oyc .nokta.yok{background:var(--hint)}
+.olay{min-height:22px;font-size:14px;color:var(--sub);margin:6px 0;text-align:center}
+.durum{font-weight:700;text-align:center;margin:6px 0 10px}
+.durum.ben{color:var(--accent-ink)}
+/* sohbet */
+.sohbet{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bg);border-top:1px solid var(--sep);max-width:720px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom,0)}
+.sohbet .bas{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:transparent;padding:10px 16px;font-weight:700;cursor:pointer}
+.sohbet .yeni{background:var(--accent);color:#fff;border-radius:999px;font-size:12px;padding:1px 7px;margin-inline-start:6px}
+.sohbet .govde{max-height:42vh;overflow-y:auto;padding:0 16px 8px}
+.sohbet form{display:flex;gap:8px;padding:8px 16px 12px}
+.sohbet input{flex:1;min-width:0;min-height:42px;border-radius:12px;border:1px solid var(--sep);background:var(--bg2);color:var(--text);padding:0 12px;font:inherit}
+.msj{margin:6px 0;display:flex;flex-direction:column;align-items:flex-start}
+.msj.ben{align-items:flex-end}
+.msj .b{background:var(--bg2);border-radius:12px;padding:6px 10px;max-width:85%;border:0;text-align:start;font:inherit;color:inherit;cursor:pointer}
+.msj.ben .b{background:var(--accent-soft);cursor:default}
+.msj .ad{font-size:12px;color:var(--sub);font-weight:700}
+.sh{position:fixed;inset:0;z-index:40;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sh[hidden]{display:none}
+.sh-k{background:var(--bg);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0));max-height:86vh;overflow-y:auto}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:50;background:#2a2b30;color:#fff;padding:10px 14px;border-radius:12px;max-width:90vw;font-size:14px}
+.toast[hidden]{display:none}
+.sonuc{background:var(--bg);border-radius:16px;padding:16px;text-align:center;margin:0 0 12px;box-shadow:0 2px 12px rgb(0 0 0 / .08)}
+.sonuc h2{margin:0 0 6px}
+.yuk{display:flex;justify-content:center;padding:60px 0}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--sep);border-top-color:var(--accent);animation:don 1s linear infinite}
+@keyframes don{to{transform:rotate(360deg)}}
+/* ---- tavla ---- */
+.tv{background:var(--wood);border-radius:12px;padding:8px;user-select:none;-webkit-user-select:none}
+.tv-ic{display:grid;grid-template-columns:1fr 26px 1fr 34px;gap:4px;background:var(--wood2);border-radius:8px;padding:4px}
+.tv-yari{display:grid;grid-template-rows:1fr 1fr;gap:10px;background:var(--felt);border-radius:6px;padding:4px}
+.tv-sira{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+.tv-n{position:relative;height:150px;border:0;padding:0;background:transparent;cursor:default;display:flex;flex-direction:column;align-items:center;gap:1px}
+.tv-n::before{content:"";position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 92%);background:var(--pt1);opacity:.95}
+.tv-n.alt::before{clip-path:polygon(50% 8%,100% 100%,0 100%)}
+.tv-n.c::before{background:var(--pt2)}
+.tv-n.alt{flex-direction:column-reverse}
+.tv-n.kay::before{background:#f0b429}
+.tv-n.hed::before{background:#5fd38d}
+.tv-n.oyn{cursor:pointer}
+.tv-p{position:relative;z-index:1;width:min(22px,92%);aspect-ratio:1;border-radius:50%;border:1px solid rgb(0 0 0 / .35);box-shadow:inset 0 -2px 0 rgb(0 0 0 / .2)}
+.tv-p.b{background:var(--chk0)}
+.tv-p.s{background:var(--chk1);border-color:#000}
+.tv-say{position:relative;z-index:1;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000}
+.tv-no{position:absolute;z-index:1;font-size:9px;color:rgb(255 255 255 / .7);bottom:-1px}
+.tv-n.alt .tv-no{top:-1px;bottom:auto}
+.tv-bar{background:var(--wood);border-radius:6px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:6px 0;border:0;cursor:default}
+.tv-bar.oyn{cursor:pointer;outline:2px solid #f0b429}
+.tv-off{background:var(--wood);border-radius:6px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:6px 2px;border:0;font-size:11px;color:#fff;font-weight:700;cursor:default}
+.tv-off.hed{outline:3px solid #5fd38d;cursor:pointer}
+.zarlar{display:flex;gap:10px;justify-content:center;align-items:center;margin:10px 0}
+.zar{width:44px;height:44px;border-radius:10px;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;box-shadow:0 2px 0 rgb(0 0 0 / .25)}
+.zar.kul{opacity:.35}
+/* ---- kartlar ---- */
+.kart{display:inline-flex;flex-direction:column;justify-content:space-between;width:56px;height:80px;border-radius:8px;background:var(--card);color:var(--card-ink);border:1px solid rgb(0 0 0 / .2);padding:4px 5px;font-weight:800;line-height:1;box-shadow:0 2px 3px rgb(0 0 0 / .18);vertical-align:top}
+.kart.kirmizi{color:var(--card-red)}
+.kart .k-d{font-size:17px}
+.kart .k-r{font-size:24px;align-self:flex-end}
+.kart.arka{background:repeating-linear-gradient(45deg,#2e5aa8 0 6px,#244a8c 6px 12px);border-color:#1d3d73}
+.kart.kucuk{width:34px;height:48px;padding:2px 3px}
+.kart.kucuk .k-d{font-size:12px}.kart.kucuk .k-r{font-size:15px}
+button.kart{cursor:pointer;transition:transform .12s}
+button.kart.sec{transform:translateY(-14px);outline:3px solid var(--accent)}
+button.kart[disabled]{cursor:default}
+.ps{background:var(--felt);border-radius:16px;padding:12px;color:#fff}
+.ps-rakip{display:flex;justify-content:space-around;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+.ps-r{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700}
+.ps-r.sira{color:#ffd56a}
+.ps-r .arkalar{display:flex}
+.ps-r .arkalar .kart{margin-inline-start:-22px}
+.ps-r .arkalar .kart:first-child{margin-inline-start:0}
+.ps-orta{display:flex;align-items:center;justify-content:center;gap:16px;min-height:110px}
+.ps-yer{position:relative;min-width:120px;height:96px;display:flex;align-items:center;justify-content:center}
+.ps-yer .kart{position:absolute}
+.ps-bilgi{font-size:13px;opacity:.9;text-align:center}
+.ps-el{display:flex;justify-content:center;gap:6px;margin:14px 0 4px;min-height:96px;align-items:flex-end}
+.ps-skor{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:700;margin-top:8px;background:rgb(0 0 0 / .2);border-radius:10px;padding:8px 10px}
+</style>
+</head>
+<body>
+<header class="ust"><a id="geri" class="geri" href="#">‹</a><h1 id="baslik">🎲</h1><span id="isl" class="isl"></span></header>
+<main id="ana"><div class="yuk"><span class="spin" aria-hidden="true"></span></div></main>
+<div id="sohbet" class="sohbet" hidden></div>
+<div id="sheet" class="sh" hidden role="dialog" aria-modal="true"><div class="sh-k" id="sheetK"></div></div>
+<div id="toast" class="toast" hidden role="status"></div>
+<script>
+(function(){
+'use strict';
+var d = document, P = new URLSearchParams(location.search);
+var B = P.get('b') || '', MASA = P.get('masa') || '', DEMO = P.get('demo') === '1';
+var API = P.get('api') || 'https://api.yourpos360.com/exec';
+var LS = { get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set:function(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
+var I18N = {"tr":{"baslik":"Oyunlar","geri":"‹ Geri","yukleniyor":"Yükleniyor…","hata":"Bir şeyler ters gitti. Yeniden deneyin.","yenidenDene":"Yeniden dene","oturumYok":"Oyun oynamak için önce mekândaki QR kodu okutup katılın.","kapali":"Oyunlar bu işletmede şu an kapalı.","uygunH":"Oynamak için hazır olun","uygunS":"Oyunlara katılmak için sohbet ekranında Telegram ile doğrulanıp adınızı yazın ve 18 yaş onayıyla «Mekânda görünür ol»u açın.","sohbeteGit":"Sohbete git","iki":"İki kişilik","coklu":"Çoklu","masaAcH":"Masa aç","kisiN":"{n} kişi","kisiAralik":"{a}–{b} kişi","acikMasalar":"Açık masalar","masaYok":"Şu an açık masa yok. İlk masayı siz açın!","masaSahibi":"{ad} açtı","bosYer":"{n} boş yer","oynaniyor":"Oynanıyor","katil":"Katıl","istekGitti":"İstek gönderildi","iptal":"İptal","davetVar":"Sizi davet etti","kabul":"Kabul et","hayir":"Hayır","benimMasam":"Masanıza dönün","onayMetni":"Mekân yetkilisinin bu oyun masasını (taşlarımı / kartlarımı ve masa sohbetini) görebileceğini kabul ediyorum.","onayHata":"Devam etmek için onay kutusunu işaretleyin.","masayiAc":"Masayı aç","istekGonder":"Katılma isteği gönder","mod":"Oyun şekli","esli":"Eşli","tekli":"Tekli","bekleniyor":"Oyuncular bekleniyor","bosKoltuk":"Boş","istekler":"Katılmak isteyenler","davetEt":"Davet et","davetEdildi":"Davet edildi","kimseYok":"Şu an davet edilebilecek görünür kimse yok.","ayril":"Masadan ayrıl","ayrilOnay":"Oyun sürerken ayrılırsanız oyun biter. Ayrılmak istiyor musunuz?","evet":"Evet","izlenir":"👁 Mekân yetkilisi bu masayı görebilir.","siraSende":"Sıra sizde","siraKimde":"Sıra: {ad}","cevrimdisi":"bağlantı yok","sen":"Siz","misafir":"🌐 Misafir","sohbet":"Masa sohbeti","yaz":"Mesaj yazın…","gonder":"Gönder","sohbetBos":"Henüz mesaj yok. Bol şans! 🍀","sikayet":"🚩 Şikâyet et","sikayetH":"Neden şikâyet ediyorsunuz?","sikayetS":"Şikâyet YourPOS 360 ekibine gider; kişiyi de engellemiş olursunuz.","n.taciz":"Taciz / rahatsız etme","n.kufur":"Küfür / hakaret","n.spam":"Reklam / dolandırıcılık","n.diger":"Diğer","sikayetGitti":"Şikâyetiniz iletildi; kişi engellendi.","bitti":"Oyun bitti","kazandin":"🏆 Kazandınız!","kazanan":"Kazanan: {ad}","kopma":"{ad} bağlantısı koptu; oyun bitti.","ayrildi":"{ad} oyundan ayrıldı.","rovans":"Rövanş","rovansBekle":"Rövanş isteniyor ({n}/{m})","lobi":"Oyunlara dön","skor":"Skor","tv.zarAt":"🎲 Zar at","tv.basla":"Başlangıç zarı: {a} – {b}. {ad} başlıyor.","tv.pas":"{ad} {a}-{b} attı ama oynayamadı; sıra geçti.","tv.sec":"Oynatacağınız pulu seçin.","tv.hedef":"Gideceği haneyi seçin.","tv.topla":"Topla","tv.kirik":"Kırık","tv.toplanan":"Toplanan","tv.beyaz":"Beyaz","tv.siyah":"Siyah","tv.mars":"Mars! (+2)","ps.deste":"Deste: {n}","ps.yer":"Yerde {n} kart","ps.at":"Kartı at","ps.pisti":"🎉 {ad} pişti yaptı! +{p}","ps.aldi":"{ad} yerdeki {n} kartı aldı.","ps.takim":"Takım {n}","ps.biz":"Biz","ps.onlar":"Onlar","ps.hedef":"{n} sayıya","ps.kart":"{n} kart","ps.elSonu":"El bitti: {a} – {b}","tur.okey":"Okey","tur.okey101":"101 Okey","tur.tavla":"Tavla","tur.batak":"Batak","tur.king":"King","tur.pisti":"Pişti","tur.satranc":"Satranç","tur.bilgi":"Bilgi yarışması","dgH":"Önce Telegram ile doğrulanın","dgS":"Oyunlara katılmak için masa ekranında Telegram ile doğrulanıp adınızı yazın, sonra buraya dönün.","dgGit":"Doğrulamaya git","gorH":"Mekânda görünür olun","gorS":"Oynamak için mekânda görünür olmanız gerekir. Görünür olunca mekândaki diğer kişiler yalnız adınızı görür; sizi oyuna davet edebilir ya da masanıza katılmak isteyebilir. Masanız, telefonunuz ve Telegram hesabınız gösterilmez.","yas18":"18 yaşından büyüğüm","yas18Hata":"Devam etmek için 18 yaş onayını işaretleyin.","gorBtn":"Görünür ol ve oyna","yasak":"Mekân içi etkileşimleriniz kısıtlandı; oyunlara katılamazsınız.","masayaDon":"Masa ekranına dön"},"en":{"baslik":"Games","geri":"‹ Back","yukleniyor":"Loading…","hata":"Something went wrong. Please try again.","yenidenDene":"Try again","oturumYok":"To play, first join by scanning the QR code at the venue.","kapali":"Games are turned off at this venue.","uygunH":"Get ready to play","uygunS":"To join games, verify with Telegram on the chat screen, enter your name and turn on «Be visible at the venue» with the 18+ confirmation.","sohbeteGit":"Go to chat","iki":"Two players","coklu":"Group","masaAcH":"Open a table","kisiN":"{n} players","kisiAralik":"{a}–{b} players","acikMasalar":"Open tables","masaYok":"No open tables right now. Open the first one!","masaSahibi":"Opened by {ad}","bosYer":"{n} seats free","oynaniyor":"In play","katil":"Join","istekGitti":"Request sent","iptal":"Cancel","davetVar":"Invited you","kabul":"Accept","hayir":"No","benimMasam":"Back to your table","onayMetni":"I agree that the venue staff can see this game table (my tiles / cards and the table chat).","onayHata":"Tick the box to continue.","masayiAc":"Open table","istekGonder":"Send join request","mod":"Mode","esli":"Partners","tekli":"Solo","bekleniyor":"Waiting for players","bosKoltuk":"Empty","istekler":"Join requests","davetEt":"Invite","davetEdildi":"Invited","kimseYok":"Nobody visible to invite right now.","ayril":"Leave table","ayrilOnay":"If you leave during the game, it ends. Leave anyway?","evet":"Yes","izlenir":"👁 The venue staff can see this table.","siraSende":"Your turn","siraKimde":"Turn: {ad}","cevrimdisi":"offline","sen":"You","misafir":"🌐 Guest","sohbet":"Table chat","yaz":"Type a message…","gonder":"Send","sohbetBos":"No messages yet. Good luck! 🍀","sikayet":"🚩 Report","sikayetH":"Why are you reporting?","sikayetS":"The report goes to the YourPOS 360 team and the person is blocked for you.","n.taciz":"Harassment","n.kufur":"Abuse / insults","n.spam":"Spam / scam","n.diger":"Other","sikayetGitti":"Report sent; the person is blocked.","bitti":"Game over","kazandin":"🏆 You won!","kazanan":"Winner: {ad}","kopma":"{ad} disconnected; the game is over.","ayrildi":"{ad} left the game.","rovans":"Rematch","rovansBekle":"Rematch requested ({n}/{m})","lobi":"Back to games","skor":"Score","tv.zarAt":"🎲 Roll dice","tv.basla":"Opening roll: {a} – {b}. {ad} starts.","tv.pas":"{ad} rolled {a}-{b} but couldn't move; turn passed.","tv.sec":"Choose a checker to move.","tv.hedef":"Choose where to move it.","tv.topla":"Bear off","tv.kirik":"Bar","tv.toplanan":"Off","tv.beyaz":"White","tv.siyah":"Black","tv.mars":"Gammon! (+2)","ps.deste":"Deck: {n}","ps.yer":"{n} cards on the table","ps.at":"Play card","ps.pisti":"🎉 {ad} made a pişti! +{p}","ps.aldi":"{ad} took {n} cards.","ps.takim":"Team {n}","ps.biz":"Us","ps.onlar":"Them","ps.hedef":"to {n}","ps.kart":"{n} cards","ps.elSonu":"Round over: {a} – {b}","tur.okey":"Okey","tur.okey101":"101 Okey","tur.tavla":"Backgammon","tur.batak":"Batak (Spades)","tur.king":"King","tur.pisti":"Pishti","tur.satranc":"Chess","tur.bilgi":"Quiz","dgH":"First verify with Telegram","dgS":"To join games, verify with Telegram and enter your name on the table screen, then come back here.","dgGit":"Go to verification","gorH":"Be visible at the venue","gorS":"To play, you need to be visible at the venue. Other guests then see only your name; they can invite you to a game or ask to join your table. Your table, phone and Telegram account are never shown.","yas18":"I am over 18","yas18Hata":"Tick the 18+ confirmation to continue.","gorBtn":"Become visible and play","yasak":"Your in-venue interactions are restricted; you can't join games.","masayaDon":"Back to the table screen"},"ru":{"baslik":"Игры","geri":"‹ Назад","yukleniyor":"Загрузка…","hata":"Что-то пошло не так. Попробуйте ещё раз.","yenidenDene":"Повторить","oturumYok":"Чтобы играть, сначала присоединитесь, отсканировав QR-код в заведении.","kapali":"Игры в этом заведении выключены.","uygunH":"Подготовьтесь к игре","uygunS":"Чтобы играть, на экране чата подтвердите себя через Telegram, укажите имя и включите «Быть видимым в заведении» (18+).","sohbeteGit":"Перейти в чат","iki":"Для двоих","coklu":"Групповые","masaAcH":"Открыть стол","kisiN":"{n} игрока","kisiAralik":"{a}–{b} игроков","acikMasalar":"Открытые столы","masaYok":"Открытых столов пока нет. Откройте первый!","masaSahibi":"Открыл(а) {ad}","bosYer":"Свободно мест: {n}","oynaniyor":"Идёт игра","katil":"Присоединиться","istekGitti":"Запрос отправлен","iptal":"Отмена","davetVar":"Пригласил(а) вас","kabul":"Принять","hayir":"Нет","benimMasam":"Вернуться к своему столу","onayMetni":"Я согласен(на), что персонал заведения может видеть этот игровой стол (мои фишки / карты и чат стола).","onayHata":"Отметьте поле, чтобы продолжить.","masayiAc":"Открыть стол","istekGonder":"Отправить запрос","mod":"Режим","esli":"Парами","tekli":"Каждый за себя","bekleniyor":"Ожидание игроков","bosKoltuk":"Свободно","istekler":"Хотят присоединиться","davetEt":"Пригласить","davetEdildi":"Приглашён","kimseYok":"Сейчас некого пригласить.","ayril":"Покинуть стол","ayrilOnay":"Если выйти во время игры, она закончится. Выйти?","evet":"Да","izlenir":"👁 Персонал заведения видит этот стол.","siraSende":"Ваш ход","siraKimde":"Ходит: {ad}","cevrimdisi":"не в сети","sen":"Вы","misafir":"🌐 Гость","sohbet":"Чат стола","yaz":"Напишите сообщение…","gonder":"Отправить","sohbetBos":"Сообщений пока нет. Удачи! 🍀","sikayet":"🚩 Пожаловаться","sikayetH":"Причина жалобы?","sikayetS":"Жалоба уйдёт команде YourPOS 360, а человек будет заблокирован для вас.","n.taciz":"Домогательства","n.kufur":"Оскорбления","n.spam":"Спам / мошенничество","n.diger":"Другое","sikayetGitti":"Жалоба отправлена; человек заблокирован.","bitti":"Игра окончена","kazandin":"🏆 Вы победили!","kazanan":"Победитель: {ad}","kopma":"{ad} отключился(ась); игра окончена.","ayrildi":"{ad} покинул(а) игру.","rovans":"Реванш","rovansBekle":"Ждём реванш ({n}/{m})","lobi":"К играм","skor":"Счёт","tv.zarAt":"🎲 Бросить кости","tv.basla":"Первый бросок: {a} – {b}. Начинает {ad}.","tv.pas":"{ad} выбросил(а) {a}-{b}, но не смог(ла) походить; ход перешёл.","tv.sec":"Выберите шашку.","tv.hedef":"Выберите, куда пойти.","tv.topla":"Выбросить","tv.kirik":"На баре","tv.toplanan":"Выброшено","tv.beyaz":"Белые","tv.siyah":"Чёрные","tv.mars":"Марс! (+2)","ps.deste":"Колода: {n}","ps.yer":"На столе {n} карт","ps.at":"Сыграть карту","ps.pisti":"🎉 {ad} сделал(а) пишти! +{p}","ps.aldi":"{ad} забрал(а) {n} карт.","ps.takim":"Команда {n}","ps.biz":"Мы","ps.onlar":"Они","ps.hedef":"до {n}","ps.kart":"{n} карт","ps.elSonu":"Раунд окончен: {a} – {b}","tur.okey":"Окей","tur.okey101":"101 Окей","tur.tavla":"Нарды","tur.batak":"Батак","tur.king":"Кинг","tur.pisti":"Пишти","tur.satranc":"Шахматы","tur.bilgi":"Викторина","dgH":"Сначала подтвердите себя через Telegram","dgS":"Чтобы играть, подтвердите себя через Telegram и укажите имя на экране стола, затем вернитесь сюда.","dgGit":"Перейти к подтверждению","gorH":"Станьте видимым в заведении","gorS":"Чтобы играть, нужно быть видимым в заведении. Другие гости увидят только ваше имя: смогут пригласить вас в игру или попроситься за ваш стол. Стол, телефон и аккаунт Telegram не показываются.","yas18":"Мне больше 18 лет","yas18Hata":"Чтобы продолжить, подтвердите, что вам больше 18.","gorBtn":"Стать видимым и играть","yasak":"Ваши взаимодействия в заведении ограничены; играть нельзя.","masayaDon":"Вернуться к экрану стола"},"de":{"baslik":"Spiele","geri":"‹ Zurück","yukleniyor":"Wird geladen…","hata":"Etwas ist schiefgelaufen. Bitte erneut versuchen.","yenidenDene":"Erneut versuchen","oturumYok":"Zum Spielen treten Sie zuerst über den QR-Code im Lokal bei.","kapali":"Spiele sind in diesem Lokal ausgeschaltet.","uygunH":"Bereit zum Spielen","uygunS":"Um mitzuspielen, bestätigen Sie sich im Chat über Telegram, geben Ihren Namen ein und aktivieren «Im Lokal sichtbar sein» (18+).","sohbeteGit":"Zum Chat","iki":"Zu zweit","coklu":"Gruppe","masaAcH":"Tisch eröffnen","kisiN":"{n} Spieler","kisiAralik":"{a}–{b} Spieler","acikMasalar":"Offene Tische","masaYok":"Gerade keine offenen Tische. Eröffnen Sie den ersten!","masaSahibi":"Eröffnet von {ad}","bosYer":"{n} Plätze frei","oynaniyor":"Läuft","katil":"Beitreten","istekGitti":"Anfrage gesendet","iptal":"Abbrechen","davetVar":"Hat Sie eingeladen","kabul":"Annehmen","hayir":"Nein","benimMasam":"Zurück zu Ihrem Tisch","onayMetni":"Ich stimme zu, dass das Lokal diesen Spieltisch (meine Steine / Karten und den Tisch-Chat) sehen kann.","onayHata":"Setzen Sie das Häkchen, um fortzufahren.","masayiAc":"Tisch eröffnen","istekGonder":"Beitrittsanfrage senden","mod":"Modus","esli":"Paarweise","tekli":"Einzeln","bekleniyor":"Warten auf Spieler","bosKoltuk":"Frei","istekler":"Beitrittsanfragen","davetEt":"Einladen","davetEdildi":"Eingeladen","kimseYok":"Gerade ist niemand Sichtbares einzuladen.","ayril":"Tisch verlassen","ayrilOnay":"Wenn Sie während des Spiels gehen, endet es. Trotzdem verlassen?","evet":"Ja","izlenir":"👁 Das Lokal kann diesen Tisch sehen.","siraSende":"Sie sind dran","siraKimde":"Am Zug: {ad}","cevrimdisi":"offline","sen":"Sie","misafir":"🌐 Gast","sohbet":"Tisch-Chat","yaz":"Nachricht schreiben…","gonder":"Senden","sohbetBos":"Noch keine Nachrichten. Viel Glück! 🍀","sikayet":"🚩 Melden","sikayetH":"Warum melden Sie?","sikayetS":"Die Meldung geht an das YourPOS-360-Team und die Person wird für Sie blockiert.","n.taciz":"Belästigung","n.kufur":"Beleidigung","n.spam":"Spam / Betrug","n.diger":"Sonstiges","sikayetGitti":"Meldung gesendet; Person blockiert.","bitti":"Spiel vorbei","kazandin":"🏆 Sie haben gewonnen!","kazanan":"Gewinner: {ad}","kopma":"{ad} hat die Verbindung verloren; das Spiel ist vorbei.","ayrildi":"{ad} hat das Spiel verlassen.","rovans":"Revanche","rovansBekle":"Revanche angefragt ({n}/{m})","lobi":"Zu den Spielen","skor":"Punktestand","tv.zarAt":"🎲 Würfeln","tv.basla":"Eröffnungswurf: {a} – {b}. {ad} beginnt.","tv.pas":"{ad} warf {a}-{b}, konnte aber nicht ziehen; Zug vorbei.","tv.sec":"Wählen Sie einen Stein.","tv.hedef":"Wählen Sie das Ziel.","tv.topla":"Abtragen","tv.kirik":"Bar","tv.toplanan":"Abgetragen","tv.beyaz":"Weiß","tv.siyah":"Schwarz","tv.mars":"Gammon! (+2)","ps.deste":"Stapel: {n}","ps.yer":"{n} Karten auf dem Tisch","ps.at":"Karte ausspielen","ps.pisti":"🎉 {ad} hat einen Pişti! +{p}","ps.aldi":"{ad} hat {n} Karten genommen.","ps.takim":"Team {n}","ps.biz":"Wir","ps.onlar":"Sie","ps.hedef":"bis {n}","ps.kart":"{n} Karten","ps.elSonu":"Runde vorbei: {a} – {b}","tur.okey":"Okey","tur.okey101":"101 Okey","tur.tavla":"Backgammon","tur.batak":"Batak","tur.king":"King","tur.pisti":"Pişti","tur.satranc":"Schach","tur.bilgi":"Quiz","dgH":"Bestätigen Sie sich zuerst mit Telegram","dgS":"Um mitzuspielen, bestätigen Sie sich auf dem Tisch-Bildschirm mit Telegram und geben Ihren Namen ein; kommen Sie dann hierher zurück.","dgGit":"Zur Bestätigung","gorH":"Im Lokal sichtbar sein","gorS":"Zum Spielen müssen Sie im Lokal sichtbar sein. Andere Gäste sehen dann nur Ihren Namen und können Sie zu einem Spiel einladen oder an Ihren Tisch kommen wollen. Tisch, Telefon und Telegram-Konto werden nie angezeigt.","yas18":"Ich bin über 18","yas18Hata":"Bitte bestätigen Sie, dass Sie über 18 sind.","gorBtn":"Sichtbar werden und spielen","yasak":"Ihre Interaktionen im Lokal sind eingeschränkt; Sie können nicht mitspielen.","masayaDon":"Zurück zum Tisch-Bildschirm"},"ar":{"baslik":"الألعاب","geri":"› رجوع","yukleniyor":"جارٍ التحميل…","hata":"حدث خطأ ما. حاول مرة أخرى.","yenidenDene":"أعد المحاولة","oturumYok":"للعب، انضم أولًا بمسح رمز QR في المكان.","kapali":"الألعاب متوقفة في هذا المكان.","uygunH":"استعد للعب","uygunS":"للانضمام إلى الألعاب، تحقق عبر تيليجرام في شاشة الدردشة واكتب اسمك وفعّل «الظهور في المكان» بتأكيد 18+.","sohbeteGit":"اذهب إلى الدردشة","iki":"لاعبان","coklu":"جماعية","masaAcH":"افتح طاولة","kisiN":"{n} لاعبين","kisiAralik":"{a}–{b} لاعبين","acikMasalar":"الطاولات المفتوحة","masaYok":"لا توجد طاولات مفتوحة الآن. افتح أول طاولة!","masaSahibi":"فتحها {ad}","bosYer":"{n} مقاعد شاغرة","oynaniyor":"قيد اللعب","katil":"انضمام","istekGitti":"تم إرسال الطلب","iptal":"إلغاء","davetVar":"دعاك","kabul":"قبول","hayir":"لا","benimMasam":"عد إلى طاولتك","onayMetni":"أوافق على أن إدارة المكان يمكنها رؤية طاولة اللعب هذه (أحجاري / أوراقي ودردشة الطاولة).","onayHata":"ضع علامة في المربع للمتابعة.","masayiAc":"افتح الطاولة","istekGonder":"أرسل طلب الانضمام","mod":"نمط اللعب","esli":"ثنائيات","tekli":"فردي","bekleniyor":"بانتظار اللاعبين","bosKoltuk":"شاغر","istekler":"طلبات الانضمام","davetEt":"ادعُ","davetEdildi":"تمت الدعوة","kimseYok":"لا يوجد أحد ظاهر لدعوته الآن.","ayril":"غادر الطاولة","ayrilOnay":"إذا غادرت أثناء اللعب تنتهي اللعبة. هل تريد المغادرة؟","evet":"نعم","izlenir":"👁 يمكن لإدارة المكان رؤية هذه الطاولة.","siraSende":"دورك","siraKimde":"الدور: {ad}","cevrimdisi":"غير متصل","sen":"أنت","misafir":"🌐 ضيف","sohbet":"دردشة الطاولة","yaz":"اكتب رسالة…","gonder":"إرسال","sohbetBos":"لا توجد رسائل بعد. حظًا موفقًا! 🍀","sikayet":"🚩 إبلاغ","sikayetH":"لماذا تبلّغ؟","sikayetS":"يذهب البلاغ إلى فريق YourPOS 360 ويُحظر الشخص لديك.","n.taciz":"تحرش / إزعاج","n.kufur":"شتائم / إهانة","n.spam":"إعلانات / احتيال","n.diger":"أخرى","sikayetGitti":"تم إرسال البلاغ وحُظر الشخص.","bitti":"انتهت اللعبة","kazandin":"🏆 لقد فزت!","kazanan":"الفائز: {ad}","kopma":"انقطع اتصال {ad}؛ انتهت اللعبة.","ayrildi":"غادر {ad} اللعبة.","rovans":"مباراة ثأرية","rovansBekle":"طلب مباراة ثأرية ({n}/{m})","lobi":"العودة إلى الألعاب","skor":"النتيجة","tv.zarAt":"🎲 ارمِ النرد","tv.basla":"الرمية الأولى: {a} – {b}. يبدأ {ad}.","tv.pas":"رمى {ad} {a}-{b} ولم يستطع اللعب؛ انتقل الدور.","tv.sec":"اختر قطعة لتحريكها.","tv.hedef":"اختر المكان.","tv.topla":"اجمع","tv.kirik":"المكسور","tv.toplanan":"المجموع","tv.beyaz":"أبيض","tv.siyah":"أسود","tv.mars":"مارس! (+2)","ps.deste":"الرزمة: {n}","ps.yer":"{n} أوراق على الطاولة","ps.at":"العب الورقة","ps.pisti":"🎉 {ad} حقق بيشتي! +{p}","ps.aldi":"أخذ {ad} {n} أوراق.","ps.takim":"الفريق {n}","ps.biz":"نحن","ps.onlar":"هم","ps.hedef":"حتى {n}","ps.kart":"{n} أوراق","ps.elSonu":"انتهت الجولة: {a} – {b}","tur.okey":"أوكي","tur.okey101":"أوكي 101","tur.tavla":"طاولة الزهر","tur.batak":"باتاك","tur.king":"كينغ","tur.pisti":"بيشتي","tur.satranc":"شطرنج","tur.bilgi":"مسابقة معلومات","dgH":"تحقق أولًا عبر تيليجرام","dgS":"للانضمام إلى الألعاب، تحقق عبر تيليجرام واكتب اسمك في شاشة الطاولة، ثم عد إلى هنا.","dgGit":"اذهب إلى التحقق","gorH":"اظهر في المكان","gorS":"للعب يجب أن تكون ظاهرًا في المكان. يرى الآخرون اسمك فقط، ويمكنهم دعوتك إلى لعبة أو طلب الانضمام إلى طاولتك. لا تُعرض طاولتك أو هاتفك أو حساب تيليجرام.","yas18":"عمري أكثر من 18 عامًا","yas18Hata":"ضع علامة على تأكيد 18+ للمتابعة.","gorBtn":"اظهر والعب","yasak":"تم تقييد تفاعلاتك داخل المكان؛ لا يمكنك الانضمام إلى الألعاب.","masayaDon":"العودة إلى شاشة الطاولة"},"es":{"baslik":"Juegos","geri":"‹ Atrás","yukleniyor":"Cargando…","hata":"Algo salió mal. Inténtalo de nuevo.","yenidenDene":"Reintentar","oturumYok":"Para jugar, únete primero escaneando el QR del local.","kapali":"Los juegos están desactivados en este local.","uygunH":"Prepárate para jugar","uygunS":"Para unirte a los juegos, verifícate con Telegram en el chat, escribe tu nombre y activa «Ser visible en el local» (18+).","sohbeteGit":"Ir al chat","iki":"Dos jugadores","coklu":"En grupo","masaAcH":"Abrir mesa","kisiN":"{n} jugadores","kisiAralik":"{a}–{b} jugadores","acikMasalar":"Mesas abiertas","masaYok":"No hay mesas abiertas. ¡Abre la primera!","masaSahibi":"Abierta por {ad}","bosYer":"{n} plazas libres","oynaniyor":"En juego","katil":"Unirse","istekGitti":"Solicitud enviada","iptal":"Cancelar","davetVar":"Te invitó","kabul":"Aceptar","hayir":"No","benimMasam":"Vuelve a tu mesa","onayMetni":"Acepto que el local puede ver esta mesa de juego (mis fichas / cartas y el chat de la mesa).","onayHata":"Marca la casilla para continuar.","masayiAc":"Abrir mesa","istekGonder":"Enviar solicitud","mod":"Modo","esli":"Por parejas","tekli":"Individual","bekleniyor":"Esperando jugadores","bosKoltuk":"Libre","istekler":"Solicitudes","davetEt":"Invitar","davetEdildi":"Invitado","kimseYok":"Ahora no hay nadie visible a quien invitar.","ayril":"Salir de la mesa","ayrilOnay":"Si sales durante la partida, termina. ¿Salir igualmente?","evet":"Sí","izlenir":"👁 El local puede ver esta mesa.","siraSende":"Tu turno","siraKimde":"Turno: {ad}","cevrimdisi":"sin conexión","sen":"Tú","misafir":"🌐 Invitado","sohbet":"Chat de la mesa","yaz":"Escribe un mensaje…","gonder":"Enviar","sohbetBos":"Aún no hay mensajes. ¡Suerte! 🍀","sikayet":"🚩 Denunciar","sikayetH":"¿Por qué denuncias?","sikayetS":"La denuncia va al equipo de YourPOS 360 y la persona queda bloqueada para ti.","n.taciz":"Acoso","n.kufur":"Insultos","n.spam":"Spam / estafa","n.diger":"Otro","sikayetGitti":"Denuncia enviada; persona bloqueada.","bitti":"Fin de la partida","kazandin":"🏆 ¡Ganaste!","kazanan":"Ganador: {ad}","kopma":"{ad} se desconectó; la partida terminó.","ayrildi":"{ad} abandonó la partida.","rovans":"Revancha","rovansBekle":"Revancha pedida ({n}/{m})","lobi":"Volver a los juegos","skor":"Marcador","tv.zarAt":"🎲 Tirar dados","tv.basla":"Tirada inicial: {a} – {b}. Empieza {ad}.","tv.pas":"{ad} sacó {a}-{b} pero no pudo mover; pasa el turno.","tv.sec":"Elige una ficha.","tv.hedef":"Elige a dónde moverla.","tv.topla":"Sacar","tv.kirik":"Barra","tv.toplanan":"Fuera","tv.beyaz":"Blancas","tv.siyah":"Negras","tv.mars":"¡Gammon! (+2)","ps.deste":"Mazo: {n}","ps.yer":"{n} cartas en la mesa","ps.at":"Jugar carta","ps.pisti":"🎉 ¡{ad} hizo pişti! +{p}","ps.aldi":"{ad} se llevó {n} cartas.","ps.takim":"Equipo {n}","ps.biz":"Nosotros","ps.onlar":"Ellos","ps.hedef":"a {n}","ps.kart":"{n} cartas","ps.elSonu":"Fin de la mano: {a} – {b}","tur.okey":"Okey","tur.okey101":"101 Okey","tur.tavla":"Backgammon","tur.batak":"Batak","tur.king":"King","tur.pisti":"Pishti","tur.satranc":"Ajedrez","tur.bilgi":"Trivia","dgH":"Primero verifícate con Telegram","dgS":"Para unirte a los juegos, verifícate con Telegram y escribe tu nombre en la pantalla de la mesa; luego vuelve aquí.","dgGit":"Ir a la verificación","gorH":"Hazte visible en el local","gorS":"Para jugar tienes que ser visible en el local. Los demás solo verán tu nombre; podrán invitarte a una partida o pedir unirse a tu mesa. Tu mesa, teléfono y cuenta de Telegram nunca se muestran.","yas18":"Soy mayor de 18 años","yas18Hata":"Marca la confirmación de mayoría de edad para continuar.","gorBtn":"Hazte visible y juega","yasak":"Tus interacciones en el local están restringidas; no puedes unirte a juegos.","masayaDon":"Volver a la pantalla de la mesa"},"th":{"baslik":"เกม","geri":"‹ กลับ","yukleniyor":"กำลังโหลด…","hata":"มีบางอย่างผิดพลาด ลองอีกครั้ง","yenidenDene":"ลองอีกครั้ง","oturumYok":"หากต้องการเล่น ให้สแกน QR ในร้านเพื่อเข้าร่วมก่อน","kapali":"ร้านนี้ปิดเกมอยู่ตอนนี้","uygunH":"เตรียมพร้อมเล่น","uygunS":"หากต้องการเล่นเกม ให้ยืนยันตัวตนด้วย Telegram ในหน้าแชต ใส่ชื่อ และเปิด «แสดงตัวในสถานที่» พร้อมยืนยันอายุ 18+","sohbeteGit":"ไปที่แชต","iki":"สองคน","coklu":"หลายคน","masaAcH":"เปิดโต๊ะ","kisiN":"{n} คน","kisiAralik":"{a}–{b} คน","acikMasalar":"โต๊ะที่เปิดอยู่","masaYok":"ยังไม่มีโต๊ะเปิด เปิดโต๊ะแรกเลย!","masaSahibi":"{ad} เปิดไว้","bosYer":"ว่าง {n} ที่","oynaniyor":"กำลังเล่น","katil":"เข้าร่วม","istekGitti":"ส่งคำขอแล้ว","iptal":"ยกเลิก","davetVar":"ชวนคุณ","kabul":"ตอบรับ","hayir":"ไม่","benimMasam":"กลับไปที่โต๊ะของคุณ","onayMetni":"ฉันยอมรับว่าเจ้าหน้าที่ร้านสามารถเห็นโต๊ะเกมนี้ได้ (ไพ่/หมากของฉันและแชตของโต๊ะ)","onayHata":"ติ๊กช่องเพื่อดำเนินการต่อ","masayiAc":"เปิดโต๊ะ","istekGonder":"ส่งคำขอเข้าร่วม","mod":"รูปแบบ","esli":"คู่","tekli":"เดี่ยว","bekleniyor":"กำลังรอผู้เล่น","bosKoltuk":"ว่าง","istekler":"คำขอเข้าร่วม","davetEt":"เชิญ","davetEdildi":"เชิญแล้ว","kimseYok":"ตอนนี้ไม่มีใครที่แสดงตัวให้เชิญ","ayril":"ออกจากโต๊ะ","ayrilOnay":"หากออกระหว่างเกม เกมจะจบ ต้องการออกหรือไม่","evet":"ใช่","izlenir":"👁 เจ้าหน้าที่ร้านมองเห็นโต๊ะนี้ได้","siraSende":"ตาคุณ","siraKimde":"ตาของ: {ad}","cevrimdisi":"ออฟไลน์","sen":"คุณ","misafir":"🌐 แขก","sohbet":"แชตของโต๊ะ","yaz":"พิมพ์ข้อความ…","gonder":"ส่ง","sohbetBos":"ยังไม่มีข้อความ ขอให้โชคดี! 🍀","sikayet":"🚩 รายงาน","sikayetH":"รายงานเพราะอะไร","sikayetS":"รายงานจะส่งถึงทีม YourPOS 360 และบุคคลนั้นจะถูกบล็อกสำหรับคุณ","n.taciz":"คุกคาม / รบกวน","n.kufur":"คำหยาบ / ดูหมิ่น","n.spam":"สแปม / หลอกลวง","n.diger":"อื่น ๆ","sikayetGitti":"ส่งรายงานแล้ว และบล็อกบุคคลนั้นแล้ว","bitti":"จบเกม","kazandin":"🏆 คุณชนะ!","kazanan":"ผู้ชนะ: {ad}","kopma":"{ad} หลุดการเชื่อมต่อ เกมจบแล้ว","ayrildi":"{ad} ออกจากเกมแล้ว","rovans":"แข่งใหม่","rovansBekle":"ขอแข่งใหม่ ({n}/{m})","lobi":"กลับไปหน้าเกม","skor":"คะแนน","tv.zarAt":"🎲 ทอยลูกเต๋า","tv.basla":"ทอยเริ่ม: {a} – {b} {ad} เริ่มก่อน","tv.pas":"{ad} ทอยได้ {a}-{b} แต่เดินไม่ได้ ข้ามตา","tv.sec":"เลือกหมากที่จะเดิน","tv.hedef":"เลือกช่องปลายทาง","tv.topla":"เก็บ","tv.kirik":"โดนกิน","tv.toplanan":"เก็บแล้ว","tv.beyaz":"ขาว","tv.siyah":"ดำ","tv.mars":"มาร์ส! (+2)","ps.deste":"สำรับ: {n}","ps.yer":"บนโต๊ะ {n} ใบ","ps.at":"ลงไพ่","ps.pisti":"🎉 {ad} ทำพิชตี! +{p}","ps.aldi":"{ad} เก็บไพ่ {n} ใบ","ps.takim":"ทีม {n}","ps.biz":"เรา","ps.onlar":"พวกเขา","ps.hedef":"ถึง {n}","ps.kart":"{n} ใบ","ps.elSonu":"จบรอบ: {a} – {b}","tur.okey":"โอเคย์","tur.okey101":"โอเคย์ 101","tur.tavla":"แบ็กแกมมอน","tur.batak":"บาตัก","tur.king":"คิง","tur.pisti":"พิชตี","tur.satranc":"หมากรุก","tur.bilgi":"ตอบคำถาม","dgH":"ยืนยันตัวตนกับ Telegram ก่อน","dgS":"หากต้องการร่วมเล่น ให้ยืนยันตัวตนกับ Telegram และใส่ชื่อในหน้าจอโต๊ะ แล้วกลับมาที่นี่","dgGit":"ไปที่การยืนยันตัวตน","gorH":"แสดงตัวในสถานที่","gorS":"หากต้องการเล่น คุณต้องแสดงตัวในสถานที่ คนอื่นจะเห็นเพียงชื่อของคุณ และเชิญคุณเล่นหรือขอเข้าร่วมโต๊ะเกมของคุณได้ จะไม่แสดงโต๊ะ เบอร์โทร หรือบัญชี Telegram ของคุณ","yas18":"ฉันอายุเกิน 18 ปี","yas18Hata":"ทำเครื่องหมายยืนยันอายุ 18+ เพื่อดำเนินการต่อ","gorBtn":"แสดงตัวและเล่น","yasak":"การโต้ตอบในสถานที่ของคุณถูกจำกัด คุณไม่สามารถร่วมเล่นเกมได้","masayaDon":"กลับไปที่หน้าจอโต๊ะ"},"vi":{"baslik":"Trò chơi","geri":"‹ Quay lại","yukleniyor":"Đang tải…","hata":"Đã xảy ra lỗi. Vui lòng thử lại.","yenidenDene":"Thử lại","oturumYok":"Để chơi, hãy quét mã QR tại quán để tham gia trước.","kapali":"Quán hiện đã tắt trò chơi.","uygunH":"Sẵn sàng chơi","uygunS":"Để tham gia trò chơi, hãy xác minh qua Telegram ở màn hình trò chuyện, nhập tên và bật «Hiển thị tại địa điểm» kèm xác nhận 18+.","sohbeteGit":"Đến trò chuyện","iki":"Hai người","coklu":"Nhiều người","masaAcH":"Mở bàn","kisiN":"{n} người","kisiAralik":"{a}–{b} người","acikMasalar":"Bàn đang mở","masaYok":"Chưa có bàn nào. Hãy mở bàn đầu tiên!","masaSahibi":"{ad} đã mở","bosYer":"Còn {n} chỗ","oynaniyor":"Đang chơi","katil":"Tham gia","istekGitti":"Đã gửi yêu cầu","iptal":"Hủy","davetVar":"Đã mời bạn","kabul":"Đồng ý","hayir":"Không","benimMasam":"Quay lại bàn của bạn","onayMetni":"Tôi đồng ý rằng quán có thể xem bàn chơi này (quân/bài của tôi và trò chuyện của bàn).","onayHata":"Đánh dấu ô để tiếp tục.","masayiAc":"Mở bàn","istekGonder":"Gửi yêu cầu tham gia","mod":"Kiểu chơi","esli":"Theo cặp","tekli":"Đơn","bekleniyor":"Đang chờ người chơi","bosKoltuk":"Trống","istekler":"Yêu cầu tham gia","davetEt":"Mời","davetEdildi":"Đã mời","kimseYok":"Hiện không có ai đang hiển thị để mời.","ayril":"Rời bàn","ayrilOnay":"Nếu rời đi khi đang chơi, ván sẽ kết thúc. Vẫn rời đi?","evet":"Có","izlenir":"👁 Quán có thể xem bàn này.","siraSende":"Lượt của bạn","siraKimde":"Lượt: {ad}","cevrimdisi":"mất kết nối","sen":"Bạn","misafir":"🌐 Khách","sohbet":"Trò chuyện bàn","yaz":"Nhập tin nhắn…","gonder":"Gửi","sohbetBos":"Chưa có tin nhắn. Chúc may mắn! 🍀","sikayet":"🚩 Báo cáo","sikayetH":"Bạn báo cáo vì sao?","sikayetS":"Báo cáo sẽ gửi tới đội YourPOS 360 và người đó sẽ bị chặn với bạn.","n.taciz":"Quấy rối","n.kufur":"Chửi bới / xúc phạm","n.spam":"Quảng cáo / lừa đảo","n.diger":"Khác","sikayetGitti":"Đã gửi báo cáo; người đó đã bị chặn.","bitti":"Hết ván","kazandin":"🏆 Bạn thắng!","kazanan":"Người thắng: {ad}","kopma":"{ad} đã mất kết nối; ván đã kết thúc.","ayrildi":"{ad} đã rời ván.","rovans":"Tái đấu","rovansBekle":"Đang chờ tái đấu ({n}/{m})","lobi":"Về danh sách trò chơi","skor":"Điểm","tv.zarAt":"🎲 Gieo xúc xắc","tv.basla":"Lượt gieo đầu: {a} – {b}. {ad} đi trước.","tv.pas":"{ad} gieo được {a}-{b} nhưng không đi được; qua lượt.","tv.sec":"Chọn quân để đi.","tv.hedef":"Chọn ô đến.","tv.topla":"Mang ra","tv.kirik":"Bị ăn","tv.toplanan":"Đã mang ra","tv.beyaz":"Trắng","tv.siyah":"Đen","tv.mars":"Gammon! (+2)","ps.deste":"Bộ bài: {n}","ps.yer":"Trên bàn {n} lá","ps.at":"Đánh lá này","ps.pisti":"🎉 {ad} ăn pişti! +{p}","ps.aldi":"{ad} ăn {n} lá.","ps.takim":"Đội {n}","ps.biz":"Chúng ta","ps.onlar":"Họ","ps.hedef":"tới {n}","ps.kart":"{n} lá","ps.elSonu":"Hết ván con: {a} – {b}","tur.okey":"Okey","tur.okey101":"Okey 101","tur.tavla":"Cờ tào cáo","tur.batak":"Batak","tur.king":"King","tur.pisti":"Pishti","tur.satranc":"Cờ vua","tur.bilgi":"Đố vui","dgH":"Trước tiên hãy xác minh bằng Telegram","dgS":"Để tham gia trò chơi, hãy xác minh bằng Telegram và nhập tên ở màn hình bàn, rồi quay lại đây.","dgGit":"Đi tới xác minh","gorH":"Hiển thị tại quán","gorS":"Để chơi, bạn cần hiển thị tại quán. Người khác chỉ thấy tên bạn; họ có thể mời bạn chơi hoặc xin vào bàn của bạn. Bàn, số điện thoại và tài khoản Telegram của bạn không bao giờ được hiển thị.","yas18":"Tôi trên 18 tuổi","yas18Hata":"Đánh dấu xác nhận trên 18 tuổi để tiếp tục.","gorBtn":"Hiển thị và chơi","yasak":"Tương tác tại quán của bạn đã bị hạn chế; bạn không thể tham gia trò chơi.","masayaDon":"Quay lại màn hình bàn"},"pt":{"baslik":"Jogos","geri":"‹ Voltar","yukleniyor":"Carregando…","hata":"Algo deu errado. Tente novamente.","yenidenDene":"Tentar de novo","oturumYok":"Para jogar, entre primeiro escaneando o QR do local.","kapali":"Os jogos estão desativados neste local.","uygunH":"Prepare-se para jogar","uygunS":"Para jogar, verifique-se pelo Telegram na tela de chat, escreva seu nome e ative «Ficar visível no local» com a confirmação de 18+.","sohbeteGit":"Ir para o chat","iki":"Dois jogadores","coklu":"Em grupo","masaAcH":"Abrir mesa","kisiN":"{n} jogadores","kisiAralik":"{a}–{b} jogadores","acikMasalar":"Mesas abertas","masaYok":"Nenhuma mesa aberta agora. Abra a primeira!","masaSahibi":"Aberta por {ad}","bosYer":"{n} lugares livres","oynaniyor":"Em jogo","katil":"Entrar","istekGitti":"Pedido enviado","iptal":"Cancelar","davetVar":"Convidou você","kabul":"Aceitar","hayir":"Não","benimMasam":"Voltar à sua mesa","onayMetni":"Concordo que o local pode ver esta mesa de jogo (minhas peças / cartas e o chat da mesa).","onayHata":"Marque a caixa para continuar.","masayiAc":"Abrir mesa","istekGonder":"Enviar pedido","mod":"Modo","esli":"Em duplas","tekli":"Individual","bekleniyor":"Aguardando jogadores","bosKoltuk":"Livre","istekler":"Pedidos","davetEt":"Convidar","davetEdildi":"Convidado","kimseYok":"Ninguém visível para convidar agora.","ayril":"Sair da mesa","ayrilOnay":"Se sair durante o jogo, ele termina. Sair mesmo assim?","evet":"Sim","izlenir":"👁 O local pode ver esta mesa.","siraSende":"Sua vez","siraKimde":"Vez de: {ad}","cevrimdisi":"offline","sen":"Você","misafir":"🌐 Convidado","sohbet":"Chat da mesa","yaz":"Escreva uma mensagem…","gonder":"Enviar","sohbetBos":"Ainda sem mensagens. Boa sorte! 🍀","sikayet":"🚩 Denunciar","sikayetH":"Por que está denunciando?","sikayetS":"A denúncia vai para a equipe da YourPOS 360 e a pessoa fica bloqueada para você.","n.taciz":"Assédio","n.kufur":"Ofensas","n.spam":"Spam / golpe","n.diger":"Outro","sikayetGitti":"Denúncia enviada; pessoa bloqueada.","bitti":"Fim de jogo","kazandin":"🏆 Você venceu!","kazanan":"Vencedor: {ad}","kopma":"{ad} desconectou; o jogo acabou.","ayrildi":"{ad} saiu do jogo.","rovans":"Revanche","rovansBekle":"Revanche pedida ({n}/{m})","lobi":"Voltar aos jogos","skor":"Placar","tv.zarAt":"🎲 Jogar dados","tv.basla":"Lance inicial: {a} – {b}. {ad} começa.","tv.pas":"{ad} tirou {a}-{b} mas não pôde mover; passou a vez.","tv.sec":"Escolha uma peça.","tv.hedef":"Escolha o destino.","tv.topla":"Retirar","tv.kirik":"Barra","tv.toplanan":"Retiradas","tv.beyaz":"Brancas","tv.siyah":"Pretas","tv.mars":"Gammon! (+2)","ps.deste":"Baralho: {n}","ps.yer":"{n} cartas na mesa","ps.at":"Jogar carta","ps.pisti":"🎉 {ad} fez pişti! +{p}","ps.aldi":"{ad} pegou {n} cartas.","ps.takim":"Time {n}","ps.biz":"Nós","ps.onlar":"Eles","ps.hedef":"até {n}","ps.kart":"{n} cartas","ps.elSonu":"Fim da rodada: {a} – {b}","tur.okey":"Okey","tur.okey101":"101 Okey","tur.tavla":"Gamão","tur.batak":"Batak","tur.king":"King","tur.pisti":"Pishti","tur.satranc":"Xadrez","tur.bilgi":"Quiz","dgH":"Primeiro verifique com o Telegram","dgS":"Para participar dos jogos, verifique com o Telegram e escreva seu nome na tela da mesa; depois volte aqui.","dgGit":"Ir para a verificação","gorH":"Fique visível no local","gorS":"Para jogar, você precisa estar visível no local. Os outros veem só o seu nome; podem convidar você para um jogo ou pedir para entrar na sua mesa. Sua mesa, telefone e conta do Telegram nunca são mostrados.","yas18":"Tenho mais de 18 anos","yas18Hata":"Marque a confirmação de maioridade para continuar.","gorBtn":"Ficar visível e jogar","yasak":"Suas interações no local estão restritas; você não pode participar dos jogos.","masayaDon":"Voltar à tela da mesa"}};
+var LANGS = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
+var LANG = (function(){
+  var q = P.get('dil'); if (LANGS.indexOf(q) >= 0) return q;
+  var sv = LS.get('yourpos360-dil'); if (LANGS.indexOf(sv) >= 0) return sv;
+  var nl = String(navigator.language || '').toLowerCase().split(/[-_]/)[0]; return LANGS.indexOf(nl) >= 0 ? nl : 'tr';
+})();
+d.documentElement.lang = LANG; if (LANG === 'ar') d.documentElement.dir = 'rtl';
+if (P.get('tema') === 'dark' || P.get('tema') === 'light') d.documentElement.setAttribute('data-theme', P.get('tema'));
+function t(k, p){ var s = (I18N[LANG] && I18N[LANG][k]) || (I18N.tr && I18N.tr[k]) || k; Object.keys(p || {}).forEach(function(x){ s = s.split('{' + x + '}').join(String(p[x])); }); return s; }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+function $(s){ return d.querySelector(s); }
+var OT_KEY = 'yourpos360-mq-' + B + '-' + String(MASA).split('.')[0];
+var OTURUM = LS.get(OT_KEY) || '';
+var MOCK = null;
+function call(act, data){
+  var payload = Object.assign({ act:act, b:B, dil:LANG, masa:MASA, oturum:OTURUM }, data || {});
+  if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
+  var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
+  return fetch(url, { method:'POST', body:JSON.stringify(payload), redirect:'follow' }).then(function(r){ return r.text(); }).then(function(x){
+    try { return JSON.parse(x); } catch(e){ return { ok:false, kod:'SUNUCU', hata:t('hata') }; }
+  }).catch(function(){ return { ok:false, kod:'AG', hata:t('hata') }; });
+}
+var S = { ekran:'yuk', lobi:null, masa:null, masaId:'', sekme:LS.get('yourpos360-oy-sekme') === 'coklu' ? 'coklu' : 'iki', pT:null, busy:false,
+  tvSec:null, psSec:'', sohbetAcik:false, okunan:0, imza:'', sk:null, gelenOlay:'' };
+var ana = $('#ana');
+function toast(m){ var x = $('#toast'); x.textContent = m; x.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function(){ x.hidden = true; }, 3200); }
+function geriUrl(){ return 'index.html?b=' + encodeURIComponent(B) + '&masa=' + encodeURIComponent(MASA) + (DEMO ? '&demo=1' : '') + (P.get('dil') ? '&dil=' + P.get('dil') : ''); }
+$('#geri').textContent = t('geri'); $('#geri').href = geriUrl();
+$('#baslik').textContent = '🎲 ' + t('baslik'); d.title = t('baslik');
+
+/* ---------- açılış ---------- */
+function bilgiEkrani(baslik, metin, dugme){
+  S.ekran = 'bilgi'; durdur();
+  ana.innerHTML = '<div class="kart-k" style="text-align:center"><div style="font-size:44px">🎲</div><h2 class="h2">' + esc(baslik) + '</h2><p class="fhint">' + esc(metin) + '</p>' +
+    (dugme ? '<p style="margin:14px 0 0"><a class="btn pri" href="' + esc(geriUrl()) + '">' + esc(dugme) + '</a></p>' : '') + '</div>';
+  sohbetGizle();
+}
+function hataIsle(r){
+  if (r && (r.kod === 'OTURUM' || r.kod === 'KAPANDI')) { bilgiEkrani(t('baslik'), (r && r.hata) || t('oturumYok'), t('masayaDon')); return true; }
+  if (r && r.kod === 'KAPALI') { bilgiEkrani(t('baslik'), t('kapali'), ''); return true; }
+  if (r && r.kod === 'UYGUN') { durdur(); lobiYukle(true); return true; }   // ekran neden uygun olmadığını gösterir
+  return false;
+}
+function boot(){
+  if (!B || !MASA) { bilgiEkrani(t('baslik'), t('oturumYok'), ''); return; }
+  if (!OTURUM && !DEMO) { bilgiEkrani(t('baslik'), t('oturumYok'), t('masayaDon')); return; }
+  lobiYukle(true);
+}
+function lobiYukle(ilk){
+  return call('oyLobi').then(function(r){
+    if (!r || !r.ok) { if (!hataIsle(r)) { if (ilk) bilgiEkrani(t('baslik'), (r && r.hata) || t('hata'), ''); } return; }
+    lobiAl(r, ilk);
+  });
+}
+function lobiAl(r, ilk){
+  S.lobi = r;
+  if (!r.acik) { bilgiEkrani(t('baslik'), t('kapali'), ''); return; }
+  if (!r.uygun) { uygunEkrani(r); return; }
+  if (ilk && r.benim) { masayaGit(r.benim); return; }
+  if (S.ekran !== 'lobi') { S.ekran = 'lobi'; S.masa = null; S.masaId = ''; sohbetGizle(); }
+  cizLobi();
+  zamanla(5000);
+}
+function zamanla(ms){ durdur(); S.pT = setTimeout(yokla, ms); }
+function durdur(){ clearTimeout(S.pT); S.pT = null; }
+function yokla(){
+  if (d.hidden) { zamanla(3000); return; }
+  if (S.ekran === 'lobi') { lobiYukle(false); return; }
+  if (S.ekran === 'masa' && S.masaId) masaYukle(false);
+}
+d.addEventListener('visibilitychange', function(){ if (!d.hidden && (S.ekran === 'lobi' || S.ekran === 'masa')) zamanla(200); });
+
+/* ---------- uygunluk: doğrulama, 18 yaş ve görünürlük ---------- */
+function uygunEkrani(r){
+  var b = r.ben || {};
+  if (b.yasak) { bilgiEkrani(t('baslik'), t('yasak'), ''); return; }
+  if (!b.dogrulandi) { bilgiEkrani(t('dgH'), t('dgS'), t('dgGit')); return; }
+  S.ekran = 'bilgi'; durdur(); sohbetGizle();
+  if (!S.gor) S.gor = { yas:!!b.yas18, hata:'' };
+  S.gor.yasVar = !!b.yas18;
+  gorCiz();
+}
+function gorCiz(){
+  var o = S.gor;
+  ana.innerHTML = '<div class="kart-k"><div style="font-size:40px;text-align:center">👀</div><h2 class="h2" style="text-align:center">' + esc(t('gorH')) + '</h2><p class="fhint">' + esc(t('gorS')) + '</p>' +
+    (o.yasVar ? '' : '<button type="button" class="cb" role="checkbox" aria-checked="' + o.yas + '" data-act="gor-yas"><span class="kutu" aria-hidden="true">' + (o.yas ? '✓' : '') + '</span><span>' + esc(t('yas18')) + '</span></button>') +
+    (o.hata ? '<p class="err" role="alert">' + esc(o.hata) + '</p>' : '') +
+    '<p style="margin:12px 0 0"><button type="button" class="btn pri" style="width:100%" data-act="gor-ac"' + (S.busy ? ' disabled' : '') + '>' + esc(t('gorBtn')) + '</button></p></div>';
+}
+function gorAc(){
+  var o = S.gor; if (!o || S.busy) return;
+  if (!o.yasVar && !o.yas) { o.hata = t('yas18Hata'); gorCiz(); return; }
+  S.busy = true; o.hata = ''; gorCiz();
+  call('oyGorunur', { yas18:true }).then(function(r){
+    S.busy = false;
+    if (r && r.ok) { S.gor = null; lobiAl(r, true); return; }
+    if (r && (r.kod === 'OTURUM' || r.kod === 'KAPANDI' || r.kod === 'KAPALI')) { hataIsle(r); return; }
+    o.hata = (r && r.hata) || t('hata'); gorCiz();
+  });
+}
+
+/* ---------- lobi ---------- */
+function turBul(k){ return ((S.lobi && S.lobi.turler) || []).filter(function(x){ return x.k === k; })[0] || null; }
+function sekmeKisi(tur, sekme){ return tur.kisi.filter(function(n){ return sekme === 'iki' ? n <= 3 : n >= 4 || (tur.k === 'bilgi' && n >= 3); }); }
+function kisiYazi(tur, l){ return l.length > 3 ? t('kisiAralik', { a:l[0], b:l[l.length - 1] }) : ''; }
+function cizLobi(){
+  var r = S.lobi, h = '';
+  h += '<div class="seg" role="tablist">' + ['iki', 'coklu'].map(function(k){ return '<button type="button" role="tab" aria-selected="' + (S.sekme === k) + '" data-act="sekme" data-k="' + k + '">' + esc(t(k)) + '</button>'; }).join('') + '</div>';
+  var benim = (r.masalar || []).filter(function(x){ return x.ben && x.d !== 'S'; })[0];
+  if (benim) h += '<div class="kart-k row" style="justify-content:space-between"><span><b>' + esc(benim.i + ' ' + turAd(benim)) + '</b></span><button type="button" class="btn pri sm" data-act="masa-git" data-id="' + esc(benim.id) + '">' + esc(t('benimMasam')) + '</button></div>';
+  h += '<h2 class="h2">' + esc(t('masaAcH')) + '</h2><div class="oyunlar">';
+  (r.turler || []).forEach(function(tr){
+    var l = sekmeKisi(tr, S.sekme); if (!l.length) return;
+    var aralik = kisiYazi(tr, l);
+    h += '<div class="oy-k"><span class="i" aria-hidden="true">' + esc(tr.i) + '</span><b>' + esc(turAd(tr)) + '</b><div class="chips">' +
+      (aralik ? '<button type="button" class="chip" data-act="ac-sec" data-k="' + esc(tr.k) + '" data-n="' + l[0] + '"' + (benim ? ' disabled' : '') + '>' + esc(aralik) + '</button>'
+        : l.map(function(n){ return '<button type="button" class="chip" data-act="ac-sec" data-k="' + esc(tr.k) + '" data-n="' + n + '"' + (benim ? ' disabled' : '') + '>' + esc(t('kisiN', { n:n })) + '</button>'; }).join('')) +
+      '</div></div>';
+  });
+  h += '</div><h2 class="h2" style="margin-top:18px">' + esc(t('acikMasalar')) + '</h2>';
+  var ml = (r.masalar || []).filter(function(x){ return !x.ben && (x.d === 'B' || x.d === 'O'); });
+  if (!ml.length) h += '<p class="muted">' + esc(t('masaYok')) + '</p>';
+  else h += '<div class="liste">' + ml.map(function(x){
+    var sag = x.d === 'O' ? '<span class="rozet tur">' + esc(t('oynaniyor')) + '</span>'
+      : x.davet ? '<span class="row"><button type="button" class="btn sm" data-act="davet-hayir" data-id="' + esc(x.id) + '">' + esc(t('hayir')) + '</button><button type="button" class="btn pri sm" data-act="davet-evet" data-id="' + esc(x.id) + '">' + esc(t('kabul')) + '</button></span>'
+      : x.istek ? '<span class="row"><span class="rozet">' + esc(t('istekGitti')) + '</span><button type="button" class="btn duz sm" data-act="istek-iptal" data-id="' + esc(x.id) + '">' + esc(t('iptal')) + '</button></span>'
+      : '<button type="button" class="btn pri sm" data-act="katil" data-id="' + esc(x.id) + '"' + (benim ? ' disabled' : '') + '>' + esc(t('katil')) + '</button>';
+    return '<div class="ms"><span class="i" aria-hidden="true">' + esc(x.i) + '</span><span class="a"><b>' + esc(turAd(x)) + ' · ' + esc(t('kisiN', { n:x.kisi })) + (x.mod ? ' · ' + esc(t(x.mod)) : '') + '</b>' +
+      '<span>' + esc(t('masaSahibi', { ad:x.sahipAd })) + (x.d === 'B' ? ' · ' + esc(t('bosYer', { n:x.bos })) : '') + (x.davet ? ' · ' + esc(t('davetVar')) : '') + '</span></span>' + sag + '</div>';
+  }).join('') + '</div>';
+  ana.innerHTML = h;
+}
+
+/* ---------- onay penceresi (masa aç / katıl / davet) ---------- */
+function sheetAc(html){ $('#sheetK').innerHTML = html; $('#sheet').hidden = false; }
+function sheetKapat(){ $('#sheet').hidden = true; S.onayIs = null; }
+$('#sheet').addEventListener('click', function(e){ if (e.target.id === 'sheet') sheetKapat(); });
+function onaySheet(baslik, alt, dugme, is, ek){
+  S.onayIs = { is:is, onay:false, mod:ek && ek.mod ? ek.mod[0] : '', ek:ek || {} };
+  onayCiz(baslik, alt, dugme);
+}
+function onayCiz(baslik, alt, dugme){
+  var o = S.onayIs; if (!o) return;
+  o.baslik = baslik; o.alt = alt; o.dugme = dugme;
+  var h = '<h2 class="h2">' + esc(baslik) + '</h2>' + (alt ? '<p class="fhint">' + esc(alt) + '</p>' : '');
+  if (o.ek.mod) h += '<p class="h2" style="font-size:14px;margin-top:12px">' + esc(t('mod')) + '</p><div class="chips">' + o.ek.mod.map(function(m){
+    return '<button type="button" class="chip" aria-pressed="' + (o.mod === m) + '" data-act="onay-mod" data-k="' + m + '" style="' + (o.mod === m ? 'border-color:var(--accent);background:var(--accent-soft)' : '') + '">' + esc(t(m)) + '</button>'; }).join('') + '</div>';
+  h += '<button type="button" class="cb" role="checkbox" aria-checked="' + o.onay + '" data-act="onay-cb"><span class="kutu" aria-hidden="true">' + (o.onay ? '✓' : '') + '</span><span>' + esc(t('onayMetni')) + '</span></button>' +
+    (o.hata ? '<p class="err" role="alert">' + esc(o.hata) + '</p>' : '') +
+    '<div class="row" style="margin-top:12px"><button type="button" class="btn" data-act="sheet-kapat">' + esc(t('iptal')) + '</button><button type="button" class="btn pri" style="flex:1" data-act="onay-git"' + (S.busy ? ' disabled' : '') + '>' + esc(dugme) + '</button></div>';
+  $('#sheetK').innerHTML = h; $('#sheet').hidden = false;
+}
+function onayGit(){
+  var o = S.onayIs; if (!o || S.busy) return;
+  if (!o.onay) { o.hata = t('onayHata'); onayCiz(o.baslik, o.alt, o.dugme); return; }
+  S.busy = true; onayCiz(o.baslik, o.alt, o.dugme);
+  o.is(o).then(function(r){
+    S.busy = false;
+    if (r && r.ok) { sheetKapat(); if (r.masa) masaAl(r.masa); else if (r.masalar) lobiAl(r); return; }
+    if (hataIsle(r)) { sheetKapat(); return; }
+    o.hata = (r && r.hata) || t('hata'); onayCiz(o.baslik, o.alt, o.dugme);
+  });
+}
+
+/* ---------- masa ---------- */
+function masayaGit(id){ S.ekran = 'masa'; S.masaId = id; S.masa = null; S.imza = ''; ana.innerHTML = '<div class="yuk"><span class="spin"></span></div>'; masaYukle(true); }
+function masaYukle(zorla){
+  var rv = !zorla && S.masa ? S.masa.rv : 0;
+  return call('oyDurum', { id:S.masaId, rv:rv, zorla:zorla ? 1 : 0 }).then(function(r){
+    if (S.ekran !== 'masa') return;
+    if (!r || !r.ok) { if (!hataIsle(r)) zamanla(4000); return; }
+    if (r.yok) { S.ekran = 'lobi'; S.masaId = ''; S.masa = null; sohbetGizle(); if (r.lobi) lobiAl(r.lobi); else lobiYukle(); return; }
+    if (!r.ayni && r.masa) masaAl(r.masa);
+    zamanla(S.masa && S.masa.d === 'O' ? 1500 : 2500);
+  });
+}
+function masaAl(m){
+  var eski = S.masa;
+  S.ekran = 'masa'; S.masaId = m.id; S.masa = m;
+  if (!eski || eski.id !== m.id) { S.tvSec = null; S.psSec = ''; S.okunan = (m.sohbet || []).length; }
+  olayYaz(eski, m);
+  cizMasa();
+  zamanla(m.d === 'O' ? 1500 : 2500);
+}
+function turAd(x){ var k = 'tur.' + ((x && (x.tur || x.k)) || ''), v = t(k); return v === k ? (x && x.ad) || '' : v; }
+function oyuncuAd(m, k){ var x = (m.oyuncular || []).filter(function(y){ return y.k === k; })[0]; return x ? (x.ben ? t('sen') : x.ad) : '—'; }
+function cizMasa(){
+  var m = S.masa; if (!m) return;
+  var imza = JSON.stringify([m.rv, S.tvSec, S.psSec, S.sohbetAcik, LANG]);
+  var h = '';
+  if (m.d === 'B') h += cizBekleme(m);
+  else {
+    if (m.d === 'S') h += cizSonuc(m);
+    h += '<div class="oyuncular">' + m.oyuncular.slice().sort(function(a, b){ return a.k - b.k; }).map(function(x){
+      var sira = m.oyun && m.oyun.sira === x.k && m.d === 'O';
+      return '<span class="oyc' + (sira ? ' sira' : '') + '"><span class="nokta' + (x.cevrim ? '' : ' yok') + '" title="' + esc(x.cevrim ? '' : t('cevrimdisi')) + '"></span>' + esc(x.ben ? t('sen') : x.ad) + (x.misafir ? ' <small>' + esc(t('misafir')) + '</small>' : '') + '</span>'; }).join('') + '</div>';
+    if (m.oyun && m.d === 'O') {
+      var benSira = m.oyun.sira === m.ben;
+      h += '<p class="durum' + (benSira ? ' ben' : '') + '">' + esc(benSira ? t('siraSende') : t('siraKimde', { ad:oyuncuAd(m, m.oyun.sira) })) + '</p>';
+    }
+    if (m.oyun) h += (CIZ[m.tur] ? CIZ[m.tur](m) : '');
+    h += '<p class="olay" aria-live="polite">' + esc(S.olayMetin || '') + '</p>';
+    h += '<p class="fhint" style="text-align:center">' + esc(t('izlenir')) + '</p>';
+    h += '<p style="text-align:center;margin:12px 0"><button type="button" class="btn kirmizi sm" data-act="ayril">' + esc(t('ayril')) + '</button></p>';
+  }
+  ana.innerHTML = h;
+  sohbetCiz();
+}
+function cizBekleme(m){
+  var h = '<div class="kart-k"><h2 class="h2">' + esc(m.i + ' ' + turAd(m) + ' · ' + t('kisiN', { n:m.kisi }) + (m.mod ? ' · ' + t(m.mod) : '')) + '</h2><p class="muted" style="margin:0 0 10px">' + esc(t('bekleniyor')) + '</p><div class="koltuklar">';
+  for (var k = 0; k < m.kisi; k++) {
+    var x = m.oyuncular.filter(function(y){ return y.k === k; })[0];
+    h += '<div class="koltuk' + (x ? ' dolu' : '') + '">' + (x ? '<b>' + esc(x.ben ? t('sen') : x.ad) + '</b>' + (x.misafir ? '<small>' + esc(t('misafir')) + '</small>' : '') : '<span class="muted">' + esc(t('bosKoltuk')) + '</span>') + '</div>';
+  }
+  h += '</div></div>';
+  if (m.ben < 0 && m.istek) h += '<div class="kart-k"><p style="margin:0">⏳ ' + esc(t('istekGitti')) + '</p><button type="button" class="btn duz" data-act="istek-iptal" data-id="' + esc(m.id) + '">' + esc(t('iptal')) + '</button></div>';
+  if (m.sahip) {
+    if ((m.istekler || []).length) h += '<div class="kart-k"><h2 class="h2">' + esc(t('istekler')) + '</h2><div class="liste">' + m.istekler.map(function(x){
+      return '<div class="row" style="justify-content:space-between"><b>' + esc(x.ad) + '</b><span class="row"><button type="button" class="btn sm" data-act="kabul" data-k="0" data-id="' + esc(x.id) + '">' + esc(t('hayir')) + '</button>' +
+        '<button type="button" class="btn pri sm" data-act="kabul" data-k="1" data-id="' + esc(x.id) + '">' + esc(t('kabul')) + '</button></span></div>'; }).join('') + '</div></div>';
+    h += '<div class="kart-k"><button type="button" class="btn blok" data-act="davet-ac">＋ ' + esc(t('davetEt')) + '</button>' +
+      ((m.davetler || []).length ? '<p class="fhint">' + esc(t('davetEdildi')) + ': ' + esc(m.davetler.map(function(x){ return x.ad; }).join(', ')) + '</p>' : '') + '</div>';
+  }
+  h += '<p class="fhint" style="text-align:center">' + esc(t('izlenir')) + '</p>';
+  if (m.ben >= 0) h += '<p style="text-align:center;margin:12px 0"><button type="button" class="btn kirmizi sm" data-act="ayril">' + esc(t('ayril')) + '</button></p>';
+  return h;
+}
+function cizSonuc(m){
+  var s = m.sonuc || {}, kaz = (s.kazanan || []).indexOf(m.ben) >= 0;
+  var adlar = (s.kazanan || []).map(function(k){ return oyuncuAd(m, k); }).join(', ');
+  var metin = s.tip === 'kopma' ? t('kopma', { ad:s.kim }) : s.tip === 'ayrildi' ? t('ayrildi', { ad:s.kim }) : '';
+  var hazir = (m.rov || []).length, ben = m.oyuncular.filter(function(x){ return x.ben; })[0], benHazir = ben && (m.rov || []).indexOf(ben.id) >= 0;
+  return '<div class="sonuc"><h2>' + esc(kaz ? t('kazandin') : t('bitti')) + '</h2>' + (adlar && !kaz ? '<p>' + esc(t('kazanan', { ad:adlar })) + '</p>' : '') + (metin ? '<p class="fhint">' + esc(metin) + '</p>' : '') +
+    (m.skor ? '<p class="fhint">' + esc(t('skor')) + ': ' + esc(m.skor.join(' – ')) + '</p>' : '') +
+    '<div class="row" style="justify-content:center;margin-top:10px"><button type="button" class="btn" data-act="lobi">' + esc(t('lobi')) + '</button>' +
+    (m.ben >= 0 ? '<button type="button" class="btn pri" data-act="rovans"' + (benHazir ? ' disabled' : '') + '>' + esc(hazir ? t('rovansBekle', { n:hazir, m:m.oyuncular.length }) : t('rovans')) + '</button>' : '') + '</div></div>';
+}
+function olayYaz(eski, m){
+  var o = m.oyun && m.oyun.olay, ad = function(k){ return oyuncuAd(m, k); };
+  if (!o) { if (m.tur === 'tavla' && m.oyun && m.oyun.ac && (!eski || !eski.oyun)) S.olayMetin = t('tv.basla', { a:m.oyun.ac[0], b:m.oyun.ac[1], ad:ad(m.oyun.sira) }); return; }
+  var key = JSON.stringify(o) + m.rv;
+  if (key === S.gelenOlay) return;
+  S.gelenOlay = key;
+  if (m.tur === 'tavla') S.olayMetin = o.tip === 'pas' ? t('tv.pas', { ad:ad(o.k), a:o.zar[0], b:o.zar[1] }) : '';
+  if (m.tur === 'pisti') {
+    if (o.tip === 'pisti') { S.olayMetin = t('ps.pisti', { ad:ad(o.k), p:o.puan }); if (eski && eski.rv !== m.rv) toast(S.olayMetin); }
+    else if (o.tip === 'aldi') S.olayMetin = t('ps.aldi', { ad:ad(o.k), n:o.n });
+    else S.olayMetin = '';
+    var es = m.oyun.elSonuc;
+    if (es && eski && eski.oyun && !eski.oyun.elSonuc) toast(t('ps.elSonu', { a:es.puan[0], b:es.puan[1] }));
+  }
+}
+
+/* ---------- sohbet ---------- */
+function sohbetGizle(){ var s = $('#sohbet'); s.hidden = true; s.innerHTML = ''; }
+function sohbetCiz(){
+  var m = S.masa, s = $('#sohbet');
+  if (!m || m.ben < 0) { sohbetGizle(); return; }
+  var l = m.sohbet || [], yeni = Math.max(0, l.length - S.okunan);
+  if (S.sohbetAcik) S.okunan = l.length;
+  var ae = d.activeElement, yaziyor = ae && ae.id === 'syMetin', taslak = yaziyor ? ae.value : (S.taslak || '');
+  var h = '<button type="button" class="bas" data-act="sohbet-ac" aria-expanded="' + S.sohbetAcik + '"><span>💬 ' + esc(t('sohbet')) + (yeni && !S.sohbetAcik ? '<span class="yeni">' + yeni + '</span>' : '') + '</span><span aria-hidden="true">' + (S.sohbetAcik ? '▾' : '▴') + '</span></button>';
+  if (S.sohbetAcik) {
+    h += '<div class="govde" id="syGovde">' + (l.length ? l.map(function(x){
+      var sk = S.sk && S.sk.mesaj === x.i;
+      return '<div class="msj' + (x.ben ? ' ben' : '') + '">' + (x.ben ? '' : '<span class="ad">' + esc(x.ad) + '</span>') +
+        (x.ben ? '<span class="b" dir="auto">' + esc(x.m) + '</span>' : '<button type="button" class="b" dir="auto" data-act="msj-sec" data-id="' + esc(x.i) + '">' + esc(x.m) + '</button>') +
+        (sk ? sikayetHtml() : '') + '</div>'; }).join('') : '<p class="muted">' + esc(t('sohbetBos')) + '</p>') + '</div>' +
+      '<form id="syForm"><input id="syMetin" type="text" maxlength="300" dir="auto" autocomplete="off" placeholder="' + esc(t('yaz')) + '" value="' + esc(taslak) + '"><button type="submit" class="btn pri sm">' + esc(t('gonder')) + '</button></form>';
+  }
+  if (yaziyor) {   // yazarken giriş kutusuna dokunma; yalnız mesajları yenile
+    var g0 = $('#syGovde'), tmp = d.createElement('div'); tmp.innerHTML = h;
+    var ng = tmp.querySelector('#syGovde');
+    if (g0 && ng && g0.innerHTML !== ng.innerHTML) { var alta = g0.scrollTop + g0.clientHeight >= g0.scrollHeight - 40; g0.innerHTML = ng.innerHTML; if (alta) g0.scrollTop = g0.scrollHeight; }
+    return;
+  }
+  s.innerHTML = h; s.hidden = false;
+  var g = $('#syGovde'); if (g) g.scrollTop = g.scrollHeight;
+}
+function sikayetHtml(){
+  var o = S.sk;
+  return '<div class="kart-k" style="margin-top:6px;width:100%"><p class="h2" style="font-size:14px">' + esc(t('sikayetH')) + '</p><div class="chips">' + ['taciz', 'kufur', 'spam', 'diger'].map(function(n){
+    return '<button type="button" class="chip" data-act="sk-neden" data-k="' + n + '" style="' + (o.neden === n ? 'border-color:var(--accent);background:var(--accent-soft)' : '') + '">' + esc(t('n.' + n)) + '</button>'; }).join('') + '</div>' +
+    '<p class="fhint">' + esc(t('sikayetS')) + '</p><div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="sk-vazgec">' + esc(t('iptal')) + '</button><button type="button" class="btn kirmizi sm" data-act="sk-gonder"' + (o.neden ? '' : ' disabled') + '>' + esc(t('sikayet')) + '</button></div></div>';
+}
+d.addEventListener('submit', function(e){
+  if (e.target.id !== 'syForm') return;
+  e.preventDefault();
+  var i = $('#syMetin'), v = String(i.value || '').trim(); if (!v || S.busy) return;
+  S.busy = true;
+  call('oyMesaj', { id:S.masaId, metin:v }).then(function(r){
+    S.busy = false;
+    if (r && r.ok) { i.value = ''; S.taslak = ''; i.blur(); masaAl(r.masa); return; }
+    toast((r && r.hata) || t('hata'));
+  });
+});
+d.addEventListener('input', function(e){ if (e.target.id === 'syMetin') S.taslak = e.target.value; });
+
+/* ---------- eylemler ---------- */
+function islem(act, veri){
+  if (S.busy) return Promise.resolve(null);
+  S.busy = true;
+  return call(act, Object.assign({ id:S.masaId }, veri || {})).then(function(r){
+    S.busy = false;
+    if (r && r.ok) { if (r.masa) masaAl(r.masa); else if (r.masalar) lobiAl(r); return r; }
+    if (!hataIsle(r)) toast((r && r.hata) || t('hata'));
+    return null;
+  });
+}
+d.addEventListener('click', function(e){
+  var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  var act = el.getAttribute('data-act'), id = el.getAttribute('data-id') || '', k = el.getAttribute('data-k') || '';
+  switch (act) {
+    case 'gor-yas': if (S.gor) { S.gor.yas = !S.gor.yas; S.gor.hata = ''; gorCiz(); } break;
+    case 'gor-ac': gorAc(); break;
+    case 'sekme': S.sekme = k; LS.set('yourpos360-oy-sekme', k); cizLobi(); break;
+    case 'masa-git': masayaGit(id); break;
+    case 'ac-sec': (function(){
+      var tr = turBul(k), n = Number(el.getAttribute('data-n'));
+      var l = sekmeKisi(tr, S.sekme);
+      var ek = tr.mod && n === 4 ? { mod:tr.mod } : {};
+      if (l.length > 3) ek.kisiler = l;
+      S.acTur = k; S.acKisi = n;
+      onaySheet(tr.i + ' ' + turAd(tr) + ' · ' + t('kisiN', { n:n }), '', t('masayiAc'), function(o){ return call('oyAc', { tur:S.acTur, kisi:S.acKisi, mod:o.mod, onay:true }); }, ek);
+    })(); break;
+    case 'katil': (function(){
+      var x = ((S.lobi && S.lobi.masalar) || []).filter(function(y){ return y.id === id; })[0]; if (!x) return;
+      S.hedefId = id;
+      onaySheet(x.i + ' ' + turAd(x) + ' · ' + t('kisiN', { n:x.kisi }), t('masaSahibi', { ad:x.sahipAd }), t('istekGonder'), function(){ return call('oyIstek', { id:S.hedefId, onay:true }); });
+    })(); break;
+    case 'davet-evet': (function(){
+      var x = ((S.lobi && S.lobi.masalar) || []).filter(function(y){ return y.id === id; })[0]; if (!x) return;
+      S.hedefId = id;
+      onaySheet(x.i + ' ' + turAd(x), t('masaSahibi', { ad:x.sahipAd }) + ' · ' + t('davetVar'), t('kabul'), function(){ return call('oyDavetYanit', { id:S.hedefId, kabul:true, onay:true }); });
+    })(); break;
+    case 'davet-hayir': call('oyDavetYanit', { id:id, kabul:false }).then(function(r){ if (r && r.ok) lobiAl(r); }); break;
+    case 'istek-iptal': call('oyIstekIptal', { id:id }).then(function(r){ if (r && r.ok) { S.ekran = 'lobi'; S.masaId = ''; S.masa = null; sohbetGizle(); lobiAl(r); } }); break;
+    case 'onay-cb': if (S.onayIs) { S.onayIs.onay = !S.onayIs.onay; S.onayIs.hata = ''; onayCiz(S.onayIs.baslik, S.onayIs.alt, S.onayIs.dugme); } break;
+    case 'onay-mod': if (S.onayIs) { S.onayIs.mod = k; onayCiz(S.onayIs.baslik, S.onayIs.alt, S.onayIs.dugme); } break;
+    case 'onay-git': onayGit(); break;
+    case 'sheet-kapat': sheetKapat(); break;
+    case 'kabul': islem('oyKabul', { kisi:id, kabul:k === '1' }); break;
+    case 'davet-ac': davetSheet(); break;
+    case 'davet-kisi': call('oyDavet', { id:S.masaId, kime:id }).then(function(r){ if (r && r.ok) { masaAl(r.masa); toast(t('davetEdildi')); davetSheet(); } else toast((r && r.hata) || t('hata')); }); break;
+    case 'ayril':
+      if (S.masa && S.masa.d === 'O') { sheetAc('<p>' + esc(t('ayrilOnay')) + '</p><div class="row"><button type="button" class="btn" data-act="sheet-kapat">' + esc(t('hayir')) + '</button><button type="button" class="btn kirmizi" style="flex:1" data-act="ayril-evet">' + esc(t('evet')) + '</button></div>'); break; }
+      /* falls through */
+    case 'ayril-evet': sheetKapat(); call('oyAyril', { id:S.masaId }).then(function(r){ S.ekran = 'lobi'; S.masaId = ''; S.masa = null; sohbetGizle(); if (r && r.ok) lobiAl(r); else lobiYukle(); }); break;
+    case 'lobi': S.ekran = 'lobi'; S.masaId = ''; S.masa = null; sohbetGizle(); ana.innerHTML = '<div class="yuk"><span class="spin"></span></div>'; lobiYukle(false); break;
+    case 'rovans': islem('oyRovans'); break;
+    case 'sohbet-ac': S.sohbetAcik = !S.sohbetAcik; sohbetCiz(); if (S.sohbetAcik) setTimeout(function(){ var i = $('#syMetin'); if (i) i.focus(); }, 30); break;
+    case 'msj-sec': S.sk = S.sk && S.sk.mesaj === id ? null : { mesaj:id, neden:'' }; sohbetCiz(); break;
+    case 'sk-neden': if (S.sk) { S.sk.neden = k; sohbetCiz(); } break;
+    case 'sk-vazgec': S.sk = null; sohbetCiz(); break;
+    case 'sk-gonder': if (S.sk) { var sk = S.sk; S.sk = null; call('oySikayet', { id:S.masaId, mesaj:sk.mesaj, neden:sk.neden }).then(function(r){ if (r && r.ok) { toast(t('sikayetGitti')); if (r.masa) masaAl(r.masa); } else toast((r && r.hata) || t('hata')); }); } break;
+    default: if (EYLEM[act]) EYLEM[act](el, id, k);
+  }
+});
+function davetSheet(){
+  call('oyKisiler', { id:S.masaId }).then(function(r){
+    if (!r || !r.ok) { toast((r && r.hata) || t('hata')); return; }
+    var dv = (S.masa && S.masa.davetler) || [];
+    sheetAc('<h2 class="h2">' + esc(t('davetEt')) + '</h2>' + (r.kisiler.length ? '<div class="liste">' + r.kisiler.map(function(x){
+      var ed = dv.some(function(y){ return y.id === x.id; });
+      return '<div class="row" style="justify-content:space-between"><span><b>' + esc(x.ad) + '</b>' + (x.masa ? ' <span class="muted">· ' + esc(x.masa) + '</span>' : '') + '</span>' +
+        (ed ? '<span class="rozet">' + esc(t('davetEdildi')) + '</span>' : '<button type="button" class="btn pri sm" data-act="davet-kisi" data-id="' + esc(x.id) + '">' + esc(t('davetEt')) + '</button>') + '</div>'; }).join('') + '</div>'
+      : '<p class="muted">' + esc(t('kimseYok')) + '</p>') + '<p style="margin-top:14px"><button type="button" class="btn blok" data-act="sheet-kapat">' + esc(t('iptal')) + '</button></p>');
+  });
+}
+
+/* ---------- oyun çizimleri ---------- */
+var CIZ = {}, EYLEM = {};
+/* tavla: 0. oyuncu 23 → 0, evi 0–5. Ekranda kendi eviniz sağ altta. */
+CIZ.tavla = function(m){
+  var o = m.oyun, ben = m.ben < 0 ? 0 : m.ben, ayna = ben === 1;
+  var benimSira = m.d === 'O' && o.sira === m.ben, izin = (benimSira && o.izin) || [];
+  var kaynaklar = {}; izin.forEach(function(x){ kaynaklar[String(x.from)] = 1; });
+  var anahtarlar = Object.keys(kaynaklar);
+  if (benimSira && S.tvSec === null && anahtarlar.length === 1) S.tvSec = anahtarlar[0] === 'bar' ? 'bar' : Number(anahtarlar[0]);
+  if (S.tvSec !== null && !kaynaklar[String(S.tvSec)]) S.tvSec = null;
+  var hedefler = {}; izin.filter(function(x){ return String(x.from) === String(S.tvSec); }).forEach(function(x){ var key = String(x.to); if (!hedefler[key] || x.d < hedefler[key]) hedefler[key] = x.d; });
+  var gercek = function(j){ return ayna ? 23 - j : j; };
+  var hane = function(j, alt){
+    var i = gercek(j), v = o.p[i], n = Math.abs(v), renk = v > 0 ? 'b' : 's';
+    var kay = String(S.tvSec) === String(i), hed = hedefler[String(i)] !== undefined, oyn = benimSira && (kaynaklar[String(i)] || hed);
+    var pul = ''; for (var q = 0; q < Math.min(n, 5); q++) pul += '<span class="tv-p ' + renk + '"></span>';
+    if (n > 5) pul += '<span class="tv-say">' + n + '</span>';
+    return '<button type="button" class="tv-n' + (alt ? ' alt' : '') + (j % 2 ? ' c' : '') + (kay ? ' kay' : '') + (hed ? ' hed' : '') + (oyn ? ' oyn' : '') + '" data-act="tv-n" data-i="' + i + '" aria-label="' + (j + 1) + '"' + (oyn ? '' : ' tabindex="-1"') + '>' +
+      pul + '<span class="tv-no">' + (j + 1) + '</span></button>';
+  };
+  var sira = function(js, alt){ return '<div class="tv-sira">' + js.map(function(j){ return hane(j, alt); }).join('') + '</div>'; };
+  var benRenk = ben === 0 ? 'b' : 's', rakRenk = ben === 0 ? 's' : 'b';
+  var barPul = function(k, renk){ var n = o.bar[k], x = ''; for (var q = 0; q < Math.min(n, 3); q++) x += '<span class="tv-p ' + renk + '" style="width:18px"></span>'; return x + (n > 3 ? '<span class="tv-say">' + n + '</span>' : ''); };
+  var barOyn = benimSira && kaynaklar.bar;
+  var h = '<div class="tv"><div class="tv-ic">' +
+    '<div class="tv-yari">' + sira([12, 13, 14, 15, 16, 17], false) + sira([11, 10, 9, 8, 7, 6], true) + '</div>' +
+    '<button type="button" class="tv-bar' + (barOyn ? ' oyn' : '') + (String(S.tvSec) === 'bar' ? ' kay' : '') + '" data-act="tv-bar" aria-label="' + esc(t('tv.kirik')) + '">' + barPul(1 - ben, rakRenk) + barPul(ben, benRenk) + '</button>' +
+    '<div class="tv-yari">' + sira([18, 19, 20, 21, 22, 23], false) + sira([5, 4, 3, 2, 1, 0], true) + '</div>' +
+    '<button type="button" class="tv-off' + (hedefler.off !== undefined ? ' hed' : '') + '" data-act="tv-off" aria-label="' + esc(t('tv.toplanan')) + '"><span>' + o.off[1 - ben] + '</span><span>' + (hedefler.off !== undefined ? '⬇' : '') + '</span><span>' + o.off[ben] + '</span></button>' +
+    '</div></div>';
+  // zarlar
+  var kalan = (o.kalan || []).slice(), zl = o.zar || [];
+  var gost = zl.length === 2 && zl[0] === zl[1] ? [zl[0], zl[0], zl[0], zl[0]] : zl.slice();
+  var kul = gost.map(function(z){ var i = kalan.indexOf(z); if (i >= 0) { kalan.splice(i, 1); return false; } return true; });
+  h += '<div class="zarlar">' + gost.map(function(z, i){ return '<span class="zar' + (kul[i] ? ' kul' : '') + '">' + z + '</span>'; }).join('') +
+    (benimSira && !(o.kalan || []).length ? '<button type="button" class="btn pri" data-act="tv-zar">' + esc(t('tv.zarAt')) + '</button>' : '') + '</div>';
+  if (benimSira && (o.kalan || []).length) h += '<p class="fhint" style="text-align:center">' + esc(S.tvSec === null ? t('tv.sec') : t('tv.hedef')) + '</p>';
+  h += '<p class="fhint" style="text-align:center">' + esc((ben === 0 ? t('tv.beyaz') : t('tv.siyah')) + ' · ' + t('skor') + ': ' + o.skor[ben] + ' – ' + o.skor[1 - ben]) + '</p>';
+  S._tvHed = hedefler;
+  return h;
+};
+function tvGonder(from, dz){ S.tvSec = null; islem('oyHamle', { h:{ t:'oyna', from:from, d:dz } }); }
+EYLEM['tv-zar'] = function(){ islem('oyHamle', { h:{ t:'zar' } }); };
+EYLEM['tv-n'] = function(el){
+  var i = Number(el.getAttribute('data-i')), hed = S._tvHed || {};
+  if (S.tvSec !== null && hed[String(i)] !== undefined) { tvGonder(S.tvSec, hed[String(i)]); return; }
+  var m = S.masa, izin = (m && m.oyun && m.oyun.izin) || [];
+  if (izin.some(function(x){ return x.from === i; })) { S.tvSec = S.tvSec === i ? null : i; cizMasa(); }
+};
+EYLEM['tv-bar'] = function(){ var izin = (S.masa && S.masa.oyun && S.masa.oyun.izin) || []; if (izin.some(function(x){ return x.from === 'bar'; })) { S.tvSec = 'bar'; cizMasa(); } };
+EYLEM['tv-off'] = function(){ var hed = S._tvHed || {}; if (S.tvSec !== null && hed.off !== undefined) tvGonder(S.tvSec, hed.off); };
+/* kartlar */
+var RENK = { m:'♠', k:'♥', r:'♦', s:'♣' };
+function kartHtml(c, ek, etiket){
+  var dg = c.charAt(0) === 'T' ? '10' : c.charAt(0), rk = c.charAt(1), kir = rk === 'k' || rk === 'r';
+  return '<span class="kart' + (kir ? ' kirmizi' : '') + (ek ? ' ' + ek : '') + '" role="img" aria-label="' + esc(etiket || (dg + RENK[rk])) + '"><span class="k-d">' + dg + '</span><span class="k-r">' + RENK[rk] + '</span></span>';
+}
+function arkaHtml(ek){ return '<span class="kart arka' + (ek ? ' ' + ek : '') + '" aria-hidden="true"></span>'; }
+CIZ.pisti = function(m){
+  var o = m.oyun, ben = m.ben < 0 ? 0 : m.ben, n = o.n, benimSira = m.d === 'O' && o.sira === m.ben;
+  var takim = function(k){ return n === 4 ? k % 2 : k; };
+  var rakipler = []; for (var q = 1; q < n; q++) rakipler.push((ben + q) % n);
+  if (n === 4) rakipler = [(ben + 2) % 4, (ben + 1) % 4, (ben + 3) % 4];
+  var h = '<div class="ps"><div class="ps-rakip">' + rakipler.map(function(k){
+    var arka = ''; for (var i = 0; i < o.elSay[k]; i++) arka += arkaHtml('kucuk');
+    return '<div class="ps-r' + (o.sira === k && m.d === 'O' ? ' sira' : '') + '"><span>' + esc(oyuncuAd(m, k)) + (n === 4 && takim(k) === takim(ben) ? ' 🤝' : '') + '</span><span class="arkalar">' + arka + '</span></div>'; }).join('') + '</div>';
+  // yer
+  var yer = '', gz = o.gizli || 0, acik = o.yerAcik || [];
+  for (var g = 0; g < gz; g++) yer += '<span style="transform:translate(' + (g * 3 - 6) + 'px,' + (g * -2) + 'px) rotate(' + (g * 6 - 6) + 'deg)">' + arkaHtml('') + '</span>';
+  acik.slice(-4).forEach(function(c, i, a){ yer += '<span style="transform:translate(' + ((i - a.length + 1) * 14 + 10) + 'px,0) rotate(' + ((i - a.length + 1) * 4) + 'deg)">' + kartHtml(c) + '</span>'; });
+  h += '<div class="ps-orta"><div class="ps-yer">' + yer.replace(/<span style="([^"]*)">(<span class="kart[^>]*>[\s\S]*?<\/span><\/span>|<span class="kart arka[^>]*><\/span>)<\/span>/g, function(x, st, k){ return k.replace('class="kart', 'style="' + st + '" class="kart'); }) + '</div>' +
+    '<div class="ps-bilgi">' + esc(t('ps.yer', { n:o.yerSay })) + '<br>' + esc(t('ps.deste', { n:o.deste })) + '</div></div>';
+  // elim
+  var el = o.el || [];
+  h += '<div class="ps-el">' + el.map(function(c){
+    var sec = S.psSec === c;
+    return '<button type="button" class="kart' + ((c.charAt(1) === 'k' || c.charAt(1) === 'r') ? ' kirmizi' : '') + (sec ? ' sec' : '') + '" data-act="ps-kart" data-k="' + esc(c) + '"' + (benimSira ? '' : ' disabled') + ' aria-pressed="' + sec + '">' +
+      '<span class="k-d">' + (c.charAt(0) === 'T' ? '10' : c.charAt(0)) + '</span><span class="k-r">' + RENK[c.charAt(1)] + '</span></button>'; }).join('') + '</div>';
+  if (benimSira && S.psSec && el.indexOf(S.psSec) >= 0) h += '<p style="text-align:center;margin:6px 0"><button type="button" class="btn pri" data-act="ps-at">' + esc(t('ps.at')) + '</button></p>';
+  // skor
+  var bizT = takim(ben), sk = o.skor || [];
+  var biz = n === 4 ? t('ps.biz') : t('sen'), onlar = n === 4 ? t('ps.onlar') : oyuncuAd(m, (ben + 1) % n);
+  if (n === 3) h += '<div class="ps-skor">' + sk.map(function(x, i){ return '<span>' + esc(oyuncuAd(m, i)) + ': ' + x + '</span>'; }).join('') + '<span>' + esc(t('ps.hedef', { n:o.hedef })) + '</span></div>';
+  else h += '<div class="ps-skor"><span>' + esc(biz) + ': ' + (sk[bizT] || 0) + ' · ' + esc(t('ps.kart', { n:o.alinan[bizT] || 0 })) + '</span><span>' + esc(t('ps.hedef', { n:o.hedef })) + '</span><span>' + esc(onlar) + ': ' + (sk[1 - bizT] || 0) + ' · ' + esc(t('ps.kart', { n:o.alinan[1 - bizT] || 0 })) + '</span></div>';
+  return h + '</div>';
+};
+EYLEM['ps-kart'] = function(el, id, k){ if (S.psSec === k) { var c = k; S.psSec = ''; islem('oyHamle', { h:{ t:'at', kart:c } }); return; } S.psSec = k; cizMasa(); };
+EYLEM['ps-at'] = function(){ var c = S.psSec; S.psSec = ''; if (c) islem('oyHamle', { h:{ t:'at', kart:c } }); };
+
+/* ---------- önizleme (?demo=1): sunucu taklidi; rakip «Deniz» rastgele oynar ---------- */
+if (DEMO) MOCK = (function(){
+  var OY_MOTOR = {};
+var oyRastgele_ = function(n){ return Math.floor(Math.random() * n); };
+var oyKaristir_ = function(l){ for (var i = l.length - 1; i > 0; i--) { var j = oyRastgele_(i + 1), x = l[i]; l[i] = l[j]; l[j] = x; } return l; };
+
+/* ============================================================
+ *  32a) TAVLA (1.32.1) · 2 kişi, 15'er pul, zar sunucuda atılır
+ *  • Tahta: 24 hane (0–23). 0. oyuncu (beyaz, pozitif) 23 → 0 yönünde gider, evi 0–5; 1. oyuncu (siyah, negatif) 0 → 23, evi 18–23.
+ *  • Başlangıç zarı: ikisi birer zar atar, büyük atan başlar (eşitse yeniden). Her el: «zar» → pul oynatılır («oyna», tek tek).
+ *  • Kurallar: kırık pul önce girer; 2+ rakip pulu olan haneye gidilmez; tek rakip pulu kırılır; bütün pullar evdeyken toplanır
+ *    (tam zar ya da daha büyük zarla, daha geride pul yoksa). Zarların en çok kullanıldığı oyun zorunludur; yalnız biri
+ *    oynanabiliyorsa büyük zar oynanır. Çift zarda 4 hamle. Oynanacak hamle yoksa el kendiliğinden geçer.
+ *  • Bitiş: 15 pulu toplayan kazanır; rakip hiç pul toplamadıysa mars (2 sayı). Sayı rövanşlarda birikir.
+ * ============================================================ */
+var TV_BAS = function () {
+  var p = []; for (var i = 0; i < 24; i++) p.push(0);
+  p[23] = 2; p[12] = 5; p[7] = 3; p[5] = 5;            // beyaz
+  p[0] = -2; p[11] = -5; p[16] = -3; p[18] = -5;       // siyah
+  return p;
+};
+function tvBenim_(v, k) { return k === 0 ? v > 0 : v < 0; }
+function tvRakip_(v, k) { return k === 0 ? (v < 0 ? -v : 0) : (v > 0 ? v : 0); }
+function tvEvde_(s, k) {
+  if (s.bar[k]) return false;
+  for (var i = 0; i < 24; i++) { var ev = k === 0 ? i <= 5 : i >= 18; if (!ev && tvBenim_(s.p[i], k)) return false; }
+  return true;
+}
+// tek adım: kaynak ('bar' ya da hane) + zar → hedef (hane ya da 'off') veya null
+function tvHedef_(s, k, from, d) {
+  if (s.bar[k] > 0 && from !== 'bar') return null;
+  var to;
+  if (from === 'bar') { if (!s.bar[k]) return null; to = k === 0 ? 24 - d : d - 1; }
+  else {
+    if (typeof from !== 'number' || from < 0 || from > 23 || !tvBenim_(s.p[from], k)) return null;
+    to = k === 0 ? from - d : from + d;
+  }
+  if (to < 0 || to > 23) {
+    if (from === 'bar' || !tvEvde_(s, k)) return null;
+    var tam = k === 0 ? from - d === -1 : from + d === 24;
+    if (tam) return 'off';
+    // daha büyük zar: daha geride (evin başına doğru) pul yoksa
+    if (k === 0) { for (var i = from + 1; i <= 5; i++) if (tvBenim_(s.p[i], 0)) return null; }
+    else { for (var j = 18; j < from; j++) if (tvBenim_(s.p[j], 1)) return null; }
+    return 'off';
+  }
+  if (tvRakip_(s.p[to], k) >= 2) return null;
+  return to;
+}
+function tvUygula_(s, k, from, to) {
+  var b = k === 0 ? 1 : -1, kirik = false;
+  if (from === 'bar') s.bar[k]--; else s.p[from] -= b;
+  if (to === 'off') s.off[k]++;
+  else {
+    if (tvRakip_(s.p[to], k) === 1) { s.p[to] = 0; s.bar[1 - k]++; kirik = true; }
+    s.p[to] += b;
+  }
+  return kirik;
+}
+function tvKopya_(s) { return { p: s.p.slice(), bar: s.bar.slice(), off: s.off.slice() }; }
+// Kalan zarlarla en uzun oyunların ilk adımları: [{ from, d, to }] (aynı kaynak+zar bir kez). Durum ezberiyle hızlı.
+function tvIlkAdimlar_(s, k, zarlar) {
+  var ezber = {};
+  var kaynaklar = function (x) { if (x.bar[k]) return ['bar']; var l = []; for (var i = 0; i < 24; i++) if (tvBenim_(x.p[i], k)) l.push(i); return l; };
+  var derin = function (x, kalan) {
+    if (!kalan.length) return 0;
+    var anahtar = x.p.join(',') + '|' + x.bar.join(',') + '|' + kalan.slice().sort().join(',');
+    if (anahtar in ezber) return ezber[anahtar];
+    var en = 0, denendi = {}, ks = kaynaklar(x);
+    for (var z = 0; z < kalan.length && en < kalan.length; z++) {
+      var d = kalan[z];
+      if (denendi[d]) continue;
+      denendi[d] = 1;
+      for (var q = 0; q < ks.length; q++) {
+        var to = tvHedef_(x, k, ks[q], d);
+        if (to === null) continue;
+        var y = tvKopya_(x); tvUygula_(y, k, ks[q], to);
+        var kal = kalan.slice(); kal.splice(z, 1);
+        en = Math.max(en, 1 + derin(y, kal));
+        if (en === kalan.length) break;
+      }
+    }
+    ezber[anahtar] = en;
+    return en;
+  };
+  var adaylar = [], enUzun = 0, denendi0 = {}, x0 = tvKopya_(s), ks0 = kaynaklar(x0);
+  for (var z = 0; z < zarlar.length; z++) {
+    var d = zarlar[z];
+    if (denendi0[d]) continue;
+    denendi0[d] = 1;
+    for (var q = 0; q < ks0.length; q++) {
+      var to = tvHedef_(x0, k, ks0[q], d);
+      if (to === null) continue;
+      var y = tvKopya_(x0); tvUygula_(y, k, ks0[q], to);
+      var kal = zarlar.slice(); kal.splice(z, 1);
+      var n = 1 + derin(y, kal);
+      adaylar.push({ from: ks0[q], d: d, to: to, n: n });
+      enUzun = Math.max(enUzun, n);
+    }
+  }
+  var l = adaylar.filter(function (x) { return x.n === enUzun; }).map(function (x) { return { from: x.from, d: x.d, to: x.to }; });
+  // tek zar oynanabiliyorsa büyük zar oynanır
+  if (enUzun === 1 && zarlar.length === 2 && zarlar[0] !== zarlar[1]) {
+    var buyuk = Math.max(zarlar[0], zarlar[1]);
+    if (l.some(function (x) { return x.d === buyuk; })) l = l.filter(function (x) { return x.d === buyuk; });
+  }
+  return l;
+}
+function tvZarAt_(rng) { return 1 + rng(6); }
+function tvElBitir_(s) { s.sira = 1 - s.sira; s.zar = []; s.kalan = []; }
+OY_MOTOR.tavla = {
+  kur: function (n, ay, rng) {
+    var a, b;
+    do { a = tvZarAt_(rng); b = tvZarAt_(rng); } while (a === b);
+    var skor = ay && Array.isArray(ay.skor) && ay.skor.length === 2 ? ay.skor.slice() : [0, 0];
+    return { p: TV_BAS(), bar: [0, 0], off: [0, 0], sira: a > b ? 0 : 1, zar: [], kalan: [], ac: [a, b], son: [], olay: null, skor: skor, bitti: null, el: 0 };
+  },
+  gorunum: function (s, k, izle) {
+    var r = { p: s.p.slice(), bar: s.bar.slice(), off: s.off.slice(), sira: s.sira, zar: s.zar.slice(), kalan: s.kalan.slice(), ac: s.ac.slice(),
+      son: (s.son || []).slice(), olay: s.olay || null, skor: s.skor.slice(), bitti: s.bitti || null, ben: k };
+    if (k === s.sira && s.kalan.length && !s.bitti) r.izin = tvIlkAdimlar_(s, k, s.kalan).map(function (x) { return { from: x.from, d: x.d, to: x.to }; });
+    return r;
+  },
+  hamle: function (s, k, h, rng) {
+    if (s.bitti) return { hata: true };
+    if (k !== s.sira) return { kod: 'SIRA', hata: 'Sıra sizde değil.' };
+    if (h.t === 'zar') {
+      if (s.kalan.length) return { hata: true };
+      var a = tvZarAt_(rng), b = tvZarAt_(rng);
+      s.zar = [a, b]; s.kalan = a === b ? [a, a, a, a] : [a, b]; s.son = []; s.el++;
+      s.olay = { tip: 'zar', k: k, zar: [a, b] };
+      if (!tvIlkAdimlar_(s, k, s.kalan).length) { s.olay = { tip: 'pas', k: k, zar: [a, b] }; tvElBitir_(s); }
+      return {};
+    }
+    if (h.t === 'oyna') {
+      if (!s.kalan.length) return { hata: true };
+      var from = h.from === 'bar' ? 'bar' : Math.floor(Number(h.from)), d = Math.floor(Number(h.d));
+      var ok = tvIlkAdimlar_(s, k, s.kalan).filter(function (x) { return x.from === from && x.d === d; })[0];
+      if (!ok) return { hata: true };
+      var kirik = tvUygula_(s, k, from, ok.to);
+      s.kalan.splice(s.kalan.indexOf(d), 1);
+      s.son.push({ from: from, to: ok.to, d: d, kirik: kirik });
+      if (s.off[k] === 15) {
+        var mars = s.off[1 - k] === 0, puan = mars ? 2 : 1;
+        s.skor[k] += puan;
+        s.bitti = { kazanan: [k], puan: puan, mars: mars, metin: (mars ? 'Mars! ' : '') + (k === 0 ? 'Beyaz' : 'Siyah') + ' kazandı (+' + puan + ').' };
+        s.zar = []; s.kalan = [];
+        return {};
+      }
+      if (!s.kalan.length || !tvIlkAdimlar_(s, k, s.kalan).length) tvElBitir_(s);
+      return {};
+    }
+    return { hata: true };
+  }
+};
+
+
+/* ============================================================
+ *  32b) PİŞTİ (1.32.1) · 2 kişi ya da 4 kişi (eşli: 0+2, 1+3), 52 kart, 101 sayıya
+ *  • Kart: değer + renk; değer 2–9, T (10), J (vale), Q, K, A; renk m (maça), k (kupa), r (karo), s (sinek).
+ *  • Dağıtım: yere 4 kart (en üstteki açık), herkese 4 kart; eller bitince deste bitene dek 4'er kart daha.
+ *  • Oyun: sırayla bir kart atılır. Yerdeki son kartla aynı değerdeki kart ya da vale yerdekileri alır. Yerde tek kart varken
+ *    aynı değerle alınırsa pişti (10 sayı; vale ile vale piştisi 20). Deste bitince yerde kalanlar son alana gider.
+ *  • Sayılar: her as 1, her vale 1, sinek ikili 2, karo onlu 3, en çok kart alan 3 (eşitse kimse), piştiler. 101'i geçen
+ *    (eşitlikte en yüksek, yine eşitse bir el daha) kazanır.
+ * ============================================================ */
+var PS_DEGER = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'], PS_RENK = ['m', 'k', 'r', 's'], PS_HEDEF = 101;
+function psDeste_() { var l = []; PS_RENK.forEach(function (r) { PS_DEGER.forEach(function (d) { l.push(d + r); }); }); return l; }
+function psTakim_(s, k) { return s.n === 4 ? k % 2 : k; }
+function psDagit_(s) { for (var t = 0; t < 4; t++) for (var i = 0; i < s.n; i++) { var k = (s.dagitan + 1 + i) % s.n; if (s.deste.length) s.el[k].push(s.deste.pop()); } }
+function psElKur_(s, rng) {
+  s.deste = oyKaristir_(psDeste_());
+  s.yer = [s.deste.pop(), s.deste.pop(), s.deste.pop(), s.deste.pop()];
+  // açılan kart vale olmasın (yaygın kural): valeyi destenin dibine koy
+  while (s.yer[3].charAt(0) === 'J') { s.deste.unshift(s.yer.pop()); s.yer.push(s.deste.pop()); }
+  s.gizli = 3;
+  s.el = []; for (var i = 0; i < s.n; i++) s.el.push([]);
+  var tn = s.n === 4 ? 2 : s.n;
+  s.alinan = []; s.pisti = []; for (var t = 0; t < tn; t++) { s.alinan.push([]); s.pisti.push(0); }
+  s.sonAlan = -1;
+  psDagit_(s);
+  s.sira = (s.dagitan + 1) % s.n;
+}
+function psSay_(kartlar) {
+  var p = 0;
+  kartlar.forEach(function (c) { var d = c.charAt(0); if (d === 'A' || d === 'J') p += 1; if (c === '2s') p += 2; if (c === 'Tr') p += 3; });
+  return p;
+}
+function psElSonu_(s) {
+  if (s.yer.length && s.sonAlan >= 0) { s.alinan[psTakim_(s, s.sonAlan)] = s.alinan[psTakim_(s, s.sonAlan)].concat(s.yer); s.yer = []; s.gizli = 0; }
+  var tn = s.alinan.length, puan = [], enCok = -1, enCokKim = -1, esit = false;
+  for (var t = 0; t < tn; t++) {
+    puan.push(psSay_(s.alinan[t]) + s.pisti[t]);
+    var n = s.alinan[t].length;
+    if (n > enCok) { enCok = n; enCokKim = t; esit = false; } else if (n === enCok) esit = true;
+  }
+  if (!esit && enCokKim >= 0) puan[enCokKim] += 3;
+  for (var u = 0; u < tn; u++) s.skor[u] += puan[u];
+  s.elSonuc = { puan: puan, kart: s.alinan.map(function (x) { return x.length; }), pisti: s.pisti.slice() };
+}
+OY_MOTOR.pisti = {
+  kur: function (n, ay, rng) {
+    var tn = n === 4 ? 2 : n;
+    var skor = []; for (var t = 0; t < tn; t++) skor.push(0);
+    var s = { n: n, dagitan: rng(n), skor: skor, hedef: PS_HEDEF, elNo: 1, olay: null, bitti: null, elSonuc: null };
+    psElKur_(s, rng);
+    return s;
+  },
+  gorunum: function (s, k, izle) {
+    var r = { n: s.n, sira: s.sira, yerSay: s.yer.length, yerUst: s.yer.length ? s.yer[s.yer.length - 1] : '', yerAcik: s.yer.slice(s.gizli),
+      gizli: s.gizli, deste: s.deste.length, elSay: s.el.map(function (e) { return e.length; }), alinan: s.alinan.map(function (x) { return x.length; }),
+      pisti: s.pisti.slice(), skor: s.skor.slice(), hedef: s.hedef, elNo: s.elNo, olay: s.olay || null, bitti: s.bitti || null, elSonuc: s.elSonuc || null,
+      takim: s.n === 4, ben: k };
+    if (k >= 0) r.el = s.el[k].slice();
+    if (izle) r.eller = s.el.map(function (e) { return e.slice(); });
+    return r;
+  },
+  hamle: function (s, k, h, rng) {
+    if (s.bitti) return { hata: true };
+    if (k !== s.sira) return { kod: 'SIRA', hata: 'Sıra sizde değil.' };
+    if (h.t !== 'at') return { hata: true };
+    var c = String(h.kart || ''), i = s.el[k].indexOf(c);
+    if (i < 0) return { hata: true };
+    s.el[k].splice(i, 1);
+    var ust = s.yer.length ? s.yer[s.yer.length - 1] : '', t = psTakim_(s, k);
+    s.elSonuc = null;
+    if (ust && (c.charAt(0) === ust.charAt(0) || c.charAt(0) === 'J')) {
+      var pisti = s.yer.length === 1 && c.charAt(0) === ust.charAt(0);
+      if (pisti) s.pisti[t] += c.charAt(0) === 'J' ? 20 : 10;
+      s.alinan[t] = s.alinan[t].concat(s.yer, [c]);
+      s.olay = { tip: pisti ? 'pisti' : 'aldi', k: k, kart: c, n: s.yer.length + 1, puan: pisti ? (c.charAt(0) === 'J' ? 20 : 10) : 0 };
+      s.yer = []; s.gizli = 0; s.sonAlan = k;
+    } else {
+      s.yer.push(c);
+      s.olay = { tip: 'atti', k: k, kart: c };
+    }
+    s.sira = (k + 1) % s.n;
+    if (s.el.every(function (e) { return !e.length; })) {
+      if (s.deste.length) psDagit_(s);
+      else {
+        psElSonu_(s);
+        var en = Math.max.apply(null, s.skor), kim = [];
+        s.skor.forEach(function (x, u) { if (x === en) kim.push(u); });
+        if (en >= s.hedef && kim.length === 1) {
+          var kaz = []; for (var q = 0; q < s.n; q++) if (psTakim_(s, q) === kim[0]) kaz.push(q);
+          s.bitti = { kazanan: kaz, metin: (s.n === 4 ? 'Takım ' + (kim[0] + 1) : 'Oyuncu ' + (kim[0] + 1)) + ' kazandı (' + en + ' sayı).', puan: s.skor.slice() };
+          return {};
+        }
+        s.dagitan = (s.dagitan + 1) % s.n; s.elNo++;
+        var son = s.elSonuc;
+        psElKur_(s, rng);
+        s.elSonuc = son;
+      }
+    }
+    return {};
+  }
+};
+
+  var simdi = function(){ return Date.now(); }, sayac = 0;
+  var BEN = { id:'MSDBEN0001', ad:'Siz' }, DENIZ = { id:'MSDDENIZ01', ad:'Deniz' }, MERT = { id:'MSDMERT001', ad:'Mert' }, SELIN = { id:'MSDSELIN01', ad:'Selin' };
+  var M = {};
+  var yeniMasa = function(tur, n, sahip, mod){ var id = 'OYDEMO' + (++sayac) + 'X'; M[id] = { id:id, tur:tur, kisi:n, mod:mod || '', sahip:sahip.id, d:'B', o:[{ id:sahip.id, ad:sahip.ad, k:0 }], ist:[], dv:[], ch:[], s:null, rv:1, skor:null, rov:[], sonHamle:0 }; return M[id]; };
+  var dm = yeniMasa('pisti', 2, DENIZ); dm.ch.push({ i:'GMDEMO1', t:simdi(), g:DENIZ.id, ad:'Deniz', m:'Bir el pişti? 🃏', k:0 });
+  var otur = function(m, x){ var dolu = {}; m.o.forEach(function(y){ dolu[y.k] = 1; }); var k = 0; while (dolu[k]) k++; m.o.push({ id:x.id, ad:x.ad, k:k }); m.rv++; if (m.o.length >= m.kisi) basla(m); };
+  var basla = function(m){ m.o.sort(function(a, b){ return a.k - b.k; }); m.s = OY_MOTOR[m.tur].kur(m.kisi, { mod:m.mod, skor:m.skor }, oyRastgele_); m.d = 'O'; m.rov = []; m.sonuc = null; m.rv++; m.sonHamle = simdi(); };
+  var bitir = function(m){ m.d = 'S'; m.skor = m.s.skor || m.skor; m.sonuc = { tip:'bitti', kazanan:m.s.bitti.kazanan, metin:m.s.bitti.metin }; m.rv++; };
+  var TURLER = [{ k:'okey', ad:'Okey', i:'🀄', kisi:[2, 4] }, { k:'tavla', ad:'Tavla', i:'🎲', kisi:[2] }, { k:'pisti', ad:'Pişti', i:'🃏', kisi:[2, 4] }].filter(function(x){ return OY_MOTOR[x.k]; });
+  var GOR = P.get('gor') !== '0', DG = P.get('dg') !== '0';
+  var lobi = function(){ if (!GOR || !DG) return { ok:true, acik:true, uygun:false, turler:[], masalar:[], benim:'', ben:{ dogrulandi:DG, gorunur:false, yas18:false, yasak:P.get('yasak') === '1' } };
+    return { ok:true, acik:true, uygun:true, ben:{ dogrulandi:true, gorunur:true, yas18:true }, turler:JSON.parse(JSON.stringify(TURLER)), masalar:Object.keys(M).map(function(id){ var m = M[id];
+    return { id:id, tur:m.tur, ad:TURLER.filter(function(x){ return x.k === m.tur; })[0].ad, i:TURLER.filter(function(x){ return x.k === m.tur; })[0].i, kisi:m.kisi, mod:m.mod, d:m.d, bos:m.kisi - m.o.length,
+      oyuncular:m.o.map(function(x){ return { ad:x.ad }; }), sahipAd:(m.o.filter(function(x){ return x.id === m.sahip; })[0] || {}).ad || '', ben:m.o.some(function(x){ return x.id === BEN.id; }),
+      istek:m.ist.indexOf(BEN.id) >= 0, davet:false }; }).filter(function(x){ return M[x.id].d !== 'K'; }), benim:'' }; };
+  var gorunum = function(m){
+    var k = -1; m.o.forEach(function(x){ if (x.id === BEN.id) k = x.k; });
+    var tr = TURLER.filter(function(x){ return x.k === m.tur; })[0];
+    return { id:m.id, tur:m.tur, ad:tr.ad, i:tr.i, kisi:m.kisi, mod:m.mod, d:m.d, rv:m.rv, sahip:m.sahip === BEN.id, ben:k,
+      oyuncular:m.o.map(function(x){ return { k:x.k, ad:x.ad, ben:x.id === BEN.id, sahip:x.id === m.sahip, misafir:false, cevrim:true, id:x.id }; }),
+      bos:m.kisi - m.o.length, istek:m.ist.indexOf(BEN.id) >= 0, davet:false, sonuc:m.sonuc || null, rov:m.rov.slice(), skor:m.skor,
+      istekler:[], davetler:m.dv.map(function(x){ return { id:x.id, ad:x.ad }; }), sohbet:m.ch.map(function(x){ return { i:x.i, t:x.t, ad:x.ad, m:x.m, ben:x.g === BEN.id, k:x.k }; }),
+      oyun:m.s && k >= 0 ? OY_MOTOR[m.tur].gorunum(m.s, k, false) : null };
+  };
+  var botOyna = function(m){
+    if (m.d !== 'O' || !m.s || m.s.bitti || simdi() - m.sonHamle < 1200) return;
+    var bot = m.o.filter(function(x){ return x.id !== BEN.id && x.k === m.s.sira; })[0]; if (!bot) return;
+    var mt = OY_MOTOR[m.tur], s = m.s;
+    if (m.tur === 'tavla') {
+      if (!s.kalan.length) mt.hamle(s, bot.k, { t:'zar' }, oyRastgele_);
+      else { var iz = mt.gorunum(s, bot.k, false).izin || []; if (iz.length) { var x = iz[Math.floor(Math.random() * iz.length)]; mt.hamle(s, bot.k, { t:'oyna', from:x.from, d:x.d }, oyRastgele_); } }
+    } else if (m.tur === 'pisti') {
+      var el = s.el[bot.k], ust = s.yer.length ? s.yer[s.yer.length - 1] : '', al = el.filter(function(c){ return ust && c.charAt(0) === ust.charAt(0); })[0] || (s.yer.length > 2 && el.filter(function(c){ return c.charAt(0) === 'J'; })[0]);
+      var c = al || el.filter(function(c){ return c.charAt(0) !== 'J'; })[0] || el[0];
+      mt.hamle(s, bot.k, { t:'at', kart:c }, oyRastgele_);
+    }
+    m.sonHamle = simdi(); m.rv++;
+    if (s.bitti) bitir(m);
+  };
+  var gec = function(x, ms){ return new Promise(function(ok){ setTimeout(function(){ ok(JSON.parse(JSON.stringify(x))); }, ms || 250); }); };
+  var hata = function(kod, h){ return gec({ ok:false, kod:kod, hata:h }); };
+  return function(act, p){
+    var m = p.id ? M[p.id] : null;
+    if (act === 'oyLobi') return gec(lobi());
+    if (act === 'oyGorunur') { if (!p.yas18) return hata('YAS18', 'Mekânda görünür olmak için 18 yaşından büyük olduğunuzu onaylayın.'); GOR = true; return gec(lobi(), 400); }
+    if (act === 'oyAc') {
+      var x = yeniMasa(p.tur, Number(p.kisi), BEN, p.mod); x.dv = [];
+      setTimeout(function(){ if (x.d === 'B') { otur(x, DENIZ); if (x.kisi > 2) { otur(x, MERT); if (x.kisi > 3) otur(x, SELIN); } } }, 2500);
+      return gec({ ok:true, masa:gorunum(x) });
+    }
+    if (!m) return gec({ ok:true, yok:true, lobi:lobi() });
+    if (act === 'oyIstek') { m.ist.push(BEN.id); m.rv++; setTimeout(function(){ m.ist = []; otur(m, BEN); }, 1500); return gec({ ok:true, masa:gorunum(m) }); }
+    if (act === 'oyIstekIptal') { m.ist = []; m.rv++; return gec(lobi()); }
+    if (act === 'oyDurum') { botOyna(m); if (p.rv && Number(p.rv) === m.rv && !p.zorla) return gec({ ok:true, ayni:true }, 120); return gec({ ok:true, masa:gorunum(m) }, 150); }
+    if (act === 'oyHamle') {
+      var k = -1; m.o.forEach(function(y){ if (y.id === BEN.id) k = y.k; });
+      if (m.d !== 'O') return hata('OYUN', 'Oyun şu an sürmüyor.');
+      var r = OY_MOTOR[m.tur].hamle(m.s, k, p.h || {}, oyRastgele_);
+      if (r && r.hata) return hata(r.kod || 'HAMLE', r.hata === true ? 'Bu hamle kurallara uymuyor.' : r.hata);
+      m.sonHamle = simdi(); m.rv++;
+      if (m.s.bitti) bitir(m);
+      return gec({ ok:true, masa:gorunum(m) });
+    }
+    if (act === 'oyMesaj') { m.ch.push({ i:'GMD' + (++sayac), t:simdi(), g:BEN.id, ad:'Siz', m:p.metin, k:0 }); m.rv++; if (m.ch.length < 4) setTimeout(function(){ m.ch.push({ i:'GMD' + (++sayac), t:simdi(), g:DENIZ.id, ad:'Deniz', m:'İyi oyunlar 🙂', k:1 }); m.rv++; }, 2000); return gec({ ok:true, masa:gorunum(m) }); }
+    if (act === 'oySikayet') return gec({ ok:true, masa:gorunum(m) });
+    if (act === 'oyRovans') { if (m.d === 'S') basla(m); return gec({ ok:true, masa:gorunum(m) }); }
+    if (act === 'oyAyril') { m.d = 'K'; delete M[m.id]; return gec(lobi()); }
+    if (act === 'oyKisiler') return gec({ ok:true, kisiler:[{ id:MERT.id, ad:'Mert', masa:'Bahçe 2' }, { id:SELIN.id, ad:'Selin', masa:'Masa 7' }] });
+    if (act === 'oyDavet') { var kim = p.kime === MERT.id ? MERT : SELIN; m.dv.push({ id:kim.id, ad:kim.ad }); m.rv++; setTimeout(function(){ m.dv = m.dv.filter(function(y){ return y.id !== kim.id; }); if (m.d === 'B' && m.o.length < m.kisi) otur(m, kim); }, 2500); return gec({ ok:true, masa:gorunum(m) }); }
+    if (act === 'oyKabul') return gec({ ok:true, masa:gorunum(m) });
+    if (act === 'oyDavetYanit') return gec(lobi());
+    return hata('ISTEK', 'Bilinmeyen işlem.');
+  };
+})();
+boot();
+})();
+</script>
+</body>
+</html>

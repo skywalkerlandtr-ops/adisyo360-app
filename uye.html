@@ -357,7 +357,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'f41d8ae3cc';
+  var SURUM = 'a3706e06ad';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -854,7 +854,7 @@ function geriDugmesi(){
 /* --- tanıtım --- */
 // pakete dahil modüller: var olanlar ✓, olmayanlar üstü çizili (eski sunucu bilgi göndermezse gösterilmez)
 var PAKET_OZ_AD = [['tabldot', 'Tabldot satışı'], ['tezgah', 'Tezgâh siparişi ve numaratör'], ['garson', 'Garson ve masa siparişi'], ['qrmasa', 'Masa QR siparişi'],
-  ['hazirlik', 'Bar ve nargile ekranı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama'], ['hediye', 'Sanal hediyeler (her pakette)'], ['sahne', 'Mekân sahnesi ve TV ekranı'],
+  ['hazirlik', 'Bar ve nargile ekranı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama'], ['hediye', 'Sanal hediyeler (her pakette)'], ['sahne', 'Mekân sahnesi ve TV ekranı'], ['oyun', 'Mekânda oyunlar (tavla, pişti)'],
   ['sureli', 'Süreli alanlar (PlayStation, bilardo)'], ['muhasebe', 'Ön muhasebe']];
 /* ---------- 1.28 fiyat bilgisi: KDV, yıllık ödeme, kurucu üye ---------- */
 function fyt(){ return (D && D.fiyat) || (durum() && durum().fiyat) || {}; }
@@ -1738,11 +1738,11 @@ function belgeGuncelKarti(){
 /* ---------- önizleme (?demo=1): örnek verilerle, sunucuya gitmeden ---------- */
 function uyeDemo(hal){
   var Q0 = new URLSearchParams(location.search);
-  var OZ0 = { tabldot:true, tezgah:true, garson:false, qrmasa:false, hazirlik:false, sohbet:false, sahne:false, sureli:false, muhasebe:false };
+  var OZ0 = { tabldot:true, tezgah:true, garson:false, qrmasa:false, hazirlik:false, sohbet:false, sahne:false, oyun:false, sureli:false, muhasebe:false };
   var oz = function(o){ return Object.assign({}, OZ0, o); };
   var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:890, urun:150, hafta:150, ekip:3, asim:5, aciklama:'Paket servis ve gel-al için', oz:oz({}) },
-    { kod:'STANDART', ad:'Standart', ucret:1390, urun:400, hafta:400, ekip:8, asim:5, aciklama:'Masa servisi olan kafe ve restoranlar için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, sahne:true }) },
-    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:1990, urun:1000, hafta:0, ekip:20, asim:0, aciklama:'Nargile, PlayStation, bilardo; yoğun ve eğlence mekânları için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, sahne:true, sureli:true, muhasebe:true }) }];
+    { kod:'STANDART', ad:'Standart', ucret:1390, urun:400, hafta:400, ekip:8, asim:5, aciklama:'Masa servisi olan kafe ve restoranlar için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, sahne:true, oyun:true }) },
+    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:1990, urun:1000, hafta:0, ekip:20, asim:0, aciklama:'Nargile, PlayStation, bilardo; yoğun ve eğlence mekânları için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, sahne:true, oyun:true, sureli:true, muhasebe:true }) }];
   var FIYAT = { kdvDahil:true, yillik:true, yillikAy:10, kurucu:{ yuzde:30, ay:6, kalan:37 } };
   var IS_KOLLARI = [{"grup":"yemek","ad":"Yeme · içme","liste":[{"k":"restoran","ad":"Restoran","e":"🍽️"},{"k":"lokanta","ad":"Lokanta / Ev yemekleri","e":"🍲"},{"k":"kebap","ad":"Kebap / Döner / Izgara","e":"🌯"},{"k":"pide","ad":"Pide / Lahmacun","e":"🫓"},{"k":"pizza","ad":"Pizza / Burger / Fast food","e":"🍕"},{"k":"balik","ad":"Balık restoranı","e":"🐟"},{"k":"cigkofte","ad":"Çiğ köfte","e":"🥙"},{"k":"kahvalti","ad":"Kahvaltı / Börek / Simit","e":"🍳"},{"k":"kafe","ad":"Kafe / Kahveci","e":"☕"},{"k":"pastane","ad":"Pastane / Fırın","e":"🥐"},{"k":"tatli","ad":"Tatlıcı / Dondurma","e":"🍨"},{"k":"bar","ad":"Bar / Pub","e":"🍺"},{"k":"catering","ad":"Catering / Toplu yemek","e":"🍱"},{"k":"diger_yemek","ad":"Diğer yeme-içme","e":"🍴"}]},{"grup":"urun","ad":"Market · dükkân","liste":[{"k":"market","ad":"Market / Süpermarket","e":"🛒"},{"k":"bakkal","ad":"Bakkal / Büfe / Tekel","e":"🏪"},{"k":"manav","ad":"Manav / Meyve-sebze","e":"🥦"},{"k":"kasap","ad":"Kasap / Şarküteri","e":"🥩"},{"k":"kuruyemis","ad":"Kuruyemiş / Kahve / Lokum","e":"🥜"},{"k":"su","ad":"Su / Tüp bayii","e":"💧"},{"k":"aktar","ad":"Aktar / Organik ürünler","e":"🌿"},{"k":"hirdavat","ad":"Hırdavat / Nalbur","e":"🔧"},{"k":"elektrik","ad":"Elektrik malzemeleri / Aydınlatma","e":"💡"},{"k":"zuccaciye","ad":"Züccaciye / Milyoncu / Ev gereçleri","e":"🧺"},{"k":"yapi","ad":"Boya / Yapı market","e":"🪣"},{"k":"kirtasiye","ad":"Kırtasiye / Kitap","e":"✏️"},{"k":"cicek","ad":"Çiçekçi","e":"💐"},{"k":"petshop","ad":"Pet shop / Mama","e":"🐾"},{"k":"kozmetik","ad":"Kozmetik / Parfümeri","e":"💄"},{"k":"elektronik","ad":"Telefon / Elektronik","e":"📱"},{"k":"giyim","ad":"Giyim / Ayakkabı","e":"👕"},{"k":"oyuncak","ad":"Oyuncak / Bebek ürünleri","e":"🧸"},{"k":"diger_urun","ad":"Diğer ürün satışı","e":"🛍️"}]},{"grup":"hizmet","ad":"Eve hizmet · usta","liste":[{"k":"tesisat","ad":"Su tesisatı / Sıhhi tesisat","e":"🚿"},{"k":"elektrikci","ad":"Elektrikçi","e":"⚡"},{"k":"marangoz","ad":"Marangoz / Mobilya ustası","e":"🪚"},{"k":"boya","ad":"Boya / Badana","e":"🎨"},{"k":"temizlik","ad":"Ev / Ofis temizliği","e":"🧹"},{"k":"hali","ad":"Halı / Koltuk yıkama","e":"🛋️"},{"k":"klima","ad":"Klima / Kombi servisi","e":"❄️"},{"k":"beyazesya","ad":"Beyaz eşya / Teknik servis","e":"🔌"},{"k":"cilingir","ad":"Çilingir","e":"🔑"},{"k":"camci","ad":"Camcı / PVC / Cam balkon","e":"🪟"},{"k":"nakliyat","ad":"Nakliyat / Taşıma","e":"🚚"},{"k":"tamir","ad":"Bilgisayar / Telefon tamiri","e":"💻"},{"k":"terzi","ad":"Terzi / Kuru temizleme","e":"🧵"},{"k":"bahce","ad":"Bahçe / Peyzaj","e":"🌳"},{"k":"ilaclama","ad":"İlaçlama / Haşere","e":"🪲"},{"k":"kuafor","ad":"Kuaför / Berber (eve servis)","e":"💇"},{"k":"oto","ad":"Oto yıkama / Oto servis","e":"🚗"},{"k":"diger_hizmet","ad":"Diğer hizmet","e":"🛠️"}]}];
   var TUR = [{ k:'restoran', ad:'Restoran' }, { k:'kafe', ad:'Kafe' }, { k:'pastane', ad:'Pastane / Fırın' }, { k:'market', ad:'Bakkal / Market' }, { k:'diger', ad:'Diğer' }];
