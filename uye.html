@@ -358,7 +358,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'efdb8ef7c5';
+  var SURUM = '746f91a56d';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -1054,7 +1054,7 @@ function panelEkrani(){
     { ok:k.menu, ad:market() ? 'Ürünlerinizi ekleyin' : hzm() ? 'Hizmetlerinizi ekleyin' : 'Menünüzü oluşturun', alt:k.menu ? adet(d.kullanim.urun) + (hzm() ? ' hizmet' : ' ürün') + ' eklendi.' : 'Uygulamadan ya da Excel şablonuyla.',
       dugme:['ekran', '&sekme=menu', k.menu ? 'Düzenle' : 'Ekle'] },
     { ok:k.konum, ad:hzm() ? 'Konum ve hizmet bölgesi' : 'Konum ve teslimat', alt:k.konum ? (hzm() ? 'Konum kayıtlı. Hizmet bölgelerini kontrol edin.' : 'Konum kayıtlı. Teslimat bölgelerini kontrol edin.') : 'Konum olmadan sipariş alınamaz.', dugme:['ekran', '&sekme=ayar', k.konum ? 'Kontrol et' : 'Ayarla'] },
-    { ok:k.bot, ad:'Kendi botunuzu bağlayın', alt:k.bot ? '@' + d.bot.kullanici + ' bağlı.' : 'Adım adım anlatıyoruz, birkaç dakika sürer.', dugme:['botRehber', '', k.bot ? 'Paylaş' : 'Bağla'] }
+    { ok:k.bot, ek:true, ad:'Kendi Telegram botunuz (isteğe bağlı)', alt:k.bot ? '@' + d.bot.kullanici + ' bağlı.' : 'Bağlamasanız da web menünüz, masa QR\'larınız ve ekibiniz YourPOS 360 botuyla çalışır.', dugme:['botRehber', '', k.bot ? 'Paylaş' : 'Bağla'] }
   ];
   if (d.mb && d.mb.gerekli) adimlar.push(mbAdim(d.mb));   // 1.31 menü bilgileri
   var biten = adimlar.filter(function(x){ return x.ok; }).length, hazirAdim = adimlar.every(function(x){ return x.ok || x.ek; });

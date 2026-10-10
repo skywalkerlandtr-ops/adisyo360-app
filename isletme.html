@@ -1672,7 +1672,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'efdb8ef7c5';
+  var SURUM = '746f91a56d';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -2508,8 +2508,8 @@ function renderBanners(){
       (sa.ileri ? 'Müşteriler şimdilik yalnız ileri saate sipariş verebilir.' : 'Müşteriler şu an sipariş veremez.') + '</span></div>';
   }
   if (sahip() && D.botVar === false) {
-    h += '<div class="banner info">' + ic('gonder') + '<span class="b-txt">Sipariş almak için kendi Telegram botunuzu bağlayın. Birkaç dakika sürer.</span>' +
-      '<button data-act="uyeGit" data-k="#bot">Botumu bağla</button></div>';
+    h += '<div class="banner info">' + ic('gonder') + '<span class="b-txt">İsterseniz kendi Telegram botunuzu bağlayın; müşterileriniz işletmenizin adını taşıyan botta sipariş verir. Bağlamasanız da web menünüz, masa QR\'larınız ve ekibiniz YourPOS 360 botuyla çalışır.</span>' +
+      '<button data-act="uyeGit" data-k="#bot">Bot bağla</button></div>';
   }
   if (sahip() && !D.isletme.lat) {
     h += '<div class="banner warn">' + ic('pin') + '<span class="b-txt">İşletme konumunuz kayıtlı değil; müşteriler sipariş veremez.</span>' +
@@ -2653,8 +2653,7 @@ function siparisEkrani(){
   if (spk === 'tabldot') return tbEkrani();   // 1.27.2
   var acik = acikSiparisler().filter(spF), kapali = kapananlar().filter(spF);
   var say = function(k){ return acik.filter(function(o){ return o.kod === k; }).length; };
-  var bosMetin = D.botVar === false ? 'Kendi botunuzu bağladıktan sonra müşterilerinizin siparişleri burada görünür.'
-    : D.isletme.acik
+  var bosMetin = D.isletme.acik
     ? 'Yeni sipariş gelince burada görünür' + (SES.acik ? ' ve ses çalar.' : '.')
     : 'Sipariş alımı kapalı. Açmak için üstteki düğmeyi kullanın.';
   bosMetin = spBosMetin(spk, bosMetin);
@@ -3243,10 +3242,10 @@ function ekipEkrani(){
   }).join('') + '</div>';
   var db = function(rol, ad, ikon){
     var b = U.busy['davet:' + rol];
-    return '<button class="btn line" data-act="davet" data-k="' + rol + '"' + (b || !D.botAdi ? ' disabled' : '') + '>' + (b ? bekle('davet:' + rol) : ic(ikon)) + ad + '</button>';
+    return '<button class="btn line" data-act="davet" data-k="' + rol + '"' + (b ? ' disabled' : '') + '>' + (b ? bekle('davet:' + rol) : ic(ikon)) + ad + '</button>';
   };
   h += '<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><div><b>Ekibe kişi ekle</b><p class="tip-txt">Davet bağlantısı oluşturup kişiye gönderin. Kişi bağlantıya dokununca ekibe katılır ve siparişler ona da bildirilir.</p></div>' +
-    (D.botAdi ? '' : '<div class="note-box">İşletmenize henüz bot bağlanmamış; davet için önce bot bağlanmalı.</div>') +
+    (D.botAdi ? '' : '<div class="note-box">Kendi botunuz bağlı değil; davet bağlantısı YourPOS 360 botunda açılır. Ekibiniz ekranı oradan açar, siparişler onlara oradan bildirilir.</div>') +
     '<div class="inv">' + db('Personel', 'Personel davet et', 'kisi') + db('Kurye', hzm() ? 'Usta davet et' : 'Kurye davet et', 'kurye') + db('Sahip', 'Ortak yönetici ekle', 'ekip') + (masaAyar().acik && !hzm() ? db('Garson', 'Garson davet et', 'masa') : '') + '</div>' +
     (masaAyar().acik && !hzm() ? '<div><b>Garson (Telegram\'sız)</b><p class="tip-txt">Garsonlar ortak garson telefonunda 4 haneli PIN\'le girer. Önce garsonu ekleyin, sonra aşağıdan «Tablet bağla › Garson telefonu».</p>' +
       '<button class="btn line" data-act="msGarsonEkle">' + ic('kilit') + 'Garson ekle (PIN)</button></div>' : '') + '</div>';
@@ -15096,7 +15095,7 @@ function basla(){
       var q = new URLSearchParams(); q.set('b', B); q.set('demo', '1');
       return tamEkran('kilit', 'Bu ekran işletme ekibi içindir',
         '<b>İşletme sahibiyseniz:</b> e-posta adresiniz ve şifrenizle tarayıcıdan girebilirsiniz.<br><br>' +
-        '<b>Telefonda:</b> işletmenizin Telegram botunu açıp alttaki «Restoran» (kuryeler için «Kurye») düğmesine dokunun.<br><br>' +
+        '<b>Telefonda:</b> işletmenizin Telegram botunu açıp alttaki «Restoran» (kuryeler için «Kurye») düğmesine dokunun. İşletmenin kendi botu yoksa @yourpos360_bot\'taki ekran düğmesini kullanın.<br><br>' +
         '<b>Tablette:</b> işletme sahibi Ekip → «Tablet bağla» ile bu tablete özel bağlantı oluşturur.',
         '<a class="btn pri block" href="' + esc(webGirisLink()) + '">🔐 E-posta ve şifreyle giriş yap</a><a class="btn line block" href="?' + esc(q.toString()) + '">Örnek ekranı gör</a>');
     }
