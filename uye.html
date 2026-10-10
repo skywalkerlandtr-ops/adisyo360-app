@@ -357,7 +357,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '0397373871';
+  var SURUM = 'a75c2f802b';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -1022,6 +1022,18 @@ function basvuruEkrani(){
     '<div class="btns">' + (durum() ? '<button class="btn pri block" data-act="panel">Panelime git</button>' : '<button class="btn pri block" data-act="kapatTg">Tamam</button>') + '</div></div>';
 }
 
+/* --- 1.31 menü bilgileri adımı --- */
+var MB_AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+function mbTarih(g){ var p = String(g || '').split('-'); return p.length === 3 ? Number(p[2]) + ' ' + MB_AYLAR[Number(p[1]) - 1] + ' ' + p[0] : String(g || ''); }
+function mbAdim(m){
+  var ok = m.toplam > 0 && !m.eksikBilgi && !m.eksikEnerji, l = [];
+  if (m.eksikBilgi) l.push(adet(m.eksikBilgi) + ' üründe içindekiler / alerjen / alkol / domuz eksik (son tarih ' + mbTarih(m.sonIcerik) + ')');
+  if (m.eksikEnerji) l.push(adet(m.eksikEnerji) + ' üründe kalori eksik (son tarih ' + mbTarih(m.sonEnerji) + ')');
+  return { ok:ok, ek:true, ad:'Menü bilgileri: içindekiler, alerjen, kalori', alt:!m.toplam ? 'Tarım ve Orman Bakanlığı zorunluluğu. Ürünleri ekledikten sonra her ürünün bilgisini girin.' :
+    ok ? 'Bütün ürünlerde bilgiler tam. Müşterileriniz sipariş vermeden önce görüyor.' : l.join(' · '),
+    dugme:['ekran', '&sekme=menu', ok ? 'Kontrol et' : 'Tamamla'] };
+}
+
 /* --- panel --- */
 function kullanim(ad, n, lim){
   var y = lim ? Math.min(100, Math.round(n / lim * 100)) : 0;
@@ -1037,11 +1049,12 @@ function panelEkrani(){
     { ok:k.konum, ad:hzm() ? 'Konum ve hizmet bölgesi' : 'Konum ve teslimat', alt:k.konum ? (hzm() ? 'Konum kayıtlı. Hizmet bölgelerini kontrol edin.' : 'Konum kayıtlı. Teslimat bölgelerini kontrol edin.') : 'Konum olmadan sipariş alınamaz.', dugme:['ekran', '&sekme=ayar', k.konum ? 'Kontrol et' : 'Ayarla'] },
     { ok:k.bot, ad:'Kendi botunuzu bağlayın', alt:k.bot ? '@' + d.bot.kullanici + ' bağlı.' : 'Adım adım anlatıyoruz, birkaç dakika sürer.', dugme:['botRehber', '', k.bot ? 'Paylaş' : 'Bağla'] }
   ];
-  var biten = adimlar.filter(function(x){ return x.ok; }).length;
+  if (d.mb && d.mb.gerekli) adimlar.push(mbAdim(d.mb));   // 1.31 menü bilgileri
+  var biten = adimlar.filter(function(x){ return x.ok; }).length, hazirAdim = adimlar.every(function(x){ return x.ok || x.ek; });
   var h = '<section class="card ozet"><div class="ad">' + esc(d.ad) + '</div><div class="kodlar"><span class="kod">İşletme kodu <code>' + esc(d.kod) + '</code></span>' +
     '<span class="rozet2' + (d.ucretsiz ? ' ok' : d.hesap && d.hesap.durduruldu && !d.hesap.ilkOdeme ? ' bad' : '') + '">' + (d.ucretsiz ? '🎁 ' + esc(d.ucretsiz) : d.hesap && d.hesap.ilkOdeme ? '💳 İlk ödeme bekleniyor' : d.hesap && d.hesap.durduruldu ? '⛔ Sipariş alımı durdu' :
       d.deneme && d.deneme.kalanGun > 0 ? 'Deneme: ' + d.deneme.kalanGun + ' gün kaldı' : esc(d.paket.ad) + ' paketi') + '</span></div>' +
-    (biten === adimlar.length && k.acik !== false && !(d.hesap && d.hesap.durduruldu) ? '<div class="okbox">✅ İşletmeniz sipariş almaya hazır.</div>' : '') +
+    (hazirAdim && k.acik !== false && !(d.hesap && d.hesap.durduruldu) ? '<div class="okbox">✅ İşletmeniz sipariş almaya hazır.</div>' : '') +
     (D.basvuru && D.basvuru.durum === 'bekliyor' ? '<div class="info">📝 <b>' + esc(D.basvuru.ad) + '</b> için ' + (D.basvuru.tur === 'satin' ? 'satın alma talebiniz' : 'başvurunuz') +
       ' inceleniyor (<span class="num">' + esc(D.basvuru.no) + '</span>). Onaylandığında Telegram\'dan haber vereceğiz.</div>' : '') +
     (d.isKoluSecildi === false ? '<div class="note" role="alert">🏷️ <b>İş kolunuzu seçin.</b> Müşteriler «Yakınımdaki işletmeler» listesinde sizi iş kolunuza göre bulur. ' +
@@ -1738,7 +1751,8 @@ function uyeDemo(hal){
   function durumYap(ad, tur, hazir){
     return { id:'ornek', kod:'K7M2QX', ad:ad, durum:'Aktif', tur:tur, isKolu:Q0.get('kol') || (tur === 'hizmet' ? 'tesisat' : 'kebap'), isKoluSecildi:Q0.get('kol') !== '0', rehberGizli:false, paket:PAKET[0], kullanim:{ urun:hazir ? 23 : 0, hafta:hazir ? 41 : 0, ekip:hazir ? 2 : 0 },
       deneme:{ bitis:'20.10.2026 10:00', kalanGun:14 }, ucretsiz:'', bot:hazir ? { bagli:true, kullanici:'lezzet_durum_bot', link:'https://t.me/lezzet_durum_bot' } : { bagli:false, kullanici:'', link:'' },
-      kurulum:{ menu:hazir, konum:hazir, bot:hazir, acik:true }, ekranUrl:taban + 'isletme.html?b=ornek&demo=1&rol=sahip&ana=1' + (hazir ? '' : '&kurulum=1'),
+      kurulum:{ menu:hazir, konum:hazir, bot:hazir, acik:true },
+      mb:tur === 'hizmet' || tur === 'market' ? null : { gerekli:true, toplam:hazir ? 12 : 0, tam:hazir ? 4 : 0, eksikBilgi:hazir ? 7 : 0, eksikEnerji:hazir ? 6 : 0, sonIcerik:'2026-12-31', sonEnerji:'2027-12-31', grup:'diger' }, ekranUrl:taban + 'isletme.html?b=ornek&demo=1&rol=sahip&ana=1' + (hazir ? '' : '&kurulum=1'),
       bilgi:{ yetkili:'Hasan Kaya', telefon:'0532 111 22 33', eposta:'hasan@lezzet.com', il:'Ankara', ilce:'Çankaya', adres:'Kızılay Mah. Atatürk Blv. No: 5', faturaUnvani:'', vergiDairesi:'', vergiNo:'' },
       odeme:{ kod:'K7M2QX', iban:Q0.get('kart') === 'yalniz' ? '' : 'TR00 0000 0000 0000 0000 0000 00', alici:Q0.get('kart') === 'yalniz' ? '' : 'YourPOS 360',
         havale:Q0.get('kart') !== 'yalniz', kart:Q0.get('kart') !== '0', yontem:Q0.get('kart') === '0' ? 'iban' : Q0.get('kart') === 'yalniz' ? 'shopier' : 'ikisi', enAz:10, kartlar:[] },

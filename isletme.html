@@ -1585,6 +1585,47 @@ html.dil-bekle #app{visibility:hidden}
 @media (max-width:420px){ #top .tema-btn{display:none} }
 /* ---------- 1.28 alt menü: uzun adlar ---------- */
 @media (max-width:420px){ #tabs .tab > span:not(.cnt){white-space:normal;text-overflow:clip;line-height:1.1;text-align:center;font-size:11.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical} }
+/* ---------- 1.31 menü bilgileri ---------- */
+.mb-blk .blk-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mb-zor{font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--warn-ink);background:var(--warn-soft);border-radius:999px;padding:2px 9px}
+.mb-al .chip.mb-yok[aria-pressed="true"]{background:var(--ok);color:var(--on-ok)}
+.mb-eh{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 14px}
+.mb-eh .seg{align-self:flex-start}
+.mb-kc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.mb-kr-l{display:flex;flex-direction:column;gap:8px}
+.mb-kr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) minmax(0,1fr);gap:8px;align-items:center}
+.mb-kr-ad{font-weight:600;overflow-wrap:anywhere}
+.link-btn{border:0;background:none;padding:0;color:var(--link);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.m-mb{font-size:13px;font-weight:700;color:var(--warn-ink);background:var(--warn-soft);border-radius:8px;padding:2px 8px;align-self:flex-start;margin-top:3px}
+.mb-kart{display:flex;flex-direction:column;gap:8px;border-left:4px solid var(--warn-ink)}
+.mb-kart.ok{border-left-color:var(--ok)}
+.mb-kart.acil{border-left-color:var(--danger)}
+.mb-k-h{margin:0;font-size:16px}
+.mb-k-l{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.mb-acts{flex-wrap:wrap}
+.mb-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mb-li{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t i" "e i";gap:2px 10px;align-items:center;text-align:left;border:0;border-radius:12px;background:var(--bg2);padding:10px 12px;color:var(--text);font:inherit;cursor:pointer}
+.mb-li .mb-li-t{grid-area:t;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.mb-li .mb-li-e{grid-area:e;font-size:14px;color:var(--warn-ink)}
+.mb-li .ic{grid-area:i}
+.mb-bilgi p{margin:0}
+.mb-tb{width:100%;border-collapse:collapse;font-size:14px}
+.mb-tb th,.mb-tb td{border-bottom:1px solid var(--sep);padding:8px 6px;text-align:left;vertical-align:top}
+.mb-tb tr.bu th,.mb-tb tr.bu td{background:var(--accent-soft)}
+.mb-not{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--bg2);border-radius:8px;font-weight:600}
+@media print{
+  .fis .mb-a4{font:10pt/1.35 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#000}
+  .fis .mb-a4 h1{font-size:16pt;text-align:left;margin:0 0 1mm}
+  .fis .mb-a4-alt{margin:0 0 4mm;font-size:10pt}
+  .fis .mb-a4 table{width:100%;border-collapse:collapse}
+  .fis .mb-a4 th,.fis .mb-a4 td{border:0.3mm solid #000;padding:1.5mm 2mm;text-align:left;vertical-align:top}
+  .fis .mb-a4 thead th{background:#eee}
+  .fis .mb-a4 tr.kat th{background:#f6f6f6;font-size:11pt}
+  .fis .mb-a4 tr{break-inside:avoid;page-break-inside:avoid}
+  .fis .mb-a4 .al{font-weight:800}
+  .fis .mb-a4-not{margin:4mm 0 0;font-size:9pt}
+  .fis .ms-qn{font-size:7.5pt;line-height:1.3;margin-top:2mm}
+}
 </style>
 </head>
 <body>
@@ -1619,7 +1660,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '0397373871';
+  var SURUM = 'a75c2f802b';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -4051,6 +4092,7 @@ function menuGruplari(q){
     if (!ur.gorsel && u.gorsel) ur.gorsel = u.gorsel;
     if (!ur.resim && u.resim) { ur.resim = u.resim; ur.resimUrl = u.resimUrl || ''; }
     if (!ur.aciklama && u.aciklama) ur.aciklama = u.aciklama;
+    if (!ur.mb && u.mb && (u.mb.ic || u.mb.al || u.mb.alk || u.mb.dmz)) ur.mb = u.mb;   // 1.31
   });
   kats.forEach(function(k){
     k.urunler.forEach(function(ur){ ur.secenekli = ur.satirlar.length > 1 || !!(ur.satirlar[0] && ur.satirlar[0].sec); ur.katSira = k.sira; });
@@ -4091,6 +4133,7 @@ function menuEkrani(){
         (D.uyeUrl ? ' <button class="btn sm pri" data-act="uyeGit" data-k="#paket">Paketi yükselt</button>' : '') + '</div>' : '') +
       videoDugme('menu') + '</section>';
   }
+  h += mbKart();   // 1.31 menü bilgileri
   if (!n) {
     h += sahip()
       ? bosDurum('menu', market() ? 'Henüz ürün yok' : hzm() ? 'Henüz hizmet yok' : 'Menünüz boş', 'İlk ' + urunSoz() + (hzm() ? 'inizi' : 'ünüzü') + ' ekleyin ya da Excel şablonuyla tüm ' + (market() ? 'ürünlerinizi' : hzm() ? 'hizmetlerinizi' : 'menünüzü') + ' tek seferde yükleyin.')
@@ -4163,7 +4206,7 @@ function urunKarti(ur){
   var hepsiKapali = ur.satirlar.every(function(s){ return !s.aktif; });
   var bas = sahip()
     ? '<button class="m-bas" data-act="urunDuzenle" data-k="' + esc(ur.anahtar) + '" aria-label="' + esc(ur.ad) + ' düzenle">' + tile +
-      '<span class="m-txt"><span class="m-ad">' + esc(ur.ad) + '</span>' + (ur.aciklama ? '<span class="m-ac">' + esc(kisalt(ur.aciklama, 70)) + '</span>' : '') + ozEtiket(ur) + kpEtiket(ur) + '</span>' +
+      '<span class="m-txt"><span class="m-ad">' + esc(ur.ad) + '</span>' + (ur.aciklama ? '<span class="m-ac">' + esc(kisalt(ur.aciklama, 70)) + '</span>' : '') + ozEtiket(ur) + kpEtiket(ur) + mbEtiket(ur) + '</span>' +
       '<span class="m-kalem">' + ic('sag', 'sm') + '</span></button>'
     : '<div class="m-bas">' + tile + '<span class="m-txt"><span class="m-ad">' + esc(ur.ad) + '</span>' + kpEtiket(ur) + '</span></div>';
   if (!ur.secenekli) {
@@ -4202,7 +4245,8 @@ function menuAdlari(haric){
   return l;
 }
 var OZ_HIZLI = ['Domates', 'Marul', 'Soğan', 'Maydanoz', 'Turşu', 'Biber', 'Ketçap', 'Mayonez', 'Hardal', 'Acı sos', 'Tuz', 'Pul biber', 'Sumak', 'Kekik', 'Patates', 'Kaşar'];
-function urunTaslak(ur){
+function urunTaslak(ur){ return mbTaslakEkle(urunTaslak0(ur), ur); }   // 1.31 menü bilgileri
+function urunTaslak0(ur){
   if (!ur) return { tip:'urun', ids:[], ad:'', kat:(U.sonKat || ''), aciklama:'', gorsel:'', resim:'', resimUrl:'', resimDeg:false, aktif:true, fiyat:'', secenekli:false,
     secenekler:[{ id:'', ad:'', fiyat:'' }, { id:'', ad:'', fiyat:'' }], oz:ozTaslak(null), gun:[], gunluk:'', hata:'', odak:'#urAd' };
   var sec = ur.secenekli;
@@ -4297,6 +4341,7 @@ SHEET.urun = function(s){
     '" placeholder="Sınırsız" autocomplete="off"><span class="tip-txt">Her gün bu sayıdan başlar; satıldıkça düşer, bitince «Tükendi» görünür. Gün içinde Menü listesinden değiştirebilirsiniz.</span></div>';
   h += '<div class="field"><label for="urAc">Açıklama <span class="muted">(isteğe bağlı)</span></label><textarea class="inp" id="urAc" maxlength="200" rows="2" placeholder="' +
     (market() ? 'ör. Tam yağlı, Ezine' : hzm() ? 'ör. Malzeme hariç işçilik' : 'ör. Lavaş, tavuk döner, domates, turşu') + '">' + esc(s.aciklama) + '</textarea></div>';
+  h += mbBolum(s);   // 1.31 menü bilgileri
   if (!s.kombo) h += ozBolum(s);
   h += '<button class="opt" type="button" role="switch" aria-checked="' + (s.aktif ? 'true' : 'false') + '" data-act="urAktif"><span class="o-main">Satışta' +
     '<span class="o-sub">Kapalıysa müşteriler bu ' + urunSoz() + 'i göremez.</span></span><span class="tgl" aria-hidden="true"></span></button>';
@@ -4423,6 +4468,7 @@ function ozCoz(oz){
   return { oz:{ ic:ic, ek:ek, not:oz.not ? 1 : 0, gr:gr } };
 }
 function urunTaslakOku(s){
+  mbOku(s);   // 1.31
   var al = function(id){ var e = document.getElementById(id); return e ? e.value : null; };
   var v;
   if ((v = al('urAd')) !== null) s.ad = v;
@@ -4528,7 +4574,8 @@ SHEET.excel = function(s){
   var h = shBas('Excel ile toplu yükleme') + '<div class="sh-body">';
   h += '<p>Tüm ' + mn + ' tek seferde yükleyin:</p><ol class="adim">' +
     '<li><b>Şablonu alın.</b> «Şablonu Telegram\'a gönder»e basın; Excel şablonu ' + esc(bot) + ' sohbetine gelir.</li>' +
-    '<li><b>Doldurun.</b> «' + sayfa + '» sayfasına her satıra bir ' + urunSoz() + ' yazın: kategori, ' + urunSoz() + ' adı, seçenek (varsa), fiyat. «Fotoğraf» hücresine fotoğraf koyarsanız fotoğraf da yüklenir; boş bırakırsanız fotoğrafsız yüklenir.</li>' +
+    '<li><b>Doldurun.</b> «' + sayfa + '» sayfasına her satıra bir ' + urunSoz() + ' yazın: kategori, ' + urunSoz() + ' adı, seçenek (varsa), fiyat. «Fotoğraf» hücresine fotoğraf koyarsanız fotoğraf da yüklenir; boş bırakırsanız fotoğrafsız yüklenir.' +
+      (mbVar() ? ' İçindekiler, alerjen, kalori, alkol ve domuz sütunlarını da doldurabilirsiniz; boş bırakılan sütun mevcut bilgiyi değiştirmez.' : '') + '</li>' +
     '<li><b>Yükleyin.</b> Dosyayı aşağıdan seçin (ya da Telegram\'da aynı sohbete dosya olarak gönderin).</li>' +
     '<li><b>Onaylayın.</b> Özetten sonra «Üzerine yaz» ya da «Ek olarak ekle»yi seçip «Emin misiniz?» sorusunu onaylayın.</li></ol>';
   h += '<input type="file" id="xlDosya" accept=".xlsx,.xls,.ods,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>' +
@@ -4920,6 +4967,7 @@ var ACT_MENU = {
     var gp = String(s.gunluk || '').trim();
     if (!hata && gp && !(/^\d{1,4}$/.test(gp))) hata = 'Günlük porsiyonu sayı olarak yazın (sınırsızsa boş bırakın).';
     u.stok = { gunluk:gp };
+    if (!hata) hata = mbEkle(s, u);   // 1.31
     s.hata = hata;
     if (hata) { renderSheet(); haptic('notify', 'error'); return; }
     U.sonKat = u.kat;
@@ -5494,6 +5542,11 @@ function afisCiz(cv, o){
       afYaz(c, s, cx, y + 2 * r + 1.6 * u, yazi, true);
     });
   } });
+  // 4b) 1.31 karekod uyarısı: içerik, alerjen ve kalori bilgisi (Tarım ve Orman Bakanlığı)
+  if (o.bilgi) {
+    var mbS = afSatirlar(c, MB_UYARI, 84 * u, 2.7 * u, false, 3, 1.9 * u);
+    bloklar.push({ h:mbS.l.length * mbS.px * 1.18, ciz:function(y){ afYaz(c, mbS, W / 2, y, soluk, false); } });
+  }
   // 5) telefon + alt satır
   var telS = o.telefon ? afSatirlar(c, 'Tel: ' + o.telefon, 80 * u, 4.2 * u, true, 1, 3 * u) : null;
   var altS = afSatirlar(c, 'YourPOS 360 · komisyonsuz sipariş', 80 * u, 2.4 * u, false, 1, 2 * u);
@@ -5626,11 +5679,11 @@ function logoHazirla(dosya){
 }
 
 /* --- ekran --- */
-function afisAyar(){ var a = (U.ay && U.ay.ayarlar) || {}; return { logo:a.Logo || '', aciklama:a.AfisAciklama || '', telefon:a.AfisTelefon !== 'Hayır', stil:a.AfisStil || 'canli', tel:a.Telefon || '' }; }
+function afisAyar(){ var a = (U.ay && U.ay.ayarlar) || {}; return { logo:a.Logo || '', aciklama:a.AfisAciklama || '', telefon:a.AfisTelefon !== 'Hayır', bilgi:a.AfisBilgi !== 'Hayır', stil:a.AfisStil || 'canli', tel:a.Telefon || '' }; }
 function afisSecenek(s){
   var a = afisAyar();
   return { stil:s.stil, tur:afisTur(), ad:(D.isletme && D.isletme.ad) || 'İşletme', aciklama:s.aciklama, telefon:s.telefon && a.tel ? telGoster(a.tel) : '',
-    link:afisLink(), bot:D.botAdi || '', logo:AFIS_LOGO.src === a.logo && a.logo ? AFIS_LOGO.im : null };
+    link:afisLink(), bot:D.botAdi || '', logo:AFIS_LOGO.src === a.logo && a.logo ? AFIS_LOGO.im : null, bilgi:!!s.bilgi && mbZorunlu() };
 }
 var AFIS_LOGO = { src:'', im:null };
 function afisLogoHazir(){
@@ -5648,6 +5701,7 @@ function afisOnizle(){
     if (!cv2 || !SH || SH.tip !== 'afis') return;
     var o = afisOlcu(SH.olcu), en = Math.min(720, Math.round((cv2.parentNode.clientWidth || 320) * (window.devicePixelRatio || 1)));
     var sc = afisSecenek(SH); sc.w = en; sc.h = Math.round(en * o.h / o.w);
+    if (o.resim) sc.bilgi = false;
     afisCiz(cv2, sc);
   });
 }
@@ -5680,6 +5734,8 @@ SHEET.afis = function(s){
   h += '<div class="field"><label for="afisAc">Ne iş yapıyorsunuz? <span class="muted">(isteğe bağlı, tek satır)</span></label><input class="inp" id="afisAc" maxlength="60" value="' + esc(s.aciklama) + '" placeholder="ör. Ev yapımı dürüm ve lahmacun" autocomplete="off"></div>';
   h += '<button type="button" class="opt" role="switch" aria-checked="' + (s.telefon && !!a.tel) + '" data-act="afisTel"' + (a.tel ? '' : ' disabled') + '><span class="o-main">Telefon numarası görünsün' +
     '<span class="o-sub">' + (a.tel ? esc(telGoster(a.tel)) : 'Ayarlar\'da telefon kayıtlı değil') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (mbZorunlu()) h += '<button type="button" class="opt" role="switch" aria-checked="' + !!s.bilgi + '" data-act="afisBilgi"><span class="o-main">Karekod uyarısı (menü bilgileri)' +
+    '<span class="o-sub">«İçerik, alerjen ve kalori bilgisine bu karekodla ulaşabilirsiniz…» notu. Tarım ve Orman Bakanlığı düzenlemesi gereği açık bırakın.</span></span><span class="tgl" aria-hidden="true"></span></button>';
   h += '</div><div class="sh-foot">';
   var adet = AFIS_OLCU.filter(function(x){ return s.secili[x.k]; }).length;
   if (D.cihaz) h += '<p class="tip-txt">Afiş Telegram\'a gönderilir; bu ekranı Telegram\'dan açın.</p>';
@@ -5690,9 +5746,10 @@ SHEET.afis = function(s){
 };
 function afisUret(s){
   var sc = afisSecenek(s), cv = document.createElement('canvas'), sayfa = [], resim = null;
+  var bilgi0 = sc.bilgi;
   AFIS_OLCU.forEach(function(o){
     if (!s.secili[o.k]) return;
-    sc.w = o.w; sc.h = o.h;
+    sc.w = o.w; sc.h = o.h; sc.bilgi = bilgi0 && !o.resim;
     afisCiz(cv, sc);
     var j = cv.toDataURL('image/jpeg', 0.92);
     if (o.resim) resim = j.split(',')[1];
@@ -5709,7 +5766,7 @@ function afisAyarKaydet(veri, mesaj){
 }
 var ACT_AFIS = {
   afisAc:function(){
-    var ac = function(){ var a = afisAyar(); sheetAc({ tip:'afis', stil:a.stil, olcu:'a4', aciklama:a.aciklama, telefon:a.telefon, secili:{ a4:true, a5:true, a6:true, kare:true, hikaye:true } }); };
+    var ac = function(){ var a = afisAyar(); sheetAc({ tip:'afis', stil:a.stil, olcu:'a4', aciklama:a.aciklama, telefon:a.telefon, bilgi:a.bilgi, secili:{ a4:true, a5:true, a6:true, kare:true, hikaye:true } }); };
     if (U.ay) return ac();
     ayarYukle();
     var bekleT = setInterval(function(){ if (U.ay || U.ayHata) { clearInterval(bekleT); if (U.ay) ac(); else toast(U.ayHata, true); } }, 150);
@@ -5718,6 +5775,7 @@ var ACT_AFIS = {
   afisOlcu:function(el){ SH.olcu = el.getAttribute('data-k'); haptic('select'); renderSheet(); },
   afisSec:function(el){ var k = el.getAttribute('data-k'); SH.secili[k] = !SH.secili[k]; haptic('select'); renderSheet(); },
   afisTel:function(){ SH.telefon = !SH.telefon; renderSheet(); },
+  afisBilgi:function(){ SH.bilgi = !SH.bilgi; renderSheet(); setTimeout(afisOnizle, 0); },
   logoSec:function(){ var i = $('#logoDosya'); if (i) i.click(); },
   logoKaldir:function(){ SH.logoHata = ''; afisAyarKaydet({ Logo:'' }, 'Logo kaldırıldı'); },
   afisGonder:function(){
@@ -5730,10 +5788,10 @@ var ACT_AFIS = {
       var veri;
       try { veri = afisUret(s); } catch(e){ s.uretiyor = false; renderSheet(); toast('Afiş hazırlanamadı. Sayfayı yenileyip tekrar deneyin.', true); return; }
       s.uretiyor = false;
-      veri.ayar = { AfisAciklama:s.aciklama, AfisTelefon:s.telefon ? 'Evet' : 'Hayır', AfisStil:s.stil };
+      veri.ayar = { AfisAciklama:s.aciklama, AfisTelefon:s.telefon ? 'Evet' : 'Hayır', AfisStil:s.stil, AfisBilgi:s.bilgi ? 'Evet' : 'Hayır' };
       return islem('ekAfisGonder', veri, { busy:'afis' }).then(function(r){
         if (!r) return;
-        if (U.ay && U.ay.ayarlar) { U.ay.ayarlar.AfisAciklama = s.aciklama; U.ay.ayarlar.AfisTelefon = veri.ayar.AfisTelefon; U.ay.ayarlar.AfisStil = s.stil; }
+        if (U.ay && U.ay.ayarlar) { U.ay.ayarlar.AfisAciklama = s.aciklama; U.ay.ayarlar.AfisTelefon = veri.ayar.AfisTelefon; U.ay.ayarlar.AfisStil = s.stil; U.ay.ayarlar.AfisBilgi = veri.ayar.AfisBilgi; }
         sheetKapat();
         toast('Afişler Telegram sohbetinize gönderildi.');
       });
@@ -6134,6 +6192,231 @@ setTimeout(function ppTazele(){
   if (!D) { setTimeout(ppTazele, 4000); return; }
   if (!DEMO && !inTelegram && ppRol() && ppDestek() && Notification.permission === 'granted' && Date.now() - Number(LS.get(PP_KEY) || 0) > 86400000) ppDurumAl();
 }, 6000);
+
+/* ---------- 1.31 · Menü bilgileri: içindekiler, alerjenler, kalori, alkol, domuz ----------
+ * Tarım ve Orman Bakanlığı (17.06.2026): restoran, kafe ve pastaneler ürünlerin bileşenlerini, alerjenlerini, alkol ve domuz kaynaklı
+ * bileşenlerini ve porsiyon başına enerjisini bildirir; online satışta satın almadan önce gösterilir (sipariş sayfası).
+ * Ürün penceresinde «🧾 Menü bilgileri» bölümü, Menü ekranında eksik özeti, eksik listesi, toplu işaretleme ve A4 bilgi listesi.
+ * Kayıt sunucuda (menubilgi_bolum.gs); hizmet işletmesinde bu bölüm yok, markette isteğe bağlı (uyarı yok). */
+var MB_AL = [['gluten', 'Gluten', 'buğday, çavdar, arpa, yulaf'], ['kabuklu', 'Kabuklular', 'karides, yengeç, ıstakoz'], ['yumurta', 'Yumurta', ''], ['balik', 'Balık', ''],
+  ['yerfistigi', 'Yer fıstığı', ''], ['soya', 'Soya', ''], ['sut', 'Süt', 'laktoz dahil'], ['kuruyemis', 'Sert kabuklu meyveler', 'badem, fındık, ceviz, kaju, Antep fıstığı'],
+  ['kereviz', 'Kereviz', ''], ['hardal', 'Hardal', ''], ['susam', 'Susam', ''], ['sulfit', 'Sülfit', 'kükürt dioksit'], ['acibakla', 'Acı bakla', 'lupin'],
+  ['yumusakca', 'Yumuşakçalar', 'midye, kalamar, ahtapot']];
+var MB_AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+var MB_UYARI = 'İçerik, alerjen ve kalori bilgisine bu karekodla ulaşabilirsiniz. Karekod kullanamayan tüketicilere bu bilgiler istendiğinde ayrıca sunulur.';
+function mbVar(){ return !!(D && D.isletme) && !hzm(); }
+function mbZorunlu(){ return mbVar() && !market(); }
+function mbAlAd(k){ var a = MB_AL.filter(function(x){ return x[0] === k; })[0]; return a ? a[1] : k; }
+function mbAlDizi(v){ if (v === 'yok') return 'yok'; if (!v) return null; return String(v).split(',').filter(function(k){ return MB_AL.some(function(a){ return a[0] === k; }); }); }
+function mbAlYazi(v){ var l = mbAlDizi(v); return l === 'yok' ? 'Alerjen içermez' : l && l.length ? l.map(mbAlAd).join(', ') : ''; }
+function mbTarihYaz(g){ var p = String(g || '').split('-'); return p.length === 3 ? Number(p[2]) + ' ' + MB_AYLAR[Number(p[1]) - 1] + ' ' + p[0] : String(g || ''); }
+function mbSon(){ return (D && D.mbTarih) || { icerik:'2026-12-31', enerji:'2027-12-31', grup:'diger' }; }
+function mbKalanGun(g){ var p = String(g || '').split('-'); if (p.length !== 3) return null; return Math.ceil((new Date(+p[0], +p[1] - 1, +p[2], 23, 59).getTime() - simdi()) / 86400000); }
+function mbSonHtml(g){
+  var k = mbKalanGun(g);
+  return '<span>son tarih</span> <span>' + esc(mbTarihYaz(g)) + '</span>' + (k === null ? '' : k < 0 ? ' <span>(son tarih geçti)</span>' : k <= 60 ? ' <span>(' + k + ' gün kaldı)</span>' : '');
+}
+function mbKcYazi(kc, gm){ return (kc !== undefined && kc !== '' ? kc + ' kcal' : '') + (gm ? (kc !== undefined && kc !== '' ? ' · ' : '') + gm : ''); }
+
+/* --- ürün penceresi: taslak, okuma, kayıt --- */
+function mbTaslakEkle(s, ur){
+  if (!s) return s;
+  var mb = (ur && ur.mb) || {}, sat = (ur && ur.satirlar) || [];
+  s.mb = { ic:mb.ic || '', al:mbAlDizi(mb.al), alk:mb.alk || '', dmz:mb.dmz || '' };
+  var r0 = (sat[0] && sat[0].mb) || {};
+  s.kc = !s.secenekli && r0.kc !== undefined ? String(r0.kc) : '';
+  s.gm = !s.secenekli ? (r0.gm || '') : '';
+  (s.secenekler || []).forEach(function(x){
+    var r = x.id ? sat.filter(function(y){ return y.id === x.id; })[0] : null, m = (r && r.mb) || {};
+    x.kc = m.kc !== undefined ? String(m.kc) : (x.kc || ''); x.gm = m.gm || x.gm || '';
+  });
+  return s;
+}
+function mbOku(s){
+  if (!s || !s.mb) return;
+  var al = function(id){ var e = document.getElementById(id); return e ? e.value : null; }, v;
+  if ((v = al('mbIc')) !== null) s.mb.ic = v;
+  if ((v = al('mbKc')) !== null) s.kc = v;
+  if ((v = al('mbGm')) !== null) s.gm = v;
+  (s.secenekler || []).forEach(function(x, i){
+    if ((v = al('mbKc-' + i)) !== null) x.kc = v;
+    if ((v = al('mbGm-' + i)) !== null) x.gm = v;
+  });
+}
+function mbKcCoz(v, ad){
+  v = String(v === undefined || v === null ? '' : v).trim().toLocaleLowerCase('tr').replace(/\s*kcal$/, '').replace(',', '.');
+  if (!v) return '';
+  if (!/^\d{1,4}(\.\d+)?$/.test(v) || Number(v) > 9999) throw new Error(ad ? '«' + ad + '» için kaloriyi rakamla yazın (ör. 450).' : 'Kaloriyi rakamla yazın (ör. 450).');
+  return Math.round(Number(v));
+}
+// urunKaydet: bilgileri sunucuya giden ürüne ekler; hata varsa yazısını döndürür
+function mbEkle(s, u){
+  if (!mbVar() || !s || !s.mb) return '';
+  var m = s.mb;
+  try {
+    u.mb = { ic:String(m.ic || '').replace(/\s+/g, ' ').trim(), al:m.al === 'yok' ? 'yok' : (m.al && m.al.length ? m.al.slice() : ''), alk:m.alk || '', dmz:m.dmz || '' };
+    if (u.secenekler) u.secenekler.forEach(function(x){
+      var src = s.secenekler.filter(function(y){ return trKucuk(String(y.ad || '').trim()) === trKucuk(x.ad); })[0];
+      if (src) { x.kc = mbKcCoz(src.kc, x.ad); x.gm = String(src.gm || '').trim(); }
+    });
+    else { u.kc = mbKcCoz(s.kc); u.gm = String(s.gm || '').trim(); }
+  } catch(e){ return e.message; }
+  return '';
+}
+function mbBolum(s){
+  if (!mbVar() || !s || !s.mb) return '';
+  var m = s.mb, zor = mbZorunlu(), son = mbSon();
+  var h = '<div class="blk mb-blk"><h3 class="blk-h">🧾 Menü bilgileri ' + (zor ? '<span class="mb-zor">Zorunlu</span>' : '<span class="muted">(isteğe bağlı)</span>') + '</h3>';
+  if (zor) h += '<p class="tip-txt">Tarım ve Orman Bakanlığı düzenlemesi: içindekiler, alerjenler, alkol ve domuz bilgisi ' + esc(mbTarihYaz(son.icerik)) +
+    ', kalori ' + esc(mbTarihYaz(son.enerji)) + ' tarihine kadar girilmeli. Müşterileriniz sipariş vermeden önce görür.</p>';
+  h += '<div class="field"><label for="mbIc">İçindekiler</label><textarea class="inp" id="mbIc" maxlength="600" rows="3" placeholder="ör. Lavaş (buğday unu), tavuk eti, domates, turşu, mayonez (yumurta)">' +
+    esc(m.ic) + '</textarea><span class="tip-txt">Temel bileşenleri yazın; miktarları gerekmez. Müşterinin diline kendiliğinden çevrilir.</span></div>';
+  h += '<div class="field"><span class="lbl" id="mbAlH">Alerjenler</span><div class="kat-chips mb-al" role="group" aria-labelledby="mbAlH">' +
+    '<button class="chip sm mb-yok" type="button" data-act="mbAlYok" aria-pressed="' + (m.al === 'yok') + '">✓ Alerjen içermez</button>' +
+    MB_AL.map(function(a){
+      return '<button class="chip sm" type="button" data-act="mbAl" data-k="' + a[0] + '" aria-pressed="' + (Array.isArray(m.al) && m.al.indexOf(a[0]) >= 0) + '"' +
+        (a[2] ? ' title="' + esc(a[2]) + '"' : '') + '>' + esc(a[1]) + '</button>';
+    }).join('') + '</div><span class="tip-txt">' + (m.al === null ? 'Henüz seçilmedi. İçerdiği alerjenlere dokunun; hiçbiri yoksa «Alerjen içermez»i seçin.' :
+      m.al === 'yok' ? '14 alerjenden hiçbirini içermiyor.' : '<b>' + m.al.length + ' alerjen</b> seçili: ' + esc(m.al.map(mbAlAd).join(', ')) + '.') + '</span></div>';
+  var eh = function(k, ad, act){
+    var v = m[k];
+    return '<div class="field"><span class="lbl" id="mbH-' + k + '">' + ad + '</span><div class="seg" role="group" aria-labelledby="mbH-' + k + '">' +
+      '<button type="button" data-act="' + act + '" data-k="Hayır" aria-pressed="' + (v === 'Hayır') + '">İçermez</button>' +
+      '<button type="button" data-act="' + act + '" data-k="Evet" aria-pressed="' + (v === 'Evet') + '">İçerir</button></div></div>';
+  };
+  h += '<div class="mb-eh">' + eh('alk', 'Alkol', 'mbAlk') + eh('dmz', 'Domuz kaynaklı bileşen', 'mbDmz') + '</div>';
+  if (!s.secenekli) {
+    h += '<div class="mb-kc"><div class="field"><label for="mbKc">Kalori <span class="muted">(kcal / porsiyon)</span></label><input class="inp num" id="mbKc" inputmode="numeric" value="' + esc(s.kc) +
+      '" placeholder="ör. 450" autocomplete="off"></div><div class="field"><label for="mbGm">Porsiyon miktarı <span class="muted">(isteğe bağlı)</span></label><input class="inp" id="mbGm" maxlength="24" value="' +
+      esc(s.gm) + '" placeholder="ör. 250 g" autocomplete="off"></div></div>';
+  } else {
+    h += '<div class="field"><span class="lbl">Kalori <span class="muted">(her seçenek için kcal / porsiyon)</span></span><div class="mb-kr-l">' + s.secenekler.map(function(x, i){
+      var ad = String(x.ad || '').trim() || (i + 1) + '. seçenek';
+      return '<div class="mb-kr"><span class="mb-kr-ad">' + esc(ad) + '</span><input class="inp num" id="mbKc-' + i + '" inputmode="numeric" value="' + esc(x.kc || '') + '" placeholder="kcal" aria-label="' +
+        esc(ad) + ' kalorisi (kcal)" autocomplete="off"><input class="inp" id="mbGm-' + i + '" maxlength="24" value="' + esc(x.gm || '') + '" placeholder="ör. 250 g" aria-label="' + esc(ad) + ' porsiyon miktarı" autocomplete="off"></div>';
+    }).join('') + '</div></div>';
+  }
+  h += '<p class="tip-txt">Kalori bir porsiyonun toplamıdır. Ortalama değerler için <button type="button" class="link-btn" data-act="mbTurkomp">TÜRKOMP</button> (Bakanlığın gıda veri tabanı). ' +
+    'Bilgiler sizin beyanınızdır; doğruluğundan işletme sorumludur.</p>';
+  return h + '</div>';
+}
+
+/* --- eksik bilgi --- */
+function mbEksik(ur){
+  var m = ur.mb || {}, l = [];
+  if (!m.ic) l.push('içindekiler');
+  if (!m.al) l.push('alerjen');
+  if (!m.alk) l.push('alkol');
+  if (!m.dmz) l.push('domuz');
+  var en = ur.satirlar.some(function(r){ return !(r.mb && r.mb.kc !== undefined); });
+  return { l:l, enerji:en, tam:!l.length && !en };
+}
+function mbOzet(){
+  var o = { t:0, b:0, e:0, ae:0, liste:[] };
+  menuGruplari('').forEach(function(k){ k.urunler.forEach(function(ur){
+    var x = mbEksik(ur);
+    o.t++;
+    if (x.l.length) o.b++;
+    if (x.enerji) o.e++;
+    if (!(ur.mb && ur.mb.alk) || !(ur.mb && ur.mb.dmz)) o.ae++;
+    if (!x.tam) o.liste.push({ ur:ur, x:x });
+  }); });
+  return o;
+}
+function mbEtiket(ur){
+  if (!mbZorunlu() || !sahip()) return '';
+  return mbEksik(ur).tam ? '' : '<span class="m-mb">⚠️ Menü bilgisi eksik</span>';
+}
+function mbKart(){
+  if (!mbZorunlu() || !sahip() || !(D.menu || []).length) return '';
+  var o = mbOzet(), son = mbSon();
+  var acts = '<div class="row2 mb-acts">' + (o.liste.length ? '<button class="btn pri sm" data-act="mbEksikAc">Eksikleri göster</button>' : '') +
+    '<button class="btn line sm" data-act="mbYazdir">🖨️ A4 bilgi listesi</button><button class="btn ghost sm" data-act="mbBilgiAc">Ne gerekli?</button></div>';
+  if (!o.liste.length) return '<section class="card pad mb-kart ok" aria-label="Menü bilgileri"><p class="mb-k-h">✅ <b>Menü bilgileri tam.</b> İçindekiler, alerjen, alkol, domuz ve kalori bilgisi bütün ürünlerde var.</p>' + acts + '</section>';
+  var g = mbKalanGun(son.icerik);
+  return '<section class="card pad mb-kart' + (g !== null && g <= 30 ? ' acil' : '') + '" aria-label="Menü bilgileri"><p class="mb-k-h">🧾 <b>Menü bilgileri</b> · Tarım ve Orman Bakanlığı zorunluluğu</p><ul class="mb-k-l">' +
+    (o.b ? '<li><b class="num">' + adet(o.b) + '</b> <span>üründe içindekiler, alerjen, alkol ya da domuz bilgisi eksik</span> · ' + mbSonHtml(son.icerik) + '</li>' : '') +
+    (o.e ? '<li><b class="num">' + adet(o.e) + '</b> <span>üründe kalori eksik</span> · ' + mbSonHtml(son.enerji) + '</li>' : '') + '</ul>' + acts + '</section>';
+}
+SHEET.mbEksik = function(){
+  var o = mbOzet(), b = U.busy.mbToplu;
+  var h = shBas('Eksik menü bilgileri') + '<div class="sh-body">';
+  if (!o.liste.length) return h + '<div class="note-box">✅ Bütün ürünlerin bilgileri tam.</div></div>';
+  h += '<p class="tip-txt">Düzenlemek için ürüne dokunun. Çok sayıda ürün için Menü › «Excel ile toplu yükle»den mevcut menünüzü indirip bilgi sütunlarını doldurabilirsiniz.</p>';
+  if (o.ae) h += '<div class="blk"><h3 class="blk-h">Toplu işaretle</h3><p class="tip-txt">Menünüzde alkol ve domuz kaynaklı bileşen içeren ürün yoksa, bu bilgisi boş olan <b class="num">' + adet(o.ae) +
+    '</b> ürünü tek seferde «İçermez» olarak işaretleyebilirsiniz. Girilmiş bilgiler değişmez.</p><button class="btn line" data-act="mbToplu"' + (b ? ' disabled' : '') + '>' + bekle('mbToplu') +
+    'Alkol ve domuz içermez olarak işaretle</button></div>';
+  h += '<ul class="mb-liste">' + o.liste.slice(0, 300).map(function(e){
+    var p = e.x.l.slice();
+    if (e.x.enerji) p.push('kalori');
+    return '<li><button class="mb-li" data-act="urunDuzenle" data-k="' + esc(e.ur.anahtar) + '"><span class="mb-li-t"><b>' + esc(e.ur.ad) + '</b><span class="muted">' + esc(e.ur.kat) + '</span></span>' +
+      '<span class="mb-li-e"><span>Eksik:</span> ' + p.map(function(x){ return '<span>' + esc(x) + '</span>'; }).join(', ') + '</span>' + ic('sag', 'sm') + '</button></li>';
+  }).join('') + '</ul>';
+  return h + '</div>';
+};
+SHEET.mbBilgi = function(){
+  var son = mbSon();
+  var satir = function(ad, a, b, bu){ return '<tr' + (bu ? ' class="bu"' : '') + '><th scope="row">' + ad + (bu ? ' <span class="mb-zor">Siz</span>' : '') + '</th><td>' + a + '</td><td>' + b + '</td></tr>'; };
+  return shBas('Menü bilgileri: ne gerekli?') + '<div class="sh-body mb-bilgi">' +
+    '<p>Tarım ve Orman Bakanlığı\'nın 17 Haziran 2026 tarihli düzenlemesine göre restoran, kafe ve pastaneler menüdeki her ürün için şunları bildirmelidir:</p>' +
+    '<ul class="mb-k-l"><li><b>İçindekiler</b> (temel bileşenler)</li><li><b>Alerjenler</b> (14 alerjen)</li><li><b>Alkol</b> ve <b>domuz kaynaklı bileşen</b> bilgisi</li><li><b>Kalori</b>: porsiyon başına enerji (kcal)</li></ul>' +
+    '<p>Alerjen, alkol ve domuz bilgisi diğer bilgilerden kolayca ayırt edilecek biçimde gösterilmelidir; YourPOS 360 bunları sipariş sayfasında ayrı ve vurgulu gösterir.</p>' +
+    '<h3 class="blk-h">Son tarihler</h3><table class="mb-tb"><thead><tr><th scope="col">İşletme</th><th scope="col">İçerik ve alerjen</th><th scope="col">Kalori</th></tr></thead><tbody>' +
+    satir('Ulusal zincirler', '1 Temmuz 2026', '1 Temmuz 2026', false) + satir('Aynı ilde 3 ve üzeri şubesi olanlar', '31 Aralık 2026', '31 Aralık 2026', son.grup === 'il3') +
+    satir('Diğer işletmeler', '31 Aralık 2026', '31 Aralık 2027', son.grup !== 'il3') + '</tbody></table>' +
+    '<h3 class="blk-h">Nerede gösterilir?</h3><ul class="mb-k-l"><li>Online siparişte (Telegram ve tarayıcı) müşteri sipariş vermeden önce ürün kartında görür; bu zorunludur.</li>' +
+    '<li>Mekânda: QR menü ya da basılı liste. «🖨️ A4 bilgi listesi» ile yazdırıp kasada bulundurabilirsiniz.</li></ul>' +
+    '<h3 class="blk-h">Karekod uyarısı</h3><p>Bilgiye karekodla ulaşılıyorsa mekânda görünür bir uyarı bulunmalıdır. QR afişlerinize ve masa QR kartlarınıza şu not kendiliğinden eklenir:</p>' +
+    '<blockquote class="mb-not">' + esc(MB_UYARI) + '</blockquote>' +
+    '<p class="tip-txt">Bilgiler sizin beyanınızdır; doğru, eksiksiz ve zamanında girmekten işletme sorumludur (Hizmet Sözleşmesi Madde 9.6). Ayrıntılar için il / ilçe tarım ve orman müdürlüğünüze danışabilirsiniz.</p></div>';
+};
+
+/* --- A4 bilgi listesi (yazdır / PDF olarak kaydet) --- */
+function mbYazdir(){
+  var g = menuGruplari('');
+  if (!g.length) return toast('Menünüzde ürün yok.', true);
+  var ad = (D.isletme && D.isletme.ad) || 'İşletme', bugun = new Date(simdi());
+  var tarih = bugun.getDate() + ' ' + MB_AYLAR[bugun.getMonth()] + ' ' + bugun.getFullYear();
+  var hucre = function(ur){
+    var m = ur.mb || {}, al = mbAlDizi(m.al);
+    var kc = ur.secenekli ? ur.satirlar.map(function(s){ var x = s.mb || {}; return x.kc !== undefined ? esc(s.sec || 'Normal') + ': ' + x.kc + ' kcal' + (x.gm ? ' (' + esc(x.gm) + ')' : '') : ''; }).filter(String).join('<br>')
+      : (function(x){ return x.kc !== undefined ? x.kc + ' kcal' + (x.gm ? '<br>' + esc(x.gm) : '') : ''; })((ur.satirlar[0] && ur.satirlar[0].mb) || {});
+    return '<tr><th scope="row">' + esc(ur.ad) + '</th><td>' + esc(m.ic || '—') + '</td><td class="al">' + (al === 'yok' ? 'Yok' : al && al.length ? al.map(mbAlAd).map(esc).join(', ') : '—') + '</td>' +
+      '<td>' + (kc || '—') + '</td><td class="' + (m.alk === 'Evet' ? 'al' : '') + '">' + (m.alk === 'Evet' ? 'İçerir' : m.alk === 'Hayır' ? 'İçermez' : '—') + '</td>' +
+      '<td class="' + (m.dmz === 'Evet' ? 'al' : '') + '">' + (m.dmz === 'Evet' ? 'İçerir' : m.dmz === 'Hayır' ? 'İçermez' : '—') + '</td></tr>';
+  };
+  var f = $('#fis');
+  f.style.setProperty('--fis-g', '190mm');
+  f.innerHTML = '<section class="fis-k mb-a4" data-ceviri="yok" lang="tr"><h1>' + esc(ad) + '</h1><p class="mb-a4-alt">İçindekiler, alerjen ve enerji (kalori) bilgileri · ' + esc(tarih) + '</p>' +
+    '<table><thead><tr><th scope="col">Ürün</th><th scope="col">İçindekiler</th><th scope="col">Alerjenler</th><th scope="col">Enerji / porsiyon</th><th scope="col">Alkol</th><th scope="col">Domuz kaynaklı</th></tr></thead>' +
+    g.map(function(k){ return '<tbody><tr class="kat"><th colspan="6" scope="rowgroup">' + esc(k.kat) + '</th></tr>' + k.urunler.map(hucre).join('') + '</tbody>'; }).join('') + '</table>' +
+    '<p class="mb-a4-not">Alerjen, alkol ve domuz kaynaklı bileşen bilgileri kalın yazılmıştır. Bilgiler işletmenin beyanıdır; alerjiniz varsa siparişten önce çalışanlarımıza danışın.</p></section>';
+  setTimeout(function(){ try { window.print(); } catch(e){ toast('Yazdırma bu cihazda açılamadı. Ekranı bilgisayardan açıp tekrar deneyin.', true); } }, 80);
+}
+
+Object.assign(ACT_EK, {
+  mbAl:function(el){ if (!SH || !SH.mb) return; urunTaslakOku(SH); var k = el.getAttribute('data-k'), l = Array.isArray(SH.mb.al) ? SH.mb.al : [];
+    var i = l.indexOf(k); if (i >= 0) l.splice(i, 1); else l.push(k);
+    SH.mb.al = MB_AL.map(function(a){ return a[0]; }).filter(function(x){ return l.indexOf(x) >= 0; }); haptic('select'); renderSheet(); },
+  mbAlYok:function(){ if (!SH || !SH.mb) return; urunTaslakOku(SH); SH.mb.al = SH.mb.al === 'yok' ? null : 'yok'; haptic('select'); renderSheet(); },
+  mbAlk:function(el){ if (!SH || !SH.mb) return; urunTaslakOku(SH); var v = el.getAttribute('data-k'); SH.mb.alk = SH.mb.alk === v ? '' : v; haptic('select'); renderSheet(); },
+  mbDmz:function(el){ if (!SH || !SH.mb) return; urunTaslakOku(SH); var v = el.getAttribute('data-k'); SH.mb.dmz = SH.mb.dmz === v ? '' : v; haptic('select'); renderSheet(); },
+  mbTurkomp:function(){ disaAc('https://turkomp.tarimorman.gov.tr/'); },
+  mbEksikAc:function(){ sheetAc({ tip:'mbEksik' }); },
+  mbBilgiAc:function(){ sheetAc({ tip:'mbBilgi' }); },
+  mbYazdir:function(){ mbYazdir(); },
+  mbToplu:function(){
+    var n = mbOzet().ae;
+    sheetAc({ tip:'onay', baslik:'Alkol ve domuz içermez', metin:'Bu bilgisi boş olan <b>' + adet(n) + ' ürün</b> «Alkol içermez» ve «Domuz kaynaklı bileşen içermez» olarak işaretlenecek. ' +
+      'Alkol ya da domuz kaynaklı bileşen içeren bir ürününüz varsa önce onu düzenleyin. Onaylıyor musunuz?', dugme:'İşaretle', busy:'mbToplu', yap:function(){
+        islem('ekMenuBilgiToplu', { alkol:'Hayır', domuz:'Hayır' }, { busy:'mbToplu' }).then(function(r){
+          if (!r) return;
+          toast(adet(r.n) + ' ürün işaretlendi');
+          if (mbOzet().liste.length) sheetAc({ tip:'mbEksik' }); else sheetKapat();
+        });
+      } });
+  }
+});
 /* ---------- zincir merkez ekranı (isletme.html?merkez=1) ----------
  * Bütün şubelerin canlı siparişleri, şube karşılaştırmalı raporlar, şubeler (aç/kapat, ekip, yeni şube, menü kopyala),
  * ortak kampanya ve ayarlar. Sipariş numaraları şubeden şubeye tekrar edebildiği için sipariş anahtarı «şube/no». */
@@ -10267,7 +10550,7 @@ function msQrYazdir(){
   f.innerHTML = '<section class="fis-k ms-qrs">' + l.map(function(m){
     var svg = '';
     try { var q = window.qrcode(0, 'M'); q.addData(m.qr); q.make(); svg = q.createSvgTag({ cellSize:4, margin:0, scalable:true }); } catch(e){ svg = ''; }
-    return '<div class="ms-qk"><div class="ms-qi">' + esc(D.isletme.ad) + '</div><div class="ms-qa">' + esc(m.ad) + '</div><div class="ms-qq">' + svg + '</div><div class="ms-qt">Menü ve sipariş için telefonunuzun kamerasıyla okutun</div></div>';
+    return '<div class="ms-qk"><div class="ms-qi">' + esc(D.isletme.ad) + '</div><div class="ms-qa">' + esc(m.ad) + '</div><div class="ms-qq">' + svg + '</div><div class="ms-qt">Menü ve sipariş için telefonunuzun kamerasıyla okutun</div>' + (mbZorunlu() ? '<div class="ms-qn">' + esc(MB_UYARI) + '</div>' : '') + '</div>';
   }).join('') + '</section>';
   setTimeout(function(){ try { window.print(); } catch(e){} }, 80);
 }
@@ -14673,6 +14956,15 @@ function demoMock(rol){
   if (!DEMO_MARKET && !DEMO_HIZMET) MENU.push({ id:'U016', kat:'Menüler', ad:'Dürüm Menü', sec:'', fiyat:190, aktif:true, sira:MENU.length + 1, gorsel:'', aciklama:'Tavuk döner dürüm, patates ve soğuk içecek',
     oz:{ gr:[{ a:'Menüde', min:2, max:2, sb:1, s:[{ a:'Tavuk Döner Dürüm' }, { a:'Patates Kızartması' }] },
       { a:'Soğuk içecek', min:1, max:1, s:[{ a:'Kola' }, { a:'Ayran' }, { a:'Fanta' }, { a:'Ice Tea', f:5 }, { a:'Limonata', f:10 }] }], not:1 } });
+  // 1.31 örnek menü bilgileri (bir kısmı eksik bırakıldı: eksik listesi görünsün)
+  var DEMO_MB = {
+    U001:{ ic:'Lavaş (buğday unu), tavuk döner, domates, turşu, mayonez (yumurta)', al:'gluten,yumurta,hardal', alk:'Hayır', dmz:'Hayır', kc:520, gm:'250 g' },
+    U002:{ ic:'Lavaş (buğday unu), dana döner, soğan', al:'gluten', alk:'Hayır', dmz:'Hayır', kc:610, gm:'250 g' }, U012:{ ic:'Lavaş (buğday unu), dana döner, soğan', al:'gluten', alk:'Hayır', dmz:'Hayır', kc:900, gm:'375 g' },
+    U004:{ ic:'Dana döner, pide (buğday unu), tereyağı, yoğurt, domates sosu', al:'gluten,sut', alk:'Hayır', dmz:'Hayır', kc:850 }, U013:{ ic:'Dana döner, pide (buğday unu), tereyağı, yoğurt, domates sosu', al:'gluten,sut', alk:'Hayır', dmz:'Hayır', kc:1250 },
+    U005:{ ic:'Yoğurt, su, tuz', al:'sut', alk:'Hayır', dmz:'Hayır', kc:60, gm:'200 ml' }, U014:{ ic:'Yoğurt, su, tuz', al:'sut', alk:'Hayır', dmz:'Hayır', kc:90, gm:'300 ml' },
+    U007:{ ic:'İçme suyu', al:'yok', alk:'Hayır', dmz:'Hayır', kc:0, gm:'500 ml' }, U010:{ ic:'Patates, ayçiçek yağı, tuz', al:'yok', kc:365, gm:'150 g' }
+  };
+  if (!DEMO_MARKET && !DEMO_HIZMET) MENU.forEach(function(u){ if (DEMO_MB[u.id]) u.mb = JSON.parse(JSON.stringify(DEMO_MB[u.id])); });
   function tamAd(u){ return u.sec ? u.ad + ' (' + u.sec + ')' : u.ad; }
   var AYAR = { SaatKontrol:false, CalismaSaatleri:{ 1:'11:00-22:00', 2:'11:00-22:00', 3:'11:00-22:00', 4:'11:00-22:00', 5:'11:00-23:00', 6:'11:00-23:00', 7:'' }, IleriSiparis:DEMO_HIZMET, IsletmeAdi:DEMO_MARKET ? 'Örnek Bakkal' : DEMO_HIZMET ? 'Usta Tesisat' : 'Örnek Dönerci', Telefon:'02161234567', Enlem:40.9871, Boylam:29.0285, HazirlikSuresiDk:20, IptalSuresiDk:3,
     KarsilamaMesaji:'Hoş geldiniz! 🍽️ Telegram üzerinden kolayca sipariş verebilirsiniz.', SiparisAlimi:true, YolKatsayisi:1.3 };
@@ -15053,6 +15345,14 @@ function demoMock(rol){
         if (rs) { y.resim = rs; y.resimUrl = FOTO[rs] || ''; }
         var oz = u.oz === undefined ? (eski[0] && eski[0].oz) : u.oz;
         if (oz) y.oz = JSON.parse(JSON.stringify(oz));
+        var e0 = eski[0] && eski[0].mb, eR = eski.filter(function(e){ return e.id === id; })[0], m2 = {};   // 1.31 menü bilgileri
+        var mbg = u.mb ? { ic:u.mb.ic, al:Array.isArray(u.mb.al) ? u.mb.al.join(',') : u.mb.al, alk:u.mb.alk, dmz:u.mb.dmz } : e0 ? { ic:e0.ic, al:e0.al, alk:e0.alk, dmz:e0.dmz } : {};
+        Object.keys(mbg).forEach(function(k){ if (mbg[k]) m2[k] = mbg[k]; });
+        var kx = u.secenekler && u.secenekler.length ? x : u;
+        var kc = kx.kc !== undefined ? kx.kc : (eR && eR.mb ? eR.mb.kc : undefined), gm = kx.gm !== undefined ? kx.gm : (eR && eR.mb ? eR.mb.gm : '');
+        if (kc !== undefined && kc !== '') m2.kc = Number(kc);
+        if (gm) m2.gm = gm;
+        if (Object.keys(m2).length) y.mb = m2;
         var gun = u.gunler !== undefined ? u.gunler : (eski[0] && eski[0].gun);
         if (gun && gun.length) y.gun = gun.slice();
         var gp = u.stok ? String(u.stok.gunluk || '').trim() : (eski[0] && eski[0].stok ? String(eski[0].stok.gunluk === null ? '' : eski[0].stok.gunluk) : '');
@@ -15070,6 +15370,11 @@ function demoMock(rol){
       return { ok:true, id:id, url:FOTO[id] };
     },
     ekUrunSil:function(d){ var ids = d.ids || []; MENU = MENU.filter(function(x){ return ids.indexOf(x.id) < 0; }); return { ok:true, menu:kopya(MENU), urunLimiti:LIMIT }; },
+    ekMenuBilgiToplu:function(){
+      var n = {};
+      MENU.forEach(function(x){ var m = x.mb || {}, ch = false; if (!m.alk) { m.alk = 'Hayır'; ch = true; } if (!m.dmz) { m.dmz = 'Hayır'; ch = true; } if (ch) { x.mb = m; n[x.kat + '|' + x.ad] = 1; } });
+      return { ok:true, n:Object.keys(n).length, menu:kopya(MENU) };
+    },
     ekAyarlar:function(){ return { ok:true, ayarlar:kopya(AYAR), kurallar:kopya(KURAL), odemeler:kopya(ODEME) }; },
     ekBildirim:function(d){ BEN.bildirim = d.tg; return { ok:true, bildirim:d.tg }; },
     ekStok:function(d){
