@@ -318,6 +318,20 @@ details.ek summary{cursor:pointer;color:var(--link);font-weight:700;min-height:4
 .belge-guncel .degisen{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.45}
 .belge-guncel .degisen li{margin:6px 0}
 .rehber-btn{margin-top:10px}
+/* ---------- 1.28 fiyat: KDV, yıllık ödeme, kurucu üye ---------- */
+.kr-bant{background:color-mix(in srgb,#f59e0b 14%,var(--card,#fff));border:1px solid color-mix(in srgb,#f59e0b 45%,transparent);border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:15px}
+.yl-not{margin:10px 2px 0}
+.donem{display:flex;flex-direction:column;gap:8px;margin:14px 0 12px}
+.dn-b{font-size:15px}
+.dn-seg{display:flex;width:100%;gap:4px;padding:4px;border-radius:14px;background:var(--field-bg);border:1px solid var(--field-line)}
+.dn-seg button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;line-height:1.2;border:0;border-radius:10px;background:transparent;color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.dn-seg button small{font-size:12.5px;font-weight:600;color:var(--sub)}
+.dn-seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent);box-shadow:var(--shadow)}
+.dn-seg button[aria-pressed=true] small{color:var(--on-accent);opacity:.9}
+.dn-seg button:disabled{cursor:default}
+.dn-seg button:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.kr-dur{margin:12px 0 0}
+.paket .fiyat small{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -585,22 +599,55 @@ function geriDugmesi(){
 
 /* --- tanıtım --- */
 // pakete dahil modüller: var olanlar ✓, olmayanlar üstü çizili (eski sunucu bilgi göndermezse gösterilmez)
-var PAKET_OZ_AD = [['tabldot', 'Tabldot satışı'], ['tezgah', 'Tezgâh siparişi ve numaratör'], ['garson', 'Garson ve masa siparişi'], ['qrmasa', 'Masa QR siparişi'], ['muhasebe', 'Ön muhasebe']];
+var PAKET_OZ_AD = [['tabldot', 'Tabldot satışı'], ['tezgah', 'Tezgâh siparişi ve numaratör'], ['garson', 'Garson ve masa siparişi'], ['qrmasa', 'Masa QR siparişi'],
+  ['hazirlik', 'Bar ve nargile ekranı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama'], ['hediye', 'Sanal hediyeler ve mekân sahnesi'],
+  ['sureli', 'Süreli alanlar (PlayStation, bilardo)'], ['muhasebe', 'Ön muhasebe']];
+/* ---------- 1.28 fiyat bilgisi: KDV, yıllık ödeme, kurucu üye ---------- */
+function fyt(){ return (D && D.fiyat) || (durum() && durum().fiyat) || {}; }
+function kdvYazi(){ return fyt().kdvDahil === false ? '+ KDV' : 'KDV dahil'; }
+function kurucuBant(){
+  var k = fyt().kurucu, d = durum();
+  if (!k || !(k.kalan > 0) || (d && d.kurucu && !d.kurucu.aday)) return '';
+  return '<div class="kr-bant" role="note">🎉 <b>Kurucu üye fırsatı:</b> ilk ' + adet(k.ay) + ' aylık ücretinizde %' + adet(k.yuzde) + ' indirim · kalan kontenjan <b class="num">' + adet(k.kalan) + '</b></div>';
+}
+function yillikNot(){
+  var f = fyt();
+  return f.yillik ? '<p class="tip yl-not">📅 Yıllık öderseniz <b>' + adet(f.yillikAy) + ' ay öder, 12 ay kullanırsınız</b>' + (f.yillikAy < 12 ? ' (' + adet(12 - f.yillikAy) + ' ay hediye)' : '') + '. Fiyatlar ' + kdvYazi() + '.</p>' : '';
+}
+function donemHtml(d){
+  var dn = d.donem;
+  if (!dn || d.paket.kod === 'SUBE' || !(d.paket.ucret > 0) || (!dn.acik && dn.secili !== 'yillik')) return '';
+  var y = dn.secili === 'yillik', u = d.paket.ucret, b = S.busy.donem;
+  var not = y ? (dn.suAn === 'yillik' ? 'Yıllık döneminiz <b>' + esc(dn.bitis) + '</b> tarihine kadar sürer; bu sürede aylık ücret alınmaz.' : 'Bir sonraki çekimde ' + adet(dn.ay) + ' aylık ücret düşülür, 12 ay ücret alınmaz.')
+    : dn.suAn === 'yillik' ? 'Yıllık döneminiz <b>' + esc(dn.bitis) + '</b> tarihinde bitince aylık ödemeye geçilir.'
+    : 'Yıllık öderseniz ' + adet(dn.ay) + ' ay öder, 12 ay kullanırsınız' + (dn.ay < 12 ? ' (' + adet(12 - dn.ay) + ' ay hediye)' : '') + '.';
+  return '<div class="donem"><b class="dn-b">Ödeme dönemi</b><div class="seg dn-seg" role="group" aria-label="Ödeme dönemi">' +
+    '<button type="button" data-act="donem" data-k="aylik" aria-pressed="' + !y + '"' + (b ? ' disabled' : '') + '>Aylık<small>' + tl(u) + ' / ay</small></button>' +
+    '<button type="button" data-act="donem" data-k="yillik" aria-pressed="' + y + '"' + (b || !dn.acik ? ' disabled' : '') + '>Yıllık<small>' + tl(u * dn.ay) + ' / 12 ay</small></button></div>' +
+    '<p class="tip" role="status">' + (b ? bekle(true) : '') + not + '</p></div>';
+}
+function kurucuDurumHtml(d){
+  var k = d.kurucu;
+  if (!k) return '';
+  if (k.aktif && k.kalan > 0) return '<div class="okbox kr-dur">🎉 <span><b>Kurucu üye #' + adet(k.no) + '</b> · kalan ' + adet(k.kalan) + ' aylık ücretinizde %' + adet(k.yuzde) + ' indirim</span></div>';
+  if (k.aday) return '<div class="info kr-dur">🎉 <b>Kurucu üye fırsatı:</b> ilk ücretli çekiminizden başlayarak ' + adet(k.ay) + ' aylık ücretinizde %' + adet(k.yuzde) + ' indirim uygulanır.</div>';
+  return '';
+}
 function pkOzHtml(p){
   if (!p || !p.oz) return '';
   var v = PAKET_OZ_AD.filter(function(x){ return p.oz[x[0]] !== false; }), y = PAKET_OZ_AD.filter(function(x){ return p.oz[x[0]] === false; });
   return v.map(function(x){ return '<li>' + x[1] + '</li>'; }).join('') + y.map(function(x){ return '<li class="pk-yok"><span class="sr">Yok: </span>' + x[1] + '</li>'; }).join('');
 }
 function paketKartlari(secili, mevcut, ozelKart){
-  return '<div class="paketler" role="radiogroup" aria-label="Paketler">' + (D.paketler || []).map(function(p, i){
+  return kurucuBant() + '<div class="paketler" role="radiogroup" aria-label="Paketler">' + (D.paketler || []).map(function(p, i){
     return '<button class="paket" type="button" role="radio" aria-checked="' + (secili === p.kod) + '" data-act="paketSec" data-k="' + esc(p.kod) + '">' +
       (p.ozel ? '<span class="rozet ozelr">✨ Size özel</span>' : i === 1 ? '<span class="rozet">En çok tercih edilen</span>' : '') +
-      '<span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span><ul>' +
-      (p.sube ? '<li><b>' + adet(p.sube) + ' şube</b> · tek bot · merkez ekranı</li>' : '') +
+      '<span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay · ' + kdvYazi() + '</small></span><ul>' +
+      (p.sube ? '<li><b>' + adet(p.sube) + ' şube</b> · tek bot · merkez ekranı</li>' : '') + (p.sube && p.ekSube ? '<li>Ek şube: aylık ' + tl(p.ekSube) + '</li>' : '') +
       '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' : 'Sınırsız sipariş') + '</li>' +
       '<li>' + (p.sube ? 'Şube başına ' : '') + adet(p.ekip) + ' ekip üyesi (personel + kurye)</li><li>Sipariş başına kesinti yok</li>' + pkOzHtml(p) + '</ul>' +
       (mevcut === p.kod ? '<span class="simdi">Şu anki paketiniz</span>' : '') + '</button>';
-  }).join('') + (ozelKart ? ozelPaketKarti() : '') + '</div>';
+  }).join('') + (ozelKart ? ozelPaketKarti() : '') + '</div>' + yillikNot();
 }
 function tanitimEkrani(){
   var gun = D.denemeGun || 14, bv = D.basvuru;
@@ -752,10 +799,11 @@ function panelEkrani(){
       return '<li class="kur' + (x.ok ? ' ok' : '') + '"><span class="n" aria-hidden="true">' + (x.ok ? '✓' : i + 1) + '</span><div class="d"><b>' + esc(x.ad) + '</b><span>' + esc(x.alt) + '</span></div>' +
         (x.dugme ? '<button class="btn sm ' + (x.ok ? 'line' : 'pri') + '" data-act="' + x.dugme[0] + '" data-k="' + esc(x.dugme[1]) + '">' + x.dugme[2] + '</button>' : '') + '</li>';
     }).join('') + '</ol>' + (k.menu ? '' : '<button class="btn ghost" data-act="sablon">' + ic('gonder') + 'Excel şablonunu Telegram\'a gönder</button>') + videoDugme('menu', 'Menü nasıl eklenir? Videoyu izleyin') + '</section>';
-  h += '<section class="card" id="paket"><h2>Paketiniz: ' + esc(d.paket.ad) + (d.paket.ozel ? ' <span class="ozel-pill">✨ Size özel</span>' : '') + '</h2><p class="tip">' + tl(d.paket.ucret) + ' / ay · sipariş başına kesinti yok' +
+  h += '<section class="card" id="paket"><h2>Paketiniz: ' + esc(d.paket.ad) + (d.paket.ozel ? ' <span class="ozel-pill">✨ Size özel</span>' : '') + '</h2><p class="tip">' + tl(d.paket.ucret) + ' / ay · ' + kdvYazi() + ' · sipariş başına kesinti yok' +
     (d.paket.asim ? ' · haftalık sınırı aşan her sipariş ' + tl(d.paket.asim) : '') + '</p><div class="kullanim">' +
     kullanim('Ürün', d.kullanim.urun, d.paket.urun) + kullanim('Bu hafta sipariş', d.kullanim.hafta, d.paket.hafta) + kullanim('Ekip (personel + kurye)', d.kullanim.ekip, d.paket.ekip) +
-    '</div><button class="btn line block" data-act="paketDegis">Paketi değiştir</button></section></div>';
+    '</div>' + (d.ekSube && d.ekSube.adet ? '<p class="tip">Ek şube: <b class="num">' + adet(d.ekSube.adet) + '</b> × ' + tl(d.ekSube.ucret) + ' / ay</p>' : '') +
+    kurucuDurumHtml(d) + donemHtml(d) + '<button class="btn line block" data-act="paketDegis">Paketi değiştir</button></section></div>';
   h += '<div class="grid2">' + odemeKarti(d);
   var b = d.bilgi || {};
   var kol = isKoluBul(d.isKolu);
@@ -786,7 +834,8 @@ function odemeKarti(d){
   else if (hs.bekleme) h += '<div class="note" role="alert">⏳ Bakiyeniz <b class="num">' + tl(hs.eksik) + '</b> eksik. ' + hs.bekleme.kalanGun + ' gün içinde yüklenmezse sipariş alımı durur.</div>';
   else if (!hs.yeterli) h += '<div class="note">Sonraki çekim için <b class="num">' + tl(hs.eksik) + '</b> eksik. Siparişleriniz kesilmesin diye çekim gününden önce yükleyin.</div>';
   if (hs.ilkOdeme) h += '<dl class="kv"><dt>İlk aylık ücret</dt><dd class="num">' + tl(hs.tutar) + '</dd></dl>';
-  else if (!hs.ucretsiz) h += '<dl class="kv"><dt>' + (d.deneme && d.deneme.kalanGun > 0 ? 'Deneme bitişi' : 'Sonraki çekim') + '</dt><dd class="num">' + esc(hs.sonrakiCekim || '-') + ' · ' + tl(hs.tutar) + '</dd>' +
+  else if (!hs.ucretsiz) h += '<dl class="kv"><dt>' + (d.deneme && d.deneme.kalanGun > 0 ? 'Deneme bitişi' : 'Sonraki çekim') + '</dt><dd class="num">' + esc(hs.sonrakiCekim || '-') + ' · ' + tl(hs.tutar) + (hs.yillik ? ' <span class="muted">(yıllık)</span>' : '') + '</dd>' +
+    (hs.kurucuTL ? '<dt>Kurucu üye indirimi</dt><dd class="num">−' + tl(hs.kurucuTL) + '</dd>' : '') + (hs.ekSubeTL ? '<dt>Ek şube</dt><dd class="num">' + tl(hs.ekSubeTL) + '</dd>' : '') +
     (hs.asim ? '<dt>Aşım</dt><dd class="num">' + adet(hs.asim) + ' sipariş · ' + tl(hs.asimTL) + '</dd>' : '') + '</dl>';
   if (o.kart) h += kartOdemeHtml(d, hs);
   if (o.havale !== false) h += '<div class="havale"><b>' + (o.kart ? 'ya da Havale / EFT ile yükleyin' : 'Havale / EFT ile yükleyin') + '</b><dl class="kv"><dt>Açıklama</dt><dd class="num">' + esc(o.kod) +
@@ -938,7 +987,7 @@ function talepKutusu(kisa){
   if (t.durum !== 'teklif' || !t.paket) return '';
   var p = t.paket, b = S.busy.teklif ? ' disabled' : '';
   return '<section class="card teklif" id="teklif"><h2>✨ Size özel paket teklifi</h2><p class="tip">Talep ' + esc(t.no) + ' · ' + esc(String(t.tarih || '').slice(0, 10)) + ' · istediğiniz: ' + ozIhtiyacYazi(t) + '</p>' +
-    '<div class="tk-ust"><span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay</small></span></div>' +
+    '<div class="tk-ust"><span class="ad">' + esc(p.ad) + '</span><span class="fiyat">' + tl(p.ucret) + ' <small>/ ay · ' + kdvYazi() + '</small></span></div>' +
     '<ul class="tk-l"><li>' + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'Haftada ' + adet(p.hafta) + ' sipariş' + (p.asim ? ' (aşan her sipariş ' + tl(p.asim) + ')' : '') : 'Sınırsız sipariş') + '</li>' +
     '<li>' + (p.ekip ? adet(p.ekip) + ' ekip üyesi (personel + kurye)' : 'Sınırsız ekip') + '</li><li>Sipariş başına kesinti yok</li>' + pkOzHtml(p) + '</ul>' + (p.aciklama ? '<p class="tip">' + esc(p.aciklama) + '</p>' : '') +
     '<div class="row"><button class="btn line" data-act="teklifRet"' + b + '>İstemiyorum</button><button class="btn pri" data-act="teklifKabul"' + b + '>' + bekle(S.busy.teklif) +
@@ -959,7 +1008,7 @@ function ozOneriHtml(){
     (SH.hata && !SH.alan ? '<div class="err" role="alert">' + esc(SH.hata) + '</div>' : '');
   var p = o.paket, mevcut = durum() && durum().paket.kod === p.kod;
   return '<div class="oneri"><b>👍 ' + (mevcut ? 'Şu anki paketiniz (' + esc(p.ad) + ') bu ihtiyaca yetiyor' : o.neden === 'yeter' ? 'Bu ihtiyaç için ' + esc(p.ad) + ' paketi yeterli' : 'İhtiyacınız ' + esc(p.ad) + ' paketine çok yakın') +
-    '</b><span>' + pkOzellik(p) + ' · ' + tl(p.ucret) + ' / ay</span>' +
+    '</b><span>' + pkOzellik(p) + ' · ' + tl(p.ucret) + ' / ay · ' + kdvYazi() + '</span>' +
     (i.hafta > p.hafta && p.hafta ? '<span>Haftalık sınır aşılırsa sipariş alımı durmaz; yalnız aşan siparişler için ' + tl(p.asim || 0) + ' alınır.</span>' : '') + '</div>';
 }
 function ozFootHtml(){
@@ -1142,6 +1191,16 @@ var ACT = {
     else telegramAc('https://t.me/share/url?url=' + encodeURIComponent(b.link) + '&text=' + encodeURIComponent(durum().ad + ' artık Telegram\'da! Menümüze göz atıp kolayca sipariş verebilirsiniz.'));
   },
   paketDegis:function(){ sheetAc({ tip:'paket', sec:durum().paket.kod }); },
+  donem:function(el){
+    var k = el.getAttribute('data-k'), d = durum();
+    if (!d || !d.donem || S.busy.donem || d.donem.secili === k) return;
+    S.busy.donem = true; ciz();
+    call('uyDonem', { b:d.id, donem:k }).then(function(r){
+      S.busy.donem = false;
+      if (!r || !r.ok) { ciz(); toast((r && r.hata) || 'Ödeme dönemi değiştirilemedi.'); return; }
+      durumAl(r); ciz(); toast(k === 'yillik' ? 'Yıllık ödemeye geçtiniz' : 'Aylık ödemeye döndünüz');
+    });
+  },
   paketKaydet:function(){
     S.busy.paket = true; sheetCiz();
     call('uyPaket', { b:durum().id, paket:SH.sec }).then(function(r){
@@ -1222,7 +1281,8 @@ function kartOdemeHtml(d, hs){
   if (KO.tutar === '') KO.tutar = String(Math.min(lim, Math.max(en, oneri || en)));
   var sec = [];
   if (Number(hs.eksik) > 0) sec.push(['Eksik tutar', Math.ceil(hs.eksik)]);
-  if (Number(hs.tutar) > 0) { sec.push(['1 aylık', Math.ceil(hs.tutar)]); sec.push(['3 aylık', Math.ceil(hs.tutar) * 3]); }
+  if (Number(hs.tutar) > 0 && hs.yillik) sec.push(['Yıllık ücret', Math.ceil(hs.tutar)]);
+  else if (Number(hs.tutar) > 0) { sec.push(['1 aylık', Math.ceil(hs.tutar)]); sec.push(['3 aylık', Math.ceil(hs.tutar) * 3]); }
   sec = sec.filter(function(x, i){ return x[1] >= en && x[1] <= lim && sec.findIndex(function(y){ return y[1] === x[1]; }) === i; });
   var h = '<div class="kart-ode"><b>💳 Kartla ödeyin</b><p class="tip">Kredi ya da banka kartınızla Shopier\'in güvenli ödeme sayfasında ödersiniz. Ödeme onaylanınca bakiyenize <b>kendiliğinden</b> eklenir.</p>';
   var bekleyen = (o.kartlar || []).filter(function(x){ return x.durum === 'Onay bekliyor'; });
@@ -1411,9 +1471,12 @@ function belgeGuncelKarti(){
 /* ---------- önizleme (?demo=1): örnek verilerle, sunucuya gitmeden ---------- */
 function uyeDemo(hal){
   var Q0 = new URLSearchParams(location.search);
-  var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:200, urun:50, hafta:500, ekip:3, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:false, qrmasa:false, muhasebe:false } },
-    { kod:'STANDART', ad:'Standart', ucret:300, urun:150, hafta:1500, ekip:8, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:false } },
-    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:400, urun:1000, hafta:5000, ekip:20, asim:1, aciklama:'', oz:{ tabldot:true, tezgah:true, garson:true, qrmasa:true, muhasebe:true } }];
+  var OZ0 = { tabldot:true, tezgah:true, garson:false, qrmasa:false, hazirlik:false, sohbet:false, hediye:false, sureli:false, muhasebe:false };
+  var oz = function(o){ return Object.assign({}, OZ0, o); };
+  var PAKET = [{ kod:'BASLANGIC', ad:'Başlangıç', ucret:890, urun:150, hafta:150, ekip:3, asim:5, aciklama:'Paket servis ve gel-al için', oz:oz({}) },
+    { kod:'STANDART', ad:'Standart', ucret:1390, urun:400, hafta:400, ekip:8, asim:5, aciklama:'Masa servisi olan kafe ve restoranlar için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, hediye:true }) },
+    { kod:'PROFESYONEL', ad:'Profesyonel', ucret:1990, urun:1000, hafta:0, ekip:20, asim:0, aciklama:'Nargile, PlayStation, bilardo; yoğun ve eğlence mekânları için', oz:oz({ garson:true, qrmasa:true, hazirlik:true, sohbet:true, hediye:true, sureli:true, muhasebe:true }) }];
+  var FIYAT = { kdvDahil:true, yillik:true, yillikAy:10, kurucu:{ yuzde:30, ay:6, kalan:37 } };
   var IS_KOLLARI = [{"grup":"yemek","ad":"Yeme · içme","liste":[{"k":"restoran","ad":"Restoran","e":"🍽️"},{"k":"lokanta","ad":"Lokanta / Ev yemekleri","e":"🍲"},{"k":"kebap","ad":"Kebap / Döner / Izgara","e":"🌯"},{"k":"pide","ad":"Pide / Lahmacun","e":"🫓"},{"k":"pizza","ad":"Pizza / Burger / Fast food","e":"🍕"},{"k":"balik","ad":"Balık restoranı","e":"🐟"},{"k":"cigkofte","ad":"Çiğ köfte","e":"🥙"},{"k":"kahvalti","ad":"Kahvaltı / Börek / Simit","e":"🍳"},{"k":"kafe","ad":"Kafe / Kahveci","e":"☕"},{"k":"pastane","ad":"Pastane / Fırın","e":"🥐"},{"k":"tatli","ad":"Tatlıcı / Dondurma","e":"🍨"},{"k":"bar","ad":"Bar / Pub","e":"🍺"},{"k":"catering","ad":"Catering / Toplu yemek","e":"🍱"},{"k":"diger_yemek","ad":"Diğer yeme-içme","e":"🍴"}]},{"grup":"urun","ad":"Market · dükkân","liste":[{"k":"market","ad":"Market / Süpermarket","e":"🛒"},{"k":"bakkal","ad":"Bakkal / Büfe / Tekel","e":"🏪"},{"k":"manav","ad":"Manav / Meyve-sebze","e":"🥦"},{"k":"kasap","ad":"Kasap / Şarküteri","e":"🥩"},{"k":"kuruyemis","ad":"Kuruyemiş / Kahve / Lokum","e":"🥜"},{"k":"su","ad":"Su / Tüp bayii","e":"💧"},{"k":"aktar","ad":"Aktar / Organik ürünler","e":"🌿"},{"k":"hirdavat","ad":"Hırdavat / Nalbur","e":"🔧"},{"k":"elektrik","ad":"Elektrik malzemeleri / Aydınlatma","e":"💡"},{"k":"zuccaciye","ad":"Züccaciye / Milyoncu / Ev gereçleri","e":"🧺"},{"k":"yapi","ad":"Boya / Yapı market","e":"🪣"},{"k":"kirtasiye","ad":"Kırtasiye / Kitap","e":"✏️"},{"k":"cicek","ad":"Çiçekçi","e":"💐"},{"k":"petshop","ad":"Pet shop / Mama","e":"🐾"},{"k":"kozmetik","ad":"Kozmetik / Parfümeri","e":"💄"},{"k":"elektronik","ad":"Telefon / Elektronik","e":"📱"},{"k":"giyim","ad":"Giyim / Ayakkabı","e":"👕"},{"k":"oyuncak","ad":"Oyuncak / Bebek ürünleri","e":"🧸"},{"k":"diger_urun","ad":"Diğer ürün satışı","e":"🛍️"}]},{"grup":"hizmet","ad":"Eve hizmet · usta","liste":[{"k":"tesisat","ad":"Su tesisatı / Sıhhi tesisat","e":"🚿"},{"k":"elektrikci","ad":"Elektrikçi","e":"⚡"},{"k":"marangoz","ad":"Marangoz / Mobilya ustası","e":"🪚"},{"k":"boya","ad":"Boya / Badana","e":"🎨"},{"k":"temizlik","ad":"Ev / Ofis temizliği","e":"🧹"},{"k":"hali","ad":"Halı / Koltuk yıkama","e":"🛋️"},{"k":"klima","ad":"Klima / Kombi servisi","e":"❄️"},{"k":"beyazesya","ad":"Beyaz eşya / Teknik servis","e":"🔌"},{"k":"cilingir","ad":"Çilingir","e":"🔑"},{"k":"camci","ad":"Camcı / PVC / Cam balkon","e":"🪟"},{"k":"nakliyat","ad":"Nakliyat / Taşıma","e":"🚚"},{"k":"tamir","ad":"Bilgisayar / Telefon tamiri","e":"💻"},{"k":"terzi","ad":"Terzi / Kuru temizleme","e":"🧵"},{"k":"bahce","ad":"Bahçe / Peyzaj","e":"🌳"},{"k":"ilaclama","ad":"İlaçlama / Haşere","e":"🪲"},{"k":"kuafor","ad":"Kuaför / Berber (eve servis)","e":"💇"},{"k":"oto","ad":"Oto yıkama / Oto servis","e":"🚗"},{"k":"diger_hizmet","ad":"Diğer hizmet","e":"🛠️"}]}];
   var TUR = [{ k:'restoran', ad:'Restoran' }, { k:'kafe', ad:'Kafe' }, { k:'pastane', ad:'Pastane / Fırın' }, { k:'market', ad:'Bakkal / Market' }, { k:'diger', ad:'Diğer' }];
   var BELGE = { hizmet:'Hizmet (Üyelik) Sözleşmesi', kvkk:'KVKK Aydınlatma Metni', veri:'Veri İşleme Sözleşmesi' };
@@ -1425,7 +1488,8 @@ function uyeDemo(hal){
       bilgi:{ yetkili:'Hasan Kaya', telefon:'0532 111 22 33', eposta:'hasan@lezzet.com', il:'Ankara', ilce:'Çankaya', adres:'Kızılay Mah. Atatürk Blv. No: 5', faturaUnvani:'', vergiDairesi:'', vergiNo:'' },
       odeme:{ kod:'K7M2QX', iban:Q0.get('kart') === 'yalniz' ? '' : 'TR00 0000 0000 0000 0000 0000 00', alici:Q0.get('kart') === 'yalniz' ? '' : 'YourPOS 360',
         havale:Q0.get('kart') !== 'yalniz', kart:Q0.get('kart') !== '0', yontem:Q0.get('kart') === '0' ? 'iban' : Q0.get('kart') === 'yalniz' ? 'shopier' : 'ikisi', enAz:10, kartlar:[] },
-      hesap:hesapYap(), satinTalep:null,
+      hesap:hesapYap(), satinTalep:null, fiyat:FIYAT, donem:{ secili:'aylik', suAn:'aylik', acik:true, ay:10, bitis:'' },
+      kurucu:{ aktif:false, aday:true, kalan:6, yuzde:30, ay:6 }, ekSube:{ adet:0, tl:0, ucret:0 },
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t], tarih:'06.10.2026 21:14', surum:'1.0', ozet:'a1b2c3d4e5f6' }; }) };
   }
   // ?odeme=durdu | bekle | tamam | ilk : bakiye kartının hallerini göstermek için · ?onay=0 : başvuru onayı kapalı (eski hemen üyelik)
@@ -1437,7 +1501,7 @@ function uyeDemo(hal){
   var BV = hal === 'basvuru' ? { no:'B-1001', tur:'deneme', durum:'bekliyor', ad:'Lezzet Dürüm', tarih:'06.10.2026 21:14', telefon:'0532 111 22 33' } : null;
   function hesapYap(){
     var b = OD === 'tamam' ? 600 : OD === 'durdu' || OD === 'bekle' ? 120 : 0;
-    return { bakiye:b, sonrakiCekim:'20.10.2026', tutar:200, yuklemeSiniri:9999, asim:0, asimTL:0, yeterli:b >= 200, eksik:Math.max(0, 200 - b), ucretsiz:false,
+    return { bakiye:b, sonrakiCekim:'20.10.2026', tutar:623, kurucuTL:267, yuklemeSiniri:9999, asim:0, asimTL:0, yeterli:b >= 623, eksik:Math.max(0, 623 - b), ucretsiz:false,
       bekleme:OD === 'bekle' ? { kalanGun:2 } : null, durduruldu:OD === 'durdu' || OD === 'ilk', ilkOdeme:OD === 'ilk', satinAlinabilir:OD !== 'ilk' && OD !== 'tamam',
       hareketler:b ? [{ tarih:'06.10.2026 21:30', tur:'Yükleme', tutar:b, bakiye:b, aciklama:'Havale/EFT' }] : [] };
   }
@@ -1446,7 +1510,7 @@ function uyeDemo(hal){
   function kopya(x){ return JSON.parse(JSON.stringify(x)); }
   function hata(k, m, alan){ return { ok:false, kod:k, hata:m, alan:alan }; }
   var islem = {
-    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PKL), paketTalebi:TALEP ? kopya(TALEP) : null, turler:TUR, isKollari:IS_KOLLARI, denemeGun:14,
+    uyBaslat:function(){ return { ok:true, kullanici:{ id:'7000', ad:'Hasan Kaya', kullanici:'hasan' }, isletmeler:kopya(ISL), paketler:kopya(PKL), fiyat:FIYAT, paketTalebi:TALEP ? kopya(TALEP) : null, turler:TUR, isKollari:IS_KOLLARI, denemeGun:14,
       videolar:[{ k:'uyelik', ad:'YourPOS 360\'a nasıl üye olunur?', url:'https://www.instagram.com/' }, { k:'bot', ad:'Telegram\'da kendi botunuzu oluşturma', url:'https://www.instagram.com/' },
         { k:'menu', ad:'Menü ve ürünleri ekleme', url:'https://www.instagram.com/' }], anaBot:'yourpos360_bot',
       belgeler:Object.keys(BELGE).map(function(t){ return { tur:t, ad:BELGE[t] }; }), destek:'destek@yourpos360.com',
@@ -1487,6 +1551,13 @@ function uyeDemo(hal){
       if (/^0+:/.test(d.token)) return hata('TOKEN', 'Telegram bu anahtarı kabul etmedi. BotFather\'dan anahtarı yeniden kopyalayın.');
       DUR.bot = { bagli:true, kullanici:'lezzet_durum_bot', link:'https://t.me/lezzet_durum_bot' }; DUR.kurulum.bot = true;
       return { ok:true, bot:'lezzet_durum_bot', durum:kopya(DUR) };
+    },
+    uyDonem:function(d){
+      var y = d.donem === 'yillik', u = DUR.paket.ucret, k = DUR.kurucu && (DUR.kurucu.aday || DUR.kurucu.aktif) ? Math.min(DUR.kurucu.kalan, y ? 12 : 1) * u * 0.3 : 0;
+      DUR.donem.secili = y ? 'yillik' : 'aylik';
+      DUR.hesap.tutar = Math.round(u * (y ? 10 : 1) - k); DUR.hesap.kurucuTL = Math.round(k); DUR.hesap.yillik = y;
+      DUR.hesap.yeterli = DUR.hesap.bakiye >= DUR.hesap.tutar; DUR.hesap.eksik = Math.max(0, DUR.hesap.tutar - DUR.hesap.bakiye);
+      return { ok:true, durum:kopya(DUR) };
     },
     uyPaket:function(d){
       var p = PKL.filter(function(x){ return x.kod === d.paket; })[0];

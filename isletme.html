@@ -1563,6 +1563,8 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .tb-oz{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin:0;font-size:15px}
 .tb-oz .num{color:var(--sub);font-weight:700}
 .tb-oz .muted{color:var(--hint);font-size:14px}
+/* ---------- 1.28 alt menü: uzun adlar ---------- */
+@media (max-width:420px){ #tabs .tab > span:not(.cnt){white-space:normal;text-overflow:clip;line-height:1.1;text-align:center;font-size:11.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical} }
 </style>
 </head>
 <body>
@@ -2206,7 +2208,7 @@ function renderTabs(){
     var bende = D.siparisler.filter(function(o){ return o.kod === 'O' && benim(o); }).length;
     t = [['hazir', hzm() ? 'Planlı' : 'Hazır', 'kutu', hazir], ['bende', 'Bende', 'kurye', bende], ['bugun', 'Bugün', 'tikDaire', 0]];
   } else {
-    t = [['siparis', 'Siparişler', 'fis', sayac('Y')]].concat(kasaAcik() ? [['kasa', 'Kasa', 'kasa', 0]] : []).concat([['menu', menuAdi(), 'menu', 0]]);
+    t = [['siparis', 'Sipariş durumu', 'fis', sayac('Y')]].concat(kasaAcik() ? [['kasa', 'Sipariş al', 'kasa', 0]] : []).concat([['menu', menuAdi(), 'menu', 0]]);
     if (sahip()) t.push(['rapor', 'Raporlar', 'rapor', 0], ['ekip', 'Ekip', 'ekip', 0], ['ayar', 'Ayarlar', 'ayar', 0]);
   }
   var aktif = kurye() ? U.ktab : U.tab;
@@ -5827,11 +5829,13 @@ SHEET.mzRSube = function(s){
 
 /* --- şubeler --- */
 function mzSubeEkrani(){
-  var z = D.zincir || {}, bg = mzBugun(), acik = mzAcikSubeler().length, dolu = z.limit && acik >= z.limit;
+  var z = D.zincir || {}, bg = mzBugun(), acik = mzAcikSubeler().length, dolu = z.limit && acik >= z.limit && !z.ekSube;   // 1.28: ek şube ücretliyse sınır aşılabilir
   var h = '<div class="scr"><section class="card pad mz-paket"><div class="mz-pk-t"><div><div class="blk-h">Zincir paketi</div><div class="big">' + esc(z.paket || 'Zincir') + '</div>' +
     '<div class="tip-txt"><b class="num">' + acik + ' / ' + (z.limit || '—') + '</b> şube açık' + (z.bot ? ' · bot @' + esc(z.bot) : '') + '</div></div>' +
     '<button class="btn pri" data-act="mzYeniSube"' + (dolu ? ' disabled' : '') + '>' + ic('arti', 'sm') + 'Yeni şube</button></div>' +
-    (dolu ? '<p class="tip-txt">Paketinizin şube sınırı doldu. Daha fazla şube için YourPOS 360\'a yazın.</p>' : '') + '</section>';
+    (dolu ? '<p class="tip-txt">Paketinizin şube sınırı doldu. Daha fazla şube için YourPOS 360\'a yazın.</p>' : '') +
+    (z.ekSube ? '<p class="tip-txt">Paketinizde ' + adet(z.limit) + ' şube var' + (acik > z.limit ? ' · <b>' + adet(acik - z.limit) + ' ek şube</b>' : '') + '. Sonraki her şube aylık ' + esc(z.ekSubeYazi || tl(z.ekSube)) +
+      '; dönemin kalan günleri şube açılınca bakiyeden düşülür.</p>' : '') + '</section>';
   h += '<div class="mz-subeler">' + (D.subeler || []).map(function(s){
     var d = mzSubeDurumu(s), b = bg[s.b] || { siparis:0, ciro:0, acik:0 }, bA = U.busy['mzAlim:' + s.b];
     return '<section class="card mz-sube' + (s.kapali ? ' kapali' : '') + '"><div class="mz-s-bas"><div class="mz-s-ad"><h2>' + esc(s.ad) +
@@ -6659,9 +6663,9 @@ function ynPkEkrani(){
   h += l.map(function(p){
     return '<section class="card pad yn-pk' + (p.aktif ? '' : ' pasif') + '"><div class="yn-bas"><div><h2 class="yn-bv-ad">' + esc(p.ad) + ' <span class="muted">· ' + esc(p.kod) + '</span></h2>' +
       '<p class="mz-durum ' + (p.aktif ? 'ok' : 'off') + '"><span class="dot" aria-hidden="true"></span>' + (p.aktif ? 'Satışta' : 'Satışta değil') + '</p></div>' +
-      '<div class="yn-pk-f"><b class="num">' + tl(p.ucret) + '</b><span class="muted">/ay</span></div></div>' +
+      '<div class="yn-pk-f"><b class="num">' + tl(p.ucret) + '</b><span class="muted">/ay · ' + ynKdv() + '</span></div></div>' +
       '<ul class="yn-pk-oz"><li>' + adet(p.urun) + ' ürün</li><li>' + (p.hafta ? 'haftada ' + adet(p.hafta) + ' sipariş' : 'sınırsız sipariş') + '</li><li>' +
-      (p.ekip ? adet(p.ekip) + ' ekip üyesi' : 'sınırsız ekip') + '</li>' + (p.asim ? '<li>aşan sipariş başı ' + tl(p.asim) + '</li>' : '') + (p.sube ? '<li><b>' + p.sube + ' şube</b> (zincir)</li>' : '') + '</ul>' + ynPkOzHtml(p) +
+      (p.ekip ? adet(p.ekip) + ' ekip üyesi' : 'sınırsız ekip') + '</li>' + (p.asim ? '<li>aşan sipariş başı ' + tl(p.asim) + '</li>' : '') + (p.sube ? '<li><b>' + p.sube + ' şube</b> (zincir)' + (p.ekSube ? ' · ek şube ' + tl(p.ekSube) + '/ay' : '') + '</li>' : '') + '</ul>' + ynPkOzHtml(p) +
       (p.aciklama ? '<p class="tip-txt">' + esc(p.aciklama) + '</p>' : '') +
       '<div class="yn-bas"><span class="tip-txt">' + (p.kullanan ? '<b>' + p.kullanan + '</b> işletme kullanıyor' : 'Kullanan yok') + '</span>' +
       '<button class="btn line sm" data-act="ynPkDuzenle" data-k="' + esc(p.kod) + '">' + ic('kalem', 'sm') + 'Düzenle</button></div></section>';
@@ -6695,9 +6699,10 @@ SHEET.ynPk = function(s){
   };
   var h = shBas(yeni ? 'Yeni paket' : esc(p.ad) + ' paketi') + '<div class="sh-body"><form class="frm" data-form="ynPk" id="ynPkForm">' +
     (yeni ? alan('pkKod', 'Paket kodu', p.kod, 'büyük harf, ör. KAMPANYA') : '') +
-    alan('pkAd', 'Paketin adı', p.ad, 'üyeler görür') + '<div class="two">' + alan('pkUcret', 'Aylık ücret (TL)', p.ucret, '', 'sayi') + alan('pkUrun', 'Ürün sınırı', p.urun, '', 'sayi') + '</div>' +
+    alan('pkAd', 'Paketin adı', p.ad, 'üyeler görür') + '<div class="two">' + alan('pkUcret', 'Aylık ücret (TL)', p.ucret, ynKdv(), 'sayi') + alan('pkUrun', 'Ürün sınırı', p.urun, '', 'sayi') + '</div>' +
     '<div class="two">' + alan('pkHafta', 'Haftalık sipariş', p.hafta, '0 = sınırsız', 'sayi') + alan('pkEkip', 'Ekip üyesi', p.ekip, '0 = sınırsız', 'sayi') + '</div>' +
     '<div class="two">' + alan('pkAsim', 'Aşım ücreti (TL)', p.asim, 'sınırı aşan sipariş başı', 'sayi') + alan('pkSube', 'Şube sayısı', p.sube, '0 = zincir değil', 'sayi') + '</div>' +
+    alan('pkEkSube', 'Ek şube ücreti (TL / ay)', p.ekSube || '', 'zincirde sınırı aşan her şube · boş = sınır aşılamaz', 'sayi') +
     alan('pkSira', 'Sıra', p.sira, 'listede kaçıncı', 'sayi') + alan('pkAciklama', 'Kısa açıklama', p.aciklama, 'üyeler görür') +
     ynPkOzFormu(p) +
     '<button class="opt" type="button" role="switch" aria-checked="' + (p.aktif !== false ? 'true' : 'false') + '" data-act="ynPkAktif"><span class="o-main">Satışta' +
@@ -7018,7 +7023,7 @@ function ynYoklamaTam(){
 }
 function ynPkOku(st){
   var v = function(id){ var e = $('#' + id); return e ? e.value : undefined; };
-  ['pkKod:kod', 'pkAd:ad', 'pkUcret:ucret', 'pkUrun:urun', 'pkHafta:hafta', 'pkEkip:ekip', 'pkAsim:asim', 'pkSube:sube', 'pkSira:sira', 'pkAciklama:aciklama'].forEach(function(x){
+  ['pkKod:kod', 'pkAd:ad', 'pkUcret:ucret', 'pkUrun:urun', 'pkHafta:hafta', 'pkEkip:ekip', 'pkAsim:asim', 'pkSube:sube', 'pkEkSube:ekSube', 'pkSira:sira', 'pkAciklama:aciklama'].forEach(function(x){
     var p = x.split(':'), d = v(p[0]);
     if (d !== undefined) st.p[p[1]] = d;
   });
@@ -7064,7 +7069,7 @@ document.addEventListener('submit', function(e){
     var p = sp.p;
     sp.hata = '';
     islem('ynPaket', { yeni:!sp.kod, paket:{ kod:sp.kod || String(p.kod || '').trim().toUpperCase(), ad:p.ad, ucret:p.ucret, urun:p.urun, hafta:p.hafta, ekip:p.ekip, asim:p.asim,
-      sube:p.sube, sira:p.sira, aciklama:p.aciklama, aktif:p.aktif !== false, oz:Object.assign(paketOzHepsi(), p.oz || {}) } }, { busy:'ynPaket' }).then(function(r){
+      sube:p.sube, ekSube:p.ekSube, sira:p.sira, aciklama:p.aciklama, aktif:p.aktif !== false, oz:Object.assign(paketOzHepsi(), p.oz || {}) } }, { busy:'ynPaket' }).then(function(r){
       if (!r) return;
       D.paketler = r.paketler;
       if (r.paketOz) D.paketOz = r.paketOz;
@@ -9065,20 +9070,20 @@ var GENIS_NAV = window.matchMedia ? matchMedia('(min-width: 900px)') : { matches
 if (GENIS_NAV.addEventListener) GENIS_NAV.addEventListener('change', function(){ if (D) { renderTabs(); renderMain(); } });
 function moduller(){
   if (garson()) return [['masa', 'Masalar', 'masa', msRozet(), 'Servis']].concat(yt('sp_masa') ? [['siparis', 'Mutfak', 'fis', 0, 'Servis']] : [])
-    .concat(kasaAcik() && yt('kasa') ? [['kasa', 'Kasa', 'kasa', 0, 'Servis']] : []);
+    .concat(kasaAcik() && yt('kasa') ? [['kasa', 'Sipariş al', 'kasa', 0, 'Servis']] : []);
   var l = [], erp = erpVar();
   if (sahip() || yt('rapor')) l.push(['ozet', 'Özet', 'ozet', 0, 'Genel']);
-  if (!spHicYok()) l.push(GENIS_NAV.matches ? ['siparis', 'Siparişler (' + spAcikSay('tumu') + ')', 'fis', 0, 'Satış', '', spToplamRozet() > 0]
-    : ['siparis', 'Siparişler', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme; parantezde açık sipariş sayısı
-  if (kmBirlesik()) l.push(['kasa', 'Kasa', 'kasa', msRozet(), 'Satış']);   // 1.27: masalar kasanın sekmesi
+  if (!spHicYok()) l.push(GENIS_NAV.matches ? ['siparis', 'Sipariş durumu (' + spAcikSay('tumu') + ')', 'fis', 0, 'Satış', '', spToplamRozet() > 0]
+    : ['siparis', 'Sipariş durumu', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme; parantezde açık sipariş sayısı
+  if (kmBirlesik()) l.push(['kasa', 'Sipariş al', 'kasa', msRozet(), 'Satış']);   // 1.27: masalar kasanın sekmesi
   else {
     if (masaSekmesi() && yt('masa')) l.push(['masa', 'Masalar', 'masa', msRozet(), 'Satış']);
-    if (kasaAcik() && yt('kasa')) l.push(['kasa', 'Kasa', 'kasa', 0, 'Satış']);
+    if (kasaAcik() && yt('kasa')) l.push(['kasa', 'Sipariş al', 'kasa', 0, 'Satış']);
   }
   if (yt('menu')) l.push(['menu', menuAdi(), 'menu', 0, 'Ürünler']);
   if (erp) l = l.concat(erpModuller().filter(function(x){ return yt(ERP_YETKI[x[0]] || 'rapor'); }));   // ön muhasebe: sahip ve müdür (yetkisi olan bölümler)
   else if (sahip() || yt('rapor')) l.push(['rapor', 'Raporlar', 'rapor', 0, 'İşletme']);
-  if (!l.length) l.push(['siparis', 'Siparişler', 'fis', 0, 'Satış']);
+  if (!l.length) l.push(['siparis', 'Sipariş durumu', 'fis', 0, 'Satış']);
   if (sahip()) l.push(['ekip', 'Ekip', 'ekip', 0, 'İşletme'], ['ayar', 'Ayarlar', 'ayar', 0, 'İşletme']);
   return l;
 }
@@ -9671,8 +9676,8 @@ function msAyarHtml(){
   if (hzm() || !D.isletme) return '';
   if (!paketOzVar('garson')) return '<section class="card pad frm"><h2 class="frm-h">Masalar ve garson</h2>' + paketYokNotu('Garson ve masa siparişi') + '</section>';
   var a = masaAyar(), b = U.busy.msAyarSw, qrVar = paketOzVar('qrmasa');
-  var sw = function(k, acik, ad, alt){ return '<button class="opt" type="button" role="switch" aria-checked="' + acik + '" data-act="msAyarSw" data-k="' + k + '"' + (b ? ' disabled' : '') + '><span class="o-main">' + ad + '<span class="o-sub">' + alt + '</span></span><span class="tgl" aria-hidden="true"></span></button>'; };
-  return '<section class="card pad frm"><h2 class="frm-h">Masalar ve garson</h2>' +
+  var sw = function(k, acik, ad, alt){ if (msPkYok(k)) return ''; return '<button class="opt" type="button" role="switch" aria-checked="' + acik + '" data-act="msAyarSw" data-k="' + k + '"' + (b ? ' disabled' : '') + '><span class="o-main">' + ad + '<span class="o-sub">' + alt + '</span></span><span class="tgl" aria-hidden="true"></span></button>'; };
+  return '<section class="card pad frm"><h2 class="frm-h">Masalar ve garson</h2>' + msPkNot(a) +
     sw('acik', !!a.acik, 'Masa modülü', 'Masalar sekmesi: garsonlar telefonundan masaya sipariş girer, mutfağa gönderir; hesap kasada ya da garsonda kapanır.') +
     (a.acik ? (qrVar ? sw('qr', !!a.qr, 'Masadan QR ile sipariş', 'Müşteri masadaki QR\'ı okutur, garsonun verdiği 4 haneli masa koduyla masaya katılır, menüyü görür. Sipariş için Telegram\'dan doğrulanıp telefonunu paylaşır.') +
       (a.qr ? sw('qrOnaysiz', !!a.qrOnaysiz, 'Doğrulanan müşterinin siparişi onaysız mutfağa gitsin', 'Kapalıysa QR siparişini garson / kasa onaylar.') +
@@ -11809,7 +11814,9 @@ function erpDemoIslemler(x){
 /* ---------- 1.18.1 paket özellikleri ---------- */
 var PAKET_OZ = [['tabldot', 'Tabldot satışı', 'Kasada tepsi / self servis satışı'], ['tezgah', 'Tezgâh siparişi', 'Sıra numaralı fiş ve numaratör ekranı'],
   ['garson', 'Garson ve masa siparişi', 'Garson uygulaması, masa planı, adisyon'], ['qrmasa', 'Masa QR siparişi', 'Müşteri masadaki QR kodu okutup sipariş verir'],
-  ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi']];
+  ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi'], ['sureli', 'Süreli alanlar', 'PlayStation, bilardo, masa tenisi gibi alanlarda süre ve ücret takibi'],
+  ['hazirlik', 'Hazırlık bölümleri', 'Bar ve nargile ekranı, bölüm yazıcısı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama', 'Masadaki müşteriler mekânda sohbet eder, birbirine ısmarlar'],
+  ['hediye', 'Sanal hediyeler ve mekân sahnesi', 'Gül, taç gibi sanal hediyeler ve TV\'de mekân sahnesi']];
 function paketOzListe(){ return D && D.paketOz && D.paketOz.length ? D.paketOz : PAKET_OZ.map(function(x){ return { k:x[0], ad:x[1], acik:x[2] }; }); }
 function paketOzHepsi(){ var o = {}; PAKET_OZ.forEach(function(x){ o[x[0]] = true; }); return o; }
 // işletmenin paketinde bu özellik var mı (eski sunucu bilgi göndermezse var sayılır)
@@ -13287,6 +13294,7 @@ function hbKatSahibi(kat, haric){
 // Ayarlar › Hazırlık bölümleri
 function hbAyarHtml(){
   if (!D.isletme || hzm() || !sahip()) return '';
+  if (!paketOzVar('hazirlik')) return '<section class="card pad frm" id="hbAyar"><h2 class="frm-h">🍳 Hazırlık bölümleri</h2>' + paketYokNotu('Hazırlık bölümleri') + '</section>';   // 1.28
   var l = hbListe();
   return '<section class="card pad frm" id="hbAyar"><h2 class="frm-h">🍳 Hazırlık bölümleri</h2>' +
     '<p class="tip-txt">Bar, nargile, tatlı gibi ayrı hazırlanan bölümleriniz varsa ekleyip kategorilerini seçin. Masaya gelen sipariş bölümlere ayrılır: her bölüm kendi fişini kendi ekranında görür, kendi yazıcısından basar, «Hazır» der; garsona ayrı ayrı haber gider.</p>' +
@@ -13557,6 +13565,15 @@ function tbEkrani(){
   return '<div class="scr" style="overflow-y:auto" data-scroll="tabldot">' + ust +
     (l.length ? '<div class="olist">' + l.map(function(o){ return siparisKarti(o, true); }).join('') + '</div>'
       : bosDurum('kasa', 'Bugün tabldot satışı yok', 'Kasada yapılan tabldot satışları mutfağa düşmez; satıldığı anda kapanır ve burada listelenir.')) + '</div>';
+}
+
+/* ---------- 1.28 paket düzeni ---------- */
+function ynKdv(){ return ynSistemDeger('FIYAT_KDV_DAHIL') === 'Hayır' ? '+ KDV' : 'KDV dahil'; }
+var MS_PK = { sohbetMasa:'sohbet', ismarla:'sohbet', sohbetMekan:'sohbet', hediye:'hediye', sahneTv:'hediye' };
+function msPkYok(k){ return !!MS_PK[k] && !paketOzVar(MS_PK[k]); }
+function msPkNot(a){
+  if (!a || !a.acik || !a.qr || !paketOzVar('qrmasa')) return '';
+  return (paketOzVar('sohbet') ? '' : paketYokNotu('Mekânda sohbet ve ısmarlama')) + (paketOzVar('hediye') || !a.hediyeHazir ? '' : paketYokNotu('Sanal hediyeler ve mekân sahnesi'));
 }
 
 /* ---------- yardımcı işlemler ---------- */
