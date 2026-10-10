@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#E8590C">
+<link rel="manifest" href="uygulama.webmanifest">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" href="ikon-192.png" type="image/png">
 <title>Restoran ekranı</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
@@ -1613,7 +1619,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'cdad479638';
+  var SURUM = '0397373871';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -5943,6 +5949,7 @@ SHEET.ses = function(){
     }).join('') + '</div>';
   };
   h += sw('sesAcKapa', SES.acik, 'Bu ekranda sipariş sesi', kurye() ? 'Hazır sipariş gelince bu cihaz çalar' : 'Yeni sipariş gelince bu cihaz çalar');
+  h += ppBolum();   // 1.30: tarayıcı bildirimi (4f_bildirim.js)
   if (SES.acik) {
     var secili = ZIL.ses === 'kendi' && !ZIL_KENDI.buf ? 'klasik' : ZIL.ses;
     h += '<div class="blk"><h3 class="blk-h">Zil sesi <span class="muted">· dokununca çalar</span></h3><div class="opt-list zil-list" role="radiogroup" aria-label="Zil sesi">' +
@@ -6043,6 +6050,90 @@ document.addEventListener('input', function(e){
     var y = $('#zilSeviyeYaz'); if (y) y.textContent = '%' + e.target.value;
   }
 });
+
+/* ---------- 1.30 · Tarayıcı bildirimi: panel kapalıyken bu cihaza yeni sipariş bildirimi ----------
+ * Panel tarayıcıda (Telegram dışında) açılan sahip, personel ve tabletler için. «Ses ve bildirim» penceresinde açılır.
+ * Bildirimi sunucu gönderir (ekPush), servis işçisi (isletme-sw.js) gösterir; dokununca panel açılır.
+ * iPhone/iPad'de yalnız ana ekrana eklenmiş sayfada çalışır (Safari kuralı). */
+var PP = { durum:'', busy:false, anahtar:'', sub:null, ilk:false, hata:'' };
+var PP_KEY = 'yourpos360-pp-' + B;
+function ppRol(){ return !!(D && !D.merkez && (D.rol === 'Sahip' || D.rol === 'Personel')); }
+function ppDestek(){ return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && (location.protocol === 'https:' || location.hostname === 'localhost'); }
+function ppIos(){ var u = navigator.userAgent || ''; return /iPad|iPhone|iPod/.test(u) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function ppAnaEkran(){ try { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; } catch(e){ return false; } }
+function ppBayt(x){ x = String(x).replace(/-/g, '+').replace(/_/g, '/'); while (x.length % 4) x += '='; var b = atob(x), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+function ppSw(){ return navigator.serviceWorker.register('isletme-sw.js', { scope:'./' }).then(function(){ return navigator.serviceWorker.ready; }); }
+function ppIzin(){ return new Promise(function(ok){ var p = Notification.requestPermission(ok); if (p && p.then) p.then(ok); }); }
+function ppCiz(){ if (SH && SH.tip === 'ses') renderSheet(); }
+function ppDurumAl(){
+  if (DEMO || inTelegram || !ppRol()) { PP.durum = inTelegram && ppRol() ? 'tg' : 'yok'; return ppCiz(); }
+  if (!ppDestek()) { PP.durum = ppIos() && !ppAnaEkran() ? 'ios' : 'yok'; return ppCiz(); }
+  if (Notification.permission === 'denied') { PP.durum = 'red'; return ppCiz(); }
+  ppSw().then(function(reg){ return reg.pushManager.getSubscription(); }).then(function(sub){
+    PP.sub = sub;
+    return call('ekPush', sub && Notification.permission === 'granted' ? { islem:'durum', abonelik:sub.toJSON() } : { islem:'anahtar' });
+  }).then(function(r){
+    if (!r || !r.ok || r.yok) { PP.durum = 'yok'; ppCiz(); return; }
+    PP.anahtar = r.anahtar || '';
+    PP.durum = r.acik ? 'acik' : 'kapali';
+    ppCiz();
+    var son = Number(LS.get(PP_KEY) || 0);
+    if (r.acik && PP.sub && Date.now() - son > 86400000) call('ekPush', { islem:'abone', abonelik:PP.sub.toJSON() }).then(function(y){ if (y && y.ok) LS.set(PP_KEY, String(Date.now())); });
+  }).catch(function(){ PP.durum = 'yok'; ppCiz(); });
+}
+function ppAc(){
+  if (PP.busy || !PP.anahtar) return;
+  PP.busy = true; PP.hata = ''; ppCiz();
+  ppIzin().then(function(izin){
+    if (izin !== 'granted') { PP.durum = izin === 'denied' ? 'red' : 'kapali'; throw null; }
+    return ppSw();
+  }).then(function(reg){
+    return reg.pushManager.getSubscription().then(function(sub){
+      return sub || reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:ppBayt(PP.anahtar) });
+    });
+  }).then(function(sub){
+    PP.sub = sub;
+    return call('ekPush', { islem:'abone', abonelik:sub.toJSON() });
+  }).then(function(r){
+    if (!r || !r.ok || !r.acik) throw new Error('abone');
+    PP.durum = 'acik'; LS.set(PP_KEY, String(Date.now()));
+    toast('Bu cihaza bildirim açık');
+  }).catch(function(e){ if (e) PP.hata = 'Bildirim açılamadı. Biraz sonra tekrar deneyin.'; }).then(function(){ PP.busy = false; ppCiz(); });
+}
+function ppKapat(){
+  if (PP.busy || !PP.sub) return;
+  PP.busy = true; ppCiz();
+  call('ekPush', { islem:'sil', abonelik:PP.sub.toJSON() }).then(function(r){
+    PP.busy = false;
+    if (r && r.ok) { PP.durum = 'kapali'; LS.del(PP_KEY); toast('Bu cihaza bildirim kapalı'); }
+    else PP.hata = 'Bildirim kapatılamadı. Biraz sonra tekrar deneyin.';
+    ppCiz();
+  });
+}
+// «Ses ve bildirim» penceresindeki bölüm
+function ppBolum(){
+  if (!PP.ilk) { PP.ilk = true; setTimeout(ppDurumAl, 0); }
+  var d = PP.durum;
+  if (!d || d === 'yok') return '';
+  var h = '<div class="blk"><h3 class="blk-h">Panel kapalıyken bildirim ' + (PP.busy ? '<span class="spin" aria-hidden="true"></span>' : '') + '</h3>';
+  if (d === 'tg') h += '<p class="tip-txt">Telegram içinde açılan ekranda Telegram mesajları gelir. Bu ekranı tarayıcıda (web girişi ya da tablet bağlantısıyla) açarsanız, panel kapalıyken de bu cihaza bildirim açabilirsiniz.</p>';
+  else if (d === 'ios') h += '<p class="tip-txt">iPhone ve iPad\'de bildirim için: Safari\'de Paylaş düğmesine dokunun → «Ana Ekrana Ekle». Sonra ekranı ana ekrandaki simgeden açıp buradan bildirimi açın.</p>';
+  else if (d === 'red') h += '<p class="tip-txt">Bu tarayıcıda bildirimlere izin verilmedi. Tarayıcı ayarlarından bu site için bildirimleri açabilirsiniz.</p>';
+  else {
+    var acik = d === 'acik';
+    h += '<button class="opt" role="switch" aria-checked="' + acik + '" data-act="ppAcKapa"' + (PP.busy || (!acik && !PP.anahtar) ? ' disabled' : '') + '>' +
+      '<span class="o-main">Bu cihaza bildirim<span class="o-sub">Yeni online sipariş gelince, panel kapalıyken ya da ekran kilitliyken de bu cihaz bildirim gösterir</span></span>' +
+      '<span class="sw" aria-hidden="true" aria-checked="' + acik + '" style="pointer-events:none"><span class="knob"></span></span></button>';
+  }
+  if (PP.hata) h += '<p class="err-txt" role="alert">' + esc(PP.hata) + '</p>';
+  return h + '</div>';
+}
+Object.assign(ACT_EK, { ppAcKapa:function(){ if (PP.durum === 'acik') ppKapat(); else ppAc(); } });
+// açık abonelik günde bir kez sessizce tazelenir (pencere açılmasa da)
+setTimeout(function ppTazele(){
+  if (!D) { setTimeout(ppTazele, 4000); return; }
+  if (!DEMO && !inTelegram && ppRol() && ppDestek() && Notification.permission === 'granted' && Date.now() - Number(LS.get(PP_KEY) || 0) > 86400000) ppDurumAl();
+}, 6000);
 /* ---------- zincir merkez ekranı (isletme.html?merkez=1) ----------
  * Bütün şubelerin canlı siparişleri, şube karşılaştırmalı raporlar, şubeler (aç/kapat, ekip, yeni şube, menü kopyala),
  * ortak kampanya ve ayarlar. Sipariş numaraları şubeden şubeye tekrar edebildiği için sipariş anahtarı «şube/no». */
@@ -6929,6 +7020,7 @@ SHEET.ynIsl = function(s){
   if (d && d.merkezUrl) h += '<button class="btn line" data-act="ynEkran" data-k="' + esc(d.merkezUrl) + '">' + ic('bina', 'sm') + 'Merkez ekranı</button>';
   h += '<button class="btn line" data-act="ynMod" data-k="kredi"' + (d ? '' : ' disabled') + '>' + ic('arti', 'sm') + 'Kredi (TL) yükle</button>';
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="paket"' + (d ? '' : ' disabled') + '>' + ic('kutu', 'sm') + 'Paket değiştir</button>';
+  if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="uzat"' + (d ? '' : ' disabled') + '>⏳ Süre uzat</button>';   // 1.30
   if (!sube) h += '<button class="btn line" data-act="ynMod" data-k="ucretsiz"' + (d ? '' : ' disabled') + '>🎁 Ücretsiz kullanım</button>';
   h += '<button class="btn line" data-act="ynMod" data-k="puan"' + (d ? '' : ' disabled') + '>⭐ Müşteri puanları</button>';
   h += '<button class="btn line" data-act="ynMod" data-k="kod"' + (d ? '' : ' disabled') + '>🔑 Kodu değiştir</button>';
@@ -7005,6 +7097,19 @@ function ynAltPencere(s, x){
         '<span class="o-sub">' + tl(p.ucret) + '/ay · ' + adet(p.urun) + ' ürün · ' + (p.hafta ? 'haftada ' + adet(p.hafta) + ' sipariş' : 'sınırsız sipariş') + (p.sube ? ' · ' + p.sube + ' şube' : '') + '</span></span></button>';
     }).join('') + '</div>' + ynBildirSw(s) + '<p class="tip-txt">Ücret farkı alınmaz; yeni ücret bir sonraki aylık çekimden itibaren uygulanır. Zincir (şubeli) pakete geçen işletme zincirin merkezi olur.</p>' + hata + '</div>' +
       '<div class="sh-foot"><button class="btn pri block" data-act="ynPaketUygula"' + (b || sec === x.paket.kod ? ' disabled' : '') + '>' + bekle('ynIslem') + 'Paketi değiştir</button></div>';
+  }
+  if (s.mod === 'uzat') {   // 1.30
+    var us = s.sure || '', uSec = [['14', '+14 gün'], ['1ay', '+1 ay'], ['3ay', '+3 ay'], ['6ay', '+6 ay'], ['1yil', '+1 yıl']];
+    var simdiDurum = x.deneme ? 'deneme bitişi <b>' + esc(gunYaz(gunKey(x.deneme), true)) + '</b>' : x.ucretsiz ? '<b>' + esc(x.ucretsiz) + '</b>' :
+      x.cekim ? (x.odeme === 'durdu' || x.odeme === 'bekleme' ? 'ücret günü geçti (<b>' + esc(gunYaz(gunKey(x.cekim), true)) + '</b>)' : 'bir sonraki ücret günü <b>' + esc(gunYaz(gunKey(x.cekim), true)) + '</b>') : '';
+    return ynGeriBas(s, 'Süre uzat') + '<div class="sh-body"><p>' + ad + (simdiDurum ? ' · şu an ' + simdiDurum : '') + '</p>' +
+      '<div class="kat-chips" role="group" aria-label="Ne kadar uzatılsın">' + uSec.map(function(g){
+        return '<button class="chip sm" type="button" data-act="ynSure" data-k="' + g[0] + '" aria-pressed="' + (us === g[0]) + '">' + g[1] + '</button>';
+      }).join('') + '</div><div class="field"><label for="ynSureInp">ya da gün sayısı yazın</label><input class="inp num" id="ynSureInp" inputmode="numeric" maxlength="4" value="' +
+      (/^\d+$/.test(us) && us !== '14' ? esc(us) : '') + '"></div>' + ynBildirSw(s) +
+      '<p class="tip-txt">Denemedeki işletmede deneme, ücretsiz kullanım hakkı olanda hakkın bitişi, ücretli işletmede bir sonraki ücret günü uzar; bu süre için ücret alınmaz. ' +
+      'Ücret günü geçmiş ya da sipariş alımı durmuş işletmenin süresi bugünden başlar ve işletme yeniden sipariş alır.</p>' + hata + '</div>' +
+      '<div class="sh-foot"><button class="btn pri block" data-act="ynSureUygula"' + (b ? ' disabled' : '') + '>' + bekle('ynIslem') + 'Süreyi uzat</button></div>';
   }
   if (s.mod === 'ucretsiz') {
     var gs = s.gun || '';
@@ -7117,7 +7222,7 @@ function ynPkEkrani(){
 // Paket formunda özellik anahtarları (fiyatı bunlara göre siz belirlersiniz)
 function ynPkOzFormu(p){
   var oz = Object.assign(paketOzHepsi(), p.oz || {});
-  return '<fieldset class="yn-pk-ozf"><legend>Pakete dahil özellikler</legend><p class="tip-txt">Kapalı özellik bu paketi kullanan işletmenin ekranında görünmez. Raporlar ve paket servis siparişi her pakette var.</p>' +
+  return '<fieldset class="yn-pk-ozf"><legend>Pakete dahil özellikler</legend><p class="tip-txt">Kapalı özellik bu paketi kullanan işletmenin ekranında görünmez. Raporlar, paket servis siparişi ve sanal hediyeler her pakette var.</p>' +
     paketOzListe().map(function(x){
       var kilit = x.k === 'qrmasa' && !oz.garson;
       return '<button class="opt" type="button" role="switch" aria-checked="' + (oz[x.k] !== false) + '" data-act="ynPkOz" data-k="' + x.k + '"><span class="o-main">' + esc(x.ad) +
@@ -7417,6 +7522,13 @@ var ACT_YN = {
     ynIslemYap({ islem:'ucretsiz', deger:v });
   },
   ynUcretsizKaldir:function(){ ynIslemYap({ islem:'ucretsiz', deger:'kapat' }); },
+  ynSure:function(el){ if (SH) { SH.sure = el.getAttribute('data-k'); var i = $('#ynSureInp'); if (i) i.value = ''; haptic('select'); renderSheet(); } },   // 1.30
+  ynSureUygula:function(){
+    if (!SH) return;
+    var el = $('#ynSureInp'), v = el && String(el.value || '').trim() ? String(el.value).trim() : SH.sure;
+    if (!v || !(/^(\d{1,2}ay|\d{1,2}yil)$/.test(v) || /^\d{1,4}$/.test(v) && Number(v) > 0 && Number(v) <= 3660)) { SH.hata = 'Bir süre seçin ya da gün sayısı yazın (en çok 3660).'; return renderSheet(); }
+    ynIslemYap({ islem:'uzat', deger:v, bildir:SH.bildir !== false });
+  },
   ynDurumUygula:function(){ if (SH) ynIslemYap({ islem:SH.mod === 'ac' ? 'ac' : 'dondur', bildir:SH.bildir !== false }); },
   ynBvKarar:function(el){
     var no = el.getAttribute('data-no'), k = el.getAttribute('data-k');
@@ -7710,6 +7822,12 @@ function ynDemoMock(){
       if (d.islem === 'kredi') { x.bakiye = Math.round((x.bakiye + Number(d.tutar)) * 100) / 100; if (x.odeme && x.bakiye >= x.paket.ucret) { x.odeme = ''; x.durum = 'Aktif'; x.hizmet = true; } m = x.ad + ' · ' + tl(Math.abs(d.tutar)) + (d.tutar > 0 ? ' eklendi' : ' düşüldü') + '\nGüncel bakiye: ' + tl(x.bakiye); }
       else if (d.islem === 'paket') { var p = PK.filter(function(y){ return y.kod === d.paket; })[0]; m = 'Paket ' + x.paket.ad + ' → ' + p.ad + ' oldu.'; x.paket = { kod:p.kod, ad:p.ad, ucret:p.ucret }; }
       else if (d.islem === 'ucretsiz') { x.ucretsiz = d.deger === 'kapat' ? '' : d.deger === 'suresiz' ? 'süresiz ücretsiz' : gunYaz(gunEkle(gunKey(t0), Number(d.deger)), true) + ' tarihine kadar ücretsiz'; m = d.deger === 'kapat' ? 'Ücretsiz kullanım hakkı kaldırıldı.' : 'Ücretsiz kullanım hakkı tanımlandı.'; }
+      else if (d.islem === 'uzat') {   // 1.30
+        var ug = /^(\d+)ay$/.exec(d.deger), uy = /^(\d+)yil$/.exec(d.deger), gunN = ug ? Number(ug[1]) * 30 : uy ? Number(uy[1]) * 365 : Number(d.deger);
+        if (x.deneme) x.deneme += gunN * GUN; else x.cekim = (x.cekim && x.cekim > Date.now() ? x.cekim : Date.now()) + gunN * GUN;
+        if (x.odeme) { x.odeme = ''; x.durum = 'Aktif'; x.hizmet = true; }
+        m = x.ad + ' · +' + (ug ? ug[1] + ' ay' : uy ? uy[1] + ' yıl' : d.deger + ' gün') + ' uzatıldı. ' + (x.deneme ? 'Deneme bitişi: ' + gunYaz(gunKey(x.deneme), true) : 'Bir sonraki ücret günü: ' + gunYaz(gunKey(x.cekim), true)) + '.';
+      }
       else if (d.islem === 'dondur') { x.eski = x.durum; x.durum = 'Donduruldu'; x.hizmet = false; m = x.ad + ' donduruldu; sipariş almıyor.'; }
       else if (d.islem === 'ac') { x.durum = x.eski || 'Aktif'; x.hizmet = x.durum === 'Aktif'; m = x.ad + ' yeniden açıldı.'; }
       else if (d.islem === 'oneri') { x.oneri = !!d.deger; m = x.ad + (x.oneri ? ' artık «YourPOS 360\'ın önerisi».' : ' öneri rozeti kaldırıldı.'); }
@@ -12266,7 +12384,7 @@ var PAKET_OZ = [['tabldot', 'Tabldot satışı', 'Kasada tepsi / self servis sat
   ['garson', 'Garson ve masa siparişi', 'Garson uygulaması, masa planı, adisyon'], ['qrmasa', 'Masa QR siparişi', 'Müşteri masadaki QR kodu okutup sipariş verir'],
   ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi'], ['sureli', 'Süreli alanlar', 'PlayStation, bilardo, masa tenisi gibi alanlarda süre ve ücret takibi'],
   ['hazirlik', 'Hazırlık bölümleri', 'Bar ve nargile ekranı, bölüm yazıcısı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama', 'Masadaki müşteriler mekânda sohbet eder, birbirine ısmarlar'],
-  ['hediye', 'Sanal hediyeler ve mekân sahnesi', 'Gül, taç gibi sanal hediyeler ve TV\'de mekân sahnesi']];
+  ['sahne', 'Mekân sahnesi', 'Gecenin tacı ve en çok hediye alanlar sahnede; isterse mekândaki TV\'de']];
 function paketOzListe(){ return D && D.paketOz && D.paketOz.length ? D.paketOz : PAKET_OZ.map(function(x){ return { k:x[0], ad:x[1], acik:x[2] }; }); }
 function paketOzHepsi(){ var o = {}; PAKET_OZ.forEach(function(x){ o[x[0]] = true; }); return o; }
 // işletmenin paketinde bu özellik var mı (eski sunucu bilgi göndermezse var sayılır)
@@ -14019,11 +14137,11 @@ function tbEkrani(){
 
 /* ---------- 1.28 paket düzeni ---------- */
 function ynKdv(){ return ynSistemDeger('FIYAT_KDV_DAHIL') === 'Hayır' ? '+ KDV' : 'KDV dahil'; }
-var MS_PK = { sohbetMasa:'sohbet', ismarla:'sohbet', sohbetMekan:'sohbet', hediye:'hediye', sahneTv:'hediye' };
+var MS_PK = { sohbetMasa:'sohbet', ismarla:'sohbet', sohbetMekan:'sohbet', sahneTv:'sahne' };   // 1.30: sanal hediyeler her pakette
 function msPkYok(k){ return !!MS_PK[k] && !paketOzVar(MS_PK[k]); }
 function msPkNot(a){
   if (!a || !a.acik || !a.qr || !paketOzVar('qrmasa')) return '';
-  return (paketOzVar('sohbet') ? '' : paketYokNotu('Mekânda sohbet ve ısmarlama')) + (paketOzVar('hediye') || !a.hediyeHazir ? '' : paketYokNotu('Sanal hediyeler ve mekân sahnesi'));
+  return (paketOzVar('sohbet') ? '' : paketYokNotu('Mekânda sohbet ve ısmarlama')) + (paketOzVar('sahne') || !a.hediyeHazir ? '' : paketYokNotu('Mekân sahnesi'));
 }
 
 /* ---------- yardımcı işlemler ---------- */

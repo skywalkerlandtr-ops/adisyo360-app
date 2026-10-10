@@ -19,7 +19,7 @@
 })();
 </script>
 <style>
-/* YourPOS 360 · Yakınımdaki işletmeler (yakin.html). @yourpos360_bot → «📍 Yakınımdaki işletmeler» düğmesiyle açılır. */
+/* YourPOS 360 · Yakınımdaki işletmeler (yakin.html). @yourpos360_bot → «📍 Yakınımdaki işletmeler» düğmesiyle ya da tarayıcıda açılır (1.30). */
 :root{
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif;
   --bg2:#f1f2f6; --bg:#ffffff; --text:#0f0f0f; --hint:#8a8a8f; --sub:#5d5d63; --link:#2481cc; --sep:#e2e3e8;
@@ -136,6 +136,19 @@ main{padding:4px 16px calc(24px + var(--safe-b))}
 .pp-alt{color:var(--sub);font-size:14px;margin:2px 0 8px}
 .pp .btn{width:100%}
 
+/* 1.30: dil seçimi, dar ekranda başlık üstte tam genişlik; Arapça sağdan sola */
+.bas{flex-wrap:wrap}
+.bas-sag{display:flex;align-items:center;gap:8px;margin-left:auto}
+.dil-sel{min-height:36px;padding:4px 26px 4px 10px;font-size:14px;max-width:132px;background-color:var(--bg);border-color:var(--sep)}
+@media (max-width:430px){ .bas h1{flex:1 1 100%;font-size:21px} .bas-sag{width:100%;justify-content:space-between;margin-left:0} }
+[dir="rtl"] .sel{background-position:11px 55%,16px 55%;padding-left:32px;padding-right:12px}
+[dir="rtl"] .dil-sel{padding-left:26px;padding-right:10px}
+[dir="rtl"] .bas-sag{margin-left:0;margin-right:auto}
+[dir="rtl"] .cip .n{margin-left:0;margin-right:4px}
+[dir="rtl"] .acik-sw[aria-checked="true"] .tg::after{transform:translateX(-18px)}
+[dir="rtl"] .acik-sw .tg::after{left:auto;right:3px}
+.k-alt .btn.line{flex:none}
+
 @media (min-width:720px){
   main,.ust{max-width:760px;margin-left:auto;margin-right:auto}
   .liste{display:grid;grid-template-columns:1fr 1fr}
@@ -144,8 +157,11 @@ main{padding:4px 16px calc(24px + var(--safe-b))}
 </head>
 <body>
 <div class="ust" id="ust">
-  <div class="bas"><h1>Yakınımdaki işletmeler</h1>
-    <div class="seg" role="group" aria-label="Görünüm"><button type="button" data-act="gorunum" data-k="liste" aria-pressed="true">Liste</button><button type="button" data-act="gorunum" data-k="harita" aria-pressed="false">Harita</button></div>
+  <div class="bas"><h1 data-t="baslik">Yakınımdaki işletmeler</h1>
+    <div class="bas-sag">
+      <label class="sr" for="dilSec" data-t="dil">Dil</label><select class="sel dil-sel" id="dilSec"></select>
+      <div class="seg" role="group" aria-label="Görünüm" data-ta="gorunum"><button type="button" data-act="gorunum" data-k="liste" aria-pressed="true" data-t="liste">Liste</button><button type="button" data-act="gorunum" data-k="harita" aria-pressed="false" data-t="harita">Harita</button></div>
+    </div>
   </div>
   <div class="yer" id="yer"></div>
   <div id="filtre"></div>
@@ -167,15 +183,54 @@ var LS = {
   set:function(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 };
 function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
-var NF1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 });
-var NF = new Intl.NumberFormat('tr-TR');
-function kmYaz(k){ return k < 1 ? NF.format(Math.max(50, Math.round(k * 1000 / 50) * 50)) + ' m' : NF1.format(k) + ' km'; }
+
+/* ---------- 1.30 · dil (9 dil; seçim sipariş sayfasıyla ortak: yourpos360-dil) ---------- */
+var LANGS = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
+var LANG_NAMES = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
+var LANG_MAP = { az:'tr', ku:'tr', be:'ru', kk:'ru', ky:'ru', uz:'ru', tg:'ru', lo:'th', gl:'pt' };
+var LOCALE = { tr:'tr-TR', en:'en-GB', ru:'ru-RU', de:'de-DE', ar:'ar', es:'es-ES', th:'th-TH', vi:'vi-VN', pt:'pt-BR' };
+var LANG_KEY = 'yourpos360-dil';
+var CEV = {"ui":{"baslik":{"en":"Businesses near me","ru":"Компании рядом со мной","de":"Anbieter in meiner Nähe","ar":"أنشطة تجارية قريبة مني","es":"Negocios cerca de mí","th":"ร้านใกล้ฉัน","vi":"Địa điểm gần tôi","pt":"Negócios perto de mim"},"gorunum":{"en":"View","ru":"Вид","de":"Ansicht","ar":"طريقة العرض","es":"Vista","th":"มุมมอง","vi":"Chế độ xem","pt":"Visualização"},"liste":{"en":"List","ru":"Список","de":"Liste","ar":"قائمة","es":"Lista","th":"รายการ","vi":"Danh sách","pt":"Lista"},"harita":{"en":"Map","ru":"Карта","de":"Karte","ar":"خريطة","es":"Mapa","th":"แผนที่","vi":"Bản đồ","pt":"Mapa"},"dil":{"en":"Language","ru":"Язык","de":"Sprache","ar":"اللغة","es":"Idioma","th":"ภาษา","vi":"Ngôn ngữ","pt":"Idioma"},"konumaGore":{"en":"Based on your location","ru":"По вашему местоположению","de":"Nach Ihrem Standort","ar":"حسب موقعك","es":"Según tu ubicación","th":"ตามตำแหน่งของคุณ","vi":"Theo vị trí của bạn","pt":"Pela sua localização"},"ilSec":{"en":"Choose province","ru":"Выбрать провинцию","de":"Provinz wählen","ar":"اختيار الولاية","es":"Elegir provincia","th":"เลือกจังหวัด","vi":"Chọn tỉnh","pt":"Escolher província"},"ilAdi":{"en":"{il} province","ru":"Провинция {il}","de":"Provinz {il}","ar":"ولاية {il}","es":"Provincia de {il}","th":"จังหวัด {il}","vi":"Tỉnh {il}","pt":"Província de {il}"},"konumKullan":{"en":"Use my location","ru":"Использовать моё местоположение","de":"Meinen Standort verwenden","ar":"استخدم موقعي","es":"Usar mi ubicación","th":"ใช้ตำแหน่งของฉัน","vi":"Dùng vị trí của tôi","pt":"Usar minha localização"},"yerBos":{"en":"Search by your location or choose a province","ru":"Ищите по местоположению или выберите провинцию","de":"Suchen Sie nach Standort oder wählen Sie eine Provinz","ar":"ابحث باستخدام موقعك أو اختر ولاية","es":"Busca con tu ubicación o elige una provincia","th":"ค้นหาด้วยตำแหน่งของคุณหรือเลือกจังหวัด","vi":"Tìm theo vị trí của bạn hoặc chọn tỉnh","pt":"Pesquise pela sua localização ou escolha uma província"},"mesafe":{"en":"Distance","ru":"Расстояние","de":"Entfernung","ar":"المسافة","es":"Distancia","th":"ระยะทาง","vi":"Khoảng cách","pt":"Distância"},"isTuru":{"en":"Business type","ru":"Категория","de":"Branche","ar":"نوع النشاط","es":"Tipo de negocio","th":"ประเภทร้าน","vi":"Loại hình","pt":"Tipo de negócio"},"tumu":{"en":"All","ru":"Все","de":"Alle","ar":"الكل","es":"Todos","th":"ทั้งหมด","vi":"Tất cả","pt":"Todos"},"tur":{"en":"Type","ru":"Тип","de":"Typ","ar":"النوع","es":"Tipo","th":"ประเภท","vi":"Loại","pt":"Tipo"},"tumTurler":{"en":"All types","ru":"Все типы","de":"Alle Typen","ar":"كل الأنواع","es":"Todos los tipos","th":"ทุกประเภท","vi":"Tất cả loại","pt":"Todos os tipos"},"acikOlanlar":{"en":"Open now","ru":"Открыто сейчас","de":"Jetzt geöffnet","ar":"مفتوحة الآن","es":"Abiertos ahora","th":"เปิดอยู่ตอนนี้","vi":"Đang mở cửa","pt":"Abertos agora"},"hizmetAl":{"en":"Book a service","ru":"Заказать услугу","de":"Service buchen","ar":"اطلب خدمة","es":"Pedir servicio","th":"จองบริการ","vi":"Đặt dịch vụ","pt":"Agendar serviço"},"siparisVer":{"en":"Order","ru":"Заказать","de":"Bestellen","ar":"اطلب","es":"Pedir","th":"สั่งซื้อ","vi":"Đặt hàng","pt":"Fazer pedido"},"acik":{"en":"● Open","ru":"● Открыто","de":"● Geöffnet","ar":"● مفتوح","es":"● Abierto","th":"● เปิด","vi":"● Đang mở cửa","pt":"● Aberto"},"randevu":{"en":"Appointments open","ru":"Есть запись","de":"Termine buchbar","ar":"يقبل المواعيد","es":"Acepta citas","th":"รับนัดหมาย","vi":"Nhận lịch hẹn","pt":"Agendamentos disponíveis"},"ileri":{"en":"Order for later","ru":"Предзаказ","de":"Vorbestellung","ar":"طلب مسبق","es":"Pedido programado","th":"สั่งล่วงหน้า","vi":"Đặt trước","pt":"Pedido agendado"},"kapali":{"en":"● Closed now","ru":"● Сейчас закрыто","de":"● Jetzt geschlossen","ar":"● مغلق الآن","es":"● Cerrado ahora","th":"● ปิดอยู่ในขณะนี้","vi":"● Hiện đang đóng cửa","pt":"● Fechado agora"},"oneri":{"en":"YourPOS 360 pick","ru":"Выбор YourPOS 360","de":"YourPOS 360 empfiehlt","ar":"اختيار YourPOS 360","es":"Recomendado por YourPOS 360","th":"YourPOS 360 แนะนำ","vi":"YourPOS 360 đề xuất","pt":"Recomendado pelo YourPOS 360"},"hizmetAlani":{"en":"Service area {km} km","ru":"Зона обслуживания {km} км","de":"Einsatzgebiet {km} km","ar":"نطاق الخدمة {km} كم","es":"Área de servicio {km} km","th":"พื้นที่ให้บริการ {km} กม.","vi":"Phạm vi phục vụ {km} km","pt":"Área de atendimento {km} km"},"teslimatAlani":{"en":"Delivery area {km} km","ru":"Зона доставки {km} км","de":"Liefergebiet {km} km","ar":"نطاق التوصيل {km} كم","es":"Área de entrega {km} km","th":"พื้นที่จัดส่ง {km} กม.","vi":"Phạm vi giao hàng {km} km","pt":"Área de entrega {km} km"},"yolTarifi":{"en":"🧭 Directions","ru":"🧭 Маршрут","de":"🧭 Route","ar":"🧭 الاتجاهات","es":"🧭 Cómo llegar","th":"🧭 เส้นทาง","vi":"🧭 Chỉ đường","pt":"🧭 Como chegar"},"yolAria":{"en":"{ad}: directions","ru":"{ad}: маршрут","de":"{ad}: Route","ar":"{ad}: الاتجاهات","es":"{ad}: cómo llegar","th":"{ad}: เส้นทาง","vi":"{ad}: chỉ đường","pt":"{ad}: como chegar"},"tgAria":{"en":"{ad}: open in Telegram","ru":"{ad}: открыть в Telegram","de":"{ad}: in Telegram öffnen","ar":"{ad}: فتح في Telegram","es":"{ad}: abrir en Telegram","th":"{ad}: เปิดใน Telegram","vi":"{ad}: mở trong Telegram","pt":"{ad}: abrir no Telegram"},"konumAliniyor":{"en":"Getting your location…","ru":"Определяем ваше местоположение…","de":"Ihr Standort wird ermittelt…","ar":"جارٍ تحديد موقعك…","es":"Obteniendo tu ubicación…","th":"กำลังหาตำแหน่งของคุณ…","vi":"Đang lấy vị trí của bạn…","pt":"Obtendo sua localização…"},"konumMetinTg":{"en":"If Telegram asks for location access, tap «Allow». Your location is only used to calculate distance and is not saved.","ru":"Если Telegram запросит доступ к геопозиции, нажмите «Разрешить». Ваше местоположение используется только для расчёта расстояния и не сохраняется.","de":"Wenn Telegram nach Ihrem Standort fragt, tippen Sie auf «Zulassen». Ihr Standort wird nur zur Berechnung der Entfernung verwendet und nicht gespeichert.","ar":"إذا طلب Telegram إذن الوصول إلى موقعك، فاضغط «سماح». يُستخدم موقعك لحساب المسافة فقط ولا يُحفظ.","es":"Si Telegram te pide permiso de ubicación, toca «Permitir». Tu ubicación solo se usa para calcular la distancia y no se guarda.","th":"หาก Telegram ขอสิทธิ์เข้าถึงตำแหน่ง ให้แตะ «อนุญาต» ตำแหน่งของคุณใช้เพื่อคำนวณระยะทางเท่านั้นและจะไม่ถูกบันทึก","vi":"Nếu Telegram xin quyền truy cập vị trí, hãy nhấn «Cho phép». Vị trí của bạn chỉ dùng để tính khoảng cách và không được lưu lại.","pt":"Se o Telegram pedir permissão de localização, toque em «Permitir». Sua localização é usada apenas para calcular a distância e não é salva."},"konumMetinWeb":{"en":"If your browser asks for location access, tap «Allow». Your location is only used to calculate distance and is not saved.","ru":"Если браузер запросит доступ к геопозиции, нажмите «Разрешить». Ваше местоположение используется только для расчёта расстояния и не сохраняется.","de":"Wenn Ihr Browser nach Ihrem Standort fragt, tippen Sie auf «Zulassen». Ihr Standort wird nur zur Berechnung der Entfernung verwendet und nicht gespeichert.","ar":"إذا طلب متصفحك إذن الوصول إلى موقعك، فاضغط «سماح». يُستخدم موقعك لحساب المسافة فقط ولا يُحفظ.","es":"Si tu navegador te pide permiso de ubicación, toca «Permitir». Tu ubicación solo se usa para calcular la distancia y no se guarda.","th":"หากเบราว์เซอร์ขอสิทธิ์เข้าถึงตำแหน่ง ให้แตะ «อนุญาต» ตำแหน่งของคุณใช้เพื่อคำนวณระยะทางเท่านั้นและจะไม่ถูกบันทึก","vi":"Nếu trình duyệt xin quyền truy cập vị trí, hãy nhấn «Cho phép». Vị trí của bạn chỉ dùng để tính khoảng cách và không được lưu lại.","pt":"Se o seu navegador pedir permissão de localização, toque em «Permitir». Sua localização é usada apenas para calcular a distância e não é salva."},"konumYerineIl":{"en":"Choose a province instead","ru":"Выберите провинцию вместо геопозиции","de":"Stattdessen Provinz wählen","ar":"اختر ولاية بدلًا من الموقع","es":"Elige una provincia en su lugar","th":"เลือกจังหวัดแทนตำแหน่ง","vi":"Chọn tỉnh thay vì vị trí","pt":"Escolha uma província em vez disso"},"nedenIzin":{"en":"Location access wasn't allowed.","ru":"Доступ к геопозиции не разрешён.","de":"Der Standortzugriff wurde nicht erlaubt.","ar":"لم يُمنح إذن الوصول إلى الموقع.","es":"No se dio permiso de ubicación.","th":"ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง","vi":"Chưa cấp quyền truy cập vị trí.","pt":"A permissão de localização não foi concedida."},"nedenTgIzin":{"en":"Location access is turned off in Telegram.","ru":"В Telegram отключён доступ к геопозиции.","de":"Der Standortzugriff ist in Telegram deaktiviert.","ar":"إذن الموقع مُعطَّل في Telegram.","es":"El permiso de ubicación está desactivado en Telegram.","th":"การเข้าถึงตำแหน่งใน Telegram ปิดอยู่","vi":"Quyền truy cập vị trí trong Telegram đang tắt.","pt":"A permissão de localização está desativada no Telegram."},"nedenYok":{"en":"Location isn't available on this device.","ru":"На этом устройстве нельзя определить местоположение.","de":"Auf diesem Gerät ist kein Standort verfügbar.","ar":"لا يمكن تحديد الموقع على هذا الجهاز.","es":"No se puede obtener la ubicación en este dispositivo.","th":"ไม่สามารถระบุตำแหน่งบนอุปกรณ์นี้ได้","vi":"Không thể lấy vị trí trên thiết bị này.","pt":"Não é possível obter a localização neste dispositivo."},"nedenAlinamadi":{"en":"Couldn't get your location.","ru":"Не удалось определить ваше местоположение.","de":"Ihr Standort konnte nicht ermittelt werden.","ar":"تعذّر تحديد موقعك.","es":"No se pudo obtener tu ubicación.","th":"ไม่สามารถระบุตำแหน่งของคุณได้","vi":"Không lấy được vị trí của bạn.","pt":"Não foi possível obter sua localização."},"nedenZaman":{"en":"Getting your location took too long.","ru":"Не удалось вовремя определить местоположение.","de":"Der Standort konnte nicht rechtzeitig ermittelt werden.","ar":"انتهت مهلة تحديد الموقع.","es":"La ubicación tardó demasiado.","th":"ใช้เวลาระบุตำแหน่งนานเกินไป","vi":"Hết thời gian chờ lấy vị trí.","pt":"A localização demorou demais."},"hangiIl":{"en":"Which province are you searching in?","ru":"В какой провинции вы ищете?","de":"In welcher Provinz suchen Sie?","ar":"في أي ولاية تبحث؟","es":"¿En qué provincia buscas?","th":"คุณกำลังค้นหาในจังหวัดใด","vi":"Bạn đang tìm ở tỉnh nào?","pt":"Em qual província você está procurando?"},"ilIleDe":{"en":"You can also browse by province.","ru":"Вы также можете выбрать провинцию.","de":"Sie können auch nach Provinz suchen.","ar":"يمكنك أيضًا البحث باختيار ولاية.","es":"También puedes buscar por provincia.","th":"คุณยังดูตามจังหวัดได้ด้วย","vi":"Bạn cũng có thể xem theo tỉnh.","pt":"Você também pode procurar por província."},"ilListe":{"en":"We'll list the businesses in the province you choose.","ru":"Мы покажем компании в выбранной провинции.","de":"Wir zeigen Ihnen die Anbieter in der gewählten Provinz.","ar":"سنعرض الأنشطة التجارية في الولاية التي تختارها.","es":"Te mostraremos los negocios de la provincia que elijas.","th":"เราจะแสดงร้านในจังหวัดที่คุณเลือก","vi":"Chúng tôi sẽ liệt kê các địa điểm trong tỉnh bạn chọn.","pt":"Mostraremos os negócios da província que você escolher."},"il":{"en":"Province","ru":"Провинция","de":"Provinz","ar":"الولاية","es":"Provincia","th":"จังหวัด","vi":"Tỉnh","pt":"Província"},"ilSecin":{"en":"Choose a province","ru":"Выберите провинцию","de":"Wählen Sie eine Provinz","ar":"اختر ولاية","es":"Elige una provincia","th":"เลือกจังหวัด","vi":"Chọn một tỉnh","pt":"Escolha uma província"},"tgKonumAyar":{"en":"Open Telegram location settings","ru":"Открыть настройки геопозиции в Telegram","de":"Standorteinstellungen in Telegram öffnen","ar":"افتح إعدادات الموقع في Telegram","es":"Abrir ajustes de ubicación de Telegram","th":"เปิดการตั้งค่าตำแหน่งของ Telegram","vi":"Mở cài đặt vị trí của Telegram","pt":"Abrir configurações de localização do Telegram"},"konumTekrar":{"en":"📍 Try my location again","ru":"📍 Определить местоположение снова","de":"📍 Standort erneut versuchen","ar":"📍 أعد محاولة تحديد موقعي","es":"📍 Reintentar con mi ubicación","th":"📍 ลองใช้ตำแหน่งของฉันอีกครั้ง","vi":"📍 Thử lại vị trí của tôi","pt":"📍 Tentar minha localização de novo"},"listeYokB":{"en":"Couldn't load the list","ru":"Не удалось загрузить список","de":"Liste konnte nicht geladen werden","ar":"تعذّر تحميل القائمة","es":"No se pudo cargar la lista","th":"โหลดรายการไม่สำเร็จ","vi":"Không tải được danh sách","pt":"Não foi possível carregar a lista"},"tekrarDene":{"en":"Try again","ru":"Повторить","de":"Erneut versuchen","ar":"أعد المحاولة","es":"Reintentar","th":"ลองอีกครั้ง","vi":"Thử lại","pt":"Tentar novamente"},"isletmeSay":{"en":"{n} businesses","ru":"Компаний: {n}","de":"{n} Anbieter","ar":"{n} نشاط تجاري","es":"{n} negocios","th":"ร้าน {n} แห่ง","vi":"{n} địa điểm","pt":"{n} negócios"},"kmIcinde":{"en":"Within {km} km","ru":"В радиусе {km} км","de":"Im Umkreis von {km} km","ar":"ضمن {km} كم","es":"Hasta {km} km","th":"ภายใน {km} กม.","vi":"Trong vòng {km} km","pt":"Até {km} km"},"yakindanUzaga":{"en":"nearest first","ru":"сначала ближайшие","de":"nächstgelegene zuerst","ar":"الأقرب أولًا","es":"los más cercanos primero","th":"ใกล้สุดก่อน","vi":"gần nhất trước","pt":"mais próximos primeiro"},"adaGore":{"en":"A to Z","ru":"по алфавиту","de":"von A bis Z","ar":"أبجديًا","es":"de la A a la Z","th":"A ถึง Z","vi":"từ A đến Z","pt":"de A a Z"},"yakinYok":{"en":"No businesses near you yet","ru":"Рядом с вами пока нет компаний","de":"In Ihrer Nähe gibt es noch keine Anbieter","ar":"لا توجد أنشطة تجارية قريبة منك بعد","es":"Aún no hay negocios cerca de ti","th":"ยังไม่มีร้านใกล้คุณ","vi":"Chưa có địa điểm nào gần bạn","pt":"Ainda não há negócios perto de você"},"ilYok":{"en":"No businesses in {il} yet","ru":"В провинции {il} пока нет компаний","de":"In {il} gibt es noch keine Anbieter","ar":"لا توجد أنشطة تجارية في ولاية {il} بعد","es":"Aún no hay negocios en {il}","th":"ยังไม่มีร้านในจังหวัด {il}","vi":"Chưa có địa điểm nào ở tỉnh {il}","pt":"Ainda não há negócios em {il}"},"arttikca":{"en":"As more businesses join YourPOS 360, they'll appear here. You can choose another province.","ru":"Когда к YourPOS 360 подключится больше компаний, они появятся здесь. Вы можете выбрать другую провинцию.","de":"Sobald mehr Anbieter YourPOS 360 nutzen, erscheinen sie hier. Sie können eine andere Provinz wählen.","ar":"ستظهر هنا الأنشطة التجارية كلما انضم المزيد منها إلى YourPOS 360. يمكنك اختيار ولاية أخرى.","es":"A medida que más negocios se unan a YourPOS 360, aparecerán aquí. Puedes elegir otra provincia.","th":"เมื่อมีร้านที่ใช้ YourPOS 360 มากขึ้น ร้านเหล่านั้นจะแสดงที่นี่ คุณเลือกจังหวัดอื่นได้","vi":"Khi có thêm địa điểm dùng YourPOS 360, chúng sẽ hiện ở đây. Bạn có thể chọn tỉnh khác.","pt":"À medida que mais negócios usarem o YourPOS 360, eles aparecerão aqui. Você pode escolher outra província."},"kmSonucYok":{"en":"No results within {km} km","ru":"В радиусе {km} км ничего не найдено","de":"Keine Ergebnisse im Umkreis von {km} km","ar":"لا توجد نتائج ضمن {km} كم","es":"No hay resultados a menos de {km} km","th":"ไม่พบผลลัพธ์ภายใน {km} กม.","vi":"Không có kết quả trong vòng {km} km","pt":"Nenhum resultado em até {km} km"},"mesafeArtir":{"en":"Increase the distance: there are {n} businesses farther away.","ru":"Увеличьте расстояние: дальше есть ещё компании ({n}).","de":"Erhöhen Sie die Entfernung: Weiter entfernt gibt es {n} Anbieter.","ar":"زِد المسافة: يوجد {n} نشاط تجاري أبعد من ذلك.","es":"Aumenta la distancia: hay {n} negocios más lejos.","th":"เพิ่มระยะทาง: มีร้านที่ไกลออกไปอีก {n} แห่ง","vi":"Hãy tăng khoảng cách: có {n} địa điểm ở xa hơn.","pt":"Aumente a distância: há {n} negócios mais longe."},"km100":{"en":"Show up to 100 km","ru":"Показать до 100 км","de":"Bis 100 km anzeigen","ar":"اعرض حتى 100 كم","es":"Mostrar hasta 100 km","th":"แสดงถึง 100 กม.","vi":"Hiện đến 100 km","pt":"Mostrar até 100 km"},"eslesmeYok":{"en":"No businesses match this selection","ru":"По этим условиям ничего не найдено","de":"Keine Anbieter passen zu dieser Auswahl","ar":"لا توجد أنشطة تجارية تطابق هذا الاختيار","es":"Ningún negocio coincide con esta selección","th":"ไม่มีร้านที่ตรงกับตัวเลือกนี้","vi":"Không có địa điểm nào phù hợp với lựa chọn này","pt":"Nenhum negócio corresponde a esta seleção"},"filtreDegis":{"en":"Try changing the filters.","ru":"Измените фильтры.","de":"Ändern Sie die Filter.","ar":"غيّر عوامل التصفية.","es":"Cambia los filtros.","th":"ลองเปลี่ยนตัวกรอง","vi":"Hãy thay đổi bộ lọc.","pt":"Altere os filtros."},"filtreTemizle":{"en":"Clear filters","ru":"Сбросить фильтры","de":"Filter zurücksetzen","ar":"مسح عوامل التصفية","es":"Borrar filtros","th":"ล้างตัวกรอง","vi":"Xóa bộ lọc","pt":"Limpar filtros"},"puanNotAy":{"en":"⭐ Ratings are based on reviews from the last {ay} months and are shown once a business has at least {min} reviews.","ru":"⭐ Рейтинг рассчитывается по отзывам за последние {ay} мес. и показывается, когда отзывов у компании не меньше {min}.","de":"⭐ Bewertungen werden aus den Rezensionen der letzten {ay} Monate berechnet und angezeigt, sobald ein Anbieter mindestens {min} Rezensionen hat.","ar":"⭐ تُحسب التقييمات من مراجعات الأشهر الـ{ay} الأخيرة، وتظهر عندما يبلغ عدد مراجعات النشاط التجاري {min} على الأقل.","es":"⭐ Las calificaciones se calculan con las reseñas de los últimos {ay} meses y se muestran cuando un negocio tiene al menos {min} reseñas.","th":"⭐ คะแนนคำนวณจากรีวิวในช่วง {ay} เดือนที่ผ่านมา และจะแสดงเมื่อร้านมีรีวิวอย่างน้อย {min} รายการ","vi":"⭐ Điểm đánh giá được tính từ các lượt đánh giá trong {ay} tháng gần nhất và chỉ hiển thị khi một địa điểm có ít nhất {min} lượt đánh giá.","pt":"⭐ As notas são calculadas com as avaliações dos últimos {ay} meses e aparecem quando um negócio tem pelo menos {min} avaliações."},"puanNot":{"en":"⭐ Ratings are shown once a business has at least {min} reviews.","ru":"⭐ Рейтинг показывается, когда отзывов у компании не меньше {min}.","de":"⭐ Bewertungen werden angezeigt, sobald ein Anbieter mindestens {min} Rezensionen hat.","ar":"⭐ تظهر التقييمات عندما يبلغ عدد مراجعات النشاط التجاري {min} على الأقل.","es":"⭐ Las calificaciones se muestran cuando un negocio tiene al menos {min} reseñas.","th":"⭐ คะแนนจะแสดงเมื่อร้านมีรีวิวอย่างน้อย {min} รายการ","vi":"⭐ Điểm đánh giá chỉ hiển thị khi một địa điểm có ít nhất {min} lượt đánh giá.","pt":"⭐ As notas aparecem quando um negócio tem pelo menos {min} avaliações."},"oneriNot":{"en":"🏅 The «YourPOS 360 pick» badge marks businesses recommended by the YourPOS 360 team.","ru":"🏅 Значок «Выбор YourPOS 360» отмечает компании, которые рекомендует команда YourPOS 360.","de":"🏅 Das Abzeichen «YourPOS 360 empfiehlt» kennzeichnet Anbieter, die das Team von YourPOS 360 empfiehlt.","ar":"🏅 تُميّز شارة «اختيار YourPOS 360» الأنشطة التجارية التي يوصي بها فريق YourPOS 360.","es":"🏅 La insignia «Recomendado por YourPOS 360» indica los negocios que recomienda el equipo de YourPOS 360.","th":"🏅 ป้าย «YourPOS 360 แนะนำ» แสดงร้านที่ทีม YourPOS 360 แนะนำ","vi":"🏅 Huy hiệu «YourPOS 360 đề xuất» đánh dấu các địa điểm được đội ngũ YourPOS 360 đề xuất.","pt":"🏅 O selo «Recomendado pelo YourPOS 360» indica os negócios recomendados pela equipe do YourPOS 360."},"gizlilik":{"en":"🔒 Your location is only used to calculate distance and is not saved.","ru":"🔒 Ваше местоположение используется только для расчёта расстояния и не сохраняется.","de":"🔒 Ihr Standort wird nur zur Berechnung der Entfernung verwendet und nicht gespeichert.","ar":"🔒 يُستخدم موقعك لحساب المسافة فقط ولا يُحفظ.","es":"🔒 Tu ubicación solo se usa para calcular la distancia y no se guarda.","th":"🔒 ตำแหน่งของคุณใช้เพื่อคำนวณระยะทางเท่านั้นและจะไม่ถูกบันทึก","vi":"🔒 Vị trí của bạn chỉ dùng để tính khoảng cách và không được lưu lại.","pt":"🔒 Sua localização é usada apenas para calcular a distância e não é salva."},"kmGosteriliyor":{"en":"Showing businesses within {km} km","ru":"Показаны компании в радиусе {km} км","de":"Anbieter im Umkreis von {km} km werden angezeigt","ar":"عرض الأنشطة التجارية ضمن {km} كم","es":"Mostrando negocios a menos de {km} km","th":"กำลังแสดงร้านภายใน {km} กม.","vi":"Đang hiển thị địa điểm trong vòng {km} km","pt":"Mostrando negócios em até {km} km"},"siz":{"en":"You","ru":"Вы","de":"Sie","ar":"أنت","es":"Tú","th":"คุณ","vi":"Bạn","pt":"Você"},"acikK":{"en":"Open","ru":"Открыто","de":"Geöffnet","ar":"مفتوح","es":"Abierto","th":"เปิด","vi":"Đang mở cửa","pt":"Aberto"},"kapaliK":{"en":"Closed","ru":"Закрыто","de":"Geschlossen","ar":"مغلق","es":"Cerrado","th":"ปิด","vi":"Đóng cửa","pt":"Fechado"},"haritaAcilmadi":{"en":"Couldn't load the map","ru":"Не удалось открыть карту","de":"Karte konnte nicht geladen werden","ar":"تعذّر فتح الخريطة","es":"No se pudo abrir el mapa","th":"เปิดแผนที่ไม่ได้","vi":"Không mở được bản đồ","pt":"Não foi possível abrir o mapa"},"haritaMetin":{"en":"Check your internet connection. You can use the list view instead.","ru":"Проверьте подключение к интернету. Вы можете воспользоваться списком.","de":"Prüfen Sie Ihre Internetverbindung. Sie können die Listenansicht nutzen.","ar":"تحقّق من اتصالك بالإنترنت. يمكنك استخدام عرض القائمة.","es":"Revisa tu conexión a internet. Puedes usar la vista de lista.","th":"ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ คุณใช้มุมมองรายการแทนได้","vi":"Hãy kiểm tra kết nối Internet. Bạn có thể dùng chế độ danh sách.","pt":"Verifique sua conexão com a internet. Você pode usar a visualização em lista."},"sunucuHata":{"en":"The server sent an unexpected response. Please try again shortly.","ru":"Сервер вернул неожиданный ответ. Попробуйте ещё раз чуть позже.","de":"Der Server hat unerwartet geantwortet. Bitte versuchen Sie es gleich noch einmal.","ar":"أرسل الخادم استجابة غير متوقعة. حاول مرة أخرى بعد قليل.","es":"El servidor dio una respuesta inesperada. Inténtalo de nuevo en un momento.","th":"เซิร์ฟเวอร์ตอบกลับผิดปกติ โปรดลองอีกครั้งในอีกสักครู่","vi":"Máy chủ phản hồi bất thường. Vui lòng thử lại sau ít phút.","pt":"O servidor deu uma resposta inesperada. Tente de novo daqui a pouco."},"gecYanit":{"en":"The server took too long to respond. Please try again.","ru":"Сервер долго не отвечал. Попробуйте ещё раз.","de":"Der Server hat zu lange gebraucht. Bitte versuchen Sie es erneut.","ar":"تأخّر الخادم في الاستجابة. حاول مرة أخرى.","es":"El servidor tardó en responder. Inténtalo de nuevo.","th":"เซิร์ฟเวอร์ตอบสนองช้า โปรดลองอีกครั้ง","vi":"Máy chủ phản hồi chậm. Vui lòng thử lại.","pt":"O servidor demorou para responder. Tente de novo."},"agYok":{"en":"It looks like you're offline.","ru":"Похоже, нет подключения к интернету.","de":"Es scheint keine Internetverbindung zu bestehen.","ar":"يبدو أنه لا يوجد اتصال بالإنترنت.","es":"Parece que no hay conexión a internet.","th":"ดูเหมือนว่าไม่มีการเชื่อมต่ออินเทอร์เน็ต","vi":"Có vẻ như không có kết nối Internet.","pt":"Parece que não há conexão com a internet."},"listeYok":{"en":"Couldn't load the list.","ru":"Не удалось загрузить список.","de":"Die Liste konnte nicht geladen werden.","ar":"تعذّر تحميل القائمة.","es":"No se pudo cargar la lista.","th":"โหลดรายการไม่สำเร็จ","vi":"Không tải được danh sách.","pt":"Não foi possível carregar a lista."},"bekle":{"en":"Too many searches. Please try again shortly.","ru":"Слишком много запросов. Попробуйте ещё раз чуть позже.","de":"Zu viele Suchanfragen. Bitte versuchen Sie es gleich noch einmal.","ar":"عمليات بحث كثيرة جدًا. حاول مرة أخرى بعد قليل.","es":"Demasiadas búsquedas. Inténtalo de nuevo en un momento.","th":"ค้นหาบ่อยเกินไป โปรดลองอีกครั้งในอีกสักครู่","vi":"Bạn đã tìm kiếm quá nhiều lần. Vui lòng thử lại sau ít phút.","pt":"Muitas buscas seguidas. Tente de novo daqui a pouco."},"isletme":{"en":"Business","ru":"Компания","de":"Anbieter","ar":"نشاط تجاري","es":"Negocio","th":"ร้าน","vi":"Địa điểm","pt":"Negócio"},"webKapali":{"en":"Web ordering is closed right now. You can order on Telegram.","ru":"Заказ через сайт сейчас недоступен. Вы можете заказать в Telegram.","de":"Bestellungen über das Web sind gerade nicht möglich. Sie können über Telegram bestellen.","ar":"الطلب عبر الويب متوقف حاليًا. يمكنك الطلب عبر Telegram.","es":"Los pedidos por la web están cerrados ahora. Puedes pedir por Telegram.","th":"ขณะนี้ปิดรับคำสั่งซื้อทางเว็บ คุณสั่งผ่าน Telegram ได้","vi":"Hiện không nhận đặt hàng qua web. Bạn có thể đặt qua Telegram.","pt":"Os pedidos pela web estão fechados no momento. Você pode pedir pelo Telegram."}},"kol":{"restoran":{"en":"Restaurant","ru":"Ресторан","de":"Restaurant","ar":"مطعم","es":"Restaurante","th":"ร้านอาหาร","vi":"Nhà hàng","pt":"Restaurante"},"lokanta":{"en":"Lokanta / Home cooking","ru":"Локанта / Домашняя кухня","de":"Lokanta / Hausmannskost","ar":"مطعم شعبي / أكل بيتي","es":"Lokanta / Comida casera","th":"ร้านข้าวแกง / อาหารแบบบ้าน","vi":"Quán cơm / Món ăn gia đình","pt":"Lokanta / Comida caseira"},"kebap":{"en":"Kebab / Döner / Grill","ru":"Кебаб / Дёнер / Гриль","de":"Kebab / Döner / Grill","ar":"كباب / دونر / مشاوي","es":"Kebab / Döner / Parrilla","th":"เคบับ / โดเนอร์ / ปิ้งย่าง","vi":"Kebab / Döner / Đồ nướng","pt":"Kebab / Döner / Grelhados"},"pide":{"en":"Pide / Lahmacun","ru":"Пиде / Лахмаджун","de":"Pide / Lahmacun","ar":"بيدا / لحم بعجين","es":"Pide / Lahmacun","th":"พีเด / ลาห์มาจุน","vi":"Pide / Lahmacun","pt":"Pide / Lahmacun"},"pizza":{"en":"Pizza / Burger / Fast food","ru":"Пицца / Бургеры / Фастфуд","de":"Pizza / Burger / Fast Food","ar":"بيتزا / برغر / وجبات سريعة","es":"Pizza / Hamburguesas / Comida rápida","th":"พิซซ่า / เบอร์เกอร์ / ฟาสต์ฟู้ด","vi":"Pizza / Burger / Đồ ăn nhanh","pt":"Pizza / Hambúrguer / Fast food"},"balik":{"en":"Seafood restaurant","ru":"Рыбный ресторан","de":"Fischrestaurant","ar":"مطعم أسماك","es":"Restaurante de pescado","th":"ร้านอาหารทะเล","vi":"Nhà hàng hải sản","pt":"Restaurante de peixes"},"cigkofte":{"en":"Çiğ köfte","ru":"Чиг кёфте","de":"Çiğ Köfte","ar":"تشي كفتة","es":"Çiğ köfte","th":"Çiğ köfte","vi":"Çiğ köfte","pt":"Çiğ köfte"},"kahvalti":{"en":"Breakfast / Börek / Simit","ru":"Завтраки / Бёрек / Симит","de":"Frühstück / Börek / Simit","ar":"فطور / بورك / سميت","es":"Desayuno / Börek / Simit","th":"อาหารเช้า / บอเร็ก / ซิมิต","vi":"Bữa sáng / Börek / Simit","pt":"Café da manhã / Börek / Simit"},"kafe":{"en":"Café / Coffee shop","ru":"Кафе / Кофейня","de":"Café / Kaffeehaus","ar":"كافيه / مقهى","es":"Café / Cafetería","th":"คาเฟ่ / ร้านกาแฟ","vi":"Cafe / Quán cà phê","pt":"Café / Cafeteria"},"pastane":{"en":"Patisserie / Bakery","ru":"Кондитерская / Пекарня","de":"Konditorei / Bäckerei","ar":"محل حلويات / مخبز","es":"Pastelería / Panadería","th":"ร้านขนม / เบเกอรี่","vi":"Tiệm bánh ngọt / Lò bánh mì","pt":"Confeitaria / Padaria"},"tatli":{"en":"Desserts / Ice cream","ru":"Сладости / Мороженое","de":"Süßspeisen / Eis","ar":"حلويات شرقية / آيس كريم","es":"Dulces / Helados","th":"ร้านของหวาน / ไอศกรีม","vi":"Đồ ngọt / Kem","pt":"Doces / Sorvete"},"bar":{"en":"Bar / Pub","ru":"Бар / Паб","de":"Bar / Pub","ar":"بار / حانة","es":"Bar / Pub","th":"บาร์ / ผับ","vi":"Bar / Pub","pt":"Bar / Pub"},"catering":{"en":"Catering / Group meals","ru":"Кейтеринг / Корпоративное питание","de":"Catering / Großverpflegung","ar":"تموين / وجبات جماعية","es":"Catering / Comida para grupos","th":"จัดเลี้ยง / อาหารสำหรับหมู่คณะ","vi":"Catering / Suất ăn tập thể","pt":"Bufê / Refeições coletivas"},"diger_yemek":{"en":"Other food & drink","ru":"Другое: еда и напитки","de":"Sonstige Gastronomie","ar":"مأكولات ومشروبات أخرى","es":"Otros de comida y bebida","th":"อาหารและเครื่องดื่มอื่นๆ","vi":"Ăn uống khác","pt":"Outros de comida e bebida"},"market":{"en":"Grocery / Supermarket","ru":"Продуктовый / Супермаркет","de":"Lebensmittel / Supermarkt","ar":"ميني ماركت / سوبر ماركت","es":"Minimercado / Supermercado","th":"มินิมาร์ท / ซูเปอร์มาร์เก็ต","vi":"Cửa hàng thực phẩm / Siêu thị","pt":"Mercado / Supermercado"},"bakkal":{"en":"Corner shop / Kiosk / Liquor store","ru":"Магазинчик / Киоск / Алкоголь и табак","de":"Kleiner Laden / Kiosk / Spirituosen & Tabak","ar":"بقالة / كشك / تبغ ومشروبات","es":"Tienda de barrio / Kiosco / Licorería","th":"ร้านโชห่วย / คีออส / ร้านเหล้าและบุหรี่","vi":"Tạp hóa / Ki-ốt / Rượu & thuốc lá","pt":"Mercearia / Quiosque / Adega"},"manav":{"en":"Greengrocer / Fruit & veg","ru":"Овощной / Фрукты и овощи","de":"Gemüsehändler / Obst & Gemüse","ar":"محل خضار / فواكه وخضروات","es":"Verdulería / Frutas y verduras","th":"ร้านผัก / ผักและผลไม้","vi":"Hàng rau quả / Trái cây, rau củ","pt":"Hortifrúti / Frutas e verduras"},"kasap":{"en":"Butcher / Deli","ru":"Мясная лавка / Деликатесы","de":"Metzgerei / Feinkost","ar":"ملحمة / لحوم باردة وأجبان","es":"Carnicería / Charcutería","th":"ร้านเนื้อ / เดลี่","vi":"Hàng thịt / Đồ nguội","pt":"Açougue / Frios"},"kuruyemis":{"en":"Nuts & dried fruit / Coffee / Turkish delight","ru":"Орехи и сухофрукты / Кофе / Лукум","de":"Nüsse & Trockenfrüchte / Kaffee / Lokum","ar":"مكسرات / قهوة / راحة الحلقوم","es":"Frutos secos / Café / Lokum","th":"ถั่วและผลไม้แห้ง / กาแฟ / โลคุม","vi":"Hạt & trái cây sấy / Cà phê / Lokum","pt":"Castanhas / Café / Lokum"},"su":{"en":"Water / Gas cylinder dealer","ru":"Вода / Газовые баллоны","de":"Wasser / Gasflaschen","ar":"مياه / أسطوانات غاز","es":"Agua / Cilindros de gas","th":"น้ำดื่ม / ร้านแก๊ส","vi":"Nước uống / Đại lý gas","pt":"Água / Botijão de gás"},"aktar":{"en":"Herbalist / Organic products","ru":"Травы и специи / Органические продукты","de":"Kräuterladen / Bio-Produkte","ar":"عطّار / منتجات عضوية","es":"Hierbas y especias / Productos orgánicos","th":"ร้านสมุนไพร / สินค้าออร์แกนิก","vi":"Tiệm thảo dược / Sản phẩm hữu cơ","pt":"Ervas e especiarias / Produtos orgânicos"},"hirdavat":{"en":"Hardware / Tools","ru":"Хозтовары / Инструменты","de":"Eisenwaren / Werkzeug","ar":"خردوات / عِدد وأدوات","es":"Ferretería / Herramientas","th":"ร้านฮาร์ดแวร์ / เครื่องมือช่าง","vi":"Kim khí / Dụng cụ","pt":"Ferragens / Ferramentas"},"elektrik":{"en":"Electrical supplies / Lighting","ru":"Электротовары / Освещение","de":"Elektrobedarf / Beleuchtung","ar":"أدوات كهربائية / إنارة","es":"Material eléctrico / Iluminación","th":"อุปกรณ์ไฟฟ้า / โคมไฟ","vi":"Thiết bị điện / Đèn chiếu sáng","pt":"Material elétrico / Iluminação"},"zuccaciye":{"en":"Housewares / Bargain store / Home goods","ru":"Посуда / Всё по одной цене / Товары для дома","de":"Haushaltswaren / Billigladen / Wohnbedarf","ar":"أواني منزلية / محل تخفيضات / مستلزمات المنزل","es":"Bazar / Tienda económica / Artículos para el hogar","th":"เครื่องครัว / ร้านของถูก / ของใช้ในบ้าน","vi":"Đồ gia dụng / Hàng đồng giá / Vật dụng gia đình","pt":"Utilidades domésticas / Loja de 1,99 / Artigos para casa"},"yapi":{"en":"Paint / DIY store","ru":"Краски / Строительный магазин","de":"Farben / Baumarkt","ar":"دهانات / مواد بناء","es":"Pinturas / Materiales de construcción","th":"สี / วัสดุก่อสร้าง","vi":"Sơn / Vật liệu xây dựng","pt":"Tintas / Material de construção"},"kirtasiye":{"en":"Stationery / Books","ru":"Канцтовары / Книги","de":"Schreibwaren / Bücher","ar":"قرطاسية / كتب","es":"Papelería / Libros","th":"เครื่องเขียน / หนังสือ","vi":"Văn phòng phẩm / Sách","pt":"Papelaria / Livros"},"cicek":{"en":"Florist","ru":"Цветочный магазин","de":"Blumenladen","ar":"محل زهور","es":"Florería","th":"ร้านดอกไม้","vi":"Tiệm hoa","pt":"Floricultura"},"petshop":{"en":"Pet shop / Pet food","ru":"Зоомагазин / Корма","de":"Zoohandlung / Tierfutter","ar":"متجر حيوانات أليفة / طعام الحيوانات","es":"Mascotas / Alimento","th":"เพ็ทช็อป / อาหารสัตว์","vi":"Cửa hàng thú cưng / Thức ăn","pt":"Pet shop / Ração"},"kozmetik":{"en":"Cosmetics / Perfumery","ru":"Косметика / Парфюмерия","de":"Kosmetik / Parfümerie","ar":"مستحضرات تجميل / عطور","es":"Cosméticos / Perfumería","th":"เครื่องสำอาง / น้ำหอม","vi":"Mỹ phẩm / Nước hoa","pt":"Cosméticos / Perfumaria"},"elektronik":{"en":"Phones / Electronics","ru":"Телефоны / Электроника","de":"Handys / Elektronik","ar":"هواتف / إلكترونيات","es":"Celulares / Electrónica","th":"โทรศัพท์ / อิเล็กทรอนิกส์","vi":"Điện thoại / Điện tử","pt":"Celulares / Eletrônicos"},"giyim":{"en":"Clothing / Shoes","ru":"Одежда / Обувь","de":"Kleidung / Schuhe","ar":"ملابس / أحذية","es":"Ropa / Calzado","th":"เสื้อผ้า / รองเท้า","vi":"Quần áo / Giày dép","pt":"Roupas / Calçados"},"oyuncak":{"en":"Toys / Baby products","ru":"Игрушки / Детские товары","de":"Spielzeug / Babybedarf","ar":"ألعاب / مستلزمات الأطفال","es":"Juguetes / Artículos para bebé","th":"ของเล่น / ของใช้เด็ก","vi":"Đồ chơi / Đồ cho bé","pt":"Brinquedos / Artigos para bebê"},"diger_urun":{"en":"Other shops","ru":"Другие магазины","de":"Sonstige Geschäfte","ar":"متاجر أخرى","es":"Otras tiendas","th":"ร้านค้าอื่นๆ","vi":"Cửa hàng khác","pt":"Outras lojas"},"tesisat":{"en":"Plumbing / Bathroom fittings","ru":"Водопровод / Сантехника","de":"Wasserinstallation / Sanitär","ar":"سباكة / أدوات صحية","es":"Plomería / Instalaciones sanitarias","th":"ช่างประปา / สุขภัณฑ์","vi":"Sửa ống nước / Thiết bị vệ sinh","pt":"Encanador / Hidráulica"},"elektrikci":{"en":"Electrician","ru":"Электрик","de":"Elektriker","ar":"كهربائي","es":"Electricista","th":"ช่างไฟฟ้า","vi":"Thợ điện","pt":"Eletricista"},"marangoz":{"en":"Carpenter / Furniture maker","ru":"Столяр / Мастер по мебели","de":"Schreiner / Möbelbauer","ar":"نجار / صانع أثاث","es":"Carpintero / Mueblero","th":"ช่างไม้ / ช่างเฟอร์นิเจอร์","vi":"Thợ mộc / Thợ đồ gỗ","pt":"Marceneiro / Montador de móveis"},"boya":{"en":"Painting / Decorating","ru":"Покраска / Побелка","de":"Malerarbeiten / Anstrich","ar":"دهان / طلاء جدران","es":"Pintor / Pintura de paredes","th":"ช่างทาสี / ทาสีบ้าน","vi":"Sơn nhà / Quét vôi","pt":"Pintor / Pintura de paredes"},"temizlik":{"en":"Home / Office cleaning","ru":"Уборка дома / офиса","de":"Haus- / Büroreinigung","ar":"تنظيف المنازل / المكاتب","es":"Limpieza de casas / oficinas","th":"ทำความสะอาดบ้าน / สำนักงาน","vi":"Dọn dẹp nhà / văn phòng","pt":"Limpeza de casa / escritório"},"hali":{"en":"Carpet / Sofa cleaning","ru":"Чистка ковров / мебели","de":"Teppich- / Polsterreinigung","ar":"غسيل السجاد / الكنب","es":"Lavado de alfombras / sillones","th":"ซักพรม / โซฟา","vi":"Giặt thảm / sofa","pt":"Lavagem de tapetes / sofás"},"klima":{"en":"AC / Boiler service","ru":"Ремонт кондиционеров / котлов","de":"Klima- / Thermenservice","ar":"صيانة المكيفات / الغلايات","es":"Aire acondicionado / Calderas","th":"ซ่อมแอร์ / เครื่องทำน้ำอุ่น","vi":"Sửa điều hòa / máy nước nóng","pt":"Ar-condicionado / Aquecedor a gás"},"beyazesya":{"en":"Appliances / Repair service","ru":"Бытовая техника / Сервисный центр","de":"Haushaltsgeräte / Kundendienst","ar":"أجهزة منزلية / صيانة","es":"Electrodomésticos / Servicio técnico","th":"เครื่องใช้ไฟฟ้า / ศูนย์ซ่อม","vi":"Đồ điện gia dụng / Sửa chữa","pt":"Eletrodomésticos / Assistência técnica"},"cilingir":{"en":"Locksmith","ru":"Мастер по замкам","de":"Schlüsseldienst","ar":"فني أقفال","es":"Cerrajero","th":"ช่างกุญแจ","vi":"Thợ khóa","pt":"Chaveiro"},"camci":{"en":"Glazier / PVC windows / Glass balconies","ru":"Стекольщик / Окна ПВХ / Остекление балконов","de":"Glaser / PVC-Fenster / Balkonverglasung","ar":"زجاج / نوافذ PVC / شرفات زجاجية","es":"Vidriero / Ventanas de PVC / Balcones de vidrio","th":"ช่างกระจก / หน้าต่าง PVC / กระจกระเบียง","vi":"Thợ kính / Cửa nhựa PVC / Ban công kính","pt":"Vidraceiro / Janelas de PVC / Sacada de vidro"},"nakliyat":{"en":"Moving / Transport","ru":"Переезды / Грузоперевозки","de":"Umzüge / Transporte","ar":"نقل أثاث / شحن","es":"Mudanzas / Fletes","th":"ขนย้ายบ้าน / ขนส่ง","vi":"Chuyển nhà / Vận chuyển","pt":"Mudanças / Fretes"},"tamir":{"en":"Computer / Phone repair","ru":"Ремонт компьютеров / телефонов","de":"Computer- / Handyreparatur","ar":"تصليح الكمبيوتر / الهاتف","es":"Reparación de computadoras / celulares","th":"ซ่อมคอมพิวเตอร์ / โทรศัพท์","vi":"Sửa máy tính / điện thoại","pt":"Conserto de computador / celular"},"terzi":{"en":"Tailor / Dry cleaning","ru":"Ателье / Химчистка","de":"Schneiderei / Reinigung","ar":"خياط / تنظيف جاف","es":"Sastre / Tintorería","th":"ช่างตัดเสื้อ / ซักแห้ง","vi":"Thợ may / Giặt khô","pt":"Alfaiate / Lavanderia"},"bahce":{"en":"Gardening / Landscaping","ru":"Сад / Ландшафтный дизайн","de":"Garten / Landschaftsbau","ar":"عناية بالحدائق / تنسيق حدائق","es":"Jardinería / Paisajismo","th":"ดูแลสวน / จัดภูมิทัศน์","vi":"Làm vườn / Cảnh quan","pt":"Jardinagem / Paisagismo"},"ilaclama":{"en":"Fumigation / Pest control","ru":"Дезинсекция / Борьба с вредителями","de":"Begasung / Schädlingsbekämpfung","ar":"رش مبيدات / مكافحة حشرات","es":"Fumigación / Control de plagas","th":"พ่นยา / กำจัดแมลง","vi":"Phun thuốc / Diệt côn trùng","pt":"Dedetização / Controle de pragas"},"kuafor":{"en":"Hairdresser / Barber (home visits)","ru":"Парикмахер / Барбер (на дому)","de":"Friseur / Barbier (Hausbesuch)","ar":"مصفف شعر / حلاق (خدمة منزلية)","es":"Peluquería / Barbería (a domicilio)","th":"ช่างทำผม / ช่างตัดผมชาย (บริการถึงบ้าน)","vi":"Làm tóc / Cắt tóc nam (tại nhà)","pt":"Cabeleireiro / Barbeiro (em domicílio)"},"oto":{"en":"Car wash / Car service","ru":"Автомойка / Автосервис","de":"Autowäsche / Kfz-Werkstatt","ar":"غسيل سيارات / صيانة سيارات","es":"Autolavado / Taller mecánico","th":"คาร์แคร์ / อู่ซ่อมรถ","vi":"Rửa xe / Sửa xe","pt":"Lava-rápido / Oficina mecânica"},"diger_hizmet":{"en":"Other services","ru":"Другие услуги","de":"Sonstige Dienstleistungen","ar":"خدمات أخرى","es":"Otros servicios","th":"บริการอื่นๆ","vi":"Dịch vụ khác","pt":"Outros serviços"}},"grup":{"yemek":{"en":"Food · drink","ru":"Еда · напитки","de":"Essen · Trinken","ar":"طعام · شراب","es":"Comida · bebida","th":"อาหาร · เครื่องดื่ม","vi":"Ăn · uống","pt":"Comida · bebida"},"urun":{"en":"Groceries · shops","ru":"Продукты · магазины","de":"Lebensmittel · Läden","ar":"بقالة · متاجر","es":"Mercado · tiendas","th":"ของชำ · ร้านค้า","vi":"Tạp hóa · cửa hàng","pt":"Mercado · lojas"},"hizmet":{"en":"Home services · pros","ru":"Услуги на дому · мастера","de":"Hausservice · Handwerker","ar":"خدمات منزلية · فنيون","es":"Servicios a domicilio · técnicos","th":"บริการถึงบ้าน · ช่าง","vi":"Dịch vụ tại nhà · thợ","pt":"Serviços em casa · profissionais"}}};
+var UI_TR = {"baslik":"Yakınımdaki işletmeler","gorunum":"Görünüm","liste":"Liste","harita":"Harita","dil":"Dil","konumaGore":"Konumunuza göre","ilSec":"İl seç","ilAdi":"{il} ili","konumKullan":"Konumumu kullan","yerBos":"Konumunuzla ya da il seçerek arayın","mesafe":"Mesafe","isTuru":"İşletme türü","tumu":"Tümü","tur":"Tür","tumTurler":"Tüm türler","acikOlanlar":"Şu an açık olanlar","hizmetAl":"Hizmet al","siparisVer":"Sipariş ver","acik":"● Açık","randevu":"Randevu alınır","ileri":"İleri saate sipariş","kapali":"● Şu an kapalı","oneri":"YourPOS 360'ın önerisi","hizmetAlani":"Hizmet alanı {km} km","teslimatAlani":"Teslimat alanı {km} km","yolTarifi":"🧭 Yol tarifi","yolAria":"{ad}: yol tarifi","tgAria":"{ad}: Telegram'da aç","konumAliniyor":"Konumunuz alınıyor…","konumMetinTg":"Telegram konum izni isterse «İzin ver»e dokunun. Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.","konumMetinWeb":"Tarayıcınız konum izni isterse «İzin ver»e dokunun. Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.","konumYerineIl":"Konum yerine il seçin","nedenIzin":"Konum izni verilmedi.","nedenTgIzin":"Telegram'da konum izni kapalı.","nedenYok":"Bu cihazda konum alınamıyor.","nedenAlinamadi":"Konumunuz alınamadı.","nedenZaman":"Konum zamanında alınamadı.","hangiIl":"Hangi ilde arıyorsunuz?","ilIleDe":"İl seçerek de bakabilirsiniz.","ilListe":"Seçtiğiniz ildeki işletmeleri listeleriz.","il":"İl","ilSecin":"İl seçin","tgKonumAyar":"Telegram konum ayarını aç","konumTekrar":"📍 Konumumu yeniden dene","listeYokB":"Liste alınamadı","tekrarDene":"Tekrar dene","isletmeSay":"{n} işletme","kmIcinde":"{km} km içinde","yakindanUzaga":"en yakından uzağa","adaGore":"A'dan Z'ye","yakinYok":"Yakınınızda henüz işletme yok","ilYok":"{il} ilinde henüz işletme yok","arttikca":"YourPOS 360 ile çalışan işletmeler arttıkça burada görünecek. Başka bir il seçebilirsiniz.","kmSonucYok":"{km} km içinde sonuç yok","mesafeArtir":"Mesafeyi artırın: daha uzakta {n} işletme var.","km100":"100 km'ye kadar göster","eslesmeYok":"Bu seçimle eşleşen işletme yok","filtreDegis":"Filtreleri değiştirin.","filtreTemizle":"Filtreleri temizle","puanNotAy":"⭐ Puanlar son {ay} ayın değerlendirmelerinden hesaplanır ve bir işletmenin değerlendirme sayısı en az {min} olunca gösterilir.","puanNot":"⭐ Puanlar, bir işletmenin değerlendirme sayısı en az {min} olunca gösterilir.","oneriNot":"🏅 «YourPOS 360'ın önerisi» rozeti, YourPOS 360 ekibinin önerdiği işletmeleri gösterir.","gizlilik":"🔒 Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.","kmGosteriliyor":"{km} km içindeki işletmeler gösteriliyor","siz":"Siz","acikK":"Açık","kapaliK":"Kapalı","haritaAcilmadi":"Harita açılamadı","haritaMetin":"İnternet bağlantınızı kontrol edin. Liste görünümünü kullanabilirsiniz.","sunucuHata":"Sunucu beklenmedik bir yanıt verdi. Biraz sonra tekrar deneyin.","gecYanit":"Sunucu geç yanıt verdi. Tekrar deneyin.","agYok":"İnternet bağlantısı yok gibi görünüyor.","listeYok":"Liste alınamadı.","bekle":"Çok fazla arama yapıldı. Biraz sonra tekrar deneyin.","isletme":"İşletme","webKapali":"Web'den sipariş şu an kapalı. Telegram'dan sipariş verebilirsiniz."};
+function langCode(c){ c = String(c || '').toLowerCase().split(/[-_]/)[0]; if (LANGS.indexOf(c) >= 0) return c; return LANG_MAP[c] || (c ? 'en' : 'tr'); }
+var LANG = (function(){
+  var q = params.get('dil'); if (LANGS.indexOf(q) >= 0) return q;
+  var sv = LS.get(LANG_KEY); if (LANGS.indexOf(sv) >= 0) return sv;
+  if (inTelegram) { var u = realTg.initDataUnsafe && realTg.initDataUnsafe.user; return langCode(u && u.language_code); }
+  var nl = String(navigator.language || '').toLowerCase().split(/[-_]/)[0];
+  return LANGS.indexOf(nl) >= 0 ? nl : 'tr';
+})();
+function t(k, p){
+  var x = LANG === 'tr' ? UI_TR[k] : (CEV.ui[k] && CEV.ui[k][LANG]) || UI_TR[k];
+  if (x == null) return k;
+  return p ? x.replace(/\{(\w+)\}/g, function(m, n){ return p[n] != null ? String(p[n]) : ''; }) : x;
+}
+function kolAd(k, tr){ return LANG === 'tr' ? tr : (CEV.kol[k] && CEV.kol[k][LANG]) || tr; }
+function grupAd(g, tr){ return LANG === 'tr' ? tr : (CEV.grup[g] && CEV.grup[g][LANG]) || tr; }
+var NF1, NF;
+function sayiBicim(){
+  var loc = LOCALE[LANG] || 'tr-TR';
+  try { NF1 = new Intl.NumberFormat(loc, { minimumFractionDigits:1, maximumFractionDigits:1 }); NF = new Intl.NumberFormat(loc); }
+  catch(e){ NF1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits:1, maximumFractionDigits:1 }); NF = new Intl.NumberFormat('tr-TR'); }
+}
+function dilUygula(){
+  sayiBicim();
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+  document.title = t('baslik') + ' · YourPOS 360';
+  document.querySelectorAll('[data-t]').forEach(function(el){ el.textContent = t(el.getAttribute('data-t')); });
+  document.querySelectorAll('[data-ta]').forEach(function(el){ el.setAttribute('aria-label', t(el.getAttribute('data-ta'))); });
+  var ds = $('#dilSec');
+  if (ds) ds.innerHTML = LANGS.map(function(d){ return '<option value="' + d + '"' + (d === LANG ? ' selected' : '') + '>' + LANG_NAMES[d] + '</option>'; }).join('');
+}
+
+function kmYaz(k){ return '<bdi>' + (k < 1 ? NF.format(Math.max(50, Math.round(k * 1000 / 50) * 50)) + ' m' : NF1.format(k) + ' km') + '</bdi>'; }
 function ver(v){ try { return !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast(v)); } catch(e){ return false; } }
 function haptic(){ try { if (ver('6.1') && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch(e){} }
 function disaAc(u){ try { if (tg && ver('6.1')) { tg.openLink(u); return; } } catch(e){} window.open(u, '_blank', 'noopener'); }
 function telegramAc(u){ try { if (tg && ver('6.1')) { tg.openTelegramLink(u); return; } } catch(e){} window.open(u, '_blank', 'noopener'); }
 var toastT = null;
-function toast(m){ var t = $('#toast'); t.textContent = m; t.className = 'toast on'; clearTimeout(toastT); toastT = setTimeout(function(){ t.className = 'toast'; }, 3600); }
+function toast(m){ var x = $('#toast'); x.textContent = m; x.className = 'toast on'; clearTimeout(toastT); toastT = setTimeout(function(){ x.className = 'toast'; }, 3600); }
 if (tg) {
   try { tg.ready(); tg.expand(); } catch(e){}
   try { if (ver('7.7')) tg.disableVerticalSwipes(); } catch(e){}
@@ -191,18 +246,25 @@ var ILLER = ['Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasy
 var KM = [2, 5, 10, 25, 50, 100];
 var GRUP_EMOJI = { yemek:'🍽️', urun:'🛒', hizmet:'🛠️' };
 
-/* ---------- sunucu ---------- */
+/* ---------- sunucu ----------
+   Telegram içinde: ana botun imzasıyla (uyRehber) · tarayıcıda: herkese açık liste (webRehber, 1.30) */
 var MOCK = DEMO ? demoMock() : null;
 function call(act, data){
-  var payload = Object.assign({ act:act, initData:inTelegram ? realTg.initData : '' }, data || {});
+  var payload = Object.assign({ act:act, initData:inTelegram ? realTg.initData : '', dil:LANG }, data || {});
   if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
   var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
   var ctrl = window.AbortController ? new AbortController() : null;
-  var t = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 40000);
+  var zt = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 40000);
   return fetch(url, { method:'POST', body:JSON.stringify(payload), redirect:'follow', signal:ctrl ? ctrl.signal : undefined })
     .then(function(r){ return r.text(); })
-    .then(function(x){ clearTimeout(t); try { return JSON.parse(x); } catch(e){ return { ok:false, kod:'SUNUCU', hata:'Sunucu beklenmedik bir yanıt verdi. Biraz sonra tekrar deneyin.' }; } })
-    .catch(function(e){ clearTimeout(t); return { ok:false, kod:'AG', hata:(e && e.name === 'AbortError') ? 'Sunucu geç yanıt verdi. Tekrar deneyin.' : 'İnternet bağlantısı yok gibi görünüyor.' }; });
+    .then(function(x){ clearTimeout(zt); try { return JSON.parse(x); } catch(e){ return { ok:false, kod:'SUNUCU', hata:t('sunucuHata') }; } })
+    .catch(function(e){ clearTimeout(zt); return { ok:false, kod:'AG', hata:(e && e.name === 'AbortError') ? t('gecYanit') : t('agYok') }; });
+}
+function hataMetni(r){
+  if (!r) return t('listeYok');
+  if (r.kod === 'BEKLE') return t('bekle');
+  if (r.kod === 'AG' || r.kod === 'SUNUCU') return r.hata;
+  return LANG === 'tr' && r.hata ? r.hata : t('listeYok');
 }
 
 /* ---------- durum ---------- */
@@ -217,8 +279,8 @@ var S = {
 if (KM.indexOf(S.km) < 0) S.km = 10;
 function kolBul(k){
   var r = null;
-  S.kollar.forEach(function(g){ g.liste.forEach(function(x){ if (x.k === k) r = { k:x.k, ad:x.ad, e:x.e, grup:g.grup }; }); });
-  return r || { k:k, ad:'İşletme', e:'🏪', grup:'yemek' };
+  S.kollar.forEach(function(g){ g.liste.forEach(function(x){ if (x.k === k) r = { k:x.k, ad:kolAd(x.k, x.ad), e:x.e, grup:g.grup }; }); });
+  return r || { k:k, ad:t('isletme'), e:'🏪', grup:'yemek' };
 }
 // filtrelenmiş liste (mesafe sınırı uygulanmadan önce: grup / tür / açık)
 function suzgec(l, yok){
@@ -269,17 +331,17 @@ function konumuKullan(){
 function yukle(){
   S.durum = 'yukleniyor'; S.hata = ''; ciz();
   var d = S.konum ? { lat:S.konum.lat, lng:S.konum.lng, km:100 } : { il:S.il };
-  call('uyRehber', d).then(function(r){
+  call(inTelegram ? 'uyRehber' : 'webRehber', d).then(function(r){
     if (!r || !r.ok) {
       if (r && r.kod === 'KONUM') { S.durum = 'il'; ciz(); return; }
-      S.durum = 'hata'; S.hata = (r && r.hata) || 'Liste alınamadı.'; ciz(); return;
+      S.durum = 'hata'; S.hata = hataMetni(r); ciz(); return;
     }
     S.liste = r.liste || []; S.kollar = r.kollar || []; S.puanKural = r.puanKural || null;
     if (S.kol && !S.liste.some(function(x){ return x.kol === S.kol; })) S.kol = '';
     // seçili mesafede hiç yoksa sonuç olan ilk mesafeye geç
     if (S.konum && !kmIcinde(suzgec(S.liste)).length) {
       var l = suzgec(S.liste);
-      for (var i = 0; i < KM.length; i++) if (l.some(function(x){ return x.km <= KM[i]; })) { if (KM[i] > S.km) { S.km = KM[i]; toast(KM[i] + ' km içindeki işletmeler gösteriliyor'); } break; }
+      for (var i = 0; i < KM.length; i++) if (l.some(function(x){ return x.km <= KM[i]; })) { if (KM[i] > S.km) { S.km = KM[i]; toast(t('kmGosteriliyor', { km:KM[i] })); } break; }
     }
     S.durum = 'hazir'; ciz();
   });
@@ -287,82 +349,83 @@ function yukle(){
 
 /* ---------- çizim ---------- */
 function yerHtml(){
-  if (S.konum) return '<span aria-hidden="true">📍</span><span><b>Konumunuza göre</b></span><button class="link" data-act="ilSec">İl seç</button>';
-  if (S.il) return '<span aria-hidden="true">🏙️</span><span><b>' + esc(S.il) + '</b> ili</span><button class="link" data-act="konum">Konumumu kullan</button>';
-  return '<span aria-hidden="true">📍</span><span>Konumunuzla ya da il seçerek arayın</span>';
+  if (S.konum) return '<span aria-hidden="true">📍</span><span><b>' + esc(t('konumaGore')) + '</b></span><button class="link" data-act="ilSec">' + esc(t('ilSec')) + '</button>';
+  if (S.il) return '<span aria-hidden="true">🏙️</span><span><b>' + esc(t('ilAdi', { il:S.il })) + '</b></span><button class="link" data-act="konum">' + esc(t('konumKullan')) + '</button>';
+  return '<span aria-hidden="true">📍</span><span>' + esc(t('yerBos')) + '</span>';
 }
 function filtreHtml(){
   if (S.durum !== 'hazir') return '';
   var h = '';
   if (S.konum) {
     var l0 = suzgec(S.liste);
-    h += '<div class="cips" role="group" aria-label="Mesafe">' + KM.map(function(k){
+    h += '<div class="cips" role="group" aria-label="' + esc(t('mesafe')) + '">' + KM.map(function(k){
       var n = l0.filter(function(x){ return x.km <= k; }).length;
-      return '<button class="cip" type="button" data-act="km" data-k="' + k + '" aria-pressed="' + (S.km === k) + '">' + k + ' km<span class="n num">' + n + '</span></button>';
+      return '<button class="cip" type="button" data-act="km" data-k="' + k + '" aria-pressed="' + (S.km === k) + '"><bdi>' + NF.format(k) + ' km</bdi><span class="n num">' + NF.format(n) + '</span></button>';
     }).join('') + '</div>';
   }
   var tab = kmIcinde(suzgec(S.liste, 'grup'));
   var say = {}; tab.forEach(function(x){ var g = kolBul(x.kol).grup; say[g] = (say[g] || 0) + 1; });
-  h += '<div class="cips" role="group" aria-label="İşletme türü"><button class="cip" type="button" data-act="grup" data-k="" aria-pressed="' + (!S.grup) + '">Tümü<span class="n num">' + tab.length + '</span></button>' +
+  h += '<div class="cips" role="group" aria-label="' + esc(t('isTuru')) + '"><button class="cip" type="button" data-act="grup" data-k="" aria-pressed="' + (!S.grup) + '">' + esc(t('tumu')) + '<span class="n num">' + NF.format(tab.length) + '</span></button>' +
     S.kollar.map(function(g){
       return '<button class="cip" type="button" data-act="grup" data-k="' + esc(g.grup) + '" aria-pressed="' + (S.grup === g.grup) + '"' + (!say[g.grup] && S.grup !== g.grup ? ' disabled' : '') + '>' +
-        (GRUP_EMOJI[g.grup] || '') + ' ' + esc(g.ad) + '<span class="n num">' + (say[g.grup] || 0) + '</span></button>';
+        (GRUP_EMOJI[g.grup] || '') + ' ' + esc(grupAd(g.grup, g.ad)) + '<span class="n num">' + NF.format(say[g.grup] || 0) + '</span></button>';
     }).join('') + '</div>';
   var kt = kmIcinde(suzgec(S.liste, 'kol')), ks = {};
   kt.forEach(function(x){ ks[x.kol] = (ks[x.kol] || 0) + 1; });
   var secenek = [];
   S.kollar.forEach(function(g){ if (!S.grup || g.grup === S.grup) g.liste.forEach(function(x){ if (ks[x.k] || x.k === S.kol) secenek.push(x); }); });
-  h += '<div class="satir">' + (secenek.length > 1 || S.kol ? '<label class="sr" for="kolSec">Tür</label><select class="sel" id="kolSec"><option value="">Tüm türler</option>' + secenek.map(function(x){
-      return '<option value="' + esc(x.k) + '"' + (x.k === S.kol ? ' selected' : '') + '>' + esc(x.e + ' ' + x.ad) + ' (' + (ks[x.k] || 0) + ')</option>';
+  h += '<div class="satir">' + (secenek.length > 1 || S.kol ? '<label class="sr" for="kolSec">' + esc(t('tur')) + '</label><select class="sel" id="kolSec"><option value="">' + esc(t('tumTurler')) + '</option>' + secenek.map(function(x){
+      return '<option value="' + esc(x.k) + '"' + (x.k === S.kol ? ' selected' : '') + '>' + esc(x.e + ' ' + kolAd(x.k, x.ad)) + ' (' + NF.format(ks[x.k] || 0) + ')</option>';
     }).join('') + '</select>' : '') +
-    '<button class="acik-sw" type="button" role="switch" aria-checked="' + S.acik + '" data-act="acik"><span class="tg" aria-hidden="true"></span>Şu an açık olanlar</button></div>';
+    '<button class="acik-sw" type="button" role="switch" aria-checked="' + S.acik + '" data-act="acik"><span class="tg" aria-hidden="true"></span>' + esc(t('acikOlanlar')) + '</button></div>';
   return h;
 }
 function logoHtml(x, k, i){
   if (x.logo) return '<span class="k-logo"><img src="' + esc(x.logo) + '" alt="" loading="lazy" onerror="this.parentNode.textContent=\'' + k.e + '\'"></span>';
   return '<span class="k-logo" style="background:var(--tile' + (i % 5) + ')" aria-hidden="true">' + k.e + '</span>';
 }
-function dugmeAd(k){ return k.grup === 'hizmet' ? 'Hizmet al' : 'Sipariş ver'; }
+function dugmeAd(k){ return k.grup === 'hizmet' ? t('hizmetAl') : t('siparisVer'); }
+// Telegram içinde: işletmenin botu · tarayıcıda: işletmenin web sipariş sayfası (web siparişi kapalıysa botu)
+function hedef(x){ return inTelegram ? (x.tg || x.link) : (x.web || x.tg || x.link); }
 function kartHtml(x, i){
   var k = kolBul(x.kol);
   var rz = [];
-  rz.push(x.acik ? '<span class="rz acik">● Açık</span>' : x.ileri ? '<span class="rz ileri">🕒 ' + (k.grup === 'hizmet' ? 'Randevu alınır' : 'İleri saate sipariş') + '</span>' : '<span class="rz kapali">● Şu an kapalı</span>');
-  if (x.oneri) rz.push('<span class="rz oneri"><span aria-hidden="true">🏅</span> YourPOS 360\'ın önerisi</span>');
+  rz.push(x.acik ? '<span class="rz acik">' + esc(t('acik')) + '</span>' : x.ileri ? '<span class="rz ileri">🕒 ' + esc(k.grup === 'hizmet' ? t('randevu') : t('ileri')) + '</span>' : '<span class="rz kapali">' + esc(t('kapali')) + '</span>');
+  if (x.oneri) rz.push('<span class="rz oneri"><span aria-hidden="true">🏅</span> ' + esc(t('oneri')) + '</span>');
   if (x.puan && x.puan.n) rz.push('<span class="rz puan"><i aria-hidden="true">★</i>' + NF1.format(x.puan.o) + ' <span class="num">(' + NF.format(x.puan.n) + ')</span></span>');
-  if (S.konum && x.maks && x.km > x.maks) rz.push('<span class="rz uzak">' + (k.grup === 'hizmet' ? 'Hizmet alanı ' : 'Teslimat alanı ') + NF.format(x.maks) + ' km</span>');
+  if (S.konum && x.maks && x.km > x.maks) rz.push('<span class="rz uzak">' + esc(t(k.grup === 'hizmet' ? 'hizmetAlani' : 'teslimatAlani', { km:NF.format(x.maks) })) + '</span>');
+  var tgDugme = !inTelegram && x.web && x.tg ? '<button class="btn line" type="button" data-act="tg" data-k="' + esc(x.tg) + '" aria-label="' + esc(t('tgAria', { ad:x.ad })) + '">✈️</button>' : '';
   return '<li class="kart"><div class="k-ust">' + logoHtml(x, k, i) + '<div class="k-bilgi"><span class="k-ad">' + esc(x.ad) + (x.sube ? ' <span class="sube">· ' + esc(x.sube) + '</span>' : '') + '</span>' +
     '<span class="k-kol">' + k.e + ' ' + esc(k.ad) + (x.ilce ? ' · ' + esc(x.ilce) : '') + '</span></div>' +
     (x.km !== undefined ? '<span class="k-km num">' + kmYaz(x.km) + '</span>' : '') + '</div>' +
     '<div class="rozetler">' + rz.join('') + '</div>' +
-    '<div class="k-alt"><button class="btn pri" type="button" data-act="git" data-k="' + esc(x.link) + '">' + dugmeAd(k) + ' ›</button>' +
-    '<button class="btn line" type="button" data-act="yol" data-lat="' + x.lat + '" data-lng="' + x.lng + '" aria-label="' + esc(x.ad) + ' yol tarifi">🧭 Yol tarifi</button></div></li>';
+    '<div class="k-alt"><button class="btn pri" type="button" data-act="git" data-k="' + esc(hedef(x)) + '">' + esc(dugmeAd(k)) + ' ›</button>' +
+    '<button class="btn line" type="button" data-act="yol" data-lat="' + x.lat + '" data-lng="' + x.lng + '" aria-label="' + esc(t('yolAria', { ad:x.ad })) + '">' + esc(t('yolTarifi')) + '</button>' + tgDugme + '</div></li>';
 }
-function bosHtml(ic, b, m, dugme){ return '<div class="bos"><div class="ic" aria-hidden="true">' + ic + '</div><h2>' + b + '</h2>' + (m ? '<p>' + m + '</p>' : '') + (dugme || '') + '</div>'; }
+function bosHtml(ic, b, m, dugme){ return '<div class="bos"><div class="ic" aria-hidden="true">' + ic + '</div><h2>' + esc(b) + '</h2>' + (m ? '<p>' + esc(m) + '</p>' : '') + (dugme || '') + '</div>'; }
 function anaHtml(){
-  if (S.durum === 'konum') return bosHtml('📍', 'Konumunuz alınıyor…', 'Telegram konum izni isterse «İzin ver»e dokunun. Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.',
-    '<button class="link" data-act="ilSec">Konum yerine il seçin</button>');
+  if (S.durum === 'konum') return bosHtml('📍', t('konumAliniyor'), t(inTelegram ? 'konumMetinTg' : 'konumMetinWeb'),
+    '<button class="link" data-act="ilSec">' + esc(t('konumYerineIl')) + '</button>');
   if (S.durum === 'il') {
-    var neden = { izin:'Konum izni verilmedi.', tgizin:'Telegram\'da konum izni kapalı.', yok:'Bu cihazda konum alınamıyor.', alinamadi:'Konumunuz alınamadı.', zaman:'Konum zamanında alınamadı.' }[S.konumHata] || '';
-    return '<div class="bos"><div class="ic" aria-hidden="true">🏙️</div><h2>Hangi ilde arıyorsunuz?</h2>' + (neden ? '<p>' + neden + ' İl seçerek de bakabilirsiniz.</p>' : '<p>Seçtiğiniz ildeki işletmeleri listeleriz.</p>') +
-      '<label class="sr" for="ilSec">İl</label><select class="sel" id="ilSec"><option value="">İl seçin</option>' + ILLER.map(function(x){ return '<option' + (x === S.il ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
-      (S.konumHata === 'tgizin' ? '<button class="link" data-act="ayarlar">Telegram konum ayarını aç</button>' : '') +
-      '<button class="link" data-act="konum">📍 Konumumu yeniden dene</button></div>';
+    var neden = { izin:'nedenIzin', tgizin:'nedenTgIzin', yok:'nedenYok', alinamadi:'nedenAlinamadi', zaman:'nedenZaman' }[S.konumHata];
+    return '<div class="bos"><div class="ic" aria-hidden="true">🏙️</div><h2>' + esc(t('hangiIl')) + '</h2>' + (neden ? '<p>' + esc(t(neden) + ' ' + t('ilIleDe')) + '</p>' : '<p>' + esc(t('ilListe')) + '</p>') +
+      '<label class="sr" for="ilSec">' + esc(t('il')) + '</label><select class="sel" id="ilSec"><option value="">' + esc(t('ilSecin')) + '</option>' + ILLER.map(function(x){ return '<option' + (x === S.il ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
+      (S.konumHata === 'tgizin' ? '<button class="link" data-act="ayarlar">' + esc(t('tgKonumAyar')) + '</button>' : '') +
+      '<button class="link" data-act="konum">' + esc(t('konumTekrar')) + '</button></div>';
   }
   if (S.durum === 'yukleniyor') return '<div class="liste" aria-busy="true"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>';
-  if (S.durum === 'hata') return bosHtml('⚠️', 'Liste alınamadı', esc(S.hata), '<button class="btn pri" data-act="yenile" style="flex:none;padding:10px 22px">Tekrar dene</button>');
+  if (S.durum === 'hata') return bosHtml('⚠️', t('listeYokB'), S.hata, '<button class="btn pri" data-act="yenile" style="flex:none;padding:10px 22px">' + esc(t('tekrarDene')) + '</button>');
   var l = gorunen();
-  if (S.gorunum === 'harita') return '<p class="ozet num">' + NF.format(l.length) + ' işletme' + (S.konum ? ' · ' + S.km + ' km içinde' : '') + '</p><div id="harita" role="region" aria-label="Harita"></div>';
+  if (S.gorunum === 'harita') return '<p class="ozet num">' + esc(t('isletmeSay', { n:NF.format(l.length) })) + (S.konum ? ' · ' + esc(t('kmIcinde', { km:NF.format(S.km) })) : '') + '</p><div id="harita" role="region" aria-label="' + esc(t('harita')) + '"></div>';
   if (!l.length) {
     var tumu = suzgec(S.liste).length;
-    if (!S.liste.length) return bosHtml('🔍', S.konum ? 'Yakınınızda henüz işletme yok' : esc(S.il) + ' ilinde henüz işletme yok',
-      'YourPOS 360 ile çalışan işletmeler arttıkça burada görünecek. Başka bir il seçebilirsiniz.', '<button class="link" data-act="ilSec">İl seç</button>');
-    if (S.konum && tumu) return bosHtml('🔍', S.km + ' km içinde sonuç yok', 'Mesafeyi artırın: daha uzakta ' + NF.format(tumu) + ' işletme var.', '<button class="btn pri" data-act="km" data-k="100" style="flex:none;padding:10px 22px">100 km\'ye kadar göster</button>');
-    return bosHtml('🔍', 'Bu seçimle eşleşen işletme yok', 'Filtreleri değiştirin.', '<button class="link" data-act="temizle">Filtreleri temizle</button>');
+    if (!S.liste.length) return bosHtml('🔍', S.konum ? t('yakinYok') : t('ilYok', { il:S.il }), t('arttikca'), '<button class="link" data-act="ilSec">' + esc(t('ilSec')) + '</button>');
+    if (S.konum && tumu) return bosHtml('🔍', t('kmSonucYok', { km:NF.format(S.km) }), t('mesafeArtir', { n:NF.format(tumu) }), '<button class="btn pri" data-act="km" data-k="100" style="flex:none;padding:10px 22px">' + esc(t('km100')) + '</button>');
+    return bosHtml('🔍', t('eslesmeYok'), t('filtreDegis'), '<button class="link" data-act="temizle">' + esc(t('filtreTemizle')) + '</button>');
   }
-  return '<p class="ozet num">' + NF.format(l.length) + ' işletme' + (S.konum ? ' · en yakından uzağa' : ' · A\'dan Z\'ye') + '</p><ul class="liste">' + l.map(kartHtml).join('') + '</ul>' +
-    (S.puanKural ? '<p class="not">⭐ Puanlar ' + (S.puanKural.ay ? 'son ' + S.puanKural.ay + ' ayın değerlendirmelerinden hesaplanır ve ' : '') + 'bir işletmenin değerlendirme sayısı en az ' + S.puanKural.min + ' olunca gösterilir. ' +
-      '🏅 «YourPOS 360\'ın önerisi» rozeti, YourPOS 360 ekibinin önerdiği işletmeleri gösterir.</p>' : '') +
-    '<p class="not">🔒 Konumunuz yalnızca mesafeyi hesaplamak için kullanılır, kaydedilmez.</p>';
+  return '<p class="ozet num">' + esc(t('isletmeSay', { n:NF.format(l.length) })) + ' · ' + esc(S.konum ? t('yakindanUzaga') : t('adaGore')) + '</p><ul class="liste">' + l.map(kartHtml).join('') + '</ul>' +
+    (S.puanKural ? '<p class="not">' + esc(S.puanKural.ay ? t('puanNotAy', { ay:S.puanKural.ay, min:S.puanKural.min }) : t('puanNot', { min:S.puanKural.min })) + ' ' + esc(t('oneriNot')) + '</p>' : '') +
+    '<p class="not">' + esc(t('gizlilik')) + '</p>';
 }
 function ciz(){
   $('#yer').innerHTML = yerHtml();
@@ -398,30 +461,37 @@ function haritaCiz(){
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'© OpenStreetMap' }).addTo(m);
     var sinir = [];
     if (S.konum) {
-      L.marker([S.konum.lat, S.konum.lng], { icon:L.divIcon({ className:'', html:'<div class="ben" aria-label="Siz"></div>', iconSize:[18, 18], iconAnchor:[9, 9] }), keyboard:false }).addTo(m);
+      L.marker([S.konum.lat, S.konum.lng], { icon:L.divIcon({ className:'', html:'<div class="ben" aria-label="' + esc(t('siz')) + '"></div>', iconSize:[18, 18], iconAnchor:[9, 9] }), keyboard:false }).addTo(m);
       sinir.push([S.konum.lat, S.konum.lng]);
     }
     gorunen().forEach(function(x){
       var k = kolBul(x.kol);
       var mk = L.marker([x.lat, x.lng], { icon:L.divIcon({ className:'', html:'<div class="pin' + (x.acik ? '' : ' kapali') + '">' + k.e + '</div>', iconSize:[38, 38], iconAnchor:[19, 19] }), title:x.ad }).addTo(m);
       mk.bindPopup('<div class="pp"><div class="pp-ad">' + esc(x.ad) + '</div><div class="pp-alt">' + k.e + ' ' + esc(k.ad) + (x.km !== undefined ? ' · ' + kmYaz(x.km) : '') +
-        ' · ' + (x.acik ? 'Açık' : 'Kapalı') + '</div><button class="btn pri" type="button" data-act="git" data-k="' + esc(x.link) + '">' + dugmeAd(k) + ' ›</button></div>');
+        ' · ' + esc(x.acik ? t('acikK') : t('kapaliK')) + '</div><button class="btn pri" type="button" data-act="git" data-k="' + esc(hedef(x)) + '">' + esc(dugmeAd(k)) + ' ›</button></div>');
       sinir.push([x.lat, x.lng]);
     });
     if (sinir.length > 1) m.fitBounds(sinir, { padding:[30, 30], maxZoom:15 });
     else if (sinir.length) m.setView(sinir[0], 14);
     else m.setView([39.0, 35.2], 5);
-  }, function(){ kutu.innerHTML = bosHtml('🗺️', 'Harita açılamadı', 'İnternet bağlantınızı kontrol edin. Liste görünümünü kullanabilirsiniz.'); });
+  }, function(){ kutu.innerHTML = bosHtml('🗺️', t('haritaAcilmadi'), t('haritaMetin')); });
 }
 
 /* ---------- olaylar ---------- */
+function git(u){
+  if (!u) return;
+  if (/^https:\/\/t\.me\//.test(u)) { telegramAc(u); return; }
+  if (inTelegram) { disaAc(u); return; }
+  try { var h = new URL(u, location.href); if (h.protocol === 'https:' || h.origin === location.origin) { h.searchParams.set('dil', LANG); location.href = h.href; } } catch(e){}
+}
 var ACT = {
   gorunum:function(el){ S.gorunum = el.getAttribute('data-k'); haptic(); ciz(); },
   km:function(el){ S.km = Number(el.getAttribute('data-k')); LS.set('yp-yakin-km', String(S.km)); haptic(); ciz(); },
   grup:function(el){ S.grup = el.getAttribute('data-k'); S.kol = ''; haptic(); ciz(); },
   acik:function(){ S.acik = !S.acik; LS.set('yp-yakin-acik', S.acik ? '1' : '0'); haptic(); ciz(); },
   temizle:function(){ S.grup = ''; S.kol = ''; S.acik = false; LS.set('yp-yakin-acik', '0'); ciz(); },
-  git:function(el){ var u = el.getAttribute('data-k'); if (u) telegramAc(u); },
+  git:function(el){ git(el.getAttribute('data-k')); },
+  tg:function(el){ var u = el.getAttribute('data-k'); if (u) telegramAc(u); },
   yol:function(el){ disaAc('https://www.google.com/maps/dir/?api=1&destination=' + el.getAttribute('data-lat') + ',' + el.getAttribute('data-lng')); },
   konum:function(){ konumuKullan(); },
   ilSec:function(){ S.durum = 'il'; S.konumHata = ''; ciz(); var s = $('#ilSec'); if (s) s.focus(); },
@@ -437,6 +507,7 @@ document.addEventListener('click', function(e){
 document.addEventListener('change', function(e){
   if (e.target.id === 'ilSec' && e.target.value) { S.il = e.target.value; S.konum = null; LS.set('yp-yakin-il', S.il); yukle(); }
   else if (e.target.id === 'kolSec') { S.kol = e.target.value; ciz(); }
+  else if (e.target.id === 'dilSec' && LANGS.indexOf(e.target.value) >= 0) { LANG = e.target.value; LS.set(LANG_KEY, LANG); dilUygula(); ciz(); }
 });
 window.addEventListener('scroll', function(){ $('#ust').classList.toggle('golge', window.scrollY > 4); }, { passive:true });
 window.addEventListener('resize', function(){ document.documentElement.style.setProperty('--ust-h', $('#ust').offsetHeight + 'px'); });
@@ -445,10 +516,10 @@ window.addEventListener('resize', function(){ document.documentElement.style.set
 function demoMock(){
   var KOLLAR = [{ grup:'yemek', ad:'Yeme · içme', liste:[{ k:'restoran', ad:'Restoran', e:'🍽️' }, { k:'kebap', ad:'Kebap / Döner / Izgara', e:'🌯' }, { k:'pide', ad:'Pide / Lahmacun', e:'🫓' },
       { k:'pizza', ad:'Pizza / Burger / Fast food', e:'🍕' }, { k:'kafe', ad:'Kafe / Kahveci', e:'☕' }, { k:'pastane', ad:'Pastane / Fırın', e:'🥐' }, { k:'bar', ad:'Bar / Pub', e:'🍺' }] },
-    { grup:'urun', ad:'Market · dükkân', liste:[{ k:'market', ad:'Bakkal / Market', e:'🛒' }, { k:'manav', ad:'Manav', e:'🥬' }, { k:'hirdavat', ad:'Hırdavat / Nalbur', e:'🔩' },
-      { k:'zuccaciye', ad:'Züccaciye / Milyoncu', e:'🍳' }, { k:'eczane', ad:'Kozmetik / Parfümeri', e:'🧴' }] },
-    { grup:'hizmet', ad:'Eve hizmet · usta', liste:[{ k:'tesisat', ad:'Tesisatçı', e:'🔧' }, { k:'elektrikci', ad:'Elektrikçi', e:'💡' }, { k:'marangoz', ad:'Marangoz', e:'🪚' },
-      { k:'temizlik', ad:'Temizlik', e:'🧽' }, { k:'cilingir', ad:'Çilingir', e:'🔑' }] }];
+    { grup:'urun', ad:'Market · dükkân', liste:[{ k:'market', ad:'Market / Süpermarket', e:'🛒' }, { k:'manav', ad:'Manav / Meyve-sebze', e:'🥦' }, { k:'hirdavat', ad:'Hırdavat / Nalbur', e:'🔧' },
+      { k:'zuccaciye', ad:'Züccaciye / Milyoncu / Ev gereçleri', e:'🧺' }, { k:'kozmetik', ad:'Kozmetik / Parfümeri', e:'💄' }] },
+    { grup:'hizmet', ad:'Eve hizmet · usta', liste:[{ k:'tesisat', ad:'Su tesisatı / Sıhhi tesisat', e:'🚿' }, { k:'elektrikci', ad:'Elektrikçi', e:'⚡' }, { k:'marangoz', ad:'Marangoz / Mobilya ustası', e:'🪚' },
+      { k:'temizlik', ad:'Ev / Ofis temizliği', e:'🧹' }, { k:'cilingir', ad:'Çilingir', e:'🔑' }] }];
   var I = [
     ['Lezzet Dürüm', 'kebap', 40.9905, 29.0303, true, 4.7, 212, 'Kadıköy'], ['Moda Pide Salonu', 'pide', 40.9846, 29.0257, true, 4.5, 96, 'Kadıköy'],
     ['Köşe Kafe', 'kafe', 40.9875, 29.0270, true, 4.8, 61, 'Kadıköy'], ['Yıldız Market', 'market', 40.9921, 29.0288, true, 4.4, 38, 'Kadıköy'],
@@ -473,24 +544,22 @@ function demoMock(){
   return function(act, d){
     return new Promise(function(ok){
       setTimeout(function(){
-        if (act !== 'uyRehber') return ok({ ok:false, kod:'ISTEK', hata:'Önizlemede bu işlem yok.' });
+        if (act !== 'uyRehber' && act !== 'webRehber') return ok({ ok:false, kod:'ISTEK', hata:'Önizlemede bu işlem yok.' });
         var konum = d.lat !== undefined && d.lng !== undefined;
         if (!konum && !d.il) return ok({ ok:false, kod:'KONUM', hata:'Konumunuzu paylaşın ya da bir il seçin.' });
-        var l = LISTE.map(function(x){ var y = JSON.parse(JSON.stringify(x)); if (konum) y.km = Math.round(mesafe(d.lat, d.lng, x.lat, x.lng) * 10) / 10; y.link = 'https://t.me/' + x.bot; return y; })
+        var l = LISTE.map(function(x){ var y = JSON.parse(JSON.stringify(x)); if (konum) y.km = Math.round(mesafe(d.lat, d.lng, x.lat, x.lng) * 10) / 10;
+            y.tg = 'https://t.me/' + x.bot; y.web = 'index.html?demo=1&b=ornek'; y.link = act === 'webRehber' ? y.web : y.tg; return y; })
           .filter(function(x){ return konum ? x.km <= (d.km || 25) : x.il.toLocaleLowerCase('tr') === String(d.il).toLocaleLowerCase('tr'); })
           .sort(function(a, b){ return konum ? a.km - b.km : a.ad.localeCompare(b.ad, 'tr'); });
-        ok({ ok:true, liste:l, kollar:KOLLAR, km:konum ? d.km : null, il:konum ? '' : d.il, puanKural:{ min:10, ay:6 } });
+        ok({ ok:true, liste:l, kollar:KOLLAR, km:konum ? d.km : null, il:konum ? '' : d.il, puanKural:{ min:10, ay:6 }, web:true });
       }, 450);
     });
   };
 }
 
-/* ---------- başlat ---------- */
-if (!DEMO && !inTelegram) {
-  $('#main').innerHTML = bosHtml('📱', 'Bu sayfa Telegram içinde açılır', 'Telegram\'da <b>@yourpos360_bot</b> sohbetinde «📍 Yakınımdaki işletmeler» düğmesine dokunun.',
-    '<a class="link" href="?demo=1">Örnek listeyi gör</a>');
-  $('#filtre').hidden = true;
-} else if (S.il && params.get('konum') === '0') { yukle(); }
+/* ---------- başlat (1.30: Telegram'da ve tarayıcıda açılır) ---------- */
+dilUygula();
+if (S.il && params.get('konum') === '0') { yukle(); }
 else konumuKullan();
 })();
 </script>
