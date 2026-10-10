@@ -18,7 +18,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '0c50f0d675';
+  var SURUM = 'efdb8ef7c5';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -332,6 +332,22 @@ label{font-size:14px;font-weight:600;color:var(--sub)}
 .spin{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:d .7s linear infinite;display:inline-block}
 @keyframes d{to{transform:rotate(360deg)}}
 .alt{color:var(--sub);font-size:13px;text-align:center;margin:4px 0 0}
+.onay{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;font-size:15px;color:var(--text);font-weight:400}
+.onay input{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.ipucu{color:var(--hint);font-size:13px;margin:-8px 0 14px}
+.inp[aria-invalid="true"]{border-color:var(--danger)}
+.adimlar{margin:0 0 16px;padding:0 0 0 22px;color:var(--text);font-size:15px}
+.adimlar li{margin:0 0 6px}
+.bekliyor{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:15px;margin:14px 0 4px}
+.ust-adim{color:var(--hint);font-size:13px;font-weight:600;margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
+.belge-ort{position:fixed;inset:0;background:rgb(0 0 0 / .45);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:0}
+.belge-kutu{background:var(--bg);color:var(--text);width:100%;max-width:640px;max-height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column}
+.belge-bas{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--sep)}
+.belge-bas b{flex:1;font-size:16px}
+.belge-ic{overflow:auto;padding:4px 16px 16px;font-size:14px;line-height:1.5}
+.belge-ic h1{font-size:18px}.belge-ic h2{font-size:16px}.belge-ic table{border-collapse:collapse}.belge-ic td,.belge-ic th{border:1px solid var(--sep);padding:4px 6px}
+.belge-alt{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--sep)}
+@media (min-width:700px){.belge-ort{align-items:center}.belge-kutu{border-radius:18px}}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion: reduce){.spin{animation:none}}
 </style>
@@ -343,6 +359,11 @@ label{font-size:14px;font-weight:600;color:var(--sub)}
   <section class="card" id="ekran" aria-live="polite"></section>
   <p class="alt">Telegram'dan da girebilirsiniz: işletmenizin botunda «Restoran» ya da <b>@yourpos360_bot</b> içinde «Panelim».</p>
 </main>
+<div class="belge-ort" id="belge" hidden role="dialog" aria-modal="true" aria-labelledby="belgeAd"><div class="belge-kutu">
+  <div class="belge-bas"><b id="belgeAd">Aydınlatma Metni</b><button class="link-btn" type="button" data-act="belgeKapat">Kapat</button></div>
+  <div class="belge-ic" id="belgeIc"></div>
+  <div class="belge-alt"><button class="btn pri" type="button" data-act="belgeOnay">Okudum, onaylıyorum</button></div>
+</div></div>
 <script>
 (function(){
 'use strict';
@@ -358,7 +379,60 @@ var LS = {
 };
 var $ = function(s){ return document.querySelector(s); };
 function esc(s){ return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function(c){ return '&#' + c.charCodeAt(0) + ';'; }); }
-var S = { adim:'giris', ep:'', gecis:'', hata:'', bilgi:'', mesgul:false, hesap:null };
+// Sunucudan gelen mesajlar: arayüz dili sözlüğüne girsin diye burada da yazılı (ekranda bu metinler çevrilir)
+var SUNUCU_METIN = [
+  'E-posta ya da şifre yanlış.',
+  'Bu web hesabı kapalı.',
+  'Giriş süresi doldu. E-posta ve şifrenizi yeniden yazın.',
+  'Kod tutmadı. Uygulamadaki güncel kodu ya da kullanılmamış bir yedek kodu yazın.',
+  'Çok fazla hatalı kod. E-posta ve şifrenizle yeniden başlayın.',
+  'Çok fazla deneme yapıldı. Bir saat sonra tekrar deneyin.',
+  'Çok fazla istek yapıldı. Bir saat sonra tekrar deneyin.',
+  'Çok fazla hatalı deneme yapıldı. {0} dakika sonra tekrar deneyin.',
+  'Google Authenticator\'daki 6 haneli kodu ya da bir yedek kodu yazın.',
+  'Yönetici hesabında Google Authenticator zorunludur. Telegram\'dan yönetim ekranını açıp Sistem › Web girişi bölümünden kurun.',
+  'Bu e-postaya kayıtlı bir hesap varsa 6 haneli sıfırlama kodu gönderildi. Gelen kutunuzu (ve istenmeyen klasörünü) kontrol edin.',
+  'Kod tutmadı ya da süresi doldu.',
+  'Google Authenticator kodu ya da yedek kod da gerekir.',
+  'Authenticator kodu ya da yedek kod tutmadı.',
+  'Şifre en az 8 karakter olmalı.',
+  'Şifre çok uzun.',
+  'Şifrede en az bir harf ve bir rakam olmalı.',
+  'Şifreniz değiştirildi. Yeni şifrenizle giriş yapın.',
+  'Oturumunuzun süresi doldu. Yeniden giriş yapın.',
+  'Çıkış yapıldı.',
+  'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+  'Geçerli bir cep telefonu numarası yazın (ör. 0532 123 45 67).',
+  'Bu e-postayla açılmış bir hesap var. Giriş yapın ya da «Şifremi unuttum»u kullanın.',
+  'Bu e-postayla açılmış bir hesap var. Giriş yapın.',
+  'Bu telefon numarası başka bir hesapta kayıtlı. Giriş yapın ya da destekle iletişime geçin.',
+  'Bu telefon numarası başka bir hesapta kayıtlı.',
+  'Bu e-postaya çok fazla kod istendi. Bir saat sonra tekrar deneyin.',
+  'Doğrulama e-postası gönderilemedi. Adresi kontrol edip biraz sonra tekrar deneyin.',
+  'Doğrulama e-postası gönderilemedi. Biraz sonra tekrar deneyin.',
+  'Kaydın süresi doldu. Lütfen baştan başlayın.',
+  'Çok fazla hatalı kod. Yeni kod isteyin ya da baştan başlayın.',
+  'Kod tutmadı. E-postadaki 6 haneli kodu yazın.',
+  'Çok fazla kod istendi. Lütfen baştan başlayın.',
+  'Yeni kod için bir dakika bekleyin.',
+  'Çok fazla deneme yapıldı. Lütfen baştan başlayın.',
+  'E-postanız zaten doğrulandı.',
+  'Bu Telegram hesabı başka bir web hesabına bağlı. O hesapla giriş yapın.',
+  'Hesap açılamadı. Lütfen tekrar deneyin.',
+  'Hesabınız açıldı. Şimdi işletmenizin bilgilerini girin.',
+  'Bu Telegram hesabı zaten bir YourPOS 360 web hesabına bağlı. O hesabın e-postası ve şifresiyle giriş yapın.',
+  'Bu Telegram hesabıyla web\'den üyelik açılamaz.',
+  'Telegram numaranız ({0}) kayıtta yazdığınız numarayla aynı değil. Numarayı düzeltip yeniden deneyin.'
+];
+var S = { adim:'giris', ep:'', gecis:'', hata:'', bilgi:'', mesgul:false, hesap:null,
+  k:{ ad:'', ep:'', tel:'', kvkk:false }, kg:'', kalan:'', tgLink:'', tgHata:'', tel:'' };   // 1.33.0 üyelik
+var SS = {
+  get:function(k){ try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch(e){ return null; } },
+  set:function(k, v){ try { sessionStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del:function(k){ try { sessionStorage.removeItem(k); } catch(e){} }
+};
+var KAYIT_KEY = 'yourpos360-kayit';
+function kayitSakla(){ if (S.kg) SS.set(KAYIT_KEY, { g:S.kg, ep:S.k.ep, adim:S.adim, tgLink:S.tgLink, tel:S.tel }); else SS.del(KAYIT_KEY); }
 
 /* --- sunucu --- */
 function cagir(act, veri){
@@ -368,6 +442,7 @@ function cagir(act, veri){
     .then(function(r){ return r.json(); })
     .catch(function(){ return { ok:false, kod:'AG', hata:'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.' }; });
 }
+var DEMO_TUR = 0;
 function demo(act, d){
   var r = { ok:false, hata:'Bilinmeyen işlem.' };
   var H = { eposta:'ahmet@ornek.com', admin:false, totp:true, isletmeler:[{ b:'demo', ad:'Örnek Dönerci', durum:'Aktif' }, { b:'demo2', ad:'Örnek Pide Salonu', durum:'Aktif' }] };
@@ -377,11 +452,18 @@ function demo(act, d){
   if (act === 'whCikis') r = { ok:true };
   if (act === 'whSifreUnuttum') r = { ok:true, mesaj:'Bu e-postaya kayıtlı bir hesap varsa 6 haneli sıfırlama kodu gönderildi.' };
   if (act === 'whSifreYenile') r = { ok:true, mesaj:'Şifreniz değiştirildi. Yeni şifrenizle giriş yapın.' };
+  if (act === 'whKayitBelge') r = { ok:true, ad:'KVKK Aydınlatma Metni', html:'<h1>KVKK Aydınlatma Metni</h1><p>Örnek metin (önizleme).</p>' };
+  if (act === 'whKayitBasla') r = !d.kvkk ? { ok:false, kod:'FORM', alan:'kvkk', hata:'Aydınlatma metnini okuyup onaylayın.' } : { ok:true, gecis:new Array(41).join('d'), eposta:String(d.eposta || '').toLowerCase(), mesaj:'E-postanıza 6 haneli bir kod gönderdik. (Önizleme: 123456)' };
+  if (act === 'whKayitKod') r = String(d.kod) === '123456' ? { ok:true, adim:'tg', tgLink:'https://t.me/yourpos360_bot?start=wk_demo', tel:'0533 444 55 66' } : { ok:false, kod:'KOD', hata:'Kod tutmadı. E-postadaki 6 haneli kodu yazın.' };
+  if (act === 'whKayitKodYeniden') r = { ok:true, mesaj:'Yeni kod gönderildi.' };
+  if (act === 'whKayitTel') r = { ok:true, adim:'tg', tgLink:'https://t.me/yourpos360_bot?start=wk_demo', tel:d.telefon };
+  if (act === 'whKayitDurum') { DEMO_TUR = (DEMO_TUR || 0) + 1; r = DEMO_TUR < 3 ? { ok:true, adim:'tg', tgLink:'https://t.me/yourpos360_bot?start=wk_demo', tel:'0533 444 55 66', tgHata:'' } : { ok:true, yeni:true, token:'web:h.' + new Array(65).join('a'), hesap:{ eposta:'ayse@ornek.com', isletmeler:[] }, mesaj:'Hesabınız açıldı.' }; }
   return new Promise(function(ok){ setTimeout(function(){ ok(r); }, 450); });
 }
 
 /* --- ekranlar --- */
 function hataHtml(){ return (S.hata ? '<div class="err" role="alert">' + esc(S.hata) + '</div>' : '') + (S.bilgi ? '<div class="ok" role="status">' + esc(S.bilgi) + '</div>' : ''); }
+function gecersiz(alan){ return S.alan === alan ? ' aria-invalid="true"' : ''; }
 function dugme(metin, act, tur){ return '<button class="btn ' + (tur || 'pri') + '" type="submit" data-act="' + act + '"' + (S.mesgul ? ' disabled' : '') + '>' + (S.mesgul ? '<span class="spin" aria-hidden="true"></span>' : '') + metin + '</button>'; }
 function sifreAlan(id, etiket, oto){
   return '<div class="field"><label for="' + id + '">' + etiket + '</label><div class="sifre-kutu"><input class="inp" id="' + id + '" type="password" autocomplete="' + oto + '" maxlength="200" required>' +
@@ -391,11 +473,11 @@ function ciz(){
   var h = '';
   if (S.adim === 'yukleniyor') h = '<h1>Giriş yapılıyor…</h1><p class="lead"><span class="spin" aria-hidden="true"></span></p>';
   else if (S.adim === 'giris') {
-    h = '<h1>Giriş yap</h1><p class="lead">Telegram\'dan Ayarlar › «🔐 Web girişi» bölümünde belirlediğiniz e-posta ve şifreyle girin.</p>' + hataHtml() +
+    h = '<h1>Giriş yap</h1><p class="lead">E-posta adresiniz ve şifrenizle girin.</p>' + hataHtml() +
       '<form data-form="giris" novalidate><div class="field"><label for="ep">E-posta</label><input class="inp" id="ep" type="email" inputmode="email" autocomplete="username" maxlength="120" required value="' + esc(S.ep) + '"></div>' +
       sifreAlan('sifre', 'Şifre', 'current-password') + dugme('Giriş yap', 'giris') + '</form>' +
       '<div class="row"><button class="link-btn" type="button" data-act="unuttum">Şifremi unuttum</button></div>' +
-      '<div class="note">Hesabınız yok mu? İşletme sahipleri ve YourPOS 360 yöneticileri web girişini <b>Telegram\'dan</b> açtıkları ekranda bir kez kurar: işletme ekranında Ayarlar, yönetim ekranında Sistem › «🔐 Web girişi».</div>';
+      '<div class="note"><b>Hesabınız yok mu?</b> İşletmeniz için hemen üye olun.<br><button class="btn line" type="button" data-act="kayit" style="margin-top:10px">Üye ol</button></div>';
   } else if (S.adim === 'kod') {
     h = '<h1>Doğrulama kodu</h1><p class="lead">Telefonunuzdaki <b>Google Authenticator</b> uygulamasının gösterdiği 6 haneli kodu yazın. Telefonunuz yanınızda değilse yedek kodlarınızdan birini (ör. ABCD-EFGH) yazın.</p>' + hataHtml() +
       '<form data-form="kod" novalidate><div class="field"><label for="kod">Kod</label><input class="inp kod" id="kod" inputmode="text" autocomplete="one-time-code" maxlength="9" required placeholder="123456"></div>' +
@@ -412,6 +494,32 @@ function ciz(){
       sifreAlan('y1', 'Yeni şifre', 'new-password') + sifreAlan('y2', 'Yeni şifre (tekrar)', 'new-password') +
       '<p class="lead" style="margin-top:-6px;font-size:14px">En az 8 karakter; en az bir harf ve bir rakam.</p>' + dugme('Şifreyi değiştir', 'yenile') + '</form>' +
       '<div class="row"><button class="link-btn" type="button" data-act="basa">← Girişe dön</button></div>';
+  } else if (S.adim === 'kayit') {
+    h = '<p class="ust-adim">Adım 1 / 3</p><h1>Üye ol</h1><p class="lead">İşletmeniz için YourPOS 360 hesabı açın. E-posta adresinizi ve cep telefonunuzu doğrulayacağız.</p>' + hataHtml() +
+      '<form data-form="kayit" novalidate>' +
+      '<div class="field"><label for="kad">Adınız soyadınız</label><input class="inp" id="kad" autocomplete="name" maxlength="60" required value="' + esc(S.k.ad) + '"' + gecersiz('ad') + '></div>' +
+      '<div class="field"><label for="kep">E-posta</label><input class="inp" id="kep" type="email" inputmode="email" autocomplete="email" maxlength="120" required value="' + esc(S.k.ep) + '"' + gecersiz('eposta') + '></div>' +
+      '<div class="field"><label for="ktel">Cep telefonu</label><input class="inp" id="ktel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="0532 123 45 67" required value="' + esc(S.k.tel) + '"' + gecersiz('telefon') + '></div>' +
+      '<p class="ipucu">Telegram\'da kullandığınız numara olmalı; doğrulama YourPOS 360 Telegram botuyla yapılır.</p>' +
+      sifreAlan('ks1', 'Şifre', 'new-password') + sifreAlan('ks2', 'Şifre (tekrar)', 'new-password') +
+      '<p class="ipucu">En az 8 karakter; en az bir harf ve bir rakam.</p>' +
+      '<label class="onay"><input type="checkbox" id="kkvkk"' + (S.k.kvkk ? ' checked' : '') + gecersiz('kvkk') + '><span>Kişisel verilerin işlenmesine ilişkin Aydınlatma Metni\'ni okudum.</span></label>' +
+      '<p class="ipucu" style="margin-top:-8px"><button class="link-btn" type="button" data-act="belge" style="padding:0">Aydınlatma Metni\'ni oku</button></p>' +
+      dugme('Devam', 'kayit') + '</form><div class="row"><button class="link-btn" type="button" data-act="basa">← Hesabım var, giriş yap</button></div>';
+  } else if (S.adim === 'kayitKod') {
+    h = '<p class="ust-adim">Adım 2 / 3</p><h1>E-postanızı doğrulayın</h1><p class="lead">E-postanıza gönderdiğimiz 6 haneli kodu yazın. Gelmediyse istenmeyen (spam) klasörüne bakın.</p><p class="lead" style="margin-top:-10px"><b dir="ltr">' + esc(S.k.ep) + '</b></p>' + hataHtml() +
+      '<form data-form="kayitKod" novalidate><div class="field"><label for="kkod">E-postadaki kod</label><input class="inp kod" id="kkod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required placeholder="123456"></div>' +
+      dugme('Doğrula', 'kayitKod') + '</form><div class="row"><button class="link-btn" type="button" data-act="kayitYeniden">Kodu yeniden gönder</button><button class="link-btn" type="button" data-act="kayitDuzelt">← Bilgileri düzelt</button></div>';
+  } else if (S.adim === 'kayitTg') {
+    h = '<p class="ust-adim">Adım 3 / 3</p><h1>Telefonunuzu doğrulayın</h1><p class="lead">Numaranız YourPOS 360 Telegram botuyla doğrulanır.</p><p class="lead" style="margin-top:-10px"><b dir="ltr">' + esc(S.tel) + '</b></p>' + hataHtml() +
+      (S.tgHata ? '<div class="err" role="alert">' + esc(S.tgHata) + '</div>' +
+        '<form data-form="kayitTel" novalidate><div class="field"><label for="ktel2">Cep telefonu</label><input class="inp" id="ktel2" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" required value="' + esc(S.tel) + '"></div>' +
+        dugme('Numarayı güncelle', 'kayitTel', 'line') + '</form><div style="height:14px"></div>' : '') +
+      '<ol class="adimlar"><li>Aşağıdaki «Telegram\'ı aç» düğmesine dokunun.</li><li>Botta «📱 Numaramı paylaş» düğmesine dokunun.</li><li>Bu sayfaya dönün; hesabınız kendiliğinden açılır.</li></ol>' +
+      '<a class="btn pri" href="' + esc(S.tgLink) + '" target="_blank" rel="noopener" data-act="tgAc">Telegram\'ı aç</a>' +
+      '<div class="bekliyor" aria-live="polite"><span class="spin" aria-hidden="true"></span><span>Doğrulama bekleniyor…</span></div>' +
+      '<div class="note" style="margin-top:12px"><span>Telegram yüklü değil mi? Ücretsiz indirip aynı numarayla açın, sonra «Telegram\'ı aç»a yeniden basın.</span><br><a href="https://telegram.org/apps" target="_blank" rel="noopener" dir="ltr">telegram.org/apps</a></div>' +
+      '<div class="row"><button class="link-btn" type="button" data-act="kayitIptal">Vazgeç</button></div>';
   } else if (S.adim === 'hesap') {
     var hs = S.hesap || {}, l = hs.isletmeler || [];
     h = '<h1>Hoş geldiniz</h1><p class="lead">' + esc(hs.eposta || '') + ' olarak giriş yaptınız. Açmak istediğiniz ekranı seçin.</p>' + hataHtml() + '<div class="liste">' +
@@ -428,6 +536,7 @@ function sonra(r){
   if (r && r.ok && r.token) {
     LS.set(KEY, r.token);
     S.hesap = r.hesap; S.hata = ''; S.bilgi = r.mesaj || '';
+    if (r.yeni) { SS.del(KAYIT_KEY); location.href = GERI && /^uye\.html/.test(GERI) ? GERI : 'uye.html?t=deneme' + (DEMO ? '&demo=1&durum=yeni' : ''); return; }   // 1.33.0: yeni hesap → Panelim'de işletme kaydı
     if (GERI) { location.href = GERI; return; }
     var l = (r.hesap && r.hesap.isletmeler) || [];
     if (!r.mesaj && r.hesap && !r.hesap.admin && l.length === 1) { location.href = 'isletme.html?b=' + encodeURIComponent(l[0].b); return; }
@@ -470,6 +579,29 @@ function gonder(form){
       S.hata = (r && r.hata) || 'Şifre değiştirilemedi.';
     });
   }
+  else if (adim === 'kayit') {
+    S.k = { ad:deger('kad').trim(), ep:deger('kep').trim(), tel:deger('ktel').trim(), kvkk:!!($('#kkvkk') && $('#kkvkk').checked) };
+    S.alan = '';
+    if (deger('ks1') !== deger('ks2')) { S.hata = 'İki şifre aynı değil.'; S.alan = 'sifre'; ciz(); return; }
+    if (!S.k.kvkk) { S.hata = 'Aydınlatma metnini okuyup onaylayın.'; S.alan = 'kvkk'; ciz(); return; }
+    is = cagir('whKayitBasla', { ad:S.k.ad, eposta:S.k.ep, telefon:S.k.tel, sifre:deger('ks1'), kvkk:true, dil:(window.UIDIL && UIDIL.dil) || 'tr' }).then(function(r){
+      if (r && r.ok) { S.kg = r.gecis; S.k.ep = r.eposta || S.k.ep; S.adim = 'kayitKod'; S.bilgi = 'Kodu gönderdik.'; kayitSakla(); return; }
+      S.hata = (r && r.hata) || 'Kayıt başlatılamadı.'; S.alan = r && r.alan || '';
+    });
+  } else if (adim === 'kayitKod') {
+    var kk = deger('kkod').replace(/\D/g, '');
+    if (kk.length !== 6) { S.hata = 'E-postadaki 6 haneli kodu yazın.'; ciz(); return; }
+    is = cagir('whKayitKod', { gecis:S.kg, kod:kk }).then(function(r){
+      if (r && r.ok) { S.tgLink = r.tgLink; S.tel = r.tel || S.k.tel; S.tgHata = ''; S.adim = 'kayitTg'; kayitSakla(); bekleBasla(); return; }
+      S.hata = (r && r.hata) || 'Kod tutmadı.';
+      if (r && r.kod === 'SURE' && /baştan/.test(r.hata || '') && !/yeni kod/i.test(r.hata || '')) { S.kg = ''; kayitSakla(); S.adim = 'kayit'; }
+    });
+  } else if (adim === 'kayitTel') {
+    is = cagir('whKayitTel', { gecis:S.kg, telefon:deger('ktel2') }).then(function(r){
+      if (r && r.ok) { S.tgLink = r.tgLink || S.tgLink; S.tel = r.tel || S.tel; S.tgHata = ''; S.bilgi = 'Numara güncellendi. Şimdi «Telegram\'ı aç»a yeniden basın.'; kayitSakla(); return; }
+      S.hata = (r && r.hata) || 'Numara güncellenemedi.';
+    });
+  }
   if (!is) return;
   S.mesgul = true; S.odak = false; ciz();
   is.then(function(){ S.mesgul = false; S.odak = true; if (document.contains(form) || true) ciz(); });
@@ -488,7 +620,20 @@ document.addEventListener('click', function(e){
   var act = a.getAttribute('data-act');
   if (act === 'unuttum') { S.adim = 'unuttum'; S.hata = ''; S.bilgi = ''; ciz(); }
   if (act === 'kodumVar') { S.adim = 'yenile'; S.hata = ''; S.bilgi = ''; ciz(); }
-  if (act === 'basa') { S.adim = 'giris'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'basa') { bekleDur(); S.adim = 'giris'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'kayit') { S.adim = 'kayit'; S.hata = ''; S.bilgi = ''; S.alan = ''; ciz(); }
+  if (act === 'kayitDuzelt') { S.adim = 'kayit'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'kayitIptal') { bekleDur(); S.kg = ''; kayitSakla(); S.adim = 'kayit'; S.hata = ''; S.bilgi = ''; ciz(); }
+  if (act === 'kayitYeniden') {
+    cagir('whKayitKodYeniden', { gecis:S.kg }).then(function(r){
+      S.hata = r && r.ok ? '' : (r && r.hata) || 'Kod gönderilemedi.'; S.bilgi = r && r.ok ? (r.mesaj || 'Yeni kod gönderildi.') : '';
+      if (r && r.kod === 'SURE') { S.kg = ''; kayitSakla(); S.adim = 'kayit'; }
+      ciz();
+    });
+  }
+  if (act === 'belge') { belgeAc(); }
+  if (act === 'belgeKapat') { $('#belge').hidden = true; }
+  if (act === 'belgeOnay') { $('#belge').hidden = true; S.k.kvkk = true; var cb = $('#kkvkk'); if (cb) { cb.checked = true; cb.removeAttribute('aria-invalid'); } if (S.alan === 'kvkk') { S.hata = ''; S.alan = ''; var er = $('#ekran .err'); if (er) er.remove(); } }
   if (act === 'cikis') {
     var t = LS.get(KEY);
     S.mesgul = true; ciz();
@@ -504,10 +649,48 @@ $('#tema').addEventListener('click', function(){
 $('#tema').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
 document.getElementById('dilYer').innerHTML = UIDIL.secHtml('dil-select');   // 1.29
 
+/* --- 1.33.0 üyelik: telefon doğrulamasını bekle --- */
+var BEKLE_T = null;
+function bekleDur(){ if (BEKLE_T) { clearTimeout(BEKLE_T); BEKLE_T = null; } }
+function bekleBasla(){
+  bekleDur();
+  var tur = function(){
+    if (S.adim !== 'kayitTg' || !S.kg) return;
+    if (document.hidden) { BEKLE_T = setTimeout(tur, 2000); return; }
+    cagir('whKayitDurum', { gecis:S.kg }).then(function(r){
+      if (S.adim !== 'kayitTg') return;
+      if (r && r.ok && r.token) { bekleDur(); sonra(r); return; }
+      if (r && r.ok && r.adim === 'tg') {
+        var deg = (r.tgHata || '') !== S.tgHata;
+        S.tgHata = r.tgHata || ''; if (r.tgLink) S.tgLink = r.tgLink; if (r.tel) S.tel = r.tel;
+        if (deg) { S.odak = false; ciz(); S.odak = true; }
+        BEKLE_T = setTimeout(tur, 3000); return;
+      }
+      if (r && !r.ok && (r.kod === 'SURE' || r.kod === 'EPOSTA' || r.kod === 'TG')) { S.kg = ''; kayitSakla(); S.adim = r.kod === 'SURE' ? 'kayit' : 'giris'; S.hata = r.hata || ''; ciz(); return; }
+      BEKLE_T = setTimeout(tur, 5000);
+    });
+  };
+  BEKLE_T = setTimeout(tur, 2500);
+}
+document.addEventListener('visibilitychange', function(){ if (!document.hidden && S.adim === 'kayitTg') { bekleDur(); bekleBasla(); } });
+function belgeAc(){
+  $('#belgeIc').innerHTML = '<p><span class="spin" aria-hidden="true"></span></p>'; $('#belge').hidden = false;
+  cagir('whKayitBelge', { tur:'kvkk' }).then(function(r){
+    if (r && r.ok) { $('#belgeAd').textContent = r.ad || 'Aydınlatma Metni'; $('#belgeIc').innerHTML = r.html; }
+    else $('#belgeIc').innerHTML = '<div class="err">' + esc((r && r.hata) || 'Belge açılamadı.') + '</div>';
+  });
+}
+
 // Açılış: kayıtlı oturum varsa hesabı göster
 var var_ = LS.get(KEY);
 if (q.get('cikis') === '1' && var_) { cagir('whCikis', { initData:var_ }); LS.del(KEY); var_ = null; S.bilgi = 'Çıkış yapıldı.'; }
-if (var_ && /^web:h\.[0-9a-f]{64}$/.test(var_)) {
+var yarim = !var_ && SS.get(KAYIT_KEY);
+if (yarim && yarim.g) {   // 1.33.0: yarım kalan üyelik (sayfa yenilendi)
+  S.kg = yarim.g; S.k.ep = yarim.ep || ''; S.tgLink = yarim.tgLink || ''; S.tel = yarim.tel || '';
+  S.adim = yarim.adim === 'kayitTg' ? 'kayitTg' : 'kayitKod'; ciz();
+  if (S.adim === 'kayitTg') bekleBasla();
+} else if (!var_ && (q.get('kayit') === '1' || location.hash === '#kayit')) { S.adim = 'kayit'; ciz(); }
+else if (var_ && /^web:h\.[0-9a-f]{64}$/.test(var_)) {
   S.adim = 'yukleniyor'; ciz();
   cagir('whHesabim', { initData:var_ }).then(function(r){
     if (r && r.ok) { S.hesap = r.hesap; if (GERI) { location.href = GERI; return; } S.adim = 'hesap'; }

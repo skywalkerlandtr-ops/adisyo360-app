@@ -148,6 +148,7 @@ textarea.inp{resize:vertical;min-height:76px;line-height:1.4}
 .top .t span{font-size:14px;color:var(--sub)}
 .top select{max-width:46%;min-height:42px}
 .top .dil-select{flex:none;width:auto;max-width:132px;min-height:40px;padding:0 8px;font-size:14px}   /* 1.29 */
+.top .cikis{flex:none}   /* 1.33.0 web oturumu */
 html.dil-bekle #app,html.dil-bekle main{visibility:hidden}
 .demo-bar{background:var(--warn-soft);color:var(--warn-ink);font-size:14px;font-weight:600;padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .demo-bar a{color:inherit;border:1px solid currentColor;border-radius:14px;padding:3px 10px;text-decoration:none}
@@ -357,7 +358,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '0c50f0d675';
+  var SURUM = 'efdb8ef7c5';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -603,6 +604,7 @@ var UIDIL = (function(){
 /* =========================================================
    YourPOS 360 · Üyelik ve işletme paneli (uye.html)
    @yourpos360_bot içindeki «Panelim» düğmesinden açılır; giriş Telegram imzasıyla (initData) doğrulanır.
+   1.33.0: tarayıcıda web oturumuyla da açılır (giris.html › e-posta + şifre ya da «Üye ol»); oturum yoksa giriş sayfasına gider.
    Üye değilse: tanıtım → 3 adımlı kayıt (bilgiler, paket, belgeler). Üyeyse: kurulum adımları, paket, bot bağlama.
    ?demo=1[&durum=yeni|kurulum|hazir] → örnek verilerle önizleme (sunucuya gitmez).
    ========================================================= */
@@ -614,6 +616,10 @@ var API = params.get('api') || 'https://api.yourpos360.com/exec';
 var realTg = window.Telegram && window.Telegram.WebApp;
 var inTelegram = !!(realTg && realTg.initData);
 var tg = inTelegram ? realTg : null;
+var WEB_KEY = 'yourpos360-web';
+var WEB = (function(){ try { var v = localStorage.getItem(WEB_KEY); return v && /^web:h\.[0-9a-f]{64}$/.test(v) ? v : ''; } catch(e){ return ''; } })();
+var webMod = !inTelegram && !!WEB;
+function girisGit(){ location.replace('giris.html?geri=' + encodeURIComponent('uye.html' + location.search)); }
 var main = $('#main');
 var LS = {
   get:function(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -644,7 +650,7 @@ function bekle(b){ return b ? '<span class="spin" aria-hidden="true"></span>' : 
 /* ---------- sunucu ---------- */
 var MOCK = null;
 function call(act, data){
-  var payload = Object.assign({ act:act, initData:inTelegram ? realTg.initData : '' }, data || {});
+  var payload = Object.assign({ act:act, initData:inTelegram ? realTg.initData : WEB }, data || {});
   if (MOCK) return MOCK(act, JSON.parse(JSON.stringify(payload)));
   var url = API + (API.indexOf('?') >= 0 ? '&' : '?') + 'api=1';
   var ctrl = window.AbortController ? new AbortController() : null;
@@ -838,6 +844,7 @@ function ustCiz(){
     }).join('') + '</select>';
   }
   h += UIDIL.secHtml('inp dil-select');   // 1.29
+  if (webMod) h += '<a class="btn sm cikis" href="giris.html?cikis=1">Çıkış</a>';   // 1.33.0
   $('#top').innerHTML = h;
   if (DEMO) {
     var r = function(k, ad){ var q = new URLSearchParams(location.search); q.set('durum', k); return '<a href="?' + esc(q.toString()) + '">' + ad + '</a>'; };
@@ -950,8 +957,8 @@ function kayitEkrani(){
       isKoluSecimi('f', f.isKolu, S.hata.isKolu) +
       alan('isletmeAdi', 'İşletmenin adı', f.isletmeAdi, { ph:market() ? 'ör. Yılmaz Market' : hzm() ? 'ör. Usta Tesisat' : 'ör. Lezzet Dürüm', not:'Müşterileriniz bu adı görür.' }) +
       alan('yetkili', 'Yetkili kişinin adı soyadı', f.yetkili || (D.kullanici && D.kullanici.ad) || '', { ac:'name' }) +
-      '<div class="two st">' + alan('telefon', 'Telefon', f.telefon, { tip:'tel', im:'tel', ac:'tel', ph:'0532 123 45 67', max:20 }) +
-      alan('eposta', 'E-posta', f.eposta, { tip:'email', im:'email', ac:'email', ph:'ornek@mail.com', max:100, not:'Aylık raporlarınız bu adrese gelir.' }) + '</div>' +
+      '<div class="two st">' + alan('telefon', 'Telefon', f.telefon || (D.kullanici && D.kullanici.web && D.kullanici.web.tel) || '', { tip:'tel', im:'tel', ac:'tel', ph:'0532 123 45 67', max:20 }) +
+      alan('eposta', 'E-posta', f.eposta || (D.kullanici && D.kullanici.web && D.kullanici.web.eposta) || '', { tip:'email', im:'email', ac:'email', ph:'ornek@mail.com', max:100, not:'Aylık raporlarınız bu adrese gelir.' }) + '</div>' +
       '<div class="two">' + alan('il', 'İl', f.il, { select:ILLER }) + ilceSecimi('f', f.il, f.ilce, S.hata.ilce) + '</div>' +
       alan('adres', 'İşletmenin açık adresi', f.adres, { textarea:true, ph:'Mahalle, cadde/sokak, no' }) +
       '<details class="ek"' + (f.faturaUnvani || f.vergiNo ? ' open' : '') + '><summary>Fatura bilgileri (isteğe bağlı, sonra da eklenebilir)</summary><div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">' +
@@ -1163,7 +1170,8 @@ function hataEkrani(){
   var r = S.hataR || {};
   var bot = (D && D.anaBot) || 'yourpos360_bot';
   return '<div class="full"><div class="ic" aria-hidden="true">🔒</div><h1>' + esc(r.baslik || 'Sayfa açılamadı') + '</h1><p>' + esc(r.hata || '') + '</p><div class="btns">' +
-    (r.kod === 'GIRIS' || !inTelegram ? '<a class="btn pri block" href="https://t.me/' + esc(bot) + '">Telegram\'da @' + esc(bot) + '\'u aç</a>' : '<button class="btn pri block" data-act="tekrar">Tekrar dene</button>') + '</div></div>';
+    (r.kod === 'GIRIS' || !inTelegram ? (inTelegram ? '' : '<a class="btn pri block" href="giris.html?geri=' + esc(encodeURIComponent('uye.html' + location.search)) + '">Web\'den giriş yap</a><a class="btn line block" href="giris.html?kayit=1">Üye ol</a>') +
+      '<a class="btn ' + (inTelegram ? 'pri' : 'line') + ' block" href="https://t.me/' + esc(bot) + '">Telegram\'da @' + esc(bot) + '\'u aç</a>' : '<button class="btn pri block" data-act="tekrar">Tekrar dene</button>') + '</div></div>';
 }
 
 /* ---------- alt pencereler ---------- */
@@ -1688,6 +1696,7 @@ if (tg) {
 /* ---------- açılış ---------- */
 function yukle(){
   return call('uyBaslat', { b:S.secili }).then(function(r){
+    if (r && r.kod === 'GIRIS' && webMod) { try { localStorage.removeItem(WEB_KEY); } catch(e){} girisGit(); return; }   // 1.33.0: oturum süresi doldu
     if (!r || !r.ok) { S.hataR = { kod:r && r.kod, baslik:r && r.kod === 'GIRIS' ? 'Bu sayfa Telegram\'dan açılır' : 'Sayfa açılamadı', hata:(r && r.hata) || '' }; S.ekran = 'hata'; ciz(); return; }
     D = r;
     var hash = location.hash.replace('#', '');
@@ -1708,10 +1717,7 @@ function yukle(){
 }
 function basla(){
   S.ekran = 'yukleniyor'; ciz();
-  if (!DEMO && !inTelegram) {
-    S.hataR = { kod:'GIRIS', baslik:'Bu sayfa Telegram\'dan açılır', hata:'YourPOS 360 üyelik ve işletme panelinizi Telegram\'da @yourpos360_bot botundaki «Panelim» düğmesinden açın.' };
-    S.ekran = 'hata'; ciz(); return;
-  }
+  if (!DEMO && !inTelegram && !WEB) { girisGit(); return; }   // 1.33.0: web'de oturum yoksa giriş / üyelik sayfası
   yukle();
 }
 if (DEMO) MOCK = uyeDemo(params.get('durum') || 'kurulum');
