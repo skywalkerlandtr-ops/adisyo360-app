@@ -1660,7 +1660,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'a75c2f802b';
+  var SURUM = '1e34486322';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -4709,6 +4709,7 @@ function ayarEkrani(){
   h += ayarAdimHtml();
   h += kasaAyarHtml();
   h += msAyarHtml();
+  h += mkAyarHtml();   // 1.31.1 mekân QR'ı
   h += hbAyarHtml();   // 1.27 hazırlık bölümleri
   h += odAyarHtml();
   h += cdAyarHtml();
@@ -9904,7 +9905,7 @@ var SEKME_KEY = 'yourpos360-sekme-' + B;
 var GENIS_NAV = window.matchMedia ? matchMedia('(min-width: 900px)') : { matches:false };
 if (GENIS_NAV.addEventListener) GENIS_NAV.addEventListener('change', function(){ if (D) { renderTabs(); renderMain(); } });
 function moduller(){
-  if (garson()) return [['masa', 'Masalar', 'masa', msRozet(), 'Servis']].concat(yt('sp_masa') ? [['siparis', 'Mutfak', 'fis', 0, 'Servis']] : [])
+  if (garson()) return [['masa', GENIS_NAV.matches ? 'Masalar (' + msAcikSay() + ')' : 'Masalar', 'masa', msRozet(), 'Servis']].concat(yt('sp_masa') ? [['siparis', 'Mutfak', 'fis', 0, 'Servis']] : [])
     .concat(kasaAcik() && yt('kasa') ? [['kasa', 'Sipariş al', 'kasa', 0, 'Servis']] : []);
   var l = [], erp = erpVar();
   if (sahip() || yt('rapor')) l.push(['ozet', 'Özet', 'ozet', 0, 'Genel']);
@@ -9912,7 +9913,7 @@ function moduller(){
     : ['siparis', 'Sipariş durumu', 'fis', spToplamRozet(), 'Satış']);   // 1.27: kanallar pencerenin içinde sekme; parantezde açık sipariş sayısı
   if (kmBirlesik()) l.push(['kasa', 'Sipariş al', 'kasa', msRozet(), 'Satış']);   // 1.27: masalar kasanın sekmesi
   else {
-    if (masaSekmesi() && yt('masa')) l.push(['masa', 'Masalar', 'masa', msRozet(), 'Satış']);
+    if (masaSekmesi() && yt('masa')) l.push(['masa', GENIS_NAV.matches ? 'Masalar (' + msAcikSay() + ')' : 'Masalar', 'masa', msRozet(), 'Satış']);
     if (kasaAcik() && yt('kasa')) l.push(['kasa', 'Sipariş al', 'kasa', 0, 'Satış']);
   }
   if (yt('menu')) l.push(['menu', menuAdi(), 'menu', 0, 'Ürünler']);
@@ -9922,6 +9923,8 @@ function moduller(){
   if (sahip()) l.push(['ekip', 'Ekip', 'ekip', 0, 'İşletme'], ['ayar', 'Ayarlar', 'ayar', 0, 'İşletme']);
   return l;
 }
+// 1.31.1 · açık (dolu) masa sayısı: «Masalar (3)»
+function msAcikSay(){ return ((D && D.masalar) || []).filter(function(m){ return m.adisyon; }).length; }
 // Masalar sekmesindeki sayı: onay bekleyen QR siparişleri (garsonda ayrıca kendi masalarındaki «hazır» fişler)
 function msRozet(){
   var n = 0;
@@ -10542,6 +10545,56 @@ function msAyarHtml(){
     '<p class="tip-txt">Garson eklemek için: Ekip › «Garson ekle (PIN)» ya da «Garson davet et». Ortak garson telefonu için Ekip › Tablet bağla › «Garson telefonu».</p></section>';
 }
 // Masa QR kodları (A4, 2 sütun): masa adı + QR + «Menü ve sipariş için okutun»
+/* ---------- 1.31.1 Mekân QR'ı: masa QR siparişi yoksa tek QR ile sanal hediyeler ---------- */
+function mkAyar(){ return masaAyar().mekanQr || { uygun:false, hazir:false, acik:false, link:'' }; }
+function mkAyarHtml(){
+  if (hzm() || !D.isletme || !sahip() || D.cihaz) return '';
+  var m = mkAyar(), b = U.busy.mkQr;
+  if (!m.uygun || !m.hazir) return '';
+  var h = '<section class="card pad frm mk-kart"><h2 class="frm-h">🌹 Mekân QR\'ı</h2>' +
+    '<p class="tip-txt">Masa QR siparişi kullanmıyorsanız mekânınıza tek bir QR asın. Müşterileriniz QR\'ı okutup Telegram\'la doğrulanır, 18 yaş onayıyla «Mekânda görünür ol»u açar ve mekânda görünür olan kişilere sanal hediye (gül, buket, pasta, taç…) gönderir.</p>' +
+    '<p class="tip-txt">Bu QR\'da sipariş, hesap ve sohbet yoktur; menü yalnız görüntülenir. Hediyeleri YourPOS 360 satar ve ödemesini alır; sizin bir ücretiniz ya da işiniz yoktur. Yalnız ad görünür; telefon ve Telegram hesabı asla. Oturum her sabah 06:00\'da biter.</p>' +
+    '<button class="opt" type="button" role="switch" aria-checked="' + !!m.acik + '" data-act="mkQrSw"' + (b ? ' disabled' : '') + '><span class="o-main">Mekân QR\'ı' +
+    '<span class="o-sub">' + (m.acik ? 'Açık: müşterileriniz QR\'ı okutup hediye gönderebilir.' : 'Kapalı: QR okutulunca açılmaz.') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
+  if (m.acik && m.link) h += '<div class="od-url ms-tv"><span class="muted">QR bağlantısı:</span><code>' + esc(m.link) + '</code><span class="ms-tv-b">' +
+    '<button class="btn line sm" type="button" data-act="mkQrYazdir">' + ic('qr', 'sm') + 'QR\'ı yazdır</button>' +
+    '<button class="btn line sm" type="button" data-act="poKopya" data-k="' + esc(m.link) + '">Kopyala</button>' +
+    '<button class="btn ghost sm" type="button" data-act="mkQrYenile"' + (b ? ' disabled' : '') + '>Yeni bağlantı</button></span></div>' +
+    '<p class="tip-txt">«Yeni bağlantı» eski QR\'ı geçersiz kılar; yeni QR\'ı yeniden bastırmanız gerekir.</p>';
+  return h + '</section>';
+}
+// A4'e 4 kart: işletme adı, «🌹 Sanal hediye», QR, kısa açıklama
+function mkQrYazdir(){
+  var m = mkAyar();
+  if (!m.acik || !m.link) return toast('Önce mekân QR\'ını açın.', true);
+  var svg = '';
+  try { var q = window.qrcode(0, 'M'); q.addData(m.link); q.make(); svg = q.createSvgTag({ cellSize:4, margin:0, scalable:true }); } catch(e){ svg = ''; }
+  var f = $('#fis');
+  f.style.setProperty('--fis-g', '190mm');
+  f.innerHTML = '<section class="fis-k ms-qrs mk-qrs">' + [0, 1, 2, 3].map(function(){
+    return '<div class="ms-qk"><div class="ms-qi">' + esc(D.isletme.ad) + '</div><div class="ms-qa">🌹 Sanal hediye</div><div class="ms-qq">' + svg + '</div>' +
+      '<div class="ms-qt">Mekânda görünür olanlara hediye göndermek için telefonunuzun kamerasıyla okutun · 18+</div></div>';
+  }).join('') + '</section>';
+  setTimeout(function(){ try { window.print(); } catch(e){} }, 80);
+}
+Object.assign(ACT_EK, {
+  mkQrSw:function(){
+    var m = mkAyar();
+    islem('ekMasaAyar', { mekanQr:!m.acik }, { busy:'mkQr' }).then(function(r){
+      if (!r) return;
+      D.isletme.masa = r.ayar; D.masalar = r.masalar;
+      toast(r.ayar.mekanQr && r.ayar.mekanQr.acik ? 'Mekân QR\'ı açıldı; yazdırıp mekânınıza asın' : 'Mekân QR\'ı kapatıldı'); ciz();
+    });
+  },
+  mkQrYenile:function(){
+    islem('ekMasaAyar', { mekanQrYenile:true }, { busy:'mkQr' }).then(function(r){
+      if (!r) return;
+      D.isletme.masa = r.ayar; D.masalar = r.masalar;
+      toast('Yeni QR bağlantısı oluşturuldu; eski QR artık açılmaz'); ciz();
+    });
+  },
+  mkQrYazdir:function(){ mkQrYazdir(); }
+});
 function msQrYazdir(){
   var l = (D.masalar || []).filter(function(m){ return m.qr; });
   if (!l.length) return toast('QR için önce masaları kaydedin.', true);
@@ -10978,7 +11031,7 @@ document.addEventListener('keydown', function(e){
 /* --- Önizleme (?demo=1): masalar, garson (?rol=garson; &pin=1 ile PIN ekranı, PIN 1234) --- */
 function masaDemoIslemler(x){
   var MASA = [], AD = {}, adNo = 0, GARSON_PIN = { '1234':{ uyeId:'U9', ad:'Can' }, '5678':{ uyeId:'U10', ad:'Ece' } }, girdi = !x.pinIste;
-  var AYR = { acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
+  var AYR = { mk:false, mkK:'DEMOMEKAN' + 'QR0000000000000AB', acik:!x.market, qr:true, garsonOdeme:false, qrOnaysiz:false, qrSiparis:0, qrAdet:0, qrKisi:0, sohbetMasa:true, sohbetMekan:false, ismarla:true, hediye:true, sahneTv:'' };
   var SAL = [{ id:'a1', ad:'PlayStation 5', tur:'ps', dilim:15, enAz:30, tarifeler:[{ id:'t1', ad:'2 kol', tip:'saat', fiyat:80 }, { id:'t2', ad:'4 kol', tip:'saat', fiyat:120 }] },
     { id:'a2', ad:'Bilardo', tur:'bilardo', dilim:5, enAz:15, tarifeler:[{ id:'t1', ad:'Saatlik', tip:'saat', fiyat:100 }] },
     { id:'a3', ad:'7D Sinema', tur:'vr', dilim:1, enAz:0, tarifeler:[{ id:'t1', ad:'Tek seans', tip:'seans', fiyat:150, dk:15, kisiBasi:true }] }];
@@ -11049,7 +11102,8 @@ function masaDemoIslemler(x){
   };
   // pakette garson / masa QR yoksa kapalı (1.18.1, demoda ?paket=bas)
   var ayar = function(){ var po = (x.ISL && x.ISL.paketOz) || {}; return { acik:AYR.acik && po.garson !== false, qr:AYR.qr && po.qrmasa !== false && po.garson !== false, garsonOdeme:AYR.garsonOdeme, sayi:MASA.length,
-    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv, sureli:{ acik:true, alanlar:x.kopya(SAL) } }; };
+    qrOnaysiz:AYR.qrOnaysiz, qrSiparis:AYR.qrSiparis, qrAdet:AYR.qrAdet, qrKisi:AYR.qrKisi, sohbetMasa:AYR.sohbetMasa, sohbetMekan:AYR.sohbetMekan, ismarla:AYR.ismarla, onlineOdeme:true, hediye:AYR.hediye, hediyeHazir:true, sahneTv:AYR.sahneTv, sureli:{ acik:true, alanlar:x.kopya(SAL) },
+    mekanQr:{ uygun:!(AYR.acik && AYR.qr && po.qrmasa !== false && po.garson !== false), hazir:true, acik:AYR.mk, link:AYR.mk ? location.href.split('isletme.html')[0] + 'index.html?demo=1&b=demo&masa=vn.' + AYR.mkK : '' } }; };
   var gecmis = function(a, olay, kim){ a.gecmis = (a.gecmis ? a.gecmis + ' | ' : '') + saatYaz(Date.now()) + ' ' + olay + (kim ? ' (' + kim + ')' : ''); };
   var adAc = function(m, kim, kaynak, dk){
     var a = { id:'AD' + (++adNo + 1000), masaId:m.id, masa:m.ad, bolum:m.bolum, durum:'Açık', acilisMs:Date.now() - (dk || 0) * 60000, garson:kim ? kim.ad : '', garsonId:kim ? kim.id : '',
@@ -11399,6 +11453,13 @@ function masaDemoIslemler(x){
       if (d.sohbetMekan !== undefined) AYR.sohbetMekan = !!d.sohbetMekan;
       if (d.ismarla !== undefined) AYR.ismarla = !!d.ismarla;
       if (d.hediye !== undefined) AYR.hediye = !!d.hediye;
+      if (d.mekanQr !== undefined || d.mekanQrYenile) {   // 1.31.1 mekân QR'ı
+        var po1 = (x.ISL && x.ISL.paketOz) || {};
+        if (AYR.acik && AYR.qr && po1.qrmasa !== false && po1.garson !== false) return hata('MASA', 'Masa QR siparişi açıkken mekân QR\'ı kullanılmaz; müşterileriniz hediyeyi masa QR\'ından gönderir.');
+        AYR.mk = d.mekanQrYenile ? true : !!d.mekanQr;
+        if (d.mekanQrYenile) AYR.mkK = 'DEMOMEKAN' + Math.random().toString(36).slice(2, 12).toUpperCase() + 'QRAB0000';
+        if (AYR.mk) AYR.hediye = true;
+      }
       if (d.sahneTv !== undefined || d.sahneTvYenile) {
         var tvAc = d.sahneTvYenile ? true : !!d.sahneTv, tvK = 'DEMOTV' + Math.random().toString(36).slice(2, 12).toUpperCase() + 'ABCDEFGH';
         AYR.sahneTv = !tvAc ? '' : (d.sahneTvYenile || !AYR.sahneTv ? location.href.split('isletme.html')[0] + 'index.html?demo=1&b=demo&tv=' + tvK.slice(0, 24) : AYR.sahneTv);
@@ -14385,7 +14446,7 @@ function kmSekmeler(akt){
   var kzT = kzTurler(), l = [];
   if (kzT.tabldot) l.push(['tabldot', '🍽️ Tabldot', 0]);
   if (kzT.tezgah) l.push(['tezgah', '🧾 Tezgâh siparişi', 0]);
-  l.push(['masa', '🪑 Masalar', msRozet()]);
+  l.push(['masa', '🪑 Masalar (' + msAcikSay() + ')', msRozet()]);   // 1.31.1: parantezde açık masa sayısı
   var secili = U.tab === 'masa' ? 'masa' : akt;
   return '<div class="seg km-seg" role="tablist" aria-label="Kasa">' + l.map(function(x){
     var on = secili === x[0];
