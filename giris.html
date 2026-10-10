@@ -6,6 +6,259 @@
 <meta name="robots" content="noindex">
 <meta name="format-detection" content="telephone=no">
 <title>YourPOS 360 · Giriş</title>
+<!--dil-->
+<script>
+/* ---------- 1.29 arayüz dili ----------
+ * Ekrandaki Türkçe metinler kişinin seçtiği dile çevrilir. Kod Türkçe yazmaya devam eder; çeviri ekrana yazılırken yapılır
+ * (yazılar, placeholder / title / aria-label). Sözlük: panel-dil/<dil>.json (Türkçe metin → çeviri), cihazda saklanır.
+ * Değişken parçalar {0}, {1}… ile eşleşir: «Masa {0} açıldı» → «Table {0} opened». Sayılar kendiliğinden {n} olur.
+ * Çevrilmeyecek yerler: data-ceviri="yok" (ör. fiş önizlemesi: fiş kendi yazdırma diliyle basılır), script, style, textarea.
+ */
+var UIDIL = (function(){
+  'use strict';
+  var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
+  var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
+  var SURUM = 'cdad479638';
+  var ANAHTAR = 'yp360-arayuz-dil';
+  function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
+  function lsSil(k){ try { localStorage.removeItem(k); } catch(e){} }
+  var gecerli = function(d){ return DILLER.indexOf(d) >= 0 || d === 'xx'; };
+  var dil = (function(){
+    var q = (location.search.match(/[?&]arayuz=([a-z]{2})(?:&|$)/) || [])[1];
+    if (q && gecerli(q)) return q;
+    var v = lsAl(ANAHTAR);
+    return gecerli(v) ? v : 'tr';
+  })();
+  var TAM = null, KALIP = null, YUKLENEN = '';
+  var asil = new WeakMap(), yazilan = new WeakMap(), asilOz = new WeakMap();
+  var HARF = /[A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû]/;
+  var SAYI = /\d+(?:[.,:]\d+)*/g;
+  var ATLA = { SCRIPT:1, STYLE:1, TEXTAREA:1, NOSCRIPT:1, TEMPLATE:1 };
+  var OZ = ['placeholder', 'title', 'aria-label', 'alt'];
+  var dinleyen = [];
+
+  function kacis(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function kur(m){
+    TAM = m; KALIP = {};
+    Object.keys(m).forEach(function(k){
+      if (k.indexOf('{') < 0 || !/\{\d+\}/.test(k)) return;
+      var p = k.split(/(\{\d+\})/), sira = [], re = '', durgun = '';
+      p.forEach(function(x){
+        var y = /^\{(\d+)\}$/.exec(x);
+        if (y) { sira.push(+y[1]); re += '(.+?)'; }
+        else { re += kacis(x); durgun += ' ' + x; }
+      });
+      var kel = durgun.split(/[\s.,:;!?()«»"'·\/–—-]+/).filter(function(w){ return w.length > 1 && HARF.test(w); }).sort(function(a, b){ return b.length - a.length; })[0];
+      if (!kel) return;
+      kel = kel.toLocaleLowerCase('tr');
+      (KALIP[kel] = KALIP[kel] || []).push({ re: new RegExp('^' + re + '$'), sira: sira, cev: m[k], u: durgun.replace(/\s+/g, '').length });
+    });
+    Object.keys(KALIP).forEach(function(w){ KALIP[w].sort(function(a, b){ return b.u - a.u; }); });
+  }
+  function yerlestir(cev, deg){ return cev.replace(/\{(\d+)\}/g, function(x, i){ return deg[i] != null ? deg[i] : x; }); }
+  var TARIH = { 'Ocak':1, 'Şubat':1, 'Mart':1, 'Nisan':1, 'Mayıs':1, 'Haziran':1, 'Temmuz':1, 'Ağustos':1, 'Eylül':1, 'Ekim':1, 'Kasım':1, 'Aralık':1,
+    'Oca':1, 'Şub':1, 'Mar':1, 'Nis':1, 'May':1, 'Haz':1, 'Tem':1, 'Ağu':1, 'Eyl':1, 'Eki':1, 'Kas':1, 'Ara':1,
+    'Paz':1, 'Pzt':1, 'Sal':1, 'Çar':1, 'Per':1, 'Cum':1, 'Cmt':1, 'Pazar':1, 'Pazartesi':1, 'Salı':1, 'Çarşamba':1, 'Perşembe':1, 'Cuma':1, 'Cumartesi':1 };
+  var ON = /^[^A-Za-z0-9ÇĞİÖŞÜçğıöşüÂâÎîÛûЀ-ӿ]+/, SON = /[^A-Za-z0-9ÇĞİÖŞÜçğıöşüÂâÎîÛûЀ-ӿ.!?…%)]+$/;
+  // d: derinlik (0 = tam arama; parçalar ve kalıp değerleri için daha dar arama)
+  function tarihCevir(s){   // «10 Ekim 2026 · Cmt»
+    var par = s.split(/(\s+|[·,()–:-])/), deg = false;
+    for (var k = 0; k < par.length; k++) {
+      if (!HARF.test(par[k])) continue;
+      if (TARIH[par[k]] && TAM[par[k]] != null) { par[k] = TAM[par[k]]; deg = true; } else return null;
+    }
+    return deg ? par.join('') : null;
+  }
+  function parcaCevir(s, tamMi){   // « · », « → », « | » ile ayrılmış parçalar tek tek
+    var ayr = s.split(/(\s+[·→|]\s+)/);
+    if (ayr.length < 2) return null;
+    var biri = false, hepsi = true;
+    for (var m = 0; m < ayr.length; m += 2) {
+      if (!HARF.test(ayr[m])) continue;
+      var c = cevir(ayr[m], 1);
+      if (c != null) { ayr[m] = c; biri = true; } else hepsi = false;
+    }
+    return (tamMi ? hepsi && biri : biri) ? ayr.join('') : null;
+  }
+  // d: derinlik (0 = tam arama; parçalar ve kalıp değerleri için daha dar arama)
+  function cevir(s, d){
+    if (!TAM) return null;
+    d = d || 0;
+    var t = TAM[s];
+    if (t != null) return t;
+    var sayi = [];
+    var n = s.replace(SAYI, function(x){ sayi.push(x); return '{' + (sayi.length - 1) + '}'; });
+    if (sayi.length && (t = TAM[n]) != null) return yerlestir(t, sayi);
+    if ((t = tarihCevir(s)) != null) return t;
+    if (d > 1) return null;
+    if (d === 0 && (t = parcaCevir(s, true)) != null) return t;
+    // kalıplar: «Masa {0} açıldı» (en çok sabit yazısı olan önce denenir)
+    var kel = s.split(/[\s.,:;!?()«»"'·\/–—-]+/), bak = {};
+    for (var i = 0; i < kel.length; i++) {
+      var w = kel[i].toLocaleLowerCase('tr');
+      if (w.length < 2 || bak[w] || !KALIP[w]) continue;
+      bak[w] = 1;
+      var l = KALIP[w];
+      for (var j = 0; j < l.length; j++) {
+        var r = l[j].re.exec(s);
+        if (!r) continue;
+        var deg = {};
+        l[j].sira.forEach(function(no, x){ var v = r[x + 1], c = HARF.test(v) ? cevir(v.trim(), 2) : null; deg[no] = c != null ? v.replace(v.trim(), c) : v; });
+        return yerlestir(l[j].cev, deg);
+      }
+    }
+    // baştaki simge / sondaki noktalama: «⛽ Ulaşım / yakıt», «Masaları düzenle:»
+    var on = ON.exec(s), son = SON.exec(s);
+    if (on || son) {
+      var ic = s.slice(on ? on[0].length : 0, son ? s.length - son[0].length : s.length);
+      if (ic && ic !== s && HARF.test(ic)) { t = cevir(ic, d + 1); if (t != null) return (on ? on[0] : '') + t + (son ? son[0] : ''); }
+    }
+    if (d === 0 && (t = parcaCevir(s, false)) != null) return t;
+    return null;
+  }
+  function metin(v){
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(v);
+    if (!m[2] || !HARF.test(m[2])) return null;
+    var t = cevir(m[2].replace(/\s+/g, ' '));
+    return t == null ? null : m[1] + t + m[3];
+  }
+  function yaziDugumu(n){
+    var v = n.data;
+    if (yazilan.get(n) === v) return;   // kendi yazdığımız
+    var a = v, t = dil === 'tr' ? null : metin(a);
+    if (t != null && t !== v) { asil.set(n, a); yazilan.set(n, t); n.data = t; }
+  }
+  function oznitelik(el){
+    var kayit = asilOz.get(el);
+    for (var i = 0; i < OZ.length; i++) {
+      var k = OZ[i], v = el.getAttribute(k);
+      if (v == null) continue;
+      if (kayit && kayit[k] && kayit[k].y === v) continue;
+      var t = dil === 'tr' ? null : metin(v);
+      if (t != null && t !== v) { kayit = kayit || {}; kayit[k] = { a: v, y: t }; asilOz.set(el, kayit); el.setAttribute(k, t); }
+    }
+  }
+  function atlanir(el){
+    for (var e = el; e && e.nodeType === 1; e = e.parentNode) {
+      if (ATLA[e.nodeName] || e.getAttribute('data-ceviri') === 'yok' || e.isContentEditable) return true;
+    }
+    return false;
+  }
+  function agac(kok){
+    if (!kok || dil === 'tr' || !TAM) return;
+    if (kok.nodeType === 3) { if (!atlanir(kok.parentNode)) yaziDugumu(kok); return; }
+    if (kok.nodeType !== 1 && kok.nodeType !== 9 && kok.nodeType !== 11) return;
+    if (kok.nodeType === 1 && atlanir(kok)) return;
+    var w = document.createTreeWalker(kok, 5, { acceptNode: function(n){
+      if (n.nodeType === 1) return ATLA[n.nodeName] || n.getAttribute('data-ceviri') === 'yok' ? 2 : 1;
+      return 1;
+    } });
+    if (kok.nodeType === 1) oznitelik(kok);
+    for (var n = w.nextNode(); n; n = w.nextNode()) { if (n.nodeType === 3) yaziDugumu(n); else oznitelik(n); }
+  }
+  var gozcu = null;
+  function gozle(){
+    if (gozcu || !window.MutationObserver) return;
+    gozcu = new MutationObserver(function(l){
+      if (dil === 'tr' || !TAM) return;
+      for (var i = 0; i < l.length; i++) {
+        var r = l[i];
+        if (r.type === 'childList') { for (var j = 0; j < r.addedNodes.length; j++) agac(r.addedNodes[j]); }
+        else if (r.type === 'characterData') { if (!atlanir(r.target.parentNode)) yaziDugumu(r.target); }
+        else if (r.type === 'attributes' && r.target.nodeType === 1 && !atlanir(r.target)) oznitelik(r.target);
+      }
+    });
+    gozcu.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: OZ });
+  }
+  // türkçeye dön / başka dile geç: değiştirdiğimiz her yeri önce aslına çevir
+  function geriAl(kok){
+    var w = document.createTreeWalker(kok || document.documentElement, 5, null);
+    for (var n = w.currentNode; n; n = w.nextNode()) {
+      if (n.nodeType === 3) { var a = asil.get(n); if (a != null && yazilan.get(n) === n.data) n.data = a; asil.delete(n); yazilan.delete(n); }
+      else if (n.nodeType === 1) { var k = asilOz.get(n); if (k) { Object.keys(k).forEach(function(x){ if (n.getAttribute(x) === k[x].y) n.setAttribute(x, k[x].a); }); asilOz.delete(n); } }
+    }
+  }
+  function yon(){
+    var r = document.documentElement;
+    r.setAttribute('lang', dil === 'xx' ? 'tr' : dil);
+    r.setAttribute('data-arayuz-dil', dil);
+  }
+  function hazir(){
+    document.documentElement.classList.remove('dil-bekle');
+    dinleyen.forEach(function(f){ try { f(dil); } catch(e){} });
+  }
+  function yukle(d, bitti){
+    if (d === 'tr') { TAM = null; KALIP = null; YUKLENEN = 'tr'; bitti(); return; }
+    var sk = 'yp360-dil-' + d, sakli = lsAl(sk), ok = false;
+    if (sakli) {
+      try { var j = JSON.parse(sakli); if (j && j.m) { kur(j.m); YUKLENEN = d; ok = true; bitti(); if (j.v === SURUM) return; } } catch(e){ lsSil(sk); }
+    }
+    var x = new XMLHttpRequest();
+    x.open('GET', 'panel-dil/' + d + '.json?v=' + encodeURIComponent(SURUM));
+    x.timeout = 15000;
+    x.onload = function(){
+      if (x.status !== 200) { if (!ok) bitti(); return; }
+      try {
+        var j = JSON.parse(x.responseText);
+        if (!j || !j.m) throw 0;
+        if (!lsYaz(sk, x.responseText)) { DILLER.forEach(function(o){ if (o !== d) lsSil('yp360-dil-' + o); }); lsYaz(sk, x.responseText); }
+        if (dil !== d) return;
+        kur(j.m); YUKLENEN = d;
+        if (ok) { geriAl(); agac(document.documentElement); }
+        else bitti();
+      } catch(e){ if (!ok) bitti(); }
+    };
+    x.onerror = x.ontimeout = function(){ if (!ok) bitti(); };
+    x.send();
+  }
+  function uygula(){
+    yon();
+    if (dil === 'tr') { hazir(); return; }
+    document.documentElement.classList.add('dil-bekle');
+    var zaman = setTimeout(hazir, 2500);   // sözlük gelmezse ekran Türkçe açılır
+    yukle(dil, function(){
+      clearTimeout(zaman);
+      gozle();
+      if (document.body) agac(document.documentElement);
+      else document.addEventListener('DOMContentLoaded', function(){ agac(document.documentElement); });
+      hazir();
+    });
+  }
+  uygula();
+  return {
+    diller: DILLER, adlar: ADLAR,
+    dil: function(){ return dil; },
+    // ekranın dilini değiştirir; kaydet=false ise yalnız bu açılış için (ör. sunucudan gelen tercih zaten kayıtlı)
+    sec: function(d, kaydet){
+      if (!gecerli(d)) return false;
+      if (kaydet !== false) lsYaz(ANAHTAR, d);
+      if (d === dil && (d === 'tr' || YUKLENEN === d)) return false;
+      geriAl(); dil = d; TAM = null; KALIP = null; uygula();
+      return true;
+    },
+    // kodda doğrudan çeviri gerektiğinde (ör. canvas, document.title): bulunamazsa aynı metin döner
+    t: function(s){ if (dil === 'tr' || !TAM || !s) return s; var r = metin(String(s)); return r == null ? s : r; },
+    degisince: function(f){ dinleyen.push(f); },
+    // üyelik ve giriş sayfaları için küçük dil seçici (seçenekler kendi dilinde yazılır, çevrilmez)
+    secHtml: function(sinif){
+      return '<select class="' + (sinif || 'dil-select') + '" data-ceviri="yok" aria-label="Dil · Language" title="Dil · Language" onchange="UIDIL.sec(this.value)">' +
+        DILLER.map(function(o){ return '<option value="' + o + '"' + (o === dil ? ' selected' : '') + '>' + o.toUpperCase() + ' · ' + ADLAR[o] + '</option>'; }).join('') + '</select>';
+    },
+    // denetim: ekranda çevrilmemiş kalan metinler (yalnız deneme için)
+    eksikler: function(kok){
+      var out = {}, w = document.createTreeWalker(kok || document.body, 5, { acceptNode: function(n){ return n.nodeType === 1 && (ATLA[n.nodeName] || n.getAttribute('data-ceviri') === 'yok') ? 2 : 1; } });
+      for (var n = w.nextNode(); n; n = w.nextNode()) {
+        var v = n.nodeType === 3 ? n.data : null;
+        if (n.nodeType === 1) { OZ.forEach(function(k){ var a = n.getAttribute(k); if (a && HARF.test(a) && !asilOz.get(n)) out['@' + a.trim()] = 1; }); continue; }
+        if (v && HARF.test(v) && !asil.has(n) && n.parentNode && n.parentNode.offsetParent !== null) out[v.replace(/\s+/g, ' ').trim()] = 1;
+      }
+      return Object.keys(out);
+    }
+  };
+})();
+</script>
+<!--/dil-->
 <script>
 (function(){
   try {
@@ -45,7 +298,10 @@ a{color:var(--link)}
 .logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:800;font-size:17px;letter-spacing:-.02em;flex:none}
 .brand b{font-size:19px;display:block;line-height:1.2}
 .brand span{color:var(--sub);font-size:14px}
-.tema{margin-left:auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sep);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer}
+#dilYer{margin-left:auto}
+.dil-select{min-height:40px;max-width:96px;padding:0 8px;border-radius:12px;border:1px solid var(--sep);background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+html.dil-bekle main{visibility:hidden}
+.tema{margin-left:8px;width:40px;height:40px;border-radius:12px;border:1px solid var(--sep);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer}
 .card{background:var(--bg);border-radius:18px;padding:22px 18px;box-shadow:var(--shadow)}
 h1{font-size:22px;line-height:1.25;margin:0 0 6px}
 .lead{color:var(--sub);margin:0 0 18px;font-size:15px}
@@ -83,7 +339,7 @@ label{font-size:14px;font-weight:600;color:var(--sub)}
 <body>
 <main class="wrap">
   <div class="brand"><div class="logo" aria-hidden="true">YP</div><div><b>YourPOS 360</b><span>İşletme ve yönetim girişi</span></div>
-    <button class="tema" type="button" id="tema" aria-label="Gece / gündüz modu">🌙</button></div>
+    <span id="dilYer"></span><button class="tema" type="button" id="tema" aria-label="Gece / gündüz modu">🌙</button></div>
   <section class="card" id="ekran" aria-live="polite"></section>
   <p class="alt">Telegram'dan da girebilirsiniz: işletmenizin botunda «Restoran» ya da <b>@yourpos360_bot</b> içinde «Panelim».</p>
 </main>
@@ -246,6 +502,7 @@ $('#tema').addEventListener('click', function(){
   this.textContent = koyu ? '☀️' : '🌙';
 });
 $('#tema').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+document.getElementById('dilYer').innerHTML = UIDIL.secHtml('dil-select');   // 1.29
 
 // Açılış: kayıtlı oturum varsa hesabı göster
 var var_ = LS.get(KEY);
