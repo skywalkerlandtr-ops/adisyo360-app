@@ -1636,6 +1636,13 @@ html.dil-bekle #app{visibility:hidden}
 .oyz-k.kir{color:#c62828}
 .oyz-sk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
 .oyz-el{display:flex;flex-wrap:wrap;gap:2px;margin:2px 0}
+.oyst{direction:ltr;display:grid;grid-template-columns:repeat(8,1fr);width:min(100%,264px);border:2px solid #a86f36;border-radius:6px;overflow:hidden;margin:4px 0}
+.oyst>span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#eed9b5;font-size:22px;line-height:1;position:relative;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Apple Symbols","DejaVu Sans",sans-serif}
+.oyst>span.k{background:#b58863}
+.oyst>span.son{box-shadow:inset 0 0 0 40px rgb(246 214 52 / .5)}
+.oyst-t{position:relative;display:inline-block;color:#151517}
+.oyst-t.w .d{position:absolute;left:0;top:0;color:#fff}
+.oyst-t.w .c{position:relative;color:#151517}
 .oyz-per{display:inline-flex;gap:1px;padding:1px 3px;border-radius:6px;background:var(--bg);margin-inline-end:4px}
 .oyz-t{display:inline-block;min-width:24px;padding:2px 3px;border-radius:5px;background:#fbf6e8;border:1px solid var(--line);font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
 </style>
@@ -1672,7 +1679,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '18b39ea23a';
+  var SURUM = '44ad889353';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10661,6 +10668,23 @@ function oyzOyun(m){
       return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
     }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
   }
+  if (m.tur === 'satranc') {
+    var STT = { k:'\u265A', q:'\u265B', r:'\u265C', b:'\u265D', n:'\u265E', p:'\u265F' }, STA = { k:'\u2654', q:'\u2655', r:'\u2656', b:'\u2657', n:'\u2658', p:'\u2659' };
+    var stTas = function(ch){ var x = ch.toLowerCase(); return ch < 'a' ? '<span class="oyst-t w"><span class="d">' + STT[x] + '\uFE0E</span><span class="c">' + STA[x] + '\uFE0E</span></span>' : '<span class="oyst-t">' + STT[x] + '\uFE0E</span>'; };
+    var stFig = function(s){ return String(s || '').replace(/[KQRBN]/g, function(x){ return STA[x.toLowerCase()]; }); };
+    var renk6 = ['Beyaz', 'Siyah'], bz = o.beyaz, nh = (o.hamleler || []).length, tah = '<div class="oyst" aria-hidden="true">';
+    for (var ri = 7; ri >= 0; ri--) for (var fi = 0; fi < 8; fi++) {
+      var sq = ri * 8 + fi, ch = String(o.b || '').charAt(sq) || '.';
+      tah += '<span class="' + ((ri + fi) % 2 ? '' : 'k') + (o.son && (o.son.f === sq || o.son.t === sq) ? ' son' : '') + '">' + (ch !== '.' ? stTas(ch) : '') + '</span>';
+    }
+    tah += '</div>';
+    var h6 = '<div class="oyz-o">' + [bz, 1 - bz].map(function(k, i){ return '<div><b>' + renk6[i] + ' · ' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b><span class="muted"> · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>'; }).join('') + tah;
+    var bil6 = [Math.ceil(nh / 2) + '. hamle'];
+    if (o.son) bil6.push('son hamle ' + esc(stFig(o.son.san)));
+    if (o.sah) bil6.push('şah!');
+    h6 += '<div class="muted">' + bil6.join(' · ') + '</div>';
+    return h6 + '</div>';
+  }
   if (m.tur === 'king') {
     var KN = { koz:'Koz', elalmaz:'El almaz', kupa:'Kupa almaz', erkek:'Erkek almaz', kiz:'Kız almaz', rifki:'Rıfkı', soniki:'Son iki' }, KR = { m:'♠', k:'♥', r:'♦', s:'♣' };
     var h5 = '<div class="oyz-o"><div class="muted">' + o.elNo + '/' + (o.toplamEl || 20) + '. el · ' + (o.faz === 'oyun' ? esc(KN[o.oyunTur] || '') + (o.oyunTur === 'koz' && o.koz ? ' ' + KR[o.koz] : '') + ' (' + esc(oyzAd(m, o.secen)) + ')' : 'Oyun seçiliyor (' + esc(oyzAd(m, o.secen)) + ')') + '</div>';
@@ -11595,6 +11619,8 @@ function masaDemoIslemler(x){
           oyun:{ n:4, elNo:6, toplamEl:20, faz:'oyun', sira:3, secen:1, oyunTur:'kupa', koz:'', masa:[{ k:1, kart:'9r' }, { k:2, kart:'Kr' }], alinan:[1, 0, 2, 1], skor:[150, -240, 380, -290], bitti:null,
             cezaAldi:[['4k'], [], ['Tk', '2k', '6k'], ['3k']],
             eller:[['Am', 'Tm', '7m', 'Qk', '8k', 'Ks', '9s', '3s', 'Ar'], ['Km', '5m', 'Ak', 'Jk', 'Qs', '6s', 'Jr', '4r'], ['Qm', '3m', '9k', '5k', 'As', 'Ts', '8r', '2r'], ['Jm', '8m', '2m', 'Kk', '7k', '4s', 'Qr', '6r', '5r']] } },
+        { id:'OYDEMO06', tur:'satranc', ad:'Satranç', i:'♟️', kisi:2, mod:'', d:'O', basMs:dk(12), oyuncular:[{ k:0, ad:'Burak' }, { k:1, ad:'Elif' }], sonuc:null, sohbet:[{ t:Date.now() - 300000, ad:'Elif', m:'İtalyan açılışı mı? 😄' }],
+          oyun:{ b:'RNBQK..RPPPP.PPP.....N....B.P.......p.....n..n..pppp.pppr.bqkb.r', beyaz:0, sira:0, ben:-1, renk:'', son:{ f:62, t:45, san:'Nf6' }, hamleler:['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6'], yenen:['', ''], sah:false, teklif:-1, skor:[1, 0], bitti:null } },
         { id:'OYDEMO03', tur:'tavla', ad:'Tavla', i:'🎲', kisi:2, mod:'', d:'B', basMs:dk(1), oyuncular:[{ k:0, ad:'Deniz' }], sonuc:null, sohbet:[], oyun:null }] };
     },
     ekMasaAyar:function(d){
