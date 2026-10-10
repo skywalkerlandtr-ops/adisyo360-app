@@ -1635,6 +1635,8 @@ html.dil-bekle #app{visibility:hidden}
 .oyz-k{display:inline-block;min-width:30px;padding:1px 5px;margin:1px;border-radius:6px;border:1px solid var(--line);background:var(--card);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
 .oyz-k.kir{color:#c62828}
 .oyz-sk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.oyz-el{display:flex;flex-wrap:wrap;gap:2px;margin:2px 0}
+.oyz-t{display:inline-block;min-width:24px;padding:2px 3px;border-radius:5px;background:#fbf6e8;border:1px solid var(--line);font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -1669,7 +1671,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = 'a3706e06ad';
+  var SURUM = '91236af14b';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10612,7 +10614,7 @@ function oyAyarHtml(){
   var o = oyAyar(), a = masaAyar(), b = U.busy.oySw;
   var h = '<section class="card pad frm oy-kart"><h2 class="frm-h">🎲 Mekânda oyunlar</h2>';
   if (!o.paket) return h + paketYokNotu('Mekânda oyunlar') + '</section>';
-  h += '<p class="tip-txt">Mekânınızdaki müşteriler birbirleriyle tavla ve pişti oynayabilir. Oynamak için Telegram\'la doğrulanmış, 18 yaşından büyük ve mekânda görünür olmak gerekir. Zarlar ve kartlar sunucuda dağıtılır, kurallar sunucuda denetlenir; bahis ve ödül yoktur.</p>' +
+  h += '<p class="tip-txt">Mekânınızdaki müşteriler birbirleriyle okey, tavla ve pişti oynayabilir. Oynamak için Telegram\'la doğrulanmış, 18 yaşından büyük ve mekânda görünür olmak gerekir. Taşlar, zarlar ve kartlar sunucuda dağıtılır, kurallar sunucuda denetlenir; bahis ve ödül yoktur.</p>' +
     '<p class="tip-txt">Oyun masalarını ve masa sohbetini (eller dahil) buradan canlı izleyebilirsiniz; oyuncular masaya oturmadan önce bunu onaylar. Uygunsuz mesajı oyuncular şikâyet edip engelleyebilir.</p>' +
     '<button class="opt" type="button" role="switch" aria-checked="' + !!o.acik + '" data-act="oySw"' + (b ? ' disabled' : '') + '><span class="o-main">Oyunlar' +
     '<span class="o-sub">' + (o.acik ? 'Açık: müşterileriniz masa ekranında «🎲 Oyunlar»ı görür.' : 'Kapalı: müşterileriniz oyunları görmez.') + '</span></span><span class="tgl" aria-hidden="true"></span></button>';
@@ -10637,6 +10639,12 @@ function oyzYukle(){
 var OYZ_RENK = { m:'♠', k:'♥', r:'♦', s:'♣' };
 var OYZ_TUR = { okey:'Okey', okey101:'101 Okey', tavla:'Tavla', batak:'Batak', king:'King', pisti:'Pişti', satranc:'Satranç', bilgi:'Bilgi yarışması' };
 function oyzKart(c){ c = String(c || ''); if (!c) return ''; var r = c.charAt(1), kir = r === 'k' || r === 'r'; return '<span class="oyz-k' + (kir ? ' kir' : '') + '">' + (c.charAt(0) === 'T' ? '10' : c.charAt(0)) + OYZ_RENK[r] + '</span>'; }
+var OYZ_OKR = { y:'#c98a00', b:'#1565c0', k:'#1b1b1f', r:'#c62828' };
+function oyzTas(t, ok){
+  t = String(t || ''); if (!t) return '';
+  var sahte = t.charAt(0) === 'j', c = sahte ? ok.c : t.charAt(0), n = sahte ? ok.n : parseInt(t.substr(1, 2), 10), w = !sahte && c === ok.c && n === ok.n;
+  return '<span class="oyz-t" style="color:' + (OYZ_OKR[c] || '#333') + '">' + (sahte ? '✦' : '') + n + (w ? '★' : '') + '</span>';
+}
 function oyzAd(m, k){ var x = (m.oyuncular || []).filter(function(y){ return y.k === k; })[0]; return x ? x.ad + (x.misafir ? ' 🌐' : '') : '—'; }
 function oyzOyun(m){
   var o = m.oyun; if (!o) return '';
@@ -10645,6 +10653,16 @@ function oyzOyun(m){
     return '<div class="oyz-o">' + [0, 1].map(function(k){
       return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
     }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
+  }
+  if (m.tur === 'okey') {
+    var ok = o.okey || {}, h2 = '<div class="oyz-o"><div><span class="muted">Gösterge:</span> ' + oyzTas(o.gosterge, ok) + ' <span class="muted">Okey:</span> ' + oyzTas(ok.c + (ok.n < 10 ? '0' : '') + ok.n + 'a', ok) +
+      ' <span class="muted">· ortada ' + o.deste + ' taş</span></div>';
+    (o.eller || []).forEach(function(el, k){
+      var at = (o.atik && o.atik[k] || []).slice(-1)[0];
+      h2 += '<div><b>' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b> <span class="muted">(' + (o.skor ? o.skor[k] : 0) + ' sayı)</span><div class="oyz-el">' + el.slice().sort(function(a, b){ return a < b ? -1 : 1; }).map(function(x){ return oyzTas(x, ok); }).join('') + '</div>' +
+        (at ? '<span class="muted">Son attığı:</span> ' + oyzTas(at, ok) : '') + '</div>';
+    });
+    return h2 + '</div>';
   }
   if (m.tur === 'pisti') {
     var h = '<div class="oyz-o"><div class="muted">Yerde ' + o.yerSay + ' kart · deste ' + o.deste + ' · ' + o.elNo + '. el</div>' +
@@ -11529,6 +11547,11 @@ function masaDemoIslemler(x){
         { id:'OYDEMO02', tur:'pisti', ad:'Pişti', i:'🃏', kisi:2, mod:'', d:'O', basMs:dk(6), oyuncular:[{ k:0, ad:'Can' }, { k:1, ad:'Ece', misafir:true }], sonuc:null,
           sohbet:[{ t:dk(5), ad:'Can', m:'Hadi bakalım' }],
           oyun:{ n:2, sira:0, yerSay:3, yerUst:'7k', deste:28, elNo:1, eller:[['2s', 'Jm', 'Tr'], ['Ak', '7r', 'Qs']], skor:[0, 0], alinan:[6, 4], pisti:[10, 0], hedef:101, takim:false, bitti:null } },
+        { id:'OYDEMO04', tur:'okey', ad:'Okey', i:'🀄', kisi:4, mod:'', d:'O', basMs:dk(9), oyuncular:[{ k:0, ad:'Mert' }, { k:1, ad:'Selin' }, { k:2, ad:'Burak' }, { k:3, ad:'Aylin' }], sonuc:null,
+          sohbet:[{ t:dk(8), ad:'Burak', m:'Okey kimde acaba 😄' }],
+          oyun:{ n:4, sira:2, asama:'cek', gosterge:'b07a', okey:{ c:'b', n:8 }, deste:31, skor:[2, 0, 1, 0], bitti:null, atik:[['r03a'], ['y11b'], ['k05a'], ['b02a']],
+            eller:[['y01a', 'y02a', 'y03a', 'k07a', 'r07a', 'b07b', 'b09a', 'b10a', 'b11a', 'r12a', 'r13a', 'b08a', 'j00a', 'k01a'], ['y05a', 'y06a', 'k09a', 'k10a', 'r02a', 'r04a', 'b13a', 'y13a', 'k13a', 'y08a', 'k08b', 'r09a', 'b01a', 'y10a'],
+              ['b03a', 'b04a', 'b05a', 'r05a', 'k05b', 'y12a', 'k12a', 'r11a', 'b12b', 'y07a', 'k03a', 'r06a', 'y04b', 'k02a'], ['k06a', 'r08a', 'y09a', 'b06a', 'r10b', 'k11a', 'y03b', 'r01a', 'b10b', 'k04a', 'y02b', 'r13b', 'j00b', 'b08b']] } },
         { id:'OYDEMO03', tur:'tavla', ad:'Tavla', i:'🎲', kisi:2, mod:'', d:'B', basMs:dk(1), oyuncular:[{ k:0, ad:'Deniz' }], sonuc:null, sohbet:[], oyun:null }] };
     },
     ekMasaAyar:function(d){
@@ -12844,7 +12867,7 @@ var PAKET_OZ = [['tabldot', 'Tabldot satışı', 'Kasada tepsi / self servis sat
   ['muhasebe', 'Ön muhasebe', 'Gider, kâr-zarar, gün sonu kasa, personel, tedarikçi'], ['sureli', 'Süreli alanlar', 'PlayStation, bilardo, masa tenisi gibi alanlarda süre ve ücret takibi'],
   ['hazirlik', 'Hazırlık bölümleri', 'Bar ve nargile ekranı, bölüm yazıcısı, köz isteği'], ['sohbet', 'Mekânda sohbet ve ısmarlama', 'Masadaki müşteriler mekânda sohbet eder, birbirine ısmarlar'],
   ['sahne', 'Mekân sahnesi', 'Gecenin tacı ve en çok hediye alanlar sahnede; isterse mekândaki TV\'de'],
-  ['oyun', 'Mekânda oyunlar', 'Müşteriler mekândaki diğer kişilerle tavla, pişti gibi oyunlar oynar']];
+  ['oyun', 'Mekânda oyunlar', 'Müşteriler mekândaki diğer kişilerle okey, tavla, pişti gibi oyunlar oynar']];
 function paketOzListe(){ return D && D.paketOz && D.paketOz.length ? D.paketOz : PAKET_OZ.map(function(x){ return { k:x[0], ad:x[1], acik:x[2] }; }); }
 function paketOzHepsi(){ var o = {}; PAKET_OZ.forEach(function(x){ o[x[0]] = true; }); return o; }
 // işletmenin paketinde bu özellik var mı (eski sunucu bilgi göndermezse var sayılır)
