@@ -1672,7 +1672,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '867012dbff';
+  var SURUM = 'f1b71ab74e';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -10654,6 +10654,16 @@ function oyzOyun(m){
     return '<div class="oyz-o">' + [0, 1].map(function(k){
       return '<div><b>' + renk[k] + ' · ' + esc(oyzAd(m, k)) + '</b><span class="muted"> · toplanan ' + o.off[k] + '/15' + (o.bar[k] ? ' · kırık ' + o.bar[k] : '') + ' · sayı ' + (o.skor ? o.skor[k] : 0) + '</span></div>';
     }).join('') + (o.bitti ? '' : '<div class="muted">Sıra: ' + esc(oyzAd(m, o.sira)) + ((o.zar || []).length ? ' · zar ' + o.zar.join('–') : '') + '</div>') + '</div>';
+  }
+  if (m.tur === 'batak') {
+    var RN = { m:'♠', k:'♥', r:'♦', s:'♣' }, h4 = '<div class="oyz-o"><div class="muted">' + (o.ihale && o.ihale.kim >= 0 ? 'İhale ' + o.ihale.en + ' · ' + esc(oyzAd(m, o.ihale.kim)) : 'İhale sürüyor') + (o.koz ? ' · koz ' + RN[o.koz] : '') + '</div>';
+    if (o.masa && o.masa.length) h4 += '<div><span class="muted">Yerde:</span> ' + o.masa.map(function(x){ return oyzKart(x.kart); }).join(' ') + '</div>';
+    (o.eller || []).forEach(function(el, k){
+      var tk = o.teklif ? o.teklif[k] : null;
+      h4 += '<div><b>' + esc(oyzAd(m, k)) + (o.sira === k && !o.bitti ? ' ⏳' : '') + '</b> <span class="muted">(' + (tk === 'pas' ? 'pas · ' : tk ? tk + ' dedi · ' : '') + (o.alinan ? o.alinan[k] : 0) + ' el)</span> ' + el.map(oyzKart).join(' ') + '</div>';
+    });
+    h4 += '<div class="muted">Puan: ' + (o.skor || []).join(' – ') + '</div>';
+    return h4 + '</div>';
   }
   if (m.tur === 'okey101') {
     var ok1 = o.okey || {}, h3 = '<div class="oyz-o"><div><span class="muted">Gösterge:</span> ' + oyzTas(o.gosterge, ok1) + ' <span class="muted">Okey:</span> ' + oyzTas(ok1.c + (ok1.n < 10 ? '0' : '') + ok1.n + 'a', ok1) +
