@@ -1672,7 +1672,7 @@ var UIDIL = (function(){
   'use strict';
   var DILLER = ['tr', 'en', 'ru', 'de', 'ar', 'es', 'th', 'vi', 'pt'];
   var ADLAR = { tr:'Türkçe', en:'English', ru:'Русский', de:'Deutsch', ar:'العربية', es:'Español', th:'ไทย', vi:'Tiếng Việt', pt:'Português' };
-  var SURUM = '746f91a56d';
+  var SURUM = '18b39ea23a';
   var ANAHTAR = 'yp360-arayuz-dil';
   function lsAl(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsYaz(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } }
@@ -7559,7 +7559,7 @@ function ynCubuk(yuzde){
 }
 function ynSisEkrani(){
   var s = D.sistem || {}, k = s.sunucu;
-  var h = '<div class="scr ayar">' + webGirisKarti() + ynBelgeKarti() + ynKodKarti() + poKarti() + sbyKarti() + hdyKarti();
+  var h = '<div class="scr ayar">' + webGirisKarti() + epKarti() + ynBelgeKarti() + ynKodKarti() + poKarti() + sbyKarti() + hdyKarti();
   if (k) {
     var by = U.busy.ynYedek, v = k.vps;
     var sure = function(sn){ var st = Math.floor((Number(sn) || 0) / 3600); return st >= 24 ? Math.floor(st / 24) + ' gündür' : st ? st + ' saattir' : 'az önce'; };
@@ -8323,6 +8323,13 @@ function ynDemoMock(){
         PA = y;
       }
       return { ok:true, ayar:json(), son:kopya(PSON) };
+    };
+    var EPD = { kullanici:'info@yourpos360.com', sunucu:'smtp.hostinger.com', kayitli:false, vps:true, son:'', ok:false, hata:'' };   // 1.33.2 önizleme
+    islemler.ynEposta = function(d){
+      if (d.islem === 'kaydet') { if (d.kullanici) EPD.kullanici = String(d.kullanici).toLowerCase(); if (d.sifre) { EPD.kayitli = true; EPD.ok = false; EPD.son = ''; } return { ok:true, durum:kopya(EPD), mesaj:'Kaydedildi.' }; }
+      if (d.islem === 'sil') { EPD.kayitli = false; EPD.ok = false; return { ok:true, durum:kopya(EPD), mesaj:'Şifre kaldırıldı. E-postalar Google hesabından gider.' }; }
+      if (d.islem === 'dene') { EPD.ok = true; EPD.son = 'bugün ' + new Date().toTimeString().slice(0, 5); return { ok:true, durum:kopya(EPD), mesaj:(d.alici || 'ferhat@ornek.com') + ' adresine deneme e-postası gönderildi. Gelen kutusunu (ve istenmeyen klasörünü) kontrol edin.' }; }
+      return { ok:true, durum:kopya(EPD), alici:'ferhat@ornek.com' };
     };
     islemler.ynPaketOdemeDene = function(){
       if (!PA.shopier.pat) return { ok:true, mesaj:'API kullanıcı ve şifre kayıtlı. Kişisel erişim anahtarı girilmediği için kartla gelen ödemeler sizin onayınıza düşer; anahtarı girerseniz Shopier\'e sorularak kendiliğinden onaylanır.' };
@@ -13335,6 +13342,66 @@ ACT_EK.msOdemeSilOnline = function(el){
   if (!x) return;
   sheetAc({ tip:'onay', busy:'msOdSil', baslik:'Online ödeme silinsin mi?', metin:'Bu ödeme müşterinin kartından ' + (x.kim || 'online') + ' ile alındı. Burada silmek parayı iade ETMEZ; iadeyi ödeme kuruluşunun panelinden yapın. Yalnız iade ettiyseniz ya da hatalıysa silin.', dugme:'Sil',
     yap:function(){ return islem('ekMasaOdemeSil', { adisyon:MS.ad.id, i:i }, { busy:'msOdSil' }).then(function(r){ if (r) { msCevap(r); sheetKapat(); toast('Ödeme silindi'); msCiz(); } }); } });
+};
+
+/* ---------- 1.33.2 E-posta gönderimi (yönetim) ---------- */
+var EPY = { v:null, yuk:false, hata:'', mesaj:'', hataSmtp:'', alici:'' };
+function epYukle(){
+  if (EPY.yuk) return;
+  EPY.yuk = true;
+  call('ynEposta', {}).then(function(r){
+    EPY.yuk = false;
+    if (r && r.ok) { EPY.v = r.durum; if (!EPY.alici) EPY.alici = r.alici || ''; }
+    else EPY.hata = (r && r.hata) || 'E-posta ayarları alınamadı.';
+    ciz();
+  });
+}
+function epKarti(){
+  var bas = '<section class="card pad frm ep-k" id="epKart"><h2 class="frm-h">📧 E-posta gönderimi</h2>';
+  if (!EPY.v) { if (!EPY.hata) epYukle(); return bas + (EPY.hata ? '<div class="err-txt">' + esc(EPY.hata) + ' <button class="btn ghost sm" data-act="epYenile">Tekrar dene</button></div>' : '<div class="sk" style="height:90px"></div>') + '</section>'; }
+  var v = EPY.v, b = U.busy.ep;
+  var h = bas + '<p class="tip-txt">Üyelik doğrulama kodları, şifre sıfırlama ve fatura bildirimleri bu adresten gider. Şifre kaydedildikten sonra hiçbir yerde gösterilmez.</p>';
+  h += '<div class="od-dur ' + (v.kayitli && v.ok ? 'ok' : '') + '">' + (v.kayitli && v.ok ? '<span class="dot"></span>' : '') +
+    (!v.kayitli ? 'Şifre kayıtlı değil · e-postalar şimdilik Google hesabından gidiyor' : v.ok ? 'Bağlı · son gönderim ' + esc(v.son) : v.hata ? 'Son gönderim başarısız' : 'Şifre kayıtlı · deneme e-postası gönderin') + '</div>';
+  if (v.kayitli && v.hata) h += '<div class="err-txt">' + esc(v.hata) + '</div>';
+  h += '<div class="field"><label for="epKul">Gönderen adres</label><input class="inp" id="epKul" type="email" autocomplete="off" spellcheck="false" value="' + esc(v.kullanici) + '"></div>' +
+    '<div class="field"><label for="epSif">Posta kutusunun şifresi</label><input class="inp" id="epSif" type="password" autocomplete="new-password" spellcheck="false" placeholder="' + esc(v.kayitli ? 'Kayıtlı ••••  (değiştirmek için yazın)' : 'Hostinger\'daki kutunun şifresi') + '">' +
+    '<p class="tip-txt">Hostinger › E-posta › ' + esc(v.kullanici) + ' kutusunun şifresi. Sunucu: ' + esc(v.sunucu) + ' (SSL, 465).</p></div>' +
+    '<div class="field"><label for="epAlici">Deneme e-postası şu adrese gitsin</label><input class="inp" id="epAlici" type="email" autocomplete="email" value="' + esc(EPY.alici) + '"></div>';
+  if (EPY.mesaj) h += '<div class="ok-box" role="status">' + esc(EPY.mesaj) + '</div>';
+  if (EPY.hataSmtp) h += '<div class="err-txt" role="alert">' + esc(EPY.hataSmtp) + '</div>';
+  h += '<div class="row2"><button class="btn pri" data-act="epKaydet"' + (b ? ' disabled' : '') + '>' + bekle('ep') + ic('tik', 'sm') + 'Kaydet ve dene</button>' +
+    (v.kayitli ? '<button class="btn line" data-act="epDene"' + (b ? ' disabled' : '') + '>Deneme e-postası gönder</button>' : '') + '</div>' +
+    (v.kayitli ? '<button class="btn ghost sm" data-act="epSil"' + (b ? ' disabled' : '') + '>Şifreyi kaldır</button>' : '');
+  return h + '</section>';
+}
+function epDeneme(){
+  var e = $('#epAlici'); if (e) EPY.alici = e.value.trim();
+  U.busy.ep = true; ciz();
+  return call('ynEposta', { islem:'dene', alici:EPY.alici }).then(function(r){
+    delete U.busy.ep;
+    if (r && r.durum) EPY.v = r.durum;
+    if (r && r.ok) { EPY.mesaj = r.mesaj || 'Gönderildi.'; EPY.hataSmtp = ''; toast('Deneme e-postası gönderildi'); }
+    else { EPY.mesaj = ''; EPY.hataSmtp = (r && r.hata) || 'Gönderilemedi.'; }
+    ciz();
+  });
+}
+ACT_EK.epYenile = function(){ EPY.hata = ''; EPY.v = null; epYukle(); ciz(); };
+ACT_EK.epKaydet = function(){
+  var ku = $('#epKul') ? $('#epKul').value.trim() : '', sf = $('#epSif') ? $('#epSif').value : '';
+  var al = $('#epAlici'); if (al) EPY.alici = al.value.trim();
+  EPY.mesaj = ''; EPY.hataSmtp = '';
+  islem('ynEposta', { islem:'kaydet', kullanici:ku, sifre:sf }, { busy:'ep' }).then(function(r){
+    var e = $('#epSif'); if (e) e.value = '';
+    if (!r) return;
+    EPY.v = r.durum;
+    if (r.durum.kayitli && r.durum.vps) epDeneme(); else { EPY.mesaj = r.mesaj || 'Kaydedildi.'; ciz(); }
+  });
+};
+ACT_EK.epDene = function(){ EPY.mesaj = ''; EPY.hataSmtp = ''; epDeneme(); };
+ACT_EK.epSil = function(){
+  EPY.mesaj = ''; EPY.hataSmtp = '';
+  islem('ynEposta', { islem:'sil' }, { busy:'ep' }).then(function(r){ if (r) { EPY.v = r.durum; EPY.mesaj = r.mesaj || ''; ciz(); } });
 };
 
 /* ---------- 1.21 Paket ödemesi (yönetim) ---------- */
