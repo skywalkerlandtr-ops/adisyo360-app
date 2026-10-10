@@ -1558,6 +1558,11 @@ button.yn-row:hover,button.yn-row:focus-visible{background:color-mix(in srgb,var
 .km-seg button{white-space:nowrap}
 .km-n{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--danger-fill);color:var(--on-danger);font-size:12px;font-weight:800;display:inline-grid;place-items:center}
 @media (max-width:430px){ .km-seg{display:flex;width:100%} .km-seg button{flex:1 1 auto;padding:0 8px;font-size:14px} }
+/* ---------- 1.27.2 Tabldot sekmesi ---------- */
+.tb-bar{justify-content:space-between;margin-bottom:12px}
+.tb-oz{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin:0;font-size:15px}
+.tb-oz .num{color:var(--sub);font-weight:700}
+.tb-oz .muted{color:var(--hint);font-size:14px}
 </style>
 </head>
 <body>
@@ -2297,7 +2302,7 @@ function siparisKarti(o, rozetli){
   var busy = U.busy['ileri:' + o.no];
   return '<article class="ord k-' + o.kod + (gec ? ' late' : '') + (taze ? ' fresh' : '') + (acik ? '' : ' closed') + '" aria-label="Sipariş ' + o.no + '">' +
     '<button class="ord-main" data-act="ac" data-no="' + o.no + '">' +
-      '<span class="ord-top"><span class="ord-no">' + (o.sira ? '<span class="kz-sno">Sıra ' + o.sira + '</span>' : '#' + o.no) + '</span>' + hbKartRozet(o) + (rozetli ? rozet(o.kod) : '') +
+      '<span class="ord-top"><span class="ord-no">' + (o.sira ? '<span class="kz-sno">Sıra ' + o.sira + '</span>' : '#' + o.no) + '</span>' + hbKartRozet(o) + (rozetli ? (o.kanal === 'Tabldot' && o.kod === 'T' ? '<span class="badge st-T"><span class="dot"></span>Kapandı</span>' : rozet(o.kod)) : '') +
         '<span class="ord-ago" data-ago="' + o.tarihMs + '">' + once(o.tarihMs) + '</span></span>' +
       '<span class="ord-who"><span class="nm">' + (o.kanal === 'Masa' ? '🍽 ' + esc(o.masa || 'Masa') + (o.qr ? ' · 📱 QR' : '') + (o.garson ? ' · ' + esc(o.garson) : '') + (o.odendi ? ' · ödendi' : '') : o.kanal ? '🧾 ' + esc(KANAL_AD[o.kanal] || o.kanal) + ' · #' + o.no + ' · ödendi' : esc(o.ad || 'Müşteri')) + (o.web ? ' <span class="web-rozet" title="Tarayıcıdan (Telegram\'sız) verilen sipariş">🌐 Web</span>' : '') + '</span>' + (o.km ? '<span>· ' + kmYaz(o.km) + '</span>' : '') + '</span>' +
       '<span class="ord-items">' + (o.koz ? '<b class="hb-koz">🔥 Köz isteniyor</b>' : kalemOzet(o.kalemler)) + '</span>' +
@@ -2317,6 +2322,7 @@ function guncelSatiri(){
 }
 function siparisEkrani(){
   var spk = spKanal(), spF = function(o){ return spUygun(o, spk); };
+  if (spk === 'tabldot') return tbEkrani();   // 1.27.2
   var acik = acikSiparisler().filter(spF), kapali = kapananlar().filter(spF);
   var say = function(k){ return acik.filter(function(o){ return o.kod === k; }).length; };
   var bosMetin = D.botVar === false ? 'Kendi botunuzu bağladıktan sonra müşterilerinizin siparişleri burada görünür.'
@@ -8970,6 +8976,7 @@ function kasaDemoIslemler(x){
       ad:kanal === 'Tezgah' ? 'Tezgâh · Sıra ' + (sira) : 'Tabldot', kalemler:kal, ara:top, ucret:0, toplam:top, odeme:odeme, tahsilat:odeme, not:not || '',
       gecmis:saatYaz(t) + ' ' + (kanal === 'Tezgah' ? x.DN.H : x.DN.T) + ' (Kasa: ' + x.BEN.ad + ')', adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'', iptalEden:'', iptalNedeni:'' };
     if (kanal === 'Tezgah') { x.S.push(o); tezgah.push(o); x.degisti(); }
+    else { x.S.push(o); x.degisti(); }
     SAT.push(o);
     return o;
   };
@@ -11838,7 +11845,11 @@ function spKanallar(){
   if (!D || !D.siparisler || garson() || kurye() || hzm() || numarator() || merkez() || yonetim() || hbCihazBolum()) return [];
   var l = yt('sp_online') ? [['online', 'Online', 'Online siparişler', 'kurye']] : [];
   if (yt('sp_masa') && (masaSekmesi() || D.siparisler.some(function(o){ return o.kanal === 'Masa'; }))) l.push(['masa', 'Masa', 'Masa siparişleri', 'masa']);
-  if (yt('sp_kasa') && (kasaAcik() || D.siparisler.some(function(o){ return o.kanal === 'Tezgah' || o.kanal === 'Tabldot'; }))) l.push(['kasa', 'Tabldot', 'Tabldot ve tezgâh siparişleri', 'kasa']);
+  if (yt('sp_kasa')) {   // 1.27.2: Tabldot ve Tezgâh ayrı sekmeler
+    var kzT = kasaAcik() ? kzTurler() : {};
+    if (kzT.tabldot || D.siparisler.some(function(o){ return o.kanal === 'Tabldot'; })) l.push(['tabldot', 'Tabldot', 'Bugünkü tabldot satışları (kasada hemen kapanır)', 'kasa']);
+    if (kzT.tezgah || D.siparisler.some(function(o){ return o.kanal === 'Tezgah'; })) l.push(['tezgah', 'Tezgâh', 'Tezgâh siparişleri (sıra numaralı)', 'zil']);
+  }
   if (l.length < 2) return [];
   l.push(['tumu', 'Tümü', 'Tüm siparişler', 'fis']);
   return l;
@@ -11847,6 +11858,7 @@ function spKanal(){
   var l = spKanallar();
   if (!l.length) return 'tumu';
   var k = U.kanal || LS.get(SPK_KEY) || (D.cihaz ? 'tumu' : 'online');
+  if (k === 'kasa') k = 'tezgah';   // 1.27.2 öncesi kayıtlı seçim
   return l.some(function(x){ return x[0] === k; }) ? k : l[0][0];
 }
 function spUygun(o, k){
@@ -11854,20 +11866,22 @@ function spUygun(o, k){
   if (k === 'tumu') return true;
   if (k === 'online') return !o.kanal;
   if (k === 'masa') return o.kanal === 'Masa';
+  if (k === 'tabldot') return o.kanal === 'Tabldot';
+  if (k === 'tezgah') return o.kanal === 'Tezgah';
   return o.kanal === 'Tezgah' || o.kanal === 'Tabldot';
 }
 // Menüdeki sayı: dikkat isteyenler (online ve masada onay bekleyen, kasada hazırlanan / hazır tezgâh siparişi)
 function spRozet(k){
   return D.siparisler.filter(function(o){
     if (!spUygun(o, k)) return false;
-    return k === 'kasa' ? (o.kod === 'H' || o.kod === 'R') : o.kod === 'Y';
+    return k === 'tabldot' ? false : k === 'kasa' || k === 'tezgah' ? (o.kod === 'H' || o.kod === 'R') : o.kod === 'Y';
   }).length;
 }
-function spKolonlar(k){ return k === 'masa' || hbCihazBolum() ? ['Y', 'H', 'R'] : k === 'kasa' ? ['H', 'R'] : ACIK; }
+function spKolonlar(k){ return k === 'masa' || hbCihazBolum() ? ['Y', 'H', 'R'] : k === 'kasa' || k === 'tezgah' ? ['H', 'R'] : ACIK; }
 function spAd(k){ var x = spKanallar().filter(function(y){ return y[0] === k; })[0]; return x ? x[2] : 'Siparişler'; }
 function spBosMetin(k, std){
   return k === 'masa' ? 'Garsonun mutfağa gönderdiği ve masadaki QR\'dan gelen siparişler burada görünür.'
-    : k === 'kasa' ? 'Tezgâh siparişleri sıra numarasıyla burada görünür. Tabldot satışları kasada hemen kapanır; «Kapanan»da listelenir.' : std;
+    : k === 'kasa' || k === 'tezgah' ? 'Tezgâh siparişleri sıra numarasıyla burada görünür.' : std;
 }
 // Telefonda kanal seçici (geniş ekranda sol menü yeterli; orada yalnız başlık)
 function spSecici(){
@@ -12657,6 +12671,7 @@ function cdKasaSatis(d){
     adres:'', tel:'', tel1:'', km:0, kurye:'', kuryeId:'', iptalEden:'', iptalNedeni:'', cevrimdisi:1 };
   var satis = { no:no, tarihMs:t, kod:kod, kanal:kanal, sira:sira, toplam:top, odeme:d.odeme, tahsilat:d.odeme, kalemler:kal, not:o.not, iptalNedeni:'', ad:o.ad, cevrimdisi:1 };
   if (kanal === 'Tezgah') { kasa.siradaki = sira >= 999 ? 1 : sira + 1; D.siparisler.push(o); }
+  else D.siparisler.push(o);   // 1.27.2: Tabldot sekmesinde hemen görünsün
   var r = { ok:true, satis:satis, rev:D.rev, cevrimdisi:true };
   if (kanal === 'Tezgah') r.siparis = cdKopya(o);
   cdEkle('ekKasaSatis', d, (kanal === 'Tezgah' ? 'Tezgâh · Sıra ' + sira : 'Tabldot') + ' · ' + tl(top) + ' · ' + d.odeme, { cevap:r, yerelNo:no });
@@ -13211,7 +13226,7 @@ ACT_EK.saBitirOde = function(){
 /* ---------- 1.27 Siparişler: Online · Masa · Tabldot tek pencerede, ayrı sekmeler ---------- */
 // Menüdeki «Siparişler» sayısı: kanal sekmelerindeki sayıların toplamı (tek kanal varsa onay bekleyenler)
 // Kanaldaki açık sipariş sayısı (sekmenin yanında parantez içinde; «Tümü» = hepsinin toplamı)
-function spAcikSay(k){ return acikSiparisler().filter(function(o){ return spUygun(o, k); }).length; }
+function spAcikSay(k){ return k === 'tabldot' ? tbSay() : acikSiparisler().filter(function(o){ return spUygun(o, k); }).length; }
 function spNokta(n){ return n ? '<i class="sp-nokta" role="img" aria-label="' + n + ' sipariş ilgi bekliyor"></i>' : ''; }
 function spToplamRozet(){
   var l = spKanallar();
@@ -13528,6 +13543,21 @@ Object.assign(ACT_EK, {
     haptic('select'); main.scrollTop = 0; renderMain(); renderTabs();
   }
 });
+
+/* ---------- 1.27.2 Tabldot sekmesi: bugünkü tabldot satışları, doğrudan «Kapandı» ---------- */
+function tbBugun(){ return kapananlar().filter(function(o){ return o.kanal === 'Tabldot'; }); }
+function tbSay(){ return tbBugun().filter(function(o){ return o.kod !== 'I'; }).length; }
+function tbEkrani(){
+  var l = tbBugun(), gec = l.filter(function(o){ return o.kod !== 'I'; });
+  var top = gec.reduce(function(t, o){ return t + (Number(o.toplam) || 0); }, 0);
+  if (PANO.matches) main.classList.add('fill');
+  var oz = '<p class="tb-oz"><b>Bugünkü tabldot satışları</b><span class="num">' + gec.length + ' satış · ' + tl(top) + '</span>' +
+    (l.length > gec.length ? '<span class="muted">' + (l.length - gec.length) + ' iptal</span>' : '') + '</p>';
+  var ust = (PANO.matches ? spSekmeSeridi() : spSecici()) + '<div class="toolbar tb-bar">' + oz + guncelSatiri() + '</div>';
+  return '<div class="scr" style="overflow-y:auto" data-scroll="tabldot">' + ust +
+    (l.length ? '<div class="olist">' + l.map(function(o){ return siparisKarti(o, true); }).join('') + '</div>'
+      : bosDurum('kasa', 'Bugün tabldot satışı yok', 'Kasada yapılan tabldot satışları mutfağa düşmez; satıldığı anda kapanır ve burada listelenir.')) + '</div>';
+}
 
 /* ---------- yardımcı işlemler ---------- */
 function haritaAdresi(o, uyg){
